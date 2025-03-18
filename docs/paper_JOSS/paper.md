@@ -103,6 +103,6 @@ TorchMetrics is released under the Apache 2.0 license. The source code is availa
 
 # Acknowledgement
 
-The TorchMetrics team thanks Thomas Chaton, Ethan Harris, Carlos Mocholí, Sean Narenthiran, Adrian Wälchli, and Ananth Subramaniam for contributing ideas, participating in discussions on API design, and completing Pull Request reviews. We also thank all of our open-source contributors for reporting and resolving issues with this package. We are grateful to the PyTorch Lightning team for their ongoing and dedicated support of this project, and Grid.ai for providing computing resources and cloud credits needed to run our Continuos Integrations.
+The TorchMetrics team thanks Thomas Chaton, Ethan Harris, Carlos Mocholí, Sean Narenthiran, Adrian Wälchli, and Ananth Subramaniam for contributing ideas, participating in discussions on API design, and completing Pull Request reviews. We also thank all of our open-source contributors for reporting and resolving issues with this package. We are grateful to the PyTorch Lightning team for their ongoing and dedicated support of this project, and Grid.ai for providing computing resources and cloud credits needed to run our Continuous Integrations.
 
 # References

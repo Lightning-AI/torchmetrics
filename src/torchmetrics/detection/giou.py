@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.giou import _giou_compute, _giou_update
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not _TORCHVISION_GREATER_EQUAL_0_8:
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["GeneralizedIntersectionOverUnion", "GeneralizedIntersectionOverUnion.plot"]
 elif not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["GeneralizedIntersectionOverUnion.plot"]
@@ -94,6 +95,7 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             If torchvision is not installed with version 0.8.0 or newer.
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True

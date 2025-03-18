@@ -11,35 +11,62 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
+import numpy as np
 import pytest
-import speechmetrics
 import torch
 from torch import Tensor
+
 from torchmetrics.audio import ScaleInvariantSignalNoiseRatio
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
-
-from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
 NUM_SAMPLES = 100
 
-Input = namedtuple("Input", ["preds", "target"])
 
-inputs = Input(
+inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, NUM_SAMPLES),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, NUM_SAMPLES),
 )
 
-speechmetrics_sisdr = speechmetrics.load("sisdr")
+
+class _SpeechMetricsSISDR:
+    """The code from speechmetrics."""
+
+    def __init__(
+        self,
+    ) -> None: ...
+
+    def _test_window(self, audios, rate):
+        # as provided by @Jonathan-LeRoux and slightly adapted for the case of just one reference
+        # and one estimate.
+        # see original code here: https://github.com/sigsep/bsseval/issues/3#issuecomment-494995846
+        eps = np.finfo(audios[0].dtype).eps
+        reference = audios[1].reshape(audios[1].size, 1)
+        estimate = audios[0].reshape(audios[0].size, 1)
+        rss = np.dot(reference.T, reference)
+
+        # get the scaling factor for clean sources
+        a = (eps + np.dot(reference.T, estimate)) / (rss + eps)
+
+        e_true = a * reference
+        e_res = estimate - e_true
+
+        sss = (e_true**2).sum()
+        snn = (e_res**2).sum()
+
+        return {"sisdr": 10 * np.log10((eps + sss) / (eps + snn))}
 
 
-def _speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
+speechmetrics_sisdr = _SpeechMetricsSISDR()
+
+
+def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True, reduce_mean: bool = False):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -51,30 +78,27 @@ def _speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True)
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            metric = speechmetrics_sisdr(preds[i, j], target[i, j], rate=16000)
-            ms.append(metric["sisdr"][0])
+            metric = speechmetrics_sisdr._test_window([preds[i, j], target[i, j]], rate=16000)
+            ms.append(metric["sisdr"])
         mss.append(ms)
-    return torch.tensor(mss)
-
-
-def _average_metric(preds, target, metric_func):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
+    si_sdr = torch.tensor(mss)
+    if reduce_mean:
+        # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+        # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
+        return si_sdr.mean()
+    return si_sdr
 
 
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
-    [
-        (inputs.preds, inputs.target, _speechmetrics_si_sdr),
-    ],
+    [(inputs.preds, inputs.target, _reference_speechmetrics_si_sdr)],
 )
 class TestSISNR(MetricTester):
     """Test class for `ScaleInvariantSignalNoiseRatio` metric."""
 
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_si_snr(self, preds, target, ref_metric, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -82,7 +106,7 @@ class TestSISNR(MetricTester):
             preds,
             target,
             ScaleInvariantSignalNoiseRatio,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_reference_speechmetrics_si_sdr, reduce_mean=True),
         )
 
     def test_si_snr_functional(self, preds, target, ref_metric):

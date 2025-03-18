@@ -11,25 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
 from skimage.metrics import structural_similarity
+from torch import Tensor
+
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
-
+from torchmetrics.utilities.imports import _TORCH_LESS_THAN_2_6
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
+
+
+class _InputMultichannel(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    multichannel: bool
+
 
 # UQI is SSIM with both constants k1 and k2 as 0
 skimage_uqi = partial(structural_similarity, k1=0, k2=0)
 
-Input = namedtuple("Input", ["preds", "target", "multichannel"])
 
 _inputs = []
 for size, channel, coef, multichannel, dtype in [
@@ -40,7 +48,7 @@ for size, channel, coef, multichannel, dtype in [
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(
-        Input(
+        _InputMultichannel(
             preds=preds,
             target=preds * coef,
             multichannel=multichannel,
@@ -48,7 +56,7 @@ for size, channel, coef, multichannel, dtype in [
     )
 
 
-def _skimage_uqi(preds, target, multichannel, kernel_size):
+def _reference_skimage_uqi(preds, target, multichannel, kernel_size):
     c, h, w = preds.shape[-3:]
     sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     sk_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -79,15 +87,15 @@ class TestUQI(MetricTester):
 
     atol = 6e-3
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_uqi(self, preds, target, multichannel, kernel_size, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            UniversalImageQualityIndex,
-            partial(_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
+            metric_class=UniversalImageQualityIndex,
+            reference_metric=partial(_reference_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 
@@ -96,13 +104,13 @@ class TestUQI(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            universal_image_quality_index,
-            partial(_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
+            metric_functional=universal_image_quality_index,
+            reference_metric=partial(_reference_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 
     # UQI half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="UQI metric does not support cpu + half precision")
+    @pytest.mark.xfail(condition=_TORCH_LESS_THAN_2_6, reason="UQI metric does not support cpu + half precision")
     def test_uqi_half_cpu(self, preds, target, multichannel, kernel_size):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
@@ -167,36 +175,32 @@ def test_uqi_different_dtype():
 
 def test_uqi_unequal_kernel_size():
     """Test the case where kernel_size[0] != kernel_size[1]."""
-    preds = torch.tensor(
+    preds = torch.tensor([
         [
             [
-                [
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                    [1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
-                    [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                ]
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
             ]
         ]
-    )
-    target = torch.tensor(
+    ])
+    target = torch.tensor([
         [
             [
-                [
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                    [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0],
-                    [1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0],
-                    [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0],
-                    [1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
-                    [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
-                ]
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+                [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0],
+                [1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0],
+                [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0],
+                [1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
+                [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
             ]
         ]
-    )
+    ])
     # kernel order matters
     torch.allclose(universal_image_quality_index(preds, target, kernel_size=(3, 5)), torch.tensor(0.10662283))
     torch.allclose(universal_image_quality_index(preds, target, kernel_size=(5, 3)), torch.tensor(0.10662283))

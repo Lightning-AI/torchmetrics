@@ -19,6 +19,7 @@ import torch
 from netcal.metrics import ECE, MCE
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
+
 from torchmetrics.classification.calibration_error import (
     BinaryCalibrationError,
     CalibrationError,
@@ -29,22 +30,21 @@ from torchmetrics.functional.classification.calibration_error import (
     multiclass_calibration_error,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9, _TORCH_GREATER_EQUAL_1_13
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases
 
 seed_all(42)
 
 
-def _netcal_binary_calibration_error(preds, target, n_bins, norm, ignore_index):
+def _reference_netcal_binary_calibration_error(preds, target, n_bins, norm, ignore_index):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     metric = ECE if norm == "l1" else MCE
     return metric(n_bins).measure(preds, target)
 
@@ -56,7 +56,7 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.parametrize("n_bins", [10, 15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_calibration_error(self, inputs, ddp, n_bins, norm, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -68,7 +68,7 @@ class TestBinaryCalibrationError(MetricTester):
             target=target,
             metric_class=BinaryCalibrationError,
             reference_metric=partial(
-                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _reference_netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "n_bins": n_bins,
@@ -90,7 +90,7 @@ class TestBinaryCalibrationError(MetricTester):
             target=target,
             metric_functional=binary_calibration_error,
             reference_metric=partial(
-                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _reference_netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "n_bins": n_bins,
@@ -113,10 +113,8 @@ class TestBinaryCalibrationError(MetricTester):
     def test_binary_calibration_error_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
-            pytest.xfail(reason="torch.linspace in metric not supported before pytorch v1.13 for cpu + half")
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -129,8 +127,6 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_calibration_error_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
-            pytest.xfail(reason="torch.searchsorted in metric not supported before pytorch v1.13 for gpu + half")
         preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
@@ -148,13 +144,13 @@ def test_binary_with_zero_pred():
     assert binary_calibration_error(preds, target, n_bins=2, norm="l1") == torch.tensor(0.6)
 
 
-def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
+def _reference_netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
     preds = preds.numpy()
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     metric = ECE if norm == "l1" else MCE
     return metric(n_bins).measure(preds, target)
 
@@ -168,7 +164,7 @@ class TestMulticlassCalibrationError(MetricTester):
     @pytest.mark.parametrize("n_bins", [15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_calibration_error(self, inputs, ddp, n_bins, norm, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -180,7 +176,7 @@ class TestMulticlassCalibrationError(MetricTester):
             target=target,
             metric_class=MulticlassCalibrationError,
             reference_metric=partial(
-                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _reference_netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -203,7 +199,7 @@ class TestMulticlassCalibrationError(MetricTester):
             target=target,
             metric_functional=multiclass_calibration_error,
             reference_metric=partial(
-                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _reference_netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -228,8 +224,6 @@ class TestMulticlassCalibrationError(MetricTester):
     def test_multiclass_calibration_error_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_9:
-            pytest.xfail(reason="torch.max in metric not supported before pytorch v1.9 for cpu + half")
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.softmax in metric does not support cpu + half precision")
         self.run_precision_test_cpu(

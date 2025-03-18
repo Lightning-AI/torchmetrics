@@ -103,7 +103,7 @@ def binary_hamming_distance(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
@@ -188,7 +188,7 @@ def multiclass_hamming_distance(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -290,14 +290,14 @@ def multilabel_hamming_distance(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -394,7 +394,7 @@ def hamming_distance(
     tensor.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_hamming_distance`,
     :func:`~torchmetrics.functional.classification.multiclass_hamming_distance` and
     :func:`~torchmetrics.functional.classification.multilabel_hamming_distance` for

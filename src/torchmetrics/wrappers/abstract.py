@@ -20,10 +20,10 @@ class WrapperMetric(Metric):
     """Abstract base class for wrapper metrics.
 
     Wrapper metrics are characterized by them wrapping another metric, and forwarding all calls to the wrapped metric.
-    This means that all logic regarding syncronization etc. is handled by the wrapped metric, and the wrapper metric
+    This means that all logic regarding synchronization etc. is handled by the wrapped metric, and the wrapper metric
     should not do anything in this regard.
 
-    This class therefore overwrites all methods that are related to syncronization, and does nothing in them.
+    This class therefore overwrites all methods that are related to synchronization, and does nothing in them.
 
     Additionally, the forward method is not implemented by default as custom logic is required for each wrapper metric.
 

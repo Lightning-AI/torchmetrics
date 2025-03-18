@@ -11,20 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from functools import partial
-from typing import Callable, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
 import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
-from torchmetrics.retrieval import RetrievalPrecisionRecallCurve
+from typing_extensions import Literal
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import Metric, MetricTester
-from unittests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes
+from torchmetrics.retrieval import RetrievalPrecisionRecallCurve
+from torchmetrics.retrieval.base import _retrieval_aggregate
+from unittests._helpers import seed_all
+from unittests._helpers.testers import Metric, MetricTester
+from unittests.retrieval.helpers import _custom_aggregate_fn, _default_metric_class_input_arguments, get_group_indexes
 from unittests.retrieval.test_precision import _precision_at_k
 from unittests.retrieval.test_recall import _recall_at_k
 
@@ -40,7 +41,8 @@ def _compute_precision_recall_curve(
     ignore_index: Optional[int] = None,
     empty_target_action: str = "skip",
     reverse: bool = False,
-) -> Tuple[Tensor, Tensor, Tensor]:
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+) -> tuple[Tensor, Tensor, Tensor]:
     """Compute metric with multiple iterations over every query predictions set.
 
     Didn't find a reliable implementation of precision-recall curve in Information Retrieval,
@@ -106,8 +108,8 @@ def _compute_precision_recall_curve(
     if not recalls:
         return torch.zeros(max_k), torch.zeros(max_k), top_k
 
-    recalls = tensor(recalls).mean(dim=0)
-    precisions = tensor(precisions).mean(dim=0)
+    recalls = _retrieval_aggregate(tensor(recalls), aggregation=aggregation, dim=0)
+    precisions = _retrieval_aggregate(tensor(precisions), aggregation=aggregation, dim=0)
 
     return precisions, recalls, top_k
 
@@ -125,6 +127,7 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
         reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
+        aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
     ):
         """Test class implementation of metric."""
         _ref_metric_adapted = partial(reference_metric, reverse=reverse, **metric_args)
@@ -146,6 +149,7 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
 @pytest.mark.parametrize("max_k", [None, 1, 2, 5, 10])
 @pytest.mark.parametrize("adaptive_k", [False, True])
+@pytest.mark.parametrize("aggregation", ["mean", "median", "max", "min", _custom_aggregate_fn])
 @pytest.mark.parametrize(**_default_metric_class_input_arguments)
 class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
     """Test class for `RetrievalPrecisionRecallCurveTester` metric."""
@@ -162,6 +166,7 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         ignore_index,
         max_k,
         adaptive_k,
+        aggregation,
     ):
         """Test class implementation of metric."""
         metric_args = {
@@ -169,6 +174,7 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
             "adaptive_k": adaptive_k,
             "empty_target_action": empty_target_action,
             "ignore_index": ignore_index,
+            "aggregation": aggregation,
         }
 
         self.run_class_metric_test(

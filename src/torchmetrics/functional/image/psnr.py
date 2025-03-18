@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -22,7 +22,7 @@ from torchmetrics.utilities import rank_zero_warn, reduce
 
 def _psnr_compute(
     sum_squared_error: Tensor,
-    n_obs: Tensor,
+    num_obs: Tensor,
     data_range: Tensor,
     base: float = 10.0,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
@@ -31,7 +31,7 @@ def _psnr_compute(
 
     Args:
         sum_squared_error: Sum of square of errors over all observations
-        n_obs: Number of predictions or observations
+        num_obs: Number of predictions or observations
         data_range: the range of the data. If None, it is determined from the data (max - min).
            ``data_range`` must be given when ``dim`` is not None.
         base: a base of a logarithm to use
@@ -45,12 +45,12 @@ def _psnr_compute(
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> data_range = target.max() - target.min()
-        >>> sum_squared_error, n_obs = _psnr_update(preds, target)
-        >>> _psnr_compute(sum_squared_error, n_obs, data_range)
+        >>> sum_squared_error, num_obs = _psnr_update(preds, target)
+        >>> _psnr_compute(sum_squared_error, num_obs, data_range)
         tensor(2.5527)
 
     """
-    psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error / n_obs)
+    psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error / num_obs)
     psnr_vals = psnr_base_e * (10 / torch.log(tensor(base)))
     return reduce(psnr_vals, reduction=reduction)
 
@@ -58,8 +58,8 @@ def _psnr_compute(
 def _psnr_update(
     preds: Tensor,
     target: Tensor,
-    dim: Optional[Union[int, Tuple[int, ...]]] = None,
-) -> Tuple[Tensor, Tensor]:
+    dim: Optional[Union[int, tuple[int, ...]]] = None,
+) -> tuple[Tensor, Tensor]:
     """Update and return variables required to compute peak signal-to-noise ratio.
 
     Args:
@@ -69,31 +69,36 @@ def _psnr_update(
             Default is None meaning scores will be reduced across all dimensions.
 
     """
+    if not preds.is_floating_point():
+        preds = preds.to(torch.float32)
+    if not target.is_floating_point():
+        target = target.to(torch.float32)
+
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
-        n_obs = tensor(target.numel(), device=target.device)
-        return sum_squared_error, n_obs
+        num_obs = tensor(target.numel(), device=target.device)
+        return sum_squared_error, num_obs
 
     diff = preds - target
     sum_squared_error = torch.sum(diff * diff, dim=dim)
 
     dim_list = [dim] if isinstance(dim, int) else list(dim)
     if not dim_list:
-        n_obs = tensor(target.numel(), device=target.device)
+        num_obs = tensor(target.numel(), device=target.device)
     else:
-        n_obs = tensor(target.size(), device=target.device)[dim_list].prod()
-        n_obs = n_obs.expand_as(sum_squared_error)
+        num_obs = tensor(target.size(), device=target.device)[dim_list].prod()
+        num_obs = num_obs.expand_as(sum_squared_error)
 
-    return sum_squared_error, n_obs
+    return sum_squared_error, num_obs
 
 
 def peak_signal_noise_ratio(
     preds: Tensor,
     target: Tensor,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     base: float = 10.0,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    dim: Optional[Union[int, Tuple[int, ...]]] = None,
+    dim: Optional[Union[int, tuple[int, ...]]] = None,
 ) -> Tensor:
     """Compute the peak signal-to-noise ratio.
 
@@ -129,8 +134,8 @@ def peak_signal_noise_ratio(
         >>> peak_signal_noise_ratio(pred, target)
         tensor(2.5527)
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     """
     if dim is None and reduction != "elementwise_mean":
@@ -142,13 +147,13 @@ def peak_signal_noise_ratio(
             # `data_range` in the future.
             raise ValueError("The `data_range` must be given when `dim` is not None.")
 
-        data_range = target.max() - target.min()
+        data_range = target.max() - target.min()  # type: ignore[assignment]
     elif isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
-        data_range = tensor(data_range[1] - data_range[0])
+        data_range = tensor(data_range[1] - data_range[0])  # type: ignore[assignment]
     else:
-        data_range = tensor(float(data_range))
+        data_range = tensor(float(data_range))  # type: ignore[assignment]
 
-    sum_squared_error, n_obs = _psnr_update(preds, target, dim=dim)
-    return _psnr_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)
+    sum_squared_error, num_obs = _psnr_update(preds, target, dim=dim)
+    return _psnr_compute(sum_squared_error, num_obs, data_range, base=base, reduction=reduction)  # type: ignore[arg-type]

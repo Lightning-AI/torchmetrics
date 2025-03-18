@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -47,7 +48,7 @@ class _AbstractGroupStatScores(Metric):
         self.add_state("tn", default(), dist_reduce_fx="sum")
         self.add_state("fn", default(), dist_reduce_fx="sum")
 
-    def _update_states(self, group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]) -> None:
+    def _update_states(self, group_stats: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]) -> None:
         for group, stats in enumerate(group_stats):
             tp, fp, tn, fn = stats
             self.tp[group] += tp
@@ -64,7 +65,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
@@ -101,6 +102,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -146,7 +148,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
 
     def compute(
         self,
-    ) -> Dict[str, Tensor]:
+    ) -> dict[str, Tensor]:
         """Compute tp, fp, tn and fn rates based on inputs passed in to ``update`` previously."""
         results = torch.stack((self.tp, self.fp, self.tn, self.fn), dim=1)
 
@@ -159,7 +161,7 @@ class BinaryFairness(_AbstractGroupStatScores):
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
     - ``target`` (int tensor): ``(N, ...)``.
@@ -176,7 +178,7 @@ class BinaryFairness(_AbstractGroupStatScores):
 
     Args:
         num_groups: The number of groups.
-        task: The task to compute. Can be either ``demographic_parity`` or ``equal_oppotunity`` or ``all``.
+        task: The task to compute. Can be either ``demographic_parity`` or ``equal_opportunity`` or ``all``.
         threshold: Threshold for transforming probability to binary {0,1} predictions.
         ignore_index: Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -207,6 +209,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -265,7 +268,7 @@ class BinaryFairness(_AbstractGroupStatScores):
 
     def compute(
         self,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """Compute fairness criteria based on inputs passed in to ``update`` previously."""
         if self.task == "demographic_parity":
             return _compute_binary_demographic_parity(self.tp, self.fp, self.tn, self.fn)
@@ -300,25 +303,23 @@ class BinaryFairness(_AbstractGroupStatScores):
         .. plot::
             :scale: 75
 
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import ones, rand, randint
             >>> # Example plotting a single value
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
-            >>> metric.update(torch.rand(20), torch.randint(2,(20,)), torch.randint(2,(20,)))
+            >>> metric.update(rand(20), randint(2, (20,)), ones(20).long())
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import ones, rand, randint
             >>> # Example plotting multiple values
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(20), torch.randint(2,(20,)), torch.ones(20).long()))
+            ...     values.append(metric(rand(20), randint(2, (20,) ), ones(20).long()))
             >>> fig_, ax_ = metric.plot(values)
 
         """

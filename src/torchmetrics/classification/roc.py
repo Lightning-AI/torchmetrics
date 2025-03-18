@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -54,7 +54,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of 3 tensors containing:
@@ -71,8 +71,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
-    .. note::
-       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and
+    .. attention::
+       The outputted thresholds will be in reversed order to ensure that they correspond to both fpr and
        tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
@@ -87,6 +87,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -108,20 +110,21 @@ class BinaryROC(BinaryPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _binary_roc_compute(state, self.thresholds)
+        return _binary_roc_compute(state, self.thresholds)  # type: ignore[arg-type]
 
     def plot(
         self,
-        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
+        curve: Optional[tuple[Tensor, Tensor, Tensor]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
@@ -131,7 +134,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -175,7 +179,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     different thresholds, such that the tradeoff between the two values can be seen.
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
-    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -187,7 +191,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
@@ -212,12 +216,12 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
-    .. note::
-       Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr
+    .. attention::
+       Note that outputted thresholds will be in reversed order to ensure that they correspond to both fpr
        and tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         thresholds:
             Can be one of:
 
@@ -229,6 +233,15 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        average:
+            If aggregation of curves should be applied. By default, the curves are not aggregated and a curve for
+            each class is returned. If `average` is set to ``"micro"``, the metric will aggregate the curves by one hot
+            encoding the targets and flattening the predictions, considering all classes jointly as a binary problem.
+            If `average` is set to ``"macro"``, the metric will aggregate the curves by first interpolating the curves
+            from each class at a combined set of thresholds and then average over the classwise interpolated curves.
+            See `averaging curve objects`_ for more info on the different averaging methods.
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -266,6 +279,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -273,16 +287,17 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _multiclass_roc_compute(state, self.num_classes, self.thresholds)
+        return _multiclass_roc_compute(state, self.num_classes, self.thresholds, self.average)  # type: ignore[arg-type]
 
     def plot(
         self,
-        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
+        labels: Optional[list[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -290,8 +305,10 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
+            labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
         Returns:
             Figure and Axes object
@@ -322,6 +339,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
             name=self.__class__.__name__,
+            labels=labels,
         )
 
 
@@ -339,7 +357,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
@@ -364,12 +382,12 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
-    .. note::
-       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr
+    .. attention::
+       The outputted thresholds will be in reversed order to ensure that they correspond to both fpr and tpr
        which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         thresholds:
             Can be one of:
 
@@ -381,6 +399,8 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -421,6 +441,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -428,16 +449,17 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Label"
 
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
+        return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)  # type: ignore[arg-type]
 
     def plot(
         self,
-        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
+        labels: Optional[list[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -445,8 +467,10 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
+            labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
         Returns:
             Figure and Axes object
@@ -477,6 +501,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
             name=self.__class__.__name__,
+            labels=labels,
         )
 
 
@@ -487,7 +512,7 @@ class ROC(_ClassificationTaskWrapper):
     different thresholds, such that the tradeoff between the two values can be seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryROC`,
     :class:`~torchmetrics.classification.MulticlassROC` and
     :class:`~torchmetrics.classification.MultilabelROC` for the specific details of each argument
@@ -545,10 +570,10 @@ class ROC(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
-        cls,
+    def __new__(  # type: ignore[misc]
+        cls: type["ROC"],
         task: Literal["binary", "multiclass", "multilabel"],
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,

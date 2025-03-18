@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -34,7 +35,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function. This metric is a modified version of PSNR that
     better supports evaluation of images with blocked artifacts, that oftens occur in compressed images.
 
-    .. note::
+    .. attention::
         Metric only supports grayscale images. If you have RGB images, please convert them to grayscale first.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -51,16 +52,15 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
+        >>> from torch import rand
         >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(2, 1, 10, 10)
-        >>> target = torch.rand(2, 1, 10, 10)
+        >>> preds = rand(2, 1, 10, 10)
+        >>> target = rand(2, 1, 10, 10)
         >>> metric(preds, target)
         tensor(7.2893)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -87,10 +87,10 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        sum_squared_error, bef, n_obs = _psnrb_update(preds, target, block_size=self.block_size)
+        sum_squared_error, bef, num_obs = _psnrb_update(preds, target, block_size=self.block_size)
         self.sum_squared_error += sum_squared_error
         self.bef += bef
-        self.total += n_obs
+        self.total += num_obs
         self.data_range = torch.maximum(self.data_range, torch.max(target) - torch.min(target))
 
     def compute(self) -> Tensor:

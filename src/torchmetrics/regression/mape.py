@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -49,7 +50,7 @@ class MeanAbsolutePercentageError(Metric):
 
     Note:
         MAPE output is a non-negative floating point. Best result is ``0.0`` . But it is important to note that,
-        bad predictions, can lead to arbitarily large values. Especially when some ``target`` values are close to 0.
+        bad predictions, can lead to arbitrarily large values. Especially when some ``target`` values are close to 0.
         This `MAPE implementation returns`_ a very large number instead of ``inf``.
 
     Example:
@@ -62,6 +63,7 @@ class MeanAbsolutePercentageError(Metric):
         tensor(0.2667)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False

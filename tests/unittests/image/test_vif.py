@@ -11,24 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 
 import numpy as np
 import pytest
 import torch
 from sewar.full_ref import vifp
+
 from torchmetrics.functional.image.vif import visual_information_fidelity
 from torchmetrics.image.vif import VisualInformationFidelity
-
-from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
+
 _inputs = [
-    Input(
+    _Input(
         preds=torch.randint(0, 255, size=(NUM_BATCHES, BATCH_SIZE, channels, 41, 41), dtype=torch.float),
         target=torch.randint(0, 255, size=(NUM_BATCHES, BATCH_SIZE, channels, 41, 41), dtype=torch.float),
     )
@@ -36,7 +35,7 @@ _inputs = [
 ]
 
 
-def _sewar_vif(preds, target, sigma_nsq=2):
+def _reference_sewar_vif(preds, target, sigma_nsq=2):
     preds = torch.movedim(preds, 1, -1)
     target = torch.movedim(target, 1, -1)
     preds = preds.cpu().numpy()
@@ -51,11 +50,15 @@ class TestVIF(MetricTester):
 
     atol = 1e-7
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_vif(self, preds, target, ddp):
         """Test class implementation of metric."""
-        self.run_class_metric_test(ddp, preds, target, VisualInformationFidelity, _sewar_vif)
+        self.run_class_metric_test(
+            ddp, preds, target, metric_class=VisualInformationFidelity, reference_metric=_reference_sewar_vif
+        )
 
     def test_vif_functional(self, preds, target):
         """Test functional implementation of metric."""
-        self.run_functional_metric_test(preds, target, visual_information_fidelity, _sewar_vif)
+        self.run_functional_metric_test(
+            preds, target, metric_functional=visual_information_fidelity, reference_metric=_reference_sewar_vif
+        )

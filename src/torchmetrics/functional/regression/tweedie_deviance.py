@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -20,7 +19,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_xlogy
 
 
-def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tuple[Tensor, Tensor]:
+def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float = 0.0) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Deviance Score for the given power.
 
     Check for same shape of input tensors.
@@ -88,7 +87,7 @@ def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations
     """Compute Deviance Score.
 
     Args:
-        sum_deviance_score: Sum of deviance scores accumalated until now.
+        sum_deviance_score: Sum of deviance scores accumulated until now.
         num_observations: Number of observations encountered until now.
 
     Example:

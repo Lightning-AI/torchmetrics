@@ -11,19 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Optional
 
 import torch
-from torch import Tensor
-from torch.nn import functional as F  # noqa: N812
+from torch import Tensor, nn
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel_2d
+from torchmetrics.functional.image.utils import _gaussian_kernel_2d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _uqi_update(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Universal Image Quality Index.
 
     Args:
@@ -39,8 +39,7 @@ def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     _check_same_shape(preds, target)
     if len(preds.shape) != 4:
         raise ValueError(
-            "Expected `preds` and `target` to have BxCxHxW shape."
-            f" Got preds: {preds.shape} and target: {target.shape}."
+            f"Expected `preds` and `target` to have BxCxHxW shape. Got preds: {preds.shape} and target: {target.shape}."
         )
     return preds, target
 
@@ -92,25 +91,26 @@ def _uqi_compute(
     pad_h = (kernel_size[0] - 1) // 2
     pad_w = (kernel_size[1] - 1) // 2
 
-    preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-    target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+    preds = nn.functional.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+    target = nn.functional.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
-    outputs = F.conv2d(input_list, kernel, groups=channel)
+    outputs = nn.functional.conv2d(input_list, kernel, groups=channel)
     output_list = outputs.split(preds.shape[0])
 
     mu_pred_sq = output_list[0].pow(2)
     mu_target_sq = output_list[1].pow(2)
     mu_pred_target = output_list[0] * output_list[1]
 
-    sigma_pred_sq = output_list[2] - mu_pred_sq
-    sigma_target_sq = output_list[3] - mu_target_sq
+    # Calculate the variance of the predicted and target images, should be non-negative
+    sigma_pred_sq = torch.clamp(output_list[2] - mu_pred_sq, min=0.0)
+    sigma_target_sq = torch.clamp(output_list[3] - mu_target_sq, min=0.0)
     sigma_pred_target = output_list[4] - mu_pred_target
 
     upper = 2 * sigma_pred_target
-    lower = sigma_pred_sq + sigma_target_sq + torch.finfo(sigma_pred_sq.dtype).eps
-
-    uqi_idx = ((2 * mu_pred_target) * upper) / ((mu_pred_sq + mu_target_sq) * lower)
+    lower = sigma_pred_sq + sigma_target_sq
+    eps = torch.finfo(sigma_pred_sq.dtype).eps
+    uqi_idx = ((2 * mu_pred_target) * upper) / ((mu_pred_sq + mu_target_sq) * lower + eps)
     uqi_idx = uqi_idx[..., pad_h:-pad_h, pad_w:-pad_w]
 
     return reduce(uqi_idx, reduction)

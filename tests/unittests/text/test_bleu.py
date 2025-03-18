@@ -17,17 +17,17 @@ from typing import Any
 import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
 from torch import tensor
+
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.text.bleu import BLEUScore
-
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_multiple_references
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_multiple_references
 
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.SmoothingFunction
 smooth_func = SmoothingFunction().method2
 
 
-def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwargs: Any):
+def _reference_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwargs: Any):
     preds_ = [pred.split() for pred in preds]
     targets_ = [[line.split() for line in target] for target in targets]
     return corpus_bleu(
@@ -46,16 +46,16 @@ def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwa
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 class TestBLEUScore(TextTester):
     """Test class for `BLEUScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_bleu_score_class(self, ddp, preds, targets, weights, n_gram, smooth_func, smooth):
         """Test class implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
-        compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
+        compute_bleu_metric_nltk = partial(_reference_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -69,7 +69,7 @@ class TestBLEUScore(TextTester):
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
         """Test functional implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
-        compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
+        compute_bleu_metric_nltk = partial(_reference_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
         self.run_functional_metric_test(
             preds,

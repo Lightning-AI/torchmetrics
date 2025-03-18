@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -32,14 +32,14 @@ def _pearsons_contingency_coefficient_update(
     target: Tensor,
     num_classes: int,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     """Compute the bins to update the confusion matrix with for Pearson's Contingency Coefficient calculation.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
         target: 1D or 2D tensor of categorical (nominal) data
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
 
@@ -76,7 +76,7 @@ def pearsons_contingency_coefficient(
     preds: Tensor,
     target: Tensor,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Pearson's Contingency Coefficient`_ for measuring the association between two categorical data series.
 
@@ -114,10 +114,10 @@ def pearsons_contingency_coefficient(
         Pearson's Contingency Coefficient
 
     Example:
+        >>> from torch import randint, round
         >>> from torchmetrics.functional.nominal import pearsons_contingency_coefficient
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = round(preds + torch.randn(100)).clamp(0, 4)
         >>> pearsons_contingency_coefficient(preds, target)
         tensor(0.6948)
 
@@ -131,7 +131,7 @@ def pearsons_contingency_coefficient(
 def pearsons_contingency_coefficient_matrix(
     matrix: Tensor,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Pearson's Contingency Coefficient`_ statistic between a set of multiple variables.
 
@@ -151,9 +151,9 @@ def pearsons_contingency_coefficient_matrix(
         Pearson's Contingency Coefficient statistic for a dataset of categorical variables
 
     Example:
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal import pearsons_contingency_coefficient_matrix
-        >>> _ = torch.manual_seed(42)
-        >>> matrix = torch.randint(0, 4, (200, 5))
+        >>> matrix = randint(0, 4, (200, 5))
         >>> pearsons_contingency_coefficient_matrix(matrix)
         tensor([[1.0000, 0.2326, 0.1959, 0.2262, 0.2989],
                 [0.2326, 1.0000, 0.1386, 0.1895, 0.1329],

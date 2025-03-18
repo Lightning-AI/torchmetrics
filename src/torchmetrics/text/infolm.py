@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, ClassVar, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -111,11 +112,24 @@ class InfoLM(Metric):
     """
 
     is_differentiable = False
-    higher_is_better = True
     preds_input_ids: List[Tensor]
     preds_attention_mask: List[Tensor]
     target_input_ids: List[Tensor]
     target_attention_mask: List[Tensor]
+
+    _information_measure_higher_is_better: ClassVar = {
+        # following values are <0
+        "kl_divergence": True,
+        "alpha_divergence": True,
+        # following values are >0
+        "beta_divergence": False,
+        "ab_divergence": False,
+        "renyi_divergence": False,
+        "l1_distance": False,
+        "l2_distance": False,
+        "l_infinity_distance": False,
+        "fisher_rao_distance": False,
+    }
 
     def __init__(
         self,
@@ -131,7 +145,7 @@ class InfoLM(Metric):
         num_threads: int = 0,
         verbose: bool = True,
         return_sentence_level_score: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path
@@ -156,6 +170,15 @@ class InfoLM(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
+    @property
+    def higher_is_better(self) -> bool:  # type: ignore[override]
+        """Returns a bool indicating whether a higher value of the information measure is better.
+
+        Done this way as depends on if the information measure is positive or negative.
+
+        """
+        return self._information_measure_higher_is_better[self.information_measure]
+
     def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Update state with predictions and targets."""
         preds_input_ids, preds_attention_mask, target_input_ids, target_attention_mask = _infolm_update(
@@ -166,7 +189,7 @@ class InfoLM(Metric):
         self.target_input_ids.append(target_input_ids)
         self.target_attention_mask.append(target_attention_mask)
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Calculate selected information measure using the pre-trained language model."""
         preds_dataloader = _get_dataloader(
             input_ids=dim_zero_cat(self.preds_input_ids),

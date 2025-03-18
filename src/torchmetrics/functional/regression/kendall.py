@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -47,7 +47,7 @@ class _TestAlternative(EnumStr):
         return "alternative"
 
 
-def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
+def _sort_on_first_sequence(x: Tensor, y: Tensor) -> tuple[Tensor, Tensor]:
     """Sort sequences in an ascent order according to the sequence ``x``."""
     # We need to clone `y` tensor not to change an object in memory
     y = torch.clone(y)
@@ -94,7 +94,7 @@ def _convert_sequence_to_dense_rank(x: Tensor, sort: bool = False) -> Tensor:
     return _cumsum(torch.cat([_ones, (x[1:] != x[:-1]).int()], dim=0), dim=0)
 
 
-def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+def _get_ties(x: Tensor) -> tuple[Tensor, Tensor, Tensor]:
     """Get a total number of ties and staistics for p-value calculation for  a given sequence."""
     ties = torch.zeros(x.shape[1], dtype=x.dtype, device=x.device)
     ties_p1 = torch.zeros(x.shape[1], dtype=x.dtype, device=x.device)
@@ -111,7 +111,7 @@ def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
 
 def _get_metric_metadata(
     preds: Tensor, target: Tensor, variant: _MetricVariant
-) -> Tuple[
+) -> tuple[
     Tensor,
     Tensor,
     Optional[Tensor],
@@ -165,6 +165,10 @@ def _calculate_tau(
         return con_min_dis_pairs / (concordant_pairs + discordant_pairs)
     if variant == _MetricVariant.B:
         total_combinations: Tensor = n_total * (n_total - 1) // 2
+        if preds_ties is None:
+            preds_ties = torch.tensor(0.0, dtype=total_combinations.dtype, device=total_combinations.device)
+        if target_ties is None:
+            target_ties = torch.tensor(0.0, dtype=total_combinations.dtype, device=total_combinations.device)
         denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)
         return con_min_dis_pairs / torch.sqrt(denominator)
 
@@ -207,9 +211,19 @@ def _calculate_p_value(
         t_value = 3 * con_min_dis_pairs / torch.sqrt(t_value_denominator_base / 2)
     else:
         m = n_total * (n_total - 1)
-        t_value_denominator: Tensor = (t_value_denominator_base - preds_ties_p2 - target_ties_p2) / 18
-        t_value_denominator += (2 * preds_ties * target_ties) / m  # type: ignore
-        t_value_denominator += preds_ties_p1 * target_ties_p1 / (9 * m * (n_total - 2))  # type: ignore
+        t_value_denominator: Tensor = (
+            t_value_denominator_base
+            - (preds_ties_p2 if preds_ties_p2 is not None else 0)
+            - (target_ties_p2 if target_ties_p2 is not None else 0)
+        ) / 18
+        t_value_denominator += (
+            2 * (preds_ties if preds_ties is not None else 0) * (target_ties if target_ties is not None else 0)
+        ) / m
+        t_value_denominator += (
+            (preds_ties_p1 if preds_ties_p1 is not None else 0)
+            * (target_ties_p1 if target_ties_p1 is not None else 0)
+            / (9 * m * (n_total - 2))
+        )
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
 
     if alternative == _TestAlternative.TWO_SIDED:
@@ -228,7 +242,7 @@ def _kendall_corrcoef_update(
     concat_preds: Optional[List[Tensor]] = None,
     concat_target: Optional[List[Tensor]] = None,
     num_outputs: int = 1,
-) -> Tuple[List[Tensor], List[Tensor]]:
+) -> tuple[List[Tensor], List[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
 
     Args:
@@ -263,7 +277,7 @@ def _kendall_corrcoef_compute(
     target: Tensor,
     variant: _MetricVariant,
     alternative: Optional[_TestAlternative] = None,
-) -> Tuple[Tensor, Optional[Tensor]]:
+) -> tuple[Tensor, Optional[Tensor]]:
     """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test.
 
     Args:
@@ -324,7 +338,7 @@ def kendall_rank_corrcoef(
     variant: Literal["a", "b", "c"] = "b",
     t_test: bool = False,
     alternative: Optional[Literal["two-sided", "less", "greater"]] = "two-sided",
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     r"""Compute `Kendall Rank Correlation Coefficient`_.
 
     .. math::
@@ -405,7 +419,10 @@ def kendall_rank_corrcoef(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
     tau, p_value = _kendall_corrcoef_compute(
-        dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative  # type: ignore[arg-type]  # todo
+        dim_zero_cat(_preds),
+        dim_zero_cat(_target),
+        _variant,  # type: ignore[arg-type]  # todo
+        _alternative,  # type: ignore[arg-type]  # todo
     )
 
     if p_value is not None:

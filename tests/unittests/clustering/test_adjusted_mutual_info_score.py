@@ -16,13 +16,13 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import adjusted_mutual_info_score as sklearn_ami
+
 from torchmetrics.clustering.adjusted_mutual_info_score import AdjustedMutualInfoScore
 from torchmetrics.functional.clustering.adjusted_mutual_info_score import adjusted_mutual_info_score
-
 from unittests import BATCH_SIZE, NUM_CLASSES
-from unittests.clustering.inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 
 seed_all(42)
 
@@ -45,7 +45,7 @@ class TestAdjustedMutualInfoScore(MetricTester):
 
     atol = ATOL
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_adjusted_mutual_info_score(self, preds, target, average_method, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -92,7 +92,7 @@ def test_adjusted_mutual_info_score_functional_raises_invalid_task(average_metho
 def test_adjusted_mutual_info_score_functional_is_symmetric(
     average_method, preds=_single_target_extrinsic1.preds, target=_single_target_extrinsic1.target
 ):
-    """Check that the metric funtional is symmetric."""
+    """Check that the metric functional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(
             adjusted_mutual_info_score(p, t, average_method),

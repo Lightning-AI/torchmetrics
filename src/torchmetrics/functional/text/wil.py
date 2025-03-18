@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Tuple, Union
+from typing import Union
 
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.helper import _edit_distance
 
 
-def _wil_update(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
-) -> Tuple[Tensor, Tensor, Tensor]:
-    """Update the wil score with the current set of references and predictions.
+def _word_info_lost_update(
+    preds: Union[str, list[str]],
+    target: Union[str, list[str]],
+) -> tuple[Tensor, Tensor, Tensor]:
+    """Update the WIL score with the current set of references and predictions.
 
     Args:
         preds: Transcription(s) to score as a string or list of strings
@@ -54,7 +54,7 @@ def _wil_update(
     return errors - total, target_total, preds_total
 
 
-def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> Tensor:
+def _word_info_lost_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> Tensor:
     """Compute the Word Information Lost.
 
     Args:
@@ -69,7 +69,7 @@ def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
     return 1 - ((errors / target_total) * (errors / preds_total))
 
 
-def word_information_lost(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def word_information_lost(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Word Information Lost rate is a metric of the performance of an automatic speech recognition system.
 
     This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
@@ -90,5 +90,5 @@ def word_information_lost(preds: Union[str, List[str]], target: Union[str, List[
         tensor(0.6528)
 
     """
-    errors, target_total, preds_total = _wil_update(preds, target)
-    return _wil_compute(errors, target_total, preds_total)
+    errors, target_total, preds_total = _word_info_lost_update(preds, target)
+    return _word_info_lost_compute(errors, target_total, preds_total)

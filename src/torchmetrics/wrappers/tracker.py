@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -23,6 +24,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.wrappers import ClasswiseWrapper
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricTracker.plot"]
@@ -52,15 +54,14 @@ class MetricTracker(ModuleList):
             better (``True``) or lower is better (``False``).
 
     Example (single metric):
+        >>> from torch import randint
         >>> from torchmetrics.wrappers import MetricTracker
         >>> from torchmetrics.classification import MulticlassAccuracy
-        >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(MulticlassAccuracy(num_classes=10, average='micro'))
         >>> for epoch in range(5):
         ...     tracker.increment()
         ...     for batch_idx in range(5):
-        ...         preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))
-        ...         tracker.update(preds, target)
+        ...         tracker.update(randint(10, (100,)), randint(10, (100,)))
         ...     print(f"current acc={tracker.compute()}")
         current acc=0.1120000034570694
         current acc=0.08799999952316284
@@ -76,50 +77,86 @@ class MetricTracker(ModuleList):
         tensor([0.1120, 0.0880, 0.1260, 0.0800, 0.1020])
 
     Example (multiple metrics using MetricCollection):
+        >>> from torch import randn
         >>> from torchmetrics.wrappers import MetricTracker
         >>> from torchmetrics import MetricCollection
         >>> from torchmetrics.regression import MeanSquaredError, ExplainedVariance
-        >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(MetricCollection([MeanSquaredError(), ExplainedVariance()]), maximize=[False, True])
         >>> for epoch in range(5):
         ...     tracker.increment()
         ...     for batch_idx in range(5):
-        ...         preds, target = torch.randn(100), torch.randn(100)
-        ...         tracker.update(preds, target)
+        ...         tracker.update(randn(100), randn(100))
         ...     print(f"current stats={tracker.compute()}")  # doctest: +NORMALIZE_WHITESPACE
-        current stats={'MeanSquaredError': tensor(1.8218), 'ExplainedVariance': tensor(-0.8969)}
-        current stats={'MeanSquaredError': tensor(2.0268), 'ExplainedVariance': tensor(-1.0206)}
-        current stats={'MeanSquaredError': tensor(1.9491), 'ExplainedVariance': tensor(-0.8298)}
-        current stats={'MeanSquaredError': tensor(1.9800), 'ExplainedVariance': tensor(-0.9199)}
-        current stats={'MeanSquaredError': tensor(2.2481), 'ExplainedVariance': tensor(-1.1622)}
+        current stats={'MeanSquaredError': tensor(2.3292), 'ExplainedVariance': tensor(-0.9516)}
+        current stats={'MeanSquaredError': tensor(2.1370), 'ExplainedVariance': tensor(-1.0775)}
+        current stats={'MeanSquaredError': tensor(2.1695), 'ExplainedVariance': tensor(-0.9945)}
+        current stats={'MeanSquaredError': tensor(2.1072), 'ExplainedVariance': tensor(-1.1878)}
+        current stats={'MeanSquaredError': tensor(2.0562), 'ExplainedVariance': tensor(-1.0754)}
         >>> from pprint import pprint
         >>> best_res, which_epoch = tracker.best_metric(return_step=True)
         >>> pprint(best_res)  # doctest: +ELLIPSIS
-        {'ExplainedVariance': -0.829...,
-         'MeanSquaredError': 1.821...}
+        {'ExplainedVariance': -0.951...,
+         'MeanSquaredError': 2.056...}
         >>> which_epoch
-        {'MeanSquaredError': 0, 'ExplainedVariance': 2}
+        {'MeanSquaredError': 4, 'ExplainedVariance': 0}
         >>> pprint(tracker.compute_all())
-        {'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622]),
-         'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481])}
+        {'ExplainedVariance': tensor([-0.9516, -1.0775, -0.9945, -1.1878, -1.0754]),
+         'MeanSquaredError': tensor([2.3292, 2.1370, 2.1695, 2.1072, 2.0562])}
 
     """
 
-    def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
+    maximize: Union[bool, list[bool]]
+    _base_metric: Union[Metric, MetricCollection]
+
+    def __init__(
+        self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, list[bool]]] = True
+    ) -> None:
         super().__init__()
         if not isinstance(metric, (Metric, MetricCollection)):
             raise TypeError(
-                "Metric arg need to be an instance of a torchmetrics"
-                f" `Metric` or `MetricCollection` but got {metric}"
+                f"Metric arg need to be an instance of a torchmetrics `Metric` or `MetricCollection` but got {metric}"
             )
         self._base_metric = metric
-        if not isinstance(maximize, (bool, list)):
-            raise ValueError("Argument `maximize` should either be a single bool or list of bool")
-        if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
-            raise ValueError("The len of argument `maximize` should match the length of the metric collection")
-        if isinstance(metric, Metric) and not isinstance(maximize, bool):
-            raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
-        self.maximize = maximize
+
+        if maximize is None:
+            if isinstance(metric, Metric):
+                if getattr(metric, "higher_is_better", None) is None:
+                    raise AttributeError(
+                        f"The metric '{metric.__class__.__name__}' does not have a 'higher_is_better' attribute."
+                        " Please provide the `maximize` argument explicitly."
+                    )
+                self.maximize = metric.higher_is_better  # type: ignore[assignment]  # this is false alarm
+            elif isinstance(metric, MetricCollection):
+                self.maximize = []
+                for name, m in metric.items():
+                    if getattr(m, "higher_is_better", None) is None:
+                        raise AttributeError(
+                            f"The metric '{name}' in the MetricCollection does not have a 'higher_is_better' attribute."
+                            " Please provide the `maximize` argument explicitly."
+                        )
+                    if isinstance(m, ClasswiseWrapper) and isinstance(m.metric.num_classes, int):
+                        m_higher_is_better = [m.higher_is_better for _ in range(int(m.metric.num_classes))]
+                    else:
+                        m_higher_is_better = [m.higher_is_better]
+                    self.maximize.extend(m_higher_is_better)  # type: ignore[arg-type]  # this is false alarm
+        else:
+            rank_zero_warn(
+                "The default value for `maximize` will be changed from `True` to `None` in v1.7.0 of TorchMetrics,"
+                "will automatically infer the value based on the `higher_is_better` attribute of the metric"
+                " (if such attribute exists) or raise an error if it does not. If you are explicitly setting the"
+                " `maximize` argument to either `True` or `False` already, you can ignore this warning.",
+                FutureWarning,
+            )
+
+            if not isinstance(maximize, (bool, list)):
+                raise ValueError("Argument `maximize` should either be a single bool or list of bool")
+            if isinstance(maximize, list) and not all(isinstance(m, bool) for m in maximize):
+                raise ValueError("Argument `maximize` is list but not type of bool.")
+            if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
+                raise ValueError("The len of argument `maximize` should match the length of the metric collection")
+            if isinstance(metric, Metric) and not isinstance(maximize, bool):
+                raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
+            self.maximize = maximize
 
         self._increment_called = False
 
@@ -136,23 +173,29 @@ class MetricTracker(ModuleList):
     def forward(self, *args: Any, **kwargs: Any) -> None:
         """Call forward of the current metric being tracked."""
         self._check_for_increment("forward")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         return self[-1](*args, **kwargs)
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update the current metric being tracked."""
         self._check_for_increment("update")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         self[-1].update(*args, **kwargs)
 
     def compute(self) -> Any:
         """Call compute of the current metric being tracked."""
         self._check_for_increment("compute")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         return self[-1].compute()
 
     def compute_all(self) -> Any:
         """Compute the metric value for all tracked metrics.
 
         Return:
-            By default will try stacking the results from all increaments into a single tensor if the tracked base
+            By default will try stacking the results from all increments into a single tensor if the tracked base
             object is a single metric. If a metric collection is provided a dict of stacked tensors will be returned.
             If the stacking process fails a list of the computed results will be returned.
 
@@ -171,16 +214,20 @@ class MetricTracker(ModuleList):
             if isinstance(res[0], list):
                 return torch.stack([torch.stack(r, dim=0) for r in res], 0)
             return torch.stack(res, dim=0)
-        except TypeError:  # fallback solution to just return as it is if we cannot succesfully stack
+        except TypeError:  # fallback solution to just return as it is if we cannot successfully stack
             return res
 
     def reset(self) -> None:
         """Reset the current metric being tracked."""
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         self[-1].reset()
 
     def reset_all(self) -> None:
         """Reset all metrics being tracked."""
         for metric in self:
+            if not isinstance(metric, (Metric, MetricCollection)):
+                raise TypeError(f"Expected all metrics to be Metric or MetricCollection, but got {type(metric)}.")
             metric.reset()
 
     def best_metric(
@@ -188,10 +235,11 @@ class MetricTracker(ModuleList):
     ) -> Union[
         None,
         float,
-        Tuple[float, int],
-        Tuple[None, None],
-        Dict[str, Union[float, None]],
-        Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
+        Tensor,
+        tuple[Union[int, float, Tensor], Union[int, float, Tensor]],
+        tuple[None, None],
+        dict[str, Union[float, None]],
+        tuple[dict[str, Union[float, None]], dict[str, Union[int, None]]],
     ]:
         """Return the highest metric out of all tracked.
 
@@ -211,22 +259,22 @@ class MetricTracker(ModuleList):
               where each is a dict, with keys corresponding to the different values of th collection and the values
               of the first dict being the optimal values and the values of the second dict being the optimal step
 
-            In addtion the value in all cases may be ``None`` if the underlying metric does have a proper defined way
+            In addition the value in all cases may be ``None`` if the underlying metric does have a proper defined way
             of being optimal or in the case where a nested structure of metrics are being tracked.
 
         """
         res = self.compute_all()
         if isinstance(res, list):
             rank_zero_warn(
-                "Encounted nested structure. You are probably using a metric collection inside a metric collection, or"
-                " a metric wrapper inside a metric collection, which is not supported by `.best_metric()` method."
-                "Returning `None` instead. Please consider "
+                "Encountered nested structure. You are probably using a metric collection inside a metric collection,"
+                " or a metric wrapper inside a metric collection, which is not supported by `.best_metric()` method."
+                " Returning `None` instead."
             )
             if return_step:
                 return None, None
             return None
 
-        if isinstance(self._base_metric, Metric):
+        if isinstance(self._base_metric, Metric) and not isinstance(self._base_metric, ClasswiseWrapper):
             fn = torch.max if self.maximize else torch.min
             try:
                 value, idx = fn(res, 0)
@@ -246,7 +294,7 @@ class MetricTracker(ModuleList):
 
         else:  # this is a metric collection
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
-            value, idx = {}, {}
+            value, idx = {}, {}  # type: ignore[assignment]
             for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
@@ -259,14 +307,14 @@ class MetricTracker(ModuleList):
                         "Returning `None` instead.",
                         UserWarning,
                     )
-                    value[k], idx[k] = None, None
+                    value[k], idx[k] = None, None  # type: ignore[assignment]
 
             if return_step:
                 return value, idx
             return value
 
     def _check_for_increment(self, method: str) -> None:
-        """Check that a metric that can be updated/used for computations has been intialized."""
+        """Check that a metric that can be updated/used for computations has been initialized."""
         if not self._increment_called:
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called.")
 

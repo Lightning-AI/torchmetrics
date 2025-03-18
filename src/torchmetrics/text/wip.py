@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -33,7 +34,7 @@ class WordInfoPreserved(Metric):
     computed as:
 
     .. math::
-        wip = \frac{C}{N} + \frac{C}{P}
+        wip = \frac{C}{N} * \frac{C}{P}
 
     where:
 
@@ -62,6 +63,7 @@ class WordInfoPreserved(Metric):
         tensor(0.3472)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -81,7 +83,7 @@ class WordInfoPreserved(Metric):
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
+    def update(self, preds: Union[str, list[str]], target: Union[str, list[str]]) -> None:
         """Update state with predictions and targets."""
         errors, target_total, preds_total = _wip_update(preds, target)
         self.errors += errors

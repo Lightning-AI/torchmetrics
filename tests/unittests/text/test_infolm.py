@@ -15,19 +15,20 @@ from functools import partial
 
 import pytest
 import torch
+
 from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
-
-from unittests.text.helpers import TextTester, skip_on_connection_issues
-from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
+from unittests._helpers import skip_on_connection_issues
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
 # Small bert model with 2 layers, 2 attention heads and hidden dim of 128
 MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
 MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have longer sequences
 
 
-def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
+def _reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
     """Baseline implementation is currently not available.
 
     We, therefore, are enforced to relied on hard-coded results for now. The results below were generated using scripts
@@ -35,10 +36,10 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
     https://github.com/stancld/infolm-docker.
 
     """
-    if model_name != "google/bert_uncased_L-2_H-128_A-2":
+    allowed_model = "google/bert_uncased_L-2_H-128_A-2"
+    if model_name != allowed_model:
         raise ValueError(
-            "`model_name` is expected to be 'google/bert_uncased_L-2_H-128_A-2' as this model was used for the result "
-            "generation."
+            f"`model_name` is expected to be '{allowed_model}' as this model was used for the result generation."
         )
     precomputed_result = {
         "kl_divergence": torch.tensor([-3.2250, -0.1784, -0.1784, -2.2182]),
@@ -49,23 +50,19 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
     }
     # Add results for idf=True -> for functional metrics, we calculate idf only over the batch yet
     if len(preds) == 2:
-        precomputed_result.update(
-            {
-                "alpha_divergence": torch.tensor([-1.2851, -0.1262, -0.1262, -1.3096]),
-                "ab_divergence": torch.tensor([5.9517, 0.5222, 0.5222, 7.0017]),
-                "l1_distance": torch.tensor([0.9679, 0.1877, 0.1877, 0.9561]),
-                "l_infinity_distance": torch.tensor([0.0789, 0.0869, 0.0869, 0.2324]),
-            }
-        )
+        precomputed_result.update({
+            "alpha_divergence": torch.tensor([-1.2851, -0.1262, -0.1262, -1.3096]),
+            "ab_divergence": torch.tensor([5.9517, 0.5222, 0.5222, 7.0017]),
+            "l1_distance": torch.tensor([0.9679, 0.1877, 0.1877, 0.9561]),
+            "l_infinity_distance": torch.tensor([0.0789, 0.0869, 0.0869, 0.2324]),
+        })
     elif len(preds) == 4:
-        precomputed_result.update(
-            {
-                "alpha_divergence": torch.tensor([-1.2893, -0.1262, -0.1262, -1.4035]),
-                "ab_divergence": torch.tensor([5.9565, 0.5222, 0.5222, 7.1950]),
-                "l1_distance": torch.tensor([0.9591, 0.1877, 0.1877, 1.0823]),
-                "l_infinity_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
-            }
-        )
+        precomputed_result.update({
+            "alpha_divergence": torch.tensor([-1.2893, -0.1262, -0.1262, -1.4035]),
+            "ab_divergence": torch.tensor([5.9565, 0.5222, 0.5222, 7.1950]),
+            "l1_distance": torch.tensor([0.9591, 0.1877, 0.1877, 1.0823]),
+            "l_infinity_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
+        })
     else:
         raise ValueError("Invalid batch provided.")
 
@@ -97,7 +94,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
+    [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>=4.4")
 class TestInfoLM(TextTester):
@@ -106,7 +103,7 @@ class TestInfoLM(TextTester):
     # Set atol = 1e-4 as reference results are rounded
     atol = 1e-4
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.timeout(240)  # download may be too slow for default timeout
     @skip_on_connection_issues()
     def test_infolm_class(self, ddp, preds, targets, information_measure, idf, alpha, beta):
@@ -120,7 +117,7 @@ class TestInfoLM(TextTester):
             "max_length": MAX_LENGTH,
         }
         reference_metric = partial(
-            reference_infolm_score,
+            _reference_infolm_score,
             model_name=MODEL_NAME,
             information_measure=information_measure,
             idf=idf,
@@ -150,7 +147,7 @@ class TestInfoLM(TextTester):
             "max_length": MAX_LENGTH,
         }
         reference_metric = partial(
-            reference_infolm_score,
+            _reference_infolm_score,
             model_name=MODEL_NAME,
             information_measure=information_measure,
             idf=idf,
@@ -185,3 +182,18 @@ class TestInfoLM(TextTester):
             metric_functional=infolm,
             metric_args=metric_args,
         )
+
+    @skip_on_connection_issues()
+    def test_infolm_higher_is_better_property(self, preds, targets, information_measure, idf, alpha, beta):
+        """Test the `higher_is_better` property of the metric."""
+        metric_args = {
+            "model_name_or_path": MODEL_NAME,
+            "information_measure": information_measure,
+            "idf": idf,
+            "alpha": alpha,
+            "beta": beta,
+            "max_length": MAX_LENGTH,
+        }
+
+        metric = InfoLM(**metric_args)
+        assert metric.higher_is_better == metric._information_measure_higher_is_better[information_measure]

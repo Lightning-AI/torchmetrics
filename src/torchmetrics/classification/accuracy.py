@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -40,16 +41,17 @@ class BinaryAccuracy(BinaryStatScores):
 
         - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating
           point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-          per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+          per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
         - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-        - ``ba`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, metric returns a scalar value.
+        - ``acc`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, metric returns a scalar value.
           If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar
           value per sample.
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -92,6 +94,7 @@ class BinaryAccuracy(BinaryStatScores):
         tensor([0.3333, 0.1667])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -176,8 +179,11 @@ class MulticlassAccuracy(MulticlassStatScores):
               - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
               - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -240,6 +246,7 @@ class MulticlassAccuracy(MulticlassStatScores):
                 [0.0000, 0.3333, 0.5000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -250,7 +257,9 @@ class MulticlassAccuracy(MulticlassStatScores):
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
-        return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+        return _accuracy_reduce(
+            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, top_k=self.top_k
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -307,7 +316,7 @@ class MultilabelAccuracy(MultilabelStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
-      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -325,8 +334,11 @@ class MultilabelAccuracy(MultilabelStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -389,6 +401,7 @@ class MultilabelAccuracy(MultilabelStatScores):
                 [0.0000, 0.0000, 0.5000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -455,7 +468,7 @@ class Accuracy(_ClassificationTaskWrapper):
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryAccuracy`, :class:`~torchmetrics.classification.MulticlassAccuracy` and
     :class:`~torchmetrics.classification.MultilabelAccuracy` for the specific details of each argument influence and
     examples.
@@ -477,7 +490,7 @@ class Accuracy(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["Accuracy"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
@@ -492,9 +505,11 @@ class Accuracy(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
 
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
 
         if task == ClassificationTask.BINARY:
             return BinaryAccuracy(threshold, **kwargs)

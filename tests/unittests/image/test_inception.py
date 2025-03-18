@@ -18,13 +18,15 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
+
 from torchmetrics.image.inception import InceptionScore
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from unittests._helpers import seed_all
 
-torch.manual_seed(42)
+seed_all(42)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
@@ -39,12 +41,12 @@ def test_no_train():
     model = MyModel()
     model.train()
     assert model.training
-    assert (
-        not model.metric.inception.training
-    ), "InceptionScore metric was changed to training mode which should not happen"
+    assert not model.metric.inception.training, (
+        "InceptionScore metric was changed to training mode which should not happen"
+    )
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_is_pickle():
     """Assert that we can initialize the metric and pickle it."""
     metric = InceptionScore()
@@ -79,7 +81,7 @@ def test_is_raises_errors_and_warnings():
         InceptionScore(feature=[1, 2])
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_is_update_compute():
     """Test that inception score works as expected."""
     metric = InceptionScore()
@@ -105,7 +107,7 @@ class _ImgDataset(Dataset):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("compute_on_cpu", [True, False])
 def test_compare_is(tmpdir, compute_on_cpu):
     """Check that the hole pipeline give the same result as torch-fidelity."""

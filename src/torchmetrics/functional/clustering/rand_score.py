@@ -15,8 +15,8 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.clustering.utils import (
-    calcualte_pair_cluster_confusion_matrix,
     calculate_contingency_matrix,
+    calculate_pair_cluster_confusion_matrix,
     check_cluster_labels,
 )
 
@@ -46,7 +46,7 @@ def _rand_score_compute(contingency: Tensor) -> Tensor:
         rand_score: rand score
 
     """
-    pair_matrix = calcualte_pair_cluster_confusion_matrix(contingency=contingency)
+    pair_matrix = calculate_pair_cluster_confusion_matrix(contingency=contingency)
 
     numerator = pair_matrix.diagonal().sum()
     denominator = pair_matrix.sum()

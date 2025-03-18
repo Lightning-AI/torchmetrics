@@ -18,11 +18,15 @@ import numpy as np
 import pytest
 import torch
 from scipy.linalg import sqrtm
+
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance, NoTrainInceptionV3
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from unittests import _reference_cachier
+from unittests._helpers import seed_all
 
 
-def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
+@_reference_cachier
+def _reference_mifid(preds, target, cosine_distance_eps: float = 0.1):
     """Reference implementation.
 
     Implementation taken from:
@@ -95,8 +99,7 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
     return fid_private / (distance_private_thresholded + 1e-15)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
@@ -114,7 +117,6 @@ def test_no_train():
     assert not model.metric.inception.training, "MiFID metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
 def test_mifid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     if _TORCH_FIDELITY_AVAILABLE:
@@ -138,13 +140,13 @@ def test_mifid_raises_errors_and_warnings():
         _ = MemorizationInformedFrechetInceptionDistance(cosine_distance_eps=1.1)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
     """If real and fake are update on the same data the fid score should be 0."""
     metric = MemorizationInformedFrechetInceptionDistance(feature=feature)
 
+    seed_all(42)
     for _ in range(2):
         img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
         metric.update(img, real=True)
@@ -157,8 +159,7 @@ def test_fid_same_input(feature):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
 def test_compare_mifid(equal_size):
     """Check that our implementation of MIFID is correct by comparing it to the original implementation."""
@@ -167,7 +168,7 @@ def test_compare_mifid(equal_size):
     n, m = 100, 100 if equal_size else 90
 
     # Generate some synthetic data
-    torch.manual_seed(42)
+    seed_all(42)
     img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8)
     img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8)
 
@@ -178,13 +179,12 @@ def test_compare_mifid(equal_size):
     for i in range(m // batch_size):
         metric.update(img2[batch_size * i : batch_size * (i + 1)].cuda(), real=False)
 
-    compare_val = _compare_mifid(img1, img2)
+    compare_val = _reference_mifid(img1, img2)
     tm_res = metric.compute()
 
     assert torch.allclose(tm_res.cpu(), torch.tensor(compare_val, dtype=tm_res.dtype), atol=1e-3)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
 @pytest.mark.parametrize("normalize", [True, False])
 def test_normalize_arg(normalize):
     """Test that normalize argument works as expected."""

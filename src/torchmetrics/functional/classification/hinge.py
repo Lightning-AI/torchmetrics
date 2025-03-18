@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor, tensor
@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
@@ -51,7 +52,7 @@ def _binary_hinge_loss_update(
     preds: Tensor,
     target: Tensor,
     squared: bool,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     target = target.bool()
     margin = torch.zeros_like(preds)
     margin[target] = preds[target]
@@ -152,10 +153,8 @@ def _multiclass_hinge_loss_update(
     target: Tensor,
     squared: bool,
     multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
-) -> Tuple[Tensor, Tensor]:
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.softmax(1)
-
+) -> tuple[Tensor, Tensor]:
+    preds = normalize_logits_if_needed(preds, "softmax")
     target = to_onehot(target, max(2, preds.shape[1])).bool()
     if multiclass_mode == "crammer-singer":
         margin = preds[target]
@@ -209,7 +208,7 @@ def multiclass_hinge_loss(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         squared:
             If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss.
         multiclass_mode:

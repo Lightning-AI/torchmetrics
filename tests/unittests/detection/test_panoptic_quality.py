@@ -11,48 +11,43 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 import pytest
 import torch
+
 from torchmetrics.detection.panoptic_qualities import PanopticQuality
 from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
-
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_INPUTS_0 = Input(
+_INPUTS_0 = _Input(
     # Shape of input tensors is (num_batches, batch_size, height, width, 2).
-    preds=torch.tensor(
-        [
-            [[6, 0], [0, 0], [6, 0], [6, 0], [0, 1]],
-            [[0, 0], [0, 0], [6, 0], [0, 1], [0, 1]],
-            [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
-            [[0, 0], [7, 0], [6, 0], [1, 0], [1, 0]],
-            [[0, 0], [7, 0], [7, 0], [7, 0], [7, 0]],
-        ]
-    )
+    preds=torch.tensor([
+        [[6, 0], [0, 0], [6, 0], [6, 0], [0, 1]],
+        [[0, 0], [0, 0], [6, 0], [0, 1], [0, 1]],
+        [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
+        [[0, 0], [7, 0], [6, 0], [1, 0], [1, 0]],
+        [[0, 0], [7, 0], [7, 0], [7, 0], [7, 0]],
+    ])
     .reshape((1, 1, 5, 5, 2))
     .repeat(2, 1, 1, 1, 1),
-    target=torch.tensor(
-        [
-            [[6, 0], [6, 0], [6, 0], [6, 0], [0, 0]],
-            [[0, 1], [0, 1], [6, 0], [0, 0], [0, 0]],
-            [[0, 1], [0, 1], [6, 0], [1, 0], [1, 0]],
-            [[0, 1], [7, 0], [7, 0], [1, 0], [1, 0]],
-            [[0, 1], [7, 0], [7, 0], [7, 0], [7, 0]],
-        ]
-    )
+    target=torch.tensor([
+        [[6, 0], [6, 0], [6, 0], [6, 0], [0, 0]],
+        [[0, 1], [0, 1], [6, 0], [0, 0], [0, 0]],
+        [[0, 1], [0, 1], [6, 0], [1, 0], [1, 0]],
+        [[0, 1], [7, 0], [7, 0], [1, 0], [1, 0]],
+        [[0, 1], [7, 0], [7, 0], [7, 0], [7, 0]],
+    ])
     .reshape((1, 1, 5, 5, 2))
     .repeat(2, 1, 1, 1, 1),
 )
-_INPUTS_1 = Input(
+_INPUTS_1 = _Input(
     # Shape of input tensors is (num_batches, batch_size, num_points, 2).
     preds=torch.tensor(
         [[10, 0], [10, 123], [0, 1], [10, 0], [1, 2]],
@@ -65,39 +60,66 @@ _INPUTS_1 = Input(
     .reshape((1, 1, 5, 2))
     .repeat(2, 1, 1, 1),
 )
+
 _ARGS_0 = {"things": {0, 1}, "stuffs": {6, 7}}
 _ARGS_1 = {"things": {2}, "stuffs": {3}, "allow_unknown_preds_category": True}
 _ARGS_2 = {"things": {0, 1}, "stuffs": {10, 11}}
 
-# TODO: Improve _compare_fn by calling https://github.com/cocodataset/panopticapi/blob/master/panopticapi/evaluation.py
+
+def _get_class_order_test_input_args(class_type, class1, class2, class3) -> (np.ndarray, dict):
+    a = [class1, 0]
+    b = [class2, 0]
+    c = [class3, 0]
+    _input = _Input(
+        # Shape of input tensors is (num_batches, batch_size, num_points, 2).
+        preds=torch.tensor([a, a, b, b, b, c]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
+        target=torch.tensor([a, a, b, b, c, c]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
+    )
+    _args = {"things": [], "stuffs": [], "return_per_class": True}
+    _args[class_type] = [class1, class2, class3]
+    return _input, _args
+
+
+# TODO: Improve _reference_fn by calling https://github.com/cocodataset/panopticapi/blob/master/panopticapi/evaluation.py
 # directly and compare at runtime on multiple examples.
 
 
-def _compare_fn_0_0(preds, target) -> np.ndarray:
+def _reference_fn_0_0(preds, target) -> np.ndarray:
     """Baseline result for the _INPUTS_0, _ARGS_0 combination."""
     return np.array([0.7753])
 
 
-def _compare_fn_0_1(preds, target) -> np.ndarray:
+def _reference_fn_0_1(preds, target) -> np.ndarray:
     """Baseline result for the _INPUTS_0, _ARGS_1 combination."""
     return np.array([np.nan])
 
 
-def _compare_fn_1_2(preds, target) -> np.ndarray:
+def _reference_fn_1_2(preds, target) -> np.ndarray:
     """Baseline result for the _INPUTS_1, _ARGS_2 combination."""
     return np.array([(2 / 3 + 1 + 2 / 3) / 3])
+
+
+def _reference_fn_class_order(preds, target) -> np.ndarray:
+    """Baseline result for the result of _get_class_order_test_input_args."""
+    return np.array([1, 0, 2 / 3])
 
 
 class TestPanopticQuality(MetricTester):
     """Test class for `PanopticQuality` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize(
         ("inputs", "args", "reference_metric"),
         [
-            (_INPUTS_0, _ARGS_0, _compare_fn_0_0),
-            (_INPUTS_0, _ARGS_1, _compare_fn_0_1),
-            (_INPUTS_1, _ARGS_2, _compare_fn_1_2),
+            (_INPUTS_0, _ARGS_0, _reference_fn_0_0),
+            (_INPUTS_0, _ARGS_1, _reference_fn_0_1),
+            (_INPUTS_1, _ARGS_2, _reference_fn_1_2),
+            (*_get_class_order_test_input_args("stuffs", 0, 2, 1), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("stuffs", 0, 3, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("stuffs", 0, 10, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 2, 1), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 3, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 10, 2), _reference_fn_class_order),
         ],
     )
     def test_panoptic_quality_class(self, ddp, inputs, args, reference_metric):
@@ -118,7 +140,7 @@ class TestPanopticQuality(MetricTester):
             _INPUTS_0.preds,
             _INPUTS_0.target,
             metric_functional=panoptic_quality,
-            reference_metric=_compare_fn_0_0,
+            reference_metric=_reference_fn_0_0,
             metric_args=_ARGS_0,
         )
 
@@ -192,7 +214,7 @@ def test_extreme_values():
         (_INPUTS_1, _ARGS_2, 1),
     ],
 )
-def test_ignore_mask(inputs: Input, args: Dict[str, Any], cat_dim: int):
+def test_ignore_mask(inputs: _Input, args: dict[str, Any], cat_dim: int):
     """Test that the metric correctly ignores regions of the inputs that do not map to a know category ID."""
     preds = inputs.preds[0]
     target = inputs.target[0]

@@ -19,22 +19,25 @@ from torch import tensor
 from torch.nn import Linear
 
 if module_available("lightning"):
-    from lightning.pytorch import LightningModule, Trainer
+    from lightning.pytorch import LightningModule, Trainer, seed_everything
     from lightning.pytorch.loggers import CSVLogger
 else:
-    from pytorch_lightning import LightningModule, Trainer
+    from pytorch_lightning import LightningModule, Trainer, seed_everything
     from pytorch_lightning.loggers import CSVLogger
 
+from integrations.lightning.boring_model import BoringModel
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
-from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
+from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision, MulticlassAccuracy
+from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
+from torchmetrics.utilities.prints import rank_zero_only
+from torchmetrics.wrappers import ClasswiseWrapper, MinMaxMetric, MultitaskWrapper
 
-from integrations.helpers import no_warning_call
-from integrations.lightning.boring_model import BoringModel
+seed_everything(42)
 
 
 class DiffMetric(SumMetric):
-    """DiffMetric inheritted from `SumMetric` by overidding its `update` method."""
+    """DiffMetric inherited from `SumMetric` by overriding its `update` method."""
 
     def update(self, value):
         """Update state."""
@@ -184,7 +187,7 @@ def test_metric_lightning_log(tmpdir):
         def __init__(self) -> None:
             super().__init__()
 
-            # initiliaze one metric for every combination of `on_step` and `on_epoch` and `forward` and `update`
+            # initialize one metric for every combination of `on_step` and `on_epoch` and `forward` and `update`
             self.metric_update = SumMetric()
             self.metric_update_step = SumMetric()
             self.metric_update_epoch = SumMetric()
@@ -238,7 +241,16 @@ def test_metric_lightning_log(tmpdir):
 
     model = TestModel()
 
-    logger = CSVLogger("tmpdir/logs")
+    class CustomCSVLogger(CSVLogger):
+        """Custom CSVLogger that does not call `experiment.save()` to prevent state being reset."""
+
+        @rank_zero_only
+        def save(self) -> None:
+            pass
+
+    logger = CustomCSVLogger("tmpdir/logs")
+    # is_cuda = torch.cuda.is_available()
+    # cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
     trainer = Trainer(
         default_root_dir=tmpdir,
         limit_train_batches=2,
@@ -246,14 +258,11 @@ def test_metric_lightning_log(tmpdir):
         max_epochs=2,
         log_every_n_steps=1,
         logger=logger,
+        # **cuda_extra,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
-    logged_metrics = logger._experiment.metrics
+    logged_metrics = logger.experiment.metrics
 
     epoch_0_step_0 = logged_metrics[0]
     assert "metric_forward" in epoch_0_step_0
@@ -339,6 +348,59 @@ def test_metric_collection_lightning_log(tmpdir):
             self.log_dict({f"{k}_epoch": v for k, v in metric_vals.items()})
 
     model = TestModel()
+    # is_cuda = torch.cuda.is_available()
+    # cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
+
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=2,
+        limit_val_batches=0,
+        max_epochs=1,
+        log_every_n_steps=1,
+        # **cuda_extra,
+    )
+    trainer.fit(model)
+
+    logged = trainer.logged_metrics
+    assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum, atol=2e-4)
+    assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff, atol=2e-4)
+
+
+def test_task_wrapper_lightning_logging(tmpdir):
+    """Test that MultiTaskWrapper works with Lightning modules."""
+
+    class TestModel(BoringModel):
+        def __init__(self) -> None:
+            super().__init__()
+            self.multitask = MultitaskWrapper({"classification": BinaryAccuracy(), "regression": MeanSquaredError()})
+            self.multitask_collection = MultitaskWrapper({
+                "classification": MetricCollection([BinaryAccuracy(), BinaryAveragePrecision()]),
+                "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+            })
+
+            self.accuracy = BinaryAccuracy()
+            self.mse = MeanSquaredError()
+
+        def training_step(self, batch, batch_idx):
+            preds = torch.rand(10)
+            target = torch.rand(10)
+            self.multitask(
+                {"classification": preds, "regression": preds},
+                {"classification": target.round().int(), "regression": target},
+            )
+            self.multitask_collection(
+                {"classification": preds, "regression": preds},
+                {"classification": target.round().int(), "regression": target},
+            )
+            self.accuracy(preds.round(), target.round())
+            self.mse(preds, target)
+            self.log("accuracy", self.accuracy, on_epoch=True)
+            self.log("mse", self.mse, on_epoch=True)
+            self.log_dict(self.multitask, on_epoch=True)
+            self.log_dict(self.multitask_collection, on_epoch=True)
+            return self.step(batch)
+
+    model = TestModel()
 
     trainer = Trainer(
         default_root_dir=tmpdir,
@@ -347,15 +409,17 @@ def test_metric_collection_lightning_log(tmpdir):
         max_epochs=1,
         log_every_n_steps=1,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged = trainer.logged_metrics
-    assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum, atol=2e-4)
-    assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff, atol=2e-4)
+    assert torch.allclose(logged["accuracy_step"], logged["classification_step"])
+    assert torch.allclose(logged["accuracy_epoch"], logged["classification_epoch"])
+    assert torch.allclose(logged["mse_step"], logged["regression_step"])
+    assert torch.allclose(logged["mse_epoch"], logged["regression_epoch"])
+    assert "regression_MeanAbsoluteError_epoch" in logged
+    assert "regression_MeanSquaredError_epoch" in logged
+    assert "classification_BinaryAccuracy_epoch" in logged
+    assert "classification_BinaryAveragePrecision_epoch" in logged
 
 
 def test_scriptable(tmpdir):
@@ -439,3 +503,118 @@ def test_dtype_in_pl_module_transfer(tmpdir):
 
     model = model.type(torch.half)
     assert model.metric.sum_value.dtype == torch.float32
+
+
+def test_collection_classwise_lightning_integration(tmpdir):
+    """Check the integration of ClasswiseWrapper, MetricCollection and LightningModule.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2683
+
+    """
+
+    class TestModel(BoringModel):
+        def __init__(self) -> None:
+            super().__init__()
+            self.train_metrics = MetricCollection(
+                {
+                    "macro_accuracy": MulticlassAccuracy(num_classes=5, average="macro"),
+                    "classwise_accuracy": ClasswiseWrapper(MulticlassAccuracy(num_classes=5, average=None)),
+                },
+                prefix="train_",
+            )
+            self.val_metrics = self.train_metrics.clone(prefix="val_")
+
+        def training_step(self, batch, batch_idx):
+            loss = self(batch).sum()
+            preds = torch.randint(0, 5, (100,), device=batch.device)
+            target = torch.randint(0, 5, (100,), device=batch.device)
+
+            batch_values = self.train_metrics(preds, target)
+            self.log_dict(batch_values, on_step=True, on_epoch=False)
+            return {"loss": loss}
+
+        def validation_step(self, batch, batch_idx):
+            preds = torch.randint(0, 5, (100,), device=batch.device)
+            target = torch.randint(0, 5, (100,), device=batch.device)
+            self.val_metrics.update(preds, target)
+
+        def on_validation_epoch_end(self):
+            self.log_dict(self.val_metrics.compute(), on_step=False, on_epoch=True)
+            self.val_metrics.reset()
+
+    model = TestModel()
+
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=2,
+        limit_val_batches=2,
+        max_epochs=2,
+        log_every_n_steps=1,
+    )
+    trainer.fit(model)
+
+    logged = trainer.logged_metrics
+
+    # check that all metrics are logged
+    assert "train_macro_accuracy" in logged
+    assert "val_macro_accuracy" in logged
+    for i in range(5):
+        assert f"train_multiclassaccuracy_{i}" in logged
+        assert f"val_multiclassaccuracy_{i}" in logged
+
+
+def test_collection_minmax_lightning_integration(tmpdir):
+    """Check the integration of MinMaxWrapper, MetricCollection and LightningModule.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2763
+
+    """
+
+    class TestModel(BoringModel):
+        def __init__(self) -> None:
+            super().__init__()
+            self.train_metrics = MetricCollection(
+                {
+                    "macro_accuracy": MinMaxMetric(MulticlassAccuracy(num_classes=5, average="macro")),
+                    "weighted_accuracy": MinMaxMetric(MulticlassAccuracy(num_classes=5, average="weighted")),
+                },
+                prefix="train_",
+            )
+            self.val_metrics = self.train_metrics.clone(prefix="val_")
+
+        def training_step(self, batch, batch_idx):
+            loss = self(batch).sum()
+            preds = torch.randint(0, 5, (100,), device=batch.device)
+            target = torch.randint(0, 5, (100,), device=batch.device)
+
+            batch_values = self.train_metrics(preds, target)
+            self.log_dict(batch_values, on_step=True, on_epoch=False)
+            return {"loss": loss}
+
+        def validation_step(self, batch, batch_idx):
+            preds = torch.randint(0, 5, (100,), device=batch.device)
+            target = torch.randint(0, 5, (100,), device=batch.device)
+            self.val_metrics.update(preds, target)
+
+        def on_validation_epoch_end(self):
+            self.log_dict(self.val_metrics.compute(), on_step=False, on_epoch=True)
+            self.val_metrics.reset()
+
+    model = TestModel()
+
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=2,
+        limit_val_batches=2,
+        max_epochs=2,
+        log_every_n_steps=1,
+    )
+    trainer.fit(model)
+
+    logged = trainer.logged_metrics
+
+    # check that all metrics are logged
+    for prefix in ["train_", "val_"]:
+        for metric in ["macro_accuracy", "weighted_accuracy"]:
+            for key in ["max", "min", "raw"]:
+                assert f"{prefix}{metric}_{key}" in logged

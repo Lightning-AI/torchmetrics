@@ -11,17 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Collection, Dict, Iterator, List, Optional, Set, Tuple, cast
+from collections.abc import Collection, Iterator
+from typing import Optional, cast
 
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
 
-_Color = Tuple[int, int]  # A (category_id, instance_id) tuple that uniquely identifies a panoptic segment.
+_Color = tuple[int, int]  # A (category_id, instance_id) tuple that uniquely identifies a panoptic segment.
 
 
-def _nested_tuple(nested_list: List) -> Tuple:
+def _nested_tuple(nested_list: list) -> tuple:
     """Construct a nested tuple from a nested list.
 
     Args:
@@ -34,7 +35,7 @@ def _nested_tuple(nested_list: List) -> Tuple:
     return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
 
 
-def _to_tuple(t: Tensor) -> Tuple:
+def _to_tuple(t: Tensor) -> tuple:
     """Convert a tensor into a nested tuple.
 
     Args:
@@ -47,7 +48,7 @@ def _to_tuple(t: Tensor) -> Tuple:
     return _nested_tuple(t.tolist())
 
 
-def _get_color_areas(inputs: Tensor) -> Dict[Tuple, Tensor]:
+def _get_color_areas(inputs: Tensor) -> dict[tuple, Tensor]:
     """Measure the size of each instance.
 
     Args:
@@ -62,7 +63,7 @@ def _get_color_areas(inputs: Tensor) -> Dict[Tuple, Tensor]:
     return dict(zip(_to_tuple(unique_keys), unique_keys_area))
 
 
-def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> Tuple[Set[int], Set[int]]:
+def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> tuple[set[int], set[int]]:
     """Parse and validate metrics arguments for `things` and `stuff`.
 
     Args:
@@ -111,8 +112,7 @@ def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
         )
     if preds.dim() < 3:
         raise ValueError(
-            "Expected argument `preds` to have at least one spatial dimension (B, *spatial_dims, 2), "
-            f"got {preds.shape}"
+            f"Expected argument `preds` to have at least one spatial dimension (B, *spatial_dims, 2), got {preds.shape}"
         )
     if preds.shape[-1] != 2:
         raise ValueError(
@@ -121,7 +121,7 @@ def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
         )
 
 
-def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
+def _get_void_color(things: set[int], stuffs: set[int]) -> tuple[int, int]:
     """Get an unused color ID.
 
     Args:
@@ -136,7 +136,7 @@ def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
     return unused_category_id, 0
 
 
-def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dict[int, int]:
+def _get_category_id_to_continuous_id(things: set[int], stuffs: set[int]) -> dict[int, int]:
     """Convert original IDs to continuous IDs.
 
     Args:
@@ -148,16 +148,16 @@ def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dic
 
     """
     # things metrics are stored with a continuous id in [0, len(things)[,
-    thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
+    thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(sorted(things))}
     # stuff metrics are stored with a continuous id in [len(things), len(things) + len(stuffs)[
-    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuffs)}
+    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(sorted(stuffs))}
     cat_id_to_continuous_id = {}
     cat_id_to_continuous_id.update(thing_id_to_continuous_id)
     cat_id_to_continuous_id.update(stuff_id_to_continuous_id)
     return cat_id_to_continuous_id
 
 
-def _isin(arr: Tensor, values: List) -> Tensor:
+def _isin(arr: Tensor, values: list) -> Tensor:
     """Check if all values of an arr are in another array. Implementation of torch.isin to support pre 0.10 version.
 
     Args:
@@ -173,10 +173,10 @@ def _isin(arr: Tensor, values: List) -> Tensor:
 
 
 def _prepocess_inputs(
-    things: Set[int],
-    stuffs: Set[int],
+    things: set[int],
+    stuffs: set[int],
     inputs: Tensor,
-    void_color: Tuple[int, int],
+    void_color: tuple[int, int],
     allow_unknown_category: bool,
 ) -> Tensor:
     """Preprocesses an input tensor for metric calculation.
@@ -205,7 +205,7 @@ def _prepocess_inputs(
     mask_stuffs_instance = torch.stack([torch.zeros_like(mask_stuffs), mask_stuffs], dim=-1)
     out[mask_stuffs_instance] = 0
     if not allow_unknown_category and not torch.all(mask_things | mask_stuffs):
-        raise ValueError(f"Unknown categories found: {out[~(mask_things|mask_stuffs)]}")
+        raise ValueError(f"Unknown categories found: {out[~(mask_things | mask_stuffs)]}")
     # set unknown categories to void color
     out[~(mask_things | mask_stuffs)] = out.new(void_color)
     return out
@@ -214,9 +214,9 @@ def _prepocess_inputs(
 def _calculate_iou(
     pred_color: _Color,
     target_color: _Color,
-    pred_areas: Dict[_Color, Tensor],
-    target_areas: Dict[_Color, Tensor],
-    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
+    pred_areas: dict[_Color, Tensor],
+    target_areas: dict[_Color, Tensor],
+    intersection_areas: dict[tuple[_Color, _Color], Tensor],
     void_color: _Color,
 ) -> Tensor:
     """Helper function that calculates the IoU from precomputed areas of segments and their intersections.
@@ -252,10 +252,10 @@ def _calculate_iou(
 
 
 def _filter_false_negatives(
-    target_areas: Dict[_Color, Tensor],
-    target_segment_matched: Set[_Color],
-    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
-    void_color: Tuple[int, int],
+    target_areas: dict[_Color, Tensor],
+    target_segment_matched: set[_Color],
+    intersection_areas: dict[tuple[_Color, _Color], Tensor],
+    void_color: tuple[int, int],
 ) -> Iterator[int]:
     """Filter false negative segments and yield their category IDs.
 
@@ -281,10 +281,10 @@ def _filter_false_negatives(
 
 
 def _filter_false_positives(
-    pred_areas: Dict[_Color, Tensor],
-    pred_segment_matched: Set[_Color],
-    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
-    void_color: Tuple[int, int],
+    pred_areas: dict[_Color, Tensor],
+    pred_segment_matched: set[_Color],
+    intersection_areas: dict[tuple[_Color, _Color], Tensor],
+    void_color: tuple[int, int],
 ) -> Iterator[int]:
     """Filter false positive segments and yield their category IDs.
 
@@ -312,10 +312,10 @@ def _filter_false_positives(
 def _panoptic_quality_update_sample(
     flatten_preds: Tensor,
     flatten_target: Tensor,
-    cat_id_to_continuous_id: Dict[int, int],
-    void_color: Tuple[int, int],
-    stuffs_modified_metric: Optional[Set[int]] = None,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    cat_id_to_continuous_id: dict[int, int],
+    void_color: tuple[int, int],
+    stuffs_modified_metric: Optional[set[int]] = None,
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate stat scores required to compute the metric **for a single sample**.
 
     Computed scores: iou sum, true positives, false positives, false negatives.
@@ -343,19 +343,19 @@ def _panoptic_quality_update_sample(
     """
     stuffs_modified_metric = stuffs_modified_metric or set()
     device = flatten_preds.device
-    n_categories = len(cat_id_to_continuous_id)
-    iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
-    true_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
-    false_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
-    false_negatives = torch.zeros(n_categories, dtype=torch.int, device=device)
+    num_categories = len(cat_id_to_continuous_id)
+    iou_sum = torch.zeros(num_categories, dtype=torch.double, device=device)
+    true_positives = torch.zeros(num_categories, dtype=torch.int, device=device)
+    false_positives = torch.zeros(num_categories, dtype=torch.int, device=device)
+    false_negatives = torch.zeros(num_categories, dtype=torch.int, device=device)
 
     # calculate the area of each prediction, ground truth and pairwise intersection.
     # NOTE: mypy needs `cast()` because the annotation for `_get_color_areas` is too generic.
-    pred_areas = cast(Dict[_Color, Tensor], _get_color_areas(flatten_preds))
-    target_areas = cast(Dict[_Color, Tensor], _get_color_areas(flatten_target))
+    pred_areas = cast(dict[_Color, Tensor], _get_color_areas(flatten_preds))
+    target_areas = cast(dict[_Color, Tensor], _get_color_areas(flatten_target))
     # intersection matrix of shape [num_pixels, 2, 2]
     intersection_matrix = torch.transpose(torch.stack((flatten_preds, flatten_target), -1), -1, -2)
-    intersection_areas = cast(Dict[Tuple[_Color, _Color], Tensor], _get_color_areas(intersection_matrix))
+    intersection_areas = cast(dict[tuple[_Color, _Color], Tensor], _get_color_areas(intersection_matrix))
 
     # select intersection of things of same category with iou > 0.5
     pred_segment_matched = set()
@@ -397,10 +397,10 @@ def _panoptic_quality_update_sample(
 def _panoptic_quality_update(
     flatten_preds: Tensor,
     flatten_target: Tensor,
-    cat_id_to_continuous_id: Dict[int, int],
-    void_color: Tuple[int, int],
-    modified_metric_stuffs: Optional[Set[int]] = None,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    cat_id_to_continuous_id: dict[int, int],
+    void_color: tuple[int, int],
+    modified_metric_stuffs: Optional[set[int]] = None,
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate stat scores required to compute the metric for a full batch.
 
     Computed scores: iou sum, true positives, false positives, false negatives.
@@ -421,11 +421,11 @@ def _panoptic_quality_update(
 
     """
     device = flatten_preds.device
-    n_categories = len(cat_id_to_continuous_id)
-    iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
-    true_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
-    false_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
-    false_negatives = torch.zeros(n_categories, dtype=torch.int, device=device)
+    num_categories = len(cat_id_to_continuous_id)
+    iou_sum = torch.zeros(num_categories, dtype=torch.double, device=device)
+    true_positives = torch.zeros(num_categories, dtype=torch.int, device=device)
+    false_positives = torch.zeros(num_categories, dtype=torch.int, device=device)
+    false_negatives = torch.zeros(num_categories, dtype=torch.int, device=device)
 
     # Loop over each sample independently: segments must not be matched across frames.
     for flatten_preds_single, flatten_target_single in zip(flatten_preds, flatten_target):
@@ -449,7 +449,7 @@ def _panoptic_quality_compute(
     true_positives: Tensor,
     false_positives: Tensor,
     false_negatives: Tensor,
-) -> Tensor:
+) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Compute the final panoptic quality from interim values.
 
     Args:
@@ -459,11 +459,17 @@ def _panoptic_quality_compute(
         false_negatives: the FN value from the update step
 
     Returns:
-        Panoptic quality as a tensor containing a single scalar.
+        A tuple containing the per-class panoptic, segmentation and recognition quality followed by the averages
 
     """
-    # per category calculation
-    denominator = (true_positives + 0.5 * false_positives + 0.5 * false_negatives).double()
-    panoptic_quality = torch.where(denominator > 0.0, iou_sum / denominator, 0.0)
-    # Reduce across categories. TODO: is it useful to have the option of returning per class metrics?
-    return torch.mean(panoptic_quality[denominator > 0])
+    # compute segmentation and recognition quality (per-class)
+    sq: Tensor = torch.where(true_positives > 0.0, iou_sum / true_positives, 0.0)
+    denominator: Tensor = true_positives + 0.5 * false_positives + 0.5 * false_negatives
+    rq: Tensor = torch.where(denominator > 0.0, true_positives / denominator, 0.0)
+    # compute per-class panoptic quality
+    pq: Tensor = sq * rq
+    # compute averages
+    pq_avg: Tensor = torch.mean(pq[denominator > 0])
+    sq_avg: Tensor = torch.mean(sq[denominator > 0])
+    rq_avg: Tensor = torch.mean(rq[denominator > 0])
+    return pq, sq, rq, pq_avg, sq_avg, rq_avg

@@ -43,18 +43,20 @@ def _precision_recall_reduce(
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
     multilabel: bool = False,
+    top_k: int = 1,
+    zero_division: float = 0,
 ) -> Tensor:
     different_stat = fp if stat == "precision" else fn  # this is what differs between the two scores
     if average == "binary":
-        return _safe_divide(tp, tp + different_stat)
+        return _safe_divide(tp, tp + different_stat, zero_division)
     if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
         different_stat = different_stat.sum(dim=0 if multidim_average == "global" else 1)
-        return _safe_divide(tp, tp + different_stat)
+        return _safe_divide(tp, tp + different_stat, zero_division)
 
-    score = _safe_divide(tp, tp + different_stat)
-    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn)
+    score = _safe_divide(tp, tp + different_stat, zero_division)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn, top_k=top_k)
 
 
 def binary_precision(
@@ -64,6 +66,7 @@ def binary_precision(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `Precision`_ for binary tasks.
 
@@ -75,7 +78,7 @@ def binary_precision(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
@@ -94,6 +97,7 @@ def binary_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -128,7 +132,9 @@ def binary_precision(
         _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
-    return _precision_recall_reduce("precision", tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
+    return _precision_recall_reduce(
+        "precision", tp, fp, tn, fn, average="binary", multidim_average=multidim_average, zero_division=zero_division
+    )
 
 
 def multiclass_precision(
@@ -140,6 +146,7 @@ def multiclass_precision(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `Precision`_ for multiclass tasks.
 
@@ -158,7 +165,7 @@ def multiclass_precision(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -181,6 +188,7 @@ def multiclass_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -235,7 +243,17 @@ def multiclass_precision(
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
     )
-    return _precision_recall_reduce("precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _precision_recall_reduce(
+        "precision",
+        tp,
+        fp,
+        tn,
+        fn,
+        average=average,
+        multidim_average=multidim_average,
+        top_k=top_k,
+        zero_division=zero_division,
+    )
 
 
 def multilabel_precision(
@@ -247,6 +265,7 @@ def multilabel_precision(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `Precision`_ for multilabel tasks.
 
@@ -258,14 +277,14 @@ def multilabel_precision(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -286,6 +305,7 @@ def multilabel_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -337,7 +357,15 @@ def multilabel_precision(
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _precision_recall_reduce(
-        "precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True
+        "precision",
+        tp,
+        fp,
+        tn,
+        fn,
+        average=average,
+        multidim_average=multidim_average,
+        multilabel=True,
+        zero_division=zero_division,
     )
 
 
@@ -348,6 +376,7 @@ def binary_recall(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `Recall`_ for binary tasks.
 
@@ -359,7 +388,7 @@ def binary_recall(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
@@ -378,6 +407,7 @@ def binary_recall(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -412,7 +442,9 @@ def binary_recall(
         _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
-    return _precision_recall_reduce("recall", tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
+    return _precision_recall_reduce(
+        "recall", tp, fp, tn, fn, average="binary", multidim_average=multidim_average, zero_division=zero_division
+    )
 
 
 def multiclass_recall(
@@ -424,6 +456,7 @@ def multiclass_recall(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `Recall`_ for multiclass tasks.
 
@@ -442,7 +475,7 @@ def multiclass_recall(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -465,6 +498,7 @@ def multiclass_recall(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -519,7 +553,17 @@ def multiclass_recall(
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
     )
-    return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _precision_recall_reduce(
+        "recall",
+        tp,
+        fp,
+        tn,
+        fn,
+        average=average,
+        multidim_average=multidim_average,
+        top_k=top_k,
+        zero_division=zero_division,
+    )
 
 
 def multilabel_recall(
@@ -531,6 +575,7 @@ def multilabel_recall(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `Recall`_ for multilabel tasks.
 
@@ -542,14 +587,14 @@ def multilabel_recall(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -570,6 +615,7 @@ def multilabel_recall(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -621,7 +667,15 @@ def multilabel_recall(
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _precision_recall_reduce(
-        "recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True
+        "recall",
+        tp,
+        fp,
+        tn,
+        fn,
+        average=average,
+        multidim_average=multidim_average,
+        multilabel=True,
+        zero_division=zero_division,
     )
 
 
@@ -637,6 +691,7 @@ def precision(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `Precision`_.
 
@@ -646,7 +701,7 @@ def precision(
     false positives respecitively.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_precision`,
     :func:`~torchmetrics.functional.classification.multiclass_precision` and
     :func:`~torchmetrics.functional.classification.multilabel_precision` for the specific details of
@@ -664,20 +719,20 @@ def precision(
     """
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_precision(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        return binary_precision(preds, target, threshold, multidim_average, ignore_index, validate_args, zero_division)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_precision(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, zero_division
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_precision(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, zero_division
         )
     raise ValueError(
         f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -696,6 +751,7 @@ def recall(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `Recall`_.
 
@@ -705,7 +761,7 @@ def recall(
     false negatives respecitively.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_recall`,
     :func:`~torchmetrics.functional.classification.multiclass_recall` and
     :func:`~torchmetrics.functional.classification.multilabel_recall` for the specific details of
@@ -724,19 +780,19 @@ def recall(
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_recall(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        return binary_recall(preds, target, threshold, multidim_average, ignore_index, validate_args, zero_division)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_recall(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, zero_division
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_recall(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, zero_division
         )
     raise ValueError(f"Not handled value: {task}")

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -22,7 +21,7 @@ from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.utilities.distributed import reduce
 
 
-def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Spectral Distortion Index.
 
     Args:
@@ -65,9 +64,9 @@ def _spectral_distortion_index_compute(
             - ``'none'``: no reduction will be applied
 
     Example:
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 16, 16])
-        >>> target = torch.rand([16, 3, 16, 16])
+        >>> from torch import rand
+        >>> preds = rand([16, 3, 16, 16])
+        >>> target = rand([16, 3, 16, 16])
         >>> preds, target = _spectral_distortion_index_update(preds, target)
         >>> _spectral_distortion_index_compute(preds, target)
         tensor(0.0234)
@@ -139,10 +138,10 @@ def spectral_distortion_index(
             If ``p`` is not a positive integer.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import spectral_distortion_index
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 16, 16])
-        >>> target = torch.rand([16, 3, 16, 16])
+        >>> preds = rand([16, 3, 16, 16])
+        >>> target = rand([16, 3, 16, 16])
         >>> spectral_distortion_index(preds, target)
         tensor(0.0234)
 

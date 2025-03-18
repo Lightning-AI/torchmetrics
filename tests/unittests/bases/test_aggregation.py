@@ -1,11 +1,12 @@
 import numpy as np
 import pytest
 import torch
+
+from torchmetrics import Metric
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.collections import MetricCollection
-
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 
 def compare_mean(values, weights):
@@ -82,7 +83,7 @@ class WrappedCatMetric(CatMetric):
 class TestAggregation(MetricTester):
     """Test aggregation metrics."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_aggreagation(self, ddp, metric_class, compare_fn, values, weights):
         """Test modular implementation."""
         self.run_class_metric_test(
@@ -96,53 +97,60 @@ class TestAggregation(MetricTester):
         )
 
 
-_case1 = float("nan") * torch.ones(5)
-_case2 = torch.tensor([1.0, 2.0, float("nan"), 4.0, 5.0])
+_CASE_1 = float("nan") * torch.ones(5)
+_CASE_2 = torch.tensor([1.0, 2.0, float("nan"), 4.0, 5.0])
 
 
-@pytest.mark.parametrize("value", [_case1, _case2])
+@pytest.mark.parametrize("value", [_CASE_1, _CASE_2])
 @pytest.mark.parametrize("nan_strategy", ["error", "warn"])
 @pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
 def test_nan_error(value, nan_strategy, metric_class):
     """Test correct errors are raised."""
     metric = metric_class(nan_strategy=nan_strategy)
     if nan_strategy == "error":
-        with pytest.raises(RuntimeError, match="Encounted `nan` values in tensor"):
+        with pytest.raises(RuntimeError, match="Encountered `nan` values in tensor"):
             metric(value.clone())
     elif nan_strategy == "warn":
-        with pytest.warns(UserWarning, match="Encounted `nan` values in tensor"):
+        with pytest.warns(UserWarning, match="Encountered `nan` values in tensor"):
             metric(value.clone())
 
 
 @pytest.mark.parametrize(
     ("metric_class", "nan_strategy", "value", "expected"),
     [
-        (MinMetric, "ignore", _case1, torch.tensor(float("inf"))),
-        (MinMetric, 2.0, _case1, 2.0),
-        (MinMetric, "ignore", _case2, 1.0),
-        (MinMetric, 2.0, _case2, 1.0),
-        (MaxMetric, "ignore", _case1, -torch.tensor(float("inf"))),
-        (MaxMetric, 2.0, _case1, 2.0),
-        (MaxMetric, "ignore", _case2, 5.0),
-        (MaxMetric, 2.0, _case2, 5.0),
-        (SumMetric, "ignore", _case1, 0.0),
-        (SumMetric, 2.0, _case1, 10.0),
-        (SumMetric, "ignore", _case2, 12.0),
-        (SumMetric, 2.0, _case2, 14.0),
-        (MeanMetric, "ignore", _case1, torch.tensor([float("nan")])),
-        (MeanMetric, 2.0, _case1, 2.0),
-        (MeanMetric, "ignore", _case2, 3.0),
-        (MeanMetric, 2.0, _case2, 2.8),
-        (CatMetric, "ignore", _case1, []),
-        (CatMetric, 2.0, _case1, torch.tensor([2.0, 2.0, 2.0, 2.0, 2.0])),
-        (CatMetric, "ignore", _case2, torch.tensor([1.0, 2.0, 4.0, 5.0])),
-        (CatMetric, 2.0, _case2, torch.tensor([1.0, 2.0, 2.0, 4.0, 5.0])),
+        (MinMetric, "ignore", _CASE_1, torch.tensor(float("inf"))),
+        (MinMetric, 2.0, _CASE_1, 2.0),
+        (MinMetric, "ignore", _CASE_2, 1.0),
+        (MinMetric, 2.0, _CASE_2, 1.0),
+        (MinMetric, "disable", _CASE_1, torch.tensor(float("nan"))),
+        (MaxMetric, "ignore", _CASE_1, -torch.tensor(float("inf"))),
+        (MaxMetric, 2.0, _CASE_1, 2.0),
+        (MaxMetric, "ignore", _CASE_2, 5.0),
+        (MaxMetric, 2.0, _CASE_2, 5.0),
+        (MaxMetric, "disable", _CASE_1, torch.tensor(float("nan"))),
+        (SumMetric, "ignore", _CASE_1, 0.0),
+        (SumMetric, 2.0, _CASE_1, 10.0),
+        (SumMetric, "ignore", _CASE_2, 12.0),
+        (SumMetric, 2.0, _CASE_2, 14.0),
+        (SumMetric, "disable", _CASE_1, torch.tensor(float("nan"))),
+        (SumMetric, "disable", _CASE_2, torch.tensor(float("nan"))),
+        (MeanMetric, "ignore", _CASE_1, torch.tensor([float("nan")])),
+        (MeanMetric, 2.0, _CASE_1, 2.0),
+        (MeanMetric, "ignore", _CASE_2, 3.0),
+        (MeanMetric, 2.0, _CASE_2, 2.8),
+        (MeanMetric, "disable", _CASE_1, torch.tensor(float("nan"))),
+        (MeanMetric, "disable", _CASE_2, torch.tensor(float("nan"))),
+        (CatMetric, "ignore", _CASE_1, []),
+        (CatMetric, 2.0, _CASE_1, torch.tensor([2.0, 2.0, 2.0, 2.0, 2.0])),
+        (CatMetric, "ignore", _CASE_2, torch.tensor([1.0, 2.0, 4.0, 5.0])),
+        (CatMetric, 2.0, _CASE_2, torch.tensor([1.0, 2.0, 2.0, 4.0, 5.0])),
         (CatMetric, "ignore", torch.zeros(5), torch.zeros(5)),
+        (CatMetric, "disable", _CASE_1, _CASE_1),
     ],
 )
 def test_nan_expected(metric_class, nan_strategy, value, expected):
     """Test that nan values are handled correctly."""
-    metric = metric_class(nan_strategy=nan_strategy)
+    metric: Metric = metric_class(nan_strategy=nan_strategy)
     metric.update(value.clone())
     out = metric.compute()
     assert np.allclose(out, expected, equal_nan=True)
@@ -204,3 +212,21 @@ def test_mean_metric_broadcast(nan_strategy):
     metric.update(x, w)
     res = metric.compute()
     assert round(res.item(), 4) == 3.2222  # (0*0 + 2*2 + 3*3 + 4*4) / (0 + 2 + 3 + 4)
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "compare_function"),
+    [(MinMetric, torch.min), (MaxMetric, torch.max), (SumMetric, torch.sum), (MeanMetric, torch.mean)],
+)
+def test_with_default_dtype(metric_class, compare_function):
+    """Test that the metric works with a default dtype of float64."""
+    torch.set_default_dtype(torch.float64)
+    metric = metric_class()
+    assert metric.dtype == torch.float64
+    values = torch.randn(10000)
+    metric.update(values)
+    result = metric.compute()
+    assert result.dtype == torch.float64
+    assert result.dtype == values.dtype
+    assert result == compare_function(values)
+    torch.set_default_dtype(torch.float32)

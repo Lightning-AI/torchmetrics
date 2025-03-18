@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -51,15 +52,15 @@ class WeightedMeanAbsolutePercentageError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randn(20,)
-        >>> target = torch.randn(20,)
+        >>> from torch import randn
+        >>> preds = randn(20,)
+        >>> target = randn(20,)
         >>> wmape = WeightedMeanAbsolutePercentageError()
         >>> wmape(preds, target)
         tensor(1.3967)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False

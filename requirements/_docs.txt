@@ -1,0 +1,34 @@
+sphinx ==5.3.0
+myst-parser ==1.0.0
+pandoc ==2.4
+docutils ==0.19
+sphinxcontrib-fulltoc >=1.0
+sphinxcontrib-mockautodoc
+lai-sphinx-theme  # need to be downloaded from s3://sphinx-packages/
+sphinx-autodoc-typehints ==1.23.0
+sphinx-paramlinks ==0.6.0
+sphinx-togglebutton ==0.3.2
+sphinx-copybutton ==0.5.2
+sphinx-autobuild ==2024.10.3
+sphinx-gallery ==0.19.0
+
+lightning >=1.8.0, <2.6.0
+lightning-utilities ==0.14.0
+pydantic > 1.0.0, < 3.0.0
+
+# integrations
+-r _integrate.txt
+-r audio.txt
+-r clustering.txt
+-r detection.txt
+-r image.txt
+-r multimodal.txt
+-r text.txt
+-r visual.txt
+
+# Gallery extra requirements
+# --------------------------
+# todo: until this has resolution - https://github.com/sphinx-gallery/sphinx-gallery/issues/1290
+# Image
+scikit-image ~=0.22; python_version < "3.10"
+scikit-image ~=0.25; python_version > "3.9"  # we do not use `> =` because of oldest replcement

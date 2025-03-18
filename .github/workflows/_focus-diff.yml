@@ -1,0 +1,32 @@
+name: Evaluate diff
+
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      test-dirs:
+        description: "Test folders"
+        value: ${{ jobs.eval-diff.outputs.focus }}
+
+jobs:
+  eval-diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Map the job outputs to step outputs
+    outputs:
+      focus: ${{ steps.diff-domains.outputs.focus }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+
+      - name: Get PR diff
+        id: diff-domains
+        env:
+          PR_NUMBER: "${{ github.event.pull_request.number }}"
+        run: |
+          set -e
+          echo $PR_NUMBER
+          pip install -q -U packaging fire pyGithub pyopenssl
+          echo "focus=$(python .github/assistant.py changed-domains $PR_NUMBER)" >> $GITHUB_OUTPUT
+
+      - run: echo "${{ steps.diff-domains.outputs.focus }}"

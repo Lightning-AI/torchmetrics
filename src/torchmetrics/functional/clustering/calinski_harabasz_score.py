@@ -31,27 +31,26 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
         Scalar tensor with the Calinski Harabasz Score
 
     Example:
-        >>> import torch
+        >>> from torch import randn, randint
         >>> from torchmetrics.functional.clustering import calinski_harabasz_score
-        >>> _ = torch.manual_seed(42)
-        >>> data = torch.randn(10, 3)
-        >>> labels = torch.randint(0, 2, (10,))
+        >>> data = randn(20, 3)
+        >>> labels = randint(0, 3, (20,))
         >>> calinski_harabasz_score(data, labels)
-        tensor(3.4998)
+        tensor(2.2128)
 
     """
     _validate_intrinsic_cluster_data(data, labels)
 
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
-    n_labels = len(unique_labels)
-    n_samples = data.shape[0]
-    _validate_intrinsic_labels_to_samples(n_labels, n_samples)
+    num_labels = len(unique_labels)
+    num_samples = data.shape[0]
+    _validate_intrinsic_labels_to_samples(num_labels, num_samples)
 
     mean = data.mean(dim=0)
     between_cluster_dispersion = torch.tensor(0.0, device=data.device)
     within_cluster_dispersion = torch.tensor(0.0, device=data.device)
-    for k in range(n_labels):
+    for k in range(num_labels):
         cluster_k = data[labels == k, :]
         mean_k = cluster_k.mean(dim=0)
         between_cluster_dispersion += ((mean_k - mean) ** 2).sum() * cluster_k.shape[0]
@@ -59,4 +58,4 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
 
     if within_cluster_dispersion == 0:
         return torch.tensor(1.0, device=data.device, dtype=torch.float32)
-    return between_cluster_dispersion * (n_samples - n_labels) / (within_cluster_dispersion * (n_labels - 1.0))
+    return between_cluster_dispersion * (num_samples - num_labels) / (within_cluster_dispersion * (num_labels - 1.0))

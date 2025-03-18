@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, Optional, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -34,17 +36,18 @@ class BaseAggregator(Metric):
         fn: string specifying the reduction function
         default_value: default tensor value to use for the metric state
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - ``'disable'``: disable all `nan` checks
+            - a float: if a float is provided will impute any `nan` values with this value
 
         state_name: name of the metric state
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     """
 
@@ -55,17 +58,16 @@ class BaseAggregator(Metric):
     def __init__(
         self,
         fn: Union[Callable, str],
-        default_value: Union[Tensor, List],
-        nan_strategy: Union[str, float] = "error",
+        default_value: Union[Tensor, list],
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "error",
         state_name: str = "value",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        allowed_nan_strategy = ("error", "warn", "ignore")
+        allowed_nan_strategy = ("error", "warn", "ignore", "disable")
         if nan_strategy not in allowed_nan_strategy and not isinstance(nan_strategy, float):
             raise ValueError(
-                f"Arg `nan_strategy` should either be a float or one of {allowed_nan_strategy}"
-                f" but got {nan_strategy}."
+                f"Arg `nan_strategy` should either be a float or one of {allowed_nan_strategy} but got {nan_strategy}."
             )
 
         self.nan_strategy = nan_strategy
@@ -74,34 +76,36 @@ class BaseAggregator(Metric):
 
     def _cast_and_nan_check_input(
         self, x: Union[float, Tensor], weight: Optional[Union[float, Tensor]] = None
-    ) -> Tuple[Tensor, Tensor]:
+    ) -> tuple[Tensor, Tensor]:
         """Convert input ``x`` to a tensor and check for Nans."""
         if not isinstance(x, Tensor):
-            x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
+            x = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         if weight is not None and not isinstance(weight, Tensor):
-            weight = torch.as_tensor(weight, dtype=torch.float32, device=self.device)
+            weight = torch.as_tensor(weight, dtype=self.dtype, device=self.device)
 
-        nans = torch.isnan(x)
-        if weight is not None:
-            nans_weight = torch.isnan(weight)
-        else:
-            nans_weight = torch.zeros_like(nans).bool()
-            weight = torch.ones_like(x)
-        if nans.any() or nans_weight.any():
-            if self.nan_strategy == "error":
-                raise RuntimeError("Encounted `nan` values in tensor")
-            if self.nan_strategy in ("ignore", "warn"):
-                if self.nan_strategy == "warn":
-                    rank_zero_warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
-                x = x[~(nans | nans_weight)]
-                weight = weight[~(nans | nans_weight)]
+        if self.nan_strategy != "disable":
+            nans = torch.isnan(x)
+            if weight is not None:
+                nans_weight = torch.isnan(weight)
             else:
-                if not isinstance(self.nan_strategy, float):
-                    raise ValueError(f"`nan_strategy` shall be float but you pass {self.nan_strategy}")
-                x[nans | nans_weight] = self.nan_strategy
-                weight[nans | nans_weight] = self.nan_strategy
-
-        return x.float(), weight.float()
+                nans_weight = torch.zeros_like(nans).bool()
+                weight = torch.ones_like(x)
+            if nans.any() or nans_weight.any():
+                if self.nan_strategy == "error":
+                    raise RuntimeError("Encountered `nan` values in tensor")
+                if self.nan_strategy in ("ignore", "warn"):
+                    if self.nan_strategy == "warn":
+                        rank_zero_warn("Encountered `nan` values in tensor. Will be removed.", UserWarning)
+                    x = x[~(nans | nans_weight)]
+                    weight = weight[~(nans | nans_weight)]
+                else:
+                    if not isinstance(self.nan_strategy, float):
+                        raise ValueError(f"`nan_strategy` shall be float but you pass {self.nan_strategy}")
+                    x[nans | nans_weight] = self.nan_strategy
+                    weight[nans | nans_weight] = 1
+        else:
+            weight = torch.ones_like(x)
+        return x.to(self.dtype), weight.to(self.dtype)
 
     def update(self, value: Union[float, Tensor]) -> None:
         """Overwrite in child class."""
@@ -117,7 +121,7 @@ class MaxMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -125,16 +129,17 @@ class MaxMetric(BaseAggregator):
 
     Args:
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - ``'disable'``: disable all `nan` checks
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -152,12 +157,12 @@ class MaxMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(
             "max",
-            -torch.tensor(float("inf")),
+            -torch.tensor(float("inf"), dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="max_value",
             **kwargs,
@@ -222,7 +227,7 @@ class MinMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -230,16 +235,17 @@ class MinMetric(BaseAggregator):
 
     Args:
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - ``'disable'``: disable all `nan` checks
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -257,12 +263,12 @@ class MinMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(
             "min",
-            torch.tensor(float("inf")),
+            torch.tensor(float("inf"), dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="min_value",
             **kwargs,
@@ -327,7 +333,7 @@ class SumMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -335,16 +341,17 @@ class SumMetric(BaseAggregator):
 
     Args:
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - ``'disable'``: disable all `nan` checks
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -361,12 +368,12 @@ class SumMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(
             "sum",
-            torch.tensor(0.0),
+            torch.tensor(0.0, dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="sum_value",
             **kwargs,
@@ -432,7 +439,7 @@ class CatMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -440,16 +447,17 @@ class CatMetric(BaseAggregator):
 
     Args:
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - ``'disable'``: disable all `nan` checks
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -466,7 +474,7 @@ class CatMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__("cat", [], nan_strategy, **kwargs)
@@ -496,26 +504,27 @@ class MeanMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
     - ``weight`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float value with
-      arbitary shape ``(...,)``. Needs to be broadcastable with the shape of ``value`` tensor.
+      arbitrary shape ``(...,)``. Needs to be broadcastable with the shape of ``value`` tensor.
 
     As output of `forward` and `compute` the metric returns the following output
 
     - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with aggregated (weighted) mean over all inputs received
 
     Args:
-       nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+        nan_strategy: options:
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - ``'disable'``: disable all `nan` checks
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torchmetrics.aggregation import MeanMetric
@@ -528,22 +537,23 @@ class MeanMetric(BaseAggregator):
     """
 
     mean_value: Tensor
+    weight: Tensor
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(
             "sum",
-            torch.tensor(0.0),
+            torch.tensor(0.0, dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="mean_value",
             **kwargs,
         )
-        self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("weight", default=torch.tensor(0.0, dtype=torch.get_default_dtype()), dist_reduce_fx="sum")
 
-    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:
+    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor, None] = None) -> None:
         """Update state with data.
 
         Args:
@@ -551,15 +561,17 @@ class MeanMetric(BaseAggregator):
                 dimensions will be flattened
             weight: Either a float or tensor containing weights for calculating
                 the average. Shape of weight should be able to broadcast with
-                the shape of `value`. Default to `1.0` corresponding to simple
+                the shape of `value`. Default to None corresponding to simple
                 harmonic average.
 
         """
         # broadcast weight to value shape
         if not isinstance(value, Tensor):
-            value = torch.as_tensor(value, dtype=torch.float32, device=self.device)
-        if weight is not None and not isinstance(weight, Tensor):
-            weight = torch.as_tensor(weight, dtype=torch.float32, device=self.device)
+            value = torch.as_tensor(value, dtype=self.dtype, device=self.device)
+        if weight is None:
+            weight = torch.ones_like(value)
+        elif not isinstance(weight, Tensor):
+            weight = torch.as_tensor(weight, dtype=self.dtype, device=self.device)
         weight = torch.broadcast_to(weight, value.shape)
         value, weight = self._cast_and_nan_check_input(value, weight)
 
@@ -623,25 +635,25 @@ class RunningMean(Running):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
     - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with aggregated sum over all inputs received
 
     Args:
-        window: The size of the running window.
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - ``'disable'``: disable all `nan` checks
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -664,7 +676,7 @@ class RunningMean(Running):
     def __init__(
         self,
         window: int = 5,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(base_metric=MeanMetric(nan_strategy=nan_strategy, **kwargs), window=window)
@@ -680,7 +692,7 @@ class RunningSum(Running):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -689,16 +701,17 @@ class RunningSum(Running):
     Args:
         window: The size of the running window.
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - ``'disable'``: disable all `nan` checks
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -721,7 +734,7 @@ class RunningSum(Running):
     def __init__(
         self,
         window: int = 5,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(base_metric=SumMetric(nan_strategy=nan_strategy, **kwargs), window=window)

@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -69,6 +70,7 @@ class MeanSquaredError(Metric):
         tensor([1., 4., 9.])
 
     """
+
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
@@ -98,10 +100,10 @@ class MeanSquaredError(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        sum_squared_error, n_obs = _mean_squared_error_update(preds, target, num_outputs=self.num_outputs)
+        sum_squared_error, num_obs = _mean_squared_error_update(preds, target, num_outputs=self.num_outputs)
 
         self.sum_squared_error += sum_squared_error
-        self.total += n_obs
+        self.total += num_obs
 
     def compute(self) -> Tensor:
         """Compute mean squared error over state."""

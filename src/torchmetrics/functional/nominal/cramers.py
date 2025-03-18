@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -34,14 +34,14 @@ def _cramers_v_update(
     target: Tensor,
     num_classes: int,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     """Compute the bins to update the confusion matrix with for Cramer's V calculation.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
         target: 1D or 2D tensor of categorical (nominal) data
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
 
@@ -70,18 +70,18 @@ def _cramers_v_compute(confmat: Tensor, bias_correction: bool) -> Tensor:
     cm_sum = confmat.sum()
     chi_squared = _compute_chi_squared(confmat, bias_correction)
     phi_squared = chi_squared / cm_sum
-    n_rows, n_cols = confmat.shape
+    num_rows, num_cols = confmat.shape
 
     if bias_correction:
         phi_squared_corrected, rows_corrected, cols_corrected = _compute_bias_corrected_values(
-            phi_squared, n_rows, n_cols, cm_sum
+            phi_squared, num_rows, num_cols, cm_sum
         )
         if torch.min(rows_corrected, cols_corrected) == 1:
             _unable_to_use_bias_correction_warning(metric_name="Cramer's V")
             return torch.tensor(float("nan"), device=confmat.device)
         cramers_v_value = torch.sqrt(phi_squared_corrected / torch.min(rows_corrected - 1, cols_corrected - 1))
     else:
-        cramers_v_value = torch.sqrt(phi_squared / min(n_rows - 1, n_cols - 1))
+        cramers_v_value = torch.sqrt(phi_squared / min(num_rows - 1, num_cols - 1))
     return cramers_v_value.clamp(0.0, 1.0)
 
 
@@ -90,7 +90,7 @@ def cramers_v(
     target: Tensor,
     bias_correction: bool = True,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Cramer's V`_ statistic measuring the association between two categorical (nominal) data series.
 
@@ -124,10 +124,10 @@ def cramers_v(
         Cramer's V statistic
 
     Example:
+        >>> from torch import randint, round
         >>> from torchmetrics.functional.nominal import cramers_v
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = round(preds + torch.randn(100)).clamp(0, 4)
         >>> cramers_v(preds, target)
         tensor(0.5284)
 
@@ -142,7 +142,7 @@ def cramers_v_matrix(
     matrix: Tensor,
     bias_correction: bool = True,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Cramer's V`_ statistic between a set of multiple variables.
 
@@ -161,9 +161,9 @@ def cramers_v_matrix(
         Cramer's V statistic for a dataset of categorical variables
 
     Example:
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal import cramers_v_matrix
-        >>> _ = torch.manual_seed(42)
-        >>> matrix = torch.randint(0, 4, (200, 5))
+        >>> matrix = randint(0, 4, (200, 5))
         >>> cramers_v_matrix(matrix)
         tensor([[1.0000, 0.0637, 0.0000, 0.0542, 0.1337],
                 [0.0637, 1.0000, 0.0000, 0.0000, 0.0000],

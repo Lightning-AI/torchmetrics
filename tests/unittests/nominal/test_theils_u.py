@@ -12,24 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-import operator
-from collections import namedtuple
 from functools import partial
 
 import pytest
 import torch
-from dython.nominal import theils_u as dython_theils_u
-from lightning_utilities.core.imports import compare_version
+
 from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers.testers import MetricTester
 
-from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers.testers import MetricTester
-
-Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
 
-_input_default = Input(
+_input_default = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
@@ -41,14 +36,14 @@ _preds[-1, -1] = float("nan")
 _target = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.float)
 _target[1, 0] = float("nan")
 _target[-1, 0] = float("nan")
-_input_with_nans = Input(preds=_preds, target=_target)
+_input_with_nans = _Input(preds=_preds, target=_target)
 
-_input_logits = Input(
+_input_logits = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def theils_u_matrix_input():
     """Define input in matrix format for the metric."""
     matrix = torch.cat(
@@ -64,7 +59,12 @@ def theils_u_matrix_input():
     return matrix
 
 
-def _dython_theils_u(preds, target, nan_strategy, nan_replace_value):
+def _reference_dython_theils_u(preds, target, nan_strategy, nan_replace_value):
+    try:
+        from dython.nominal import theils_u as dython_theils_u
+    except ImportError:
+        pytest.skip("Test requires `dython` package to be installed.")
+
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
 
@@ -77,17 +77,16 @@ def _dython_theils_u(preds, target, nan_strategy, nan_replace_value):
     return torch.tensor(v)
 
 
-def _dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
+def _reference_dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
     num_variables = matrix.shape[1]
     theils_u_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        theils_u_matrix_value[i, j] = _dython_theils_u(x, y, nan_strategy, nan_replace_value)
-        theils_u_matrix_value[j, i] = _dython_theils_u(y, x, nan_strategy, nan_replace_value)
+        theils_u_matrix_value[i, j] = _reference_dython_theils_u(x, y, nan_strategy, nan_replace_value)
+        theils_u_matrix_value[j, i] = _reference_dython_theils_u(y, x, nan_strategy, nan_replace_value)
     return theils_u_matrix_value
 
 
-@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -102,7 +101,7 @@ class TestTheilsU(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_theils_u(self, ddp, preds, target, nan_strategy, nan_replace_value):
         """Test class implementation of metric."""
         metric_args = {
@@ -111,7 +110,7 @@ class TestTheilsU(MetricTester):
             "num_classes": NUM_CLASSES,
         }
         reference_metric = partial(
-            _dython_theils_u,
+            _reference_dython_theils_u,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
         )
@@ -131,7 +130,7 @@ class TestTheilsU(MetricTester):
             "nan_replace_value": nan_replace_value,
         }
         reference_metric = partial(
-            _dython_theils_u,
+            _reference_dython_theils_u,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
         )
@@ -155,10 +154,9 @@ class TestTheilsU(MetricTester):
         )
 
 
-@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value):
     """Test matrix version of metric works as expected."""
     tm_score = theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
-    reference_score = _dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
+    reference_score = _reference_dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score, atol=1e-6)

@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -54,7 +55,6 @@ class MulticlassExactMatch(Metric):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mcem`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``multidim_average`` argument:
@@ -62,8 +62,11 @@ class MulticlassExactMatch(Metric):
         - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_classes: Integer specifing the number of labels
+        num_classes: Integer specifying the number of labels
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
 
@@ -94,6 +97,8 @@ class MulticlassExactMatch(Metric):
         tensor([1., 0.])
 
     """
+
+    total: Tensor
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -139,15 +144,30 @@ class MulticlassExactMatch(Metric):
 
         correct, total = _multiclass_exact_match_update(preds, target, self.multidim_average, self.ignore_index)
         if self.multidim_average == "samplewise":
+            if not isinstance(self.correct, list):
+                raise TypeError("Expected `self.correct` to be a list in samplewise mode.")
             self.correct.append(correct)
+
+            if not isinstance(self.total, Tensor):
+                raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
             self.total = total
         else:
+            if not isinstance(self.correct, Tensor):
+                raise TypeError("Expected `self.correct` to be a tensor in global mode.")
             self.correct += correct
+
+            if not isinstance(self.total, Tensor):
+                raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
             self.total += total
 
     def compute(self) -> Tensor:
         """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
+
+        # Validate that `correct` and `total` are tensors
+        if not isinstance(correct, Tensor) or not isinstance(self.total, Tensor):
+            raise TypeError("Expected `correct` and `total` to be tensors after processing.")
+
         return _exact_match_reduce(correct, self.total)
 
     def plot(
@@ -203,9 +223,8 @@ class MultilabelExactMatch(Metric):
 
     - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, C, ..)``. If preds is a
       floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      sigmoid per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -214,8 +233,11 @@ class MultilabelExactMatch(Metric):
         - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -257,6 +279,7 @@ class MultilabelExactMatch(Metric):
 
     """
 
+    total: Tensor
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -306,15 +329,30 @@ class MultilabelExactMatch(Metric):
         )
         correct, total = _multilabel_exact_match_update(preds, target, self.num_labels, self.multidim_average)
         if self.multidim_average == "samplewise":
+            if not isinstance(self.correct, list):
+                raise TypeError("Expected `self.correct` to be a list in samplewise mode.")
             self.correct.append(correct)
+
+            if not isinstance(self.total, Tensor):
+                raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
             self.total = total
         else:
+            if not isinstance(self.correct, Tensor):
+                raise TypeError("Expected `self.correct` to be a tensor in global mode.")
             self.correct += correct
+
+            if not isinstance(self.total, Tensor):
+                raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
             self.total += total
 
     def compute(self) -> Tensor:
         """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
+
+        # Validate that `correct` and `total` are tensors
+        if not isinstance(correct, Tensor) or not isinstance(self.total, Tensor):
+            raise TypeError("Expected `correct` and `total` to be tensors after processing.")
+
         return _exact_match_reduce(correct, self.total)
 
     def plot(
@@ -367,7 +405,7 @@ class ExactMatch(_ClassificationTaskWrapper):
     correctly classified.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.MulticlassExactMatch` and
     :class:`~torchmetrics.classification.MultilabelExactMatch` for the specific details of each argument influence and
     examples.
@@ -388,8 +426,8 @@ class ExactMatch(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
-        cls,
+    def __new__(  # type: ignore[misc]
+        cls: type["ExactMatch"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
@@ -401,9 +439,11 @@ class ExactMatch(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTaskNoBinary.from_str(task)
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTaskNoBinary.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")

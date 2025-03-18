@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -34,7 +35,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
     The STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good
     alternative to the speech intelligibility index (SII) or the speech transmission index (STI), when you are
     interested in the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms,
-    on speech intelligibility. Description taken from  `Cees Taal's website`_ and for further defails see `STOI ref1`_
+    on speech intelligibility. Description taken from  `Cees Taal's website`_ and for further details see `STOI ref1`_
     and `STOI ref2`_.
 
     This metric is a wrapper for the `pystoi package`_. As the implementation backend implementation only supports
@@ -50,7 +51,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
     - ``stoi`` (:class:`~torch.Tensor`): float scalar tensor
 
-    .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
+    .. hint::
+        Using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``.
 
     Args:
@@ -63,16 +65,16 @@ class ShortTimeObjectiveIntelligibility(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
-        tensor(-0.0100)
+        tensor(-0.084...)
 
     """
+
     sum_stoi: Tensor
     total: Tensor
     full_state_update: bool = False
@@ -131,11 +133,10 @@ class ShortTimeObjectiveIntelligibility(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> import torch
+            >>> from torch import randn
             >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
-            >>> g = torch.manual_seed(1)
-            >>> preds = torch.randn(8000)
-            >>> target = torch.randn(8000)
+            >>> preds = randn(8000)
+            >>> target = randn(8000)
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
@@ -144,12 +145,11 @@ class ShortTimeObjectiveIntelligibility(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import randn
             >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
-            >>> g = torch.manual_seed(1)
-            >>> preds = torch.randn(8000)
-            >>> target = torch.randn(8000)
+            >>> preds = randn(8000)
+            >>> target = randn(8000)
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))

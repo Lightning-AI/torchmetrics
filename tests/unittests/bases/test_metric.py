@@ -24,12 +24,14 @@ import pytest
 import torch
 from torch import Tensor, tensor
 from torch.nn import Module, Parameter
-from torchmetrics.classification import BinaryAccuracy
-from torchmetrics.regression import PearsonCorrCoef
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from unittests.helpers.utilities import no_warning_call
+from torchmetrics.aggregation import MeanMetric, SumMetric
+from torchmetrics.classification import BinaryAccuracy
+from torchmetrics.clustering import AdjustedRandScore
+from torchmetrics.image import StructuralSimilarityIndexMeasure
+from torchmetrics.regression import PearsonCorrCoef, R2Score
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 
 seed_all(42)
 
@@ -42,7 +44,7 @@ def test_error_on_wrong_input():
     with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
         DummyMetric(dist_sync_fn=[2, 3])
 
-    with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` bu.*"):
+    with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` but.*"):
         DummyMetric(compute_on_cpu=None)
 
     with pytest.raises(ValueError, match="Expected keyword argument `sync_on_compute` to be a `bool` but.*"):
@@ -59,7 +61,7 @@ def test_error_on_wrong_input():
 
 
 def test_inherit():
-    """Test that metric that inherits can be instanciated."""
+    """Test that metric that inherits can be instantiated."""
     DummyMetric()
 
 
@@ -125,10 +127,16 @@ def test_reset():
     metric = B()
     assert isinstance(metric.x, list)
     assert len(metric.x) == 0
-    metric.x = tensor(5)
+    metric.x = [tensor(5)]
     metric.reset()
     assert isinstance(metric.x, list)
     assert len(metric.x) == 0
+
+    metric = B()
+    metric.x = [1, 2, 3]
+    reference = metric.x  # prevents garbage collection
+    metric.reset()
+    assert len(reference) == 0  # check list state is freed
 
 
 def test_reset_compute():
@@ -332,14 +340,15 @@ def test_disable_of_normal_dtype_methods():
     assert metric.x.dtype == torch.float32
 
 
-def test_warning_on_compute_before_update():
+def test_warning_on_compute_before_update(recwarn):
     """Test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
-    with pytest.warns(None) as record:
-        val = metric(1)
-    assert not record
+    wcount = len(recwarn)
+    _ = metric(1)
+    # Check that no new warning was raised
+    assert len(recwarn) == wcount
 
     metric.reset()
 
@@ -349,10 +358,11 @@ def test_warning_on_compute_before_update():
 
     # after update things should be fine
     metric.update(2.0)
-    with pytest.warns(None) as record:
-        val = metric.compute()
-    assert not record
+    wcount = len(recwarn)
+    val = metric.compute()
     assert val == 2.0
+    # Check that no new warning was raised
+    assert len(recwarn) == wcount
 
 
 @pytest.mark.parametrize("metric_class", [DummyMetric, DummyMetricSum, DummyMetricMultiOutput, DummyListMetric])
@@ -465,7 +475,7 @@ def test_constant_memory(device, requires_grad):
 def test_constant_memory_on_repeat_init():
     """Test that when initializing a metric multiple times the memory does not increase.
 
-    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a refence that python
+    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a reference that python
     gc will not be able to collect and clean.
 
     """
@@ -473,16 +483,32 @@ def test_constant_memory_on_repeat_init():
     def mem():
         return torch.cuda.memory_allocated() / 1024**2
 
-    x = torch.randn(10000).cuda()
-
     for i in range(100):
-        m = DummyListMetric(compute_with_cache=False).cuda()
-        m(x)
+        _ = DummyListMetric(compute_with_cache=False).cuda()
         if i == 0:
             after_one_iter = mem()
 
         # allow for 5% flucturation due to measuring
         assert after_one_iter * 1.05 >= mem(), "memory increased too much above base level"
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+def test_freed_memory_on_reset():
+    """Test that resetting a metric frees all the memory allocated when updating it."""
+
+    def mem():
+        return torch.cuda.memory_allocated() / 1024**2
+
+    m = DummyListMetric().cuda()
+    after_init = mem()
+
+    for _ in range(100):
+        m(x=torch.randn(10000).cuda())
+
+    m.reset()
+
+    # allow for 5% flucturation due to measuring
+    assert after_init * 1.05 >= mem(), "memory increased too much above base level"
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
@@ -498,7 +524,7 @@ def test_specific_error_on_wrong_device():
 
 
 @pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
-def test_no_warning_on_custom_forward(metric_class):
+def test_no_warning_on_custom_forward(recwarn, metric_class):
     """If metric is using custom forward, full_state_update is irrelevant."""
 
     class UnsetProperty(metric_class):
@@ -507,11 +533,8 @@ def test_no_warning_on_custom_forward(metric_class):
         def forward(self, *args: Any, **kwargs: Any):
             self.update(*args, **kwargs)
 
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        UnsetProperty()
+    UnsetProperty()
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 def test_custom_availability_check_and_sync_fn():
@@ -573,3 +596,92 @@ def test_update_properties(metric, method):
     m.reset()
     assert not m.update_called
     assert m.update_count == 0
+
+
+def test_dtype_property():
+    """Test that dtype property works as expected."""
+    metric = DummyMetricSum()
+    assert metric.dtype == torch.float32
+    metric.set_dtype(torch.float64)
+    assert metric.dtype == torch.float64
+
+    torch.set_default_dtype(torch.float64)
+    metric = DummyMetricSum()
+    assert metric.dtype == torch.float64
+    torch.set_default_dtype(torch.float32)
+    assert metric.dtype == torch.float64  # should not change after initialization
+    metric.set_dtype(torch.float32)
+    assert metric.dtype == torch.float32
+
+
+def test_merge_state_feature_basic():
+    """Check the merge_state method works as expected for a basic metric."""
+    metric1 = SumMetric()
+    metric2 = SumMetric()
+    metric1.update(1)
+    metric2.update(2)
+    metric1.merge_state(metric2)
+    assert metric1.compute() == 3
+
+    metric = SumMetric()
+    metric.update(1)
+    metric.merge_state({"sum_value": torch.tensor(2)})
+    assert metric.compute() == 3
+
+
+def test_merge_state_feature_raises_errors():
+    """Check the merge_state method raises errors when expected."""
+
+    class TempMetric(SumMetric):
+        full_state_update = True
+
+    metric = TempMetric()
+    metric2 = SumMetric()
+    metric3 = MeanMetric()
+
+    with pytest.raises(ValueError, match="Expected incoming state to be a.*"):
+        metric.merge_state(2)
+
+    with pytest.raises(RuntimeError, match="``merge_state`` is not supported.*"):
+        metric.merge_state({"sum_value": torch.tensor(2)})
+
+    with pytest.raises(ValueError, match="Expected incoming state to be an.*"):
+        metric2.merge_state(metric3)
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "preds", "target"),
+    [
+        (BinaryAccuracy, lambda: torch.randint(2, (100,)), lambda: torch.randint(2, (100,))),
+        (R2Score, lambda: torch.randn(100), lambda: torch.randn(100)),
+        (StructuralSimilarityIndexMeasure, lambda: torch.randn(1, 3, 25, 25), lambda: torch.randn(1, 3, 25, 25)),
+        (AdjustedRandScore, lambda: torch.randint(10, (100,)), lambda: torch.randint(10, (100,))),
+    ],
+)
+def test_merge_state_feature_for_different_metrics(metric_class, preds, target):
+    """Check the merge_state method works as expected for different metrics.
+
+    It should work such that the metric is the same as if it had seen the data twice, but in different ways.
+
+    """
+    metric1_1 = metric_class()
+    metric1_2 = metric_class()
+    metric2 = metric_class()
+
+    preds1, target1 = preds(), target()
+    preds2, target2 = preds(), target()
+
+    metric1_1.update(preds1, target1)
+    metric1_2.update(preds2, target2)
+    metric2.update(preds1, target1)
+    metric2.update(preds2, target2)
+    metric1_1.merge_state(metric1_2)
+
+    # should be the same because it has seen the same data twice, but in different ways
+    res1 = metric1_1.compute()
+    res2 = metric2.compute()
+    assert torch.allclose(res1, res2)
+
+    # should not be the same because it has only seen half the data
+    res3 = metric1_2.compute()
+    assert not torch.allclose(res3, res2)

@@ -24,14 +24,13 @@
 # License under BSD 2-clause
 import inspect
 import os
-from collections import namedtuple
-from typing import List, NamedTuple, Optional, Tuple, Union
+from typing import List, NamedTuple, Optional, Union
 
 import torch
 from torch import Tensor, nn
 from typing_extensions import Literal
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 _weight_map = {
     "squeezenet1_1": "SqueezeNet1_1_Weights",
@@ -41,8 +40,6 @@ _weight_map = {
 
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["learned_perceptual_image_patch_similarity"]
-else:
-    from torchvision import models as tv
 
 
 def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
@@ -53,13 +50,13 @@ def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
         pretrained: If pretrained weights should be used
 
     """
-    if _TORCHVISION_GREATER_EQUAL_0_13:
+    from torchvision import models as tv
+
+    if _TORCHVISION_AVAILABLE:
         if pretrained:
             pretrained_features = getattr(tv, net)(weights=getattr(tv, _weight_map[net]).IMAGENET1K_V1).features
         else:
             pretrained_features = getattr(tv, net)(weights=None).features
-    else:
-        pretrained_features = getattr(tv, net)(pretrained=pretrained).features
     return pretrained_features
 
 
@@ -86,13 +83,21 @@ class SqueezeNet(torch.nn.Module):
 
     def forward(self, x: Tensor) -> NamedTuple:
         """Process input."""
-        squeeze_output = namedtuple("squeeze_output", ["relu1", "relu2", "relu3", "relu4", "relu5", "relu6", "relu7"])
+
+        class _SqueezeOutput(NamedTuple):
+            relu1: Tensor
+            relu2: Tensor
+            relu3: Tensor
+            relu4: Tensor
+            relu5: Tensor
+            relu6: Tensor
+            relu7: Tensor
 
         relus = []
         for slice_ in self.slices:
             x = slice_(x)
             relus.append(x)
-        return squeeze_output(*relus)
+        return _SqueezeOutput(*relus)
 
 
 class Alexnet(torch.nn.Module):
@@ -134,8 +139,15 @@ class Alexnet(torch.nn.Module):
         h_relu4 = h
         h = self.slice5(h)
         h_relu5 = h
-        alexnet_outputs = namedtuple("alexnet_outputs", ["relu1", "relu2", "relu3", "relu4", "relu5"])
-        return alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
+
+        class _AlexnetOutputs(NamedTuple):
+            relu1: Tensor
+            relu2: Tensor
+            relu3: Tensor
+            relu4: Tensor
+            relu5: Tensor
+
+        return _AlexnetOutputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
 
 
 class Vgg16(torch.nn.Module):
@@ -177,27 +189,34 @@ class Vgg16(torch.nn.Module):
         h_relu4_3 = h
         h = self.slice5(h)
         h_relu5_3 = h
-        vgg_outputs = namedtuple("vgg_outputs", ["relu1_2", "relu2_2", "relu3_3", "relu4_3", "relu5_3"])
-        return vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
+
+        class _VGGOutputs(NamedTuple):
+            relu1_2: Tensor
+            relu2_2: Tensor
+            relu3_3: Tensor
+            relu4_3: Tensor
+            relu5_3: Tensor
+
+        return _VGGOutputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
 
-def spatial_average(in_tens: Tensor, keepdim: bool = True) -> Tensor:
-    """Spatial averaging over heigh and width of images."""
-    return in_tens.mean([2, 3], keepdim=keepdim)
+def _spatial_average(in_tens: Tensor, keep_dim: bool = True) -> Tensor:
+    """Spatial averaging over height and width of images."""
+    return in_tens.mean([2, 3], keepdim=keep_dim)
 
 
-def upsam(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
+def _upsample(in_tens: Tensor, out_hw: tuple[int, ...] = (64, 64)) -> Tensor:
     """Upsample input with bilinear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
 
-def normalize_tensor(in_feat: Tensor, eps: float = 1e-10) -> Tensor:
-    """Normalize tensors."""
-    norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
-    return in_feat / (norm_factor + eps)
+def _normalize_tensor(in_feat: Tensor, eps: float = 1e-8) -> Tensor:
+    """Normalize input tensor."""
+    norm_factor = torch.sqrt(eps + torch.sum(in_feat**2, dim=1, keepdim=True))
+    return in_feat / norm_factor
 
 
-def resize_tensor(x: Tensor, size: int = 64) -> Tensor:
+def _resize_tensor(x: Tensor, size: int = 64) -> Tensor:
     """https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/sample_similarity_lpips.py#L127C22-L132."""
     if x.shape[-1] > size and x.shape[-2] > size:
         return torch.nn.functional.interpolate(x, (size, size), mode="area")
@@ -206,6 +225,9 @@ def resize_tensor(x: Tensor, size: int = 64) -> Tensor:
 
 class ScalingLayer(nn.Module):
     """Scaling layer."""
+
+    shift: Tensor
+    scale: Tensor
 
     def __init__(self) -> None:
         super().__init__()
@@ -254,7 +276,7 @@ class _LPIPS(nn.Module):
             net: Indicate backbone to use, choose between ['alex','vgg','squeeze']
             spatial: If input should be spatial averaged
             pnet_rand: If backbone should be random or use imagenet pre-trained weights
-            pnet_tune: If backprop should be enabled
+            pnet_tune: If backprop should be enabled for both backbone and linear layers
             use_dropout: If dropout layers should be added
             model_path: Model path to load pretained models from
             eval_mode: If network should be in evaluation mode
@@ -306,9 +328,13 @@ class _LPIPS(nn.Module):
         if eval_mode:
             self.eval()
 
+        if not self.pnet_tune:
+            for param in self.parameters():
+                param.requires_grad = False
+
     def forward(
         self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False
-    ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
+    ) -> Union[Tensor, tuple[Tensor, List[Tensor]]]:
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1
@@ -318,22 +344,22 @@ class _LPIPS(nn.Module):
 
         # resize input if needed
         if self.resize is not None:
-            in0_input = resize_tensor(in0_input, size=self.resize)
-            in1_input = resize_tensor(in1_input, size=self.resize)
+            in0_input = _resize_tensor(in0_input, size=self.resize)
+            in1_input = _resize_tensor(in1_input, size=self.resize)
 
         outs0, outs1 = self.net.forward(in0_input), self.net.forward(in1_input)
         feats0, feats1, diffs = {}, {}, {}
 
         for kk in range(self.L):
-            feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
+            feats0[kk], feats1[kk] = _normalize_tensor(outs0[kk]), _normalize_tensor(outs1[kk])
             diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
 
         res = []
         for kk in range(self.L):
             if self.spatial:
-                res.append(upsam(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
+                res.append(_upsample(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
             else:
-                res.append(spatial_average(self.lins[kk](diffs[kk]), keepdim=True))
+                res.append(_spatial_average(self.lins[kk](diffs[kk]), keep_dim=True))
 
         val: Tensor = sum(res)  # type: ignore[assignment]
         if retperlayer:
@@ -355,13 +381,13 @@ def _valid_img(img: Tensor, normalize: bool) -> bool:
     return img.ndim == 4 and img.shape[1] == 3 and value_check  # type: ignore[return-value]
 
 
-def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> Tuple[Tensor, Union[int, Tensor]]:
+def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> tuple[Tensor, Union[int, Tensor]]:
     if not (_valid_img(img1, normalize) and _valid_img(img2, normalize)):
         raise ValueError(
             "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
             f" Got input with shape {img1.shape} and {img2.shape} and values in range"
             f" {[img1.min(), img1.max()]} and {[img2.min(), img2.max()]} when all values are"
-            f" expected to be in the {[0,1] if normalize else [-1,1]} range."
+            f" expected to be in the {[0, 1] if normalize else [-1, 1]} range."
         )
     loss = net(img1, img2, normalize=normalize).squeeze()
     return loss, img1.shape[0]
@@ -378,7 +404,7 @@ def learned_perceptual_image_patch_similarity(
     reduction: Literal["sum", "mean"] = "mean",
     normalize: bool = False,
 ) -> Tensor:
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.
 
     LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure has been shown to match human perception well. A low LPIPS score means that image patches are
@@ -396,15 +422,14 @@ def learned_perceptual_image_patch_similarity(
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
-        >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
-        >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
+        >>> img1 = (rand(10, 3, 100, 100) * 2) - 1
+        >>> img2 = (rand(10, 3, 100, 100) * 2) - 1
         >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze')
-        tensor(0.1008, grad_fn=<DivBackward0>)
+        tensor(0.1005)
 
     """
-    net = _NoTrainLpips(net=net_type)
+    net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)
     loss, total = _lpips_update(img1, img2, net, normalize)
     return _lpips_compute(loss.sum(), total, reduction)

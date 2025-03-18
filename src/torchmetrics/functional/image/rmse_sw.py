@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.helper import _uniform_filter
+from torchmetrics.functional.image.utils import _uniform_filter
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -28,7 +28,7 @@ def _rmse_sw_update(
     rmse_val_sum: Optional[Tensor],
     rmse_map: Optional[Tensor],
     total_images: Optional[Tensor],
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Calculate the sum of RMSE values and RMSE map for the batch of examples and update intermediate states.
 
     Args:
@@ -89,7 +89,7 @@ def _rmse_sw_update(
 
 def _rmse_sw_compute(
     rmse_val_sum: Optional[Tensor], rmse_map: Tensor, total_images: Tensor
-) -> Tuple[Optional[Tensor], Tensor]:
+) -> tuple[Optional[Tensor], Tensor]:
     """Compute RMSE from the aggregated RMSE value. Optionally also computes the mean value for RMSE map.
 
     Args:
@@ -104,13 +104,14 @@ def _rmse_sw_compute(
     """
     rmse = rmse_val_sum / total_images if rmse_val_sum is not None else None
     if rmse_map is not None:
-        rmse_map /= total_images
+        # prevent overwrite the inputs
+        rmse_map = rmse_map / total_images
     return rmse, rmse_map
 
 
 def root_mean_squared_error_using_sliding_window(
     preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False
-) -> Union[Optional[Tensor], Tuple[Optional[Tensor], Tensor]]:
+) -> Union[Optional[Tensor], tuple[Optional[Tensor], Tensor]]:
     """Compute Root Mean Squared Error (RMSE) using sliding window.
 
     Args:
@@ -124,18 +125,18 @@ def root_mean_squared_error_using_sliding_window(
         (Optionally) RMSE map
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import root_mean_squared_error_using_sliding_window
-        >>> g = torch.manual_seed(22)
-        >>> preds = torch.rand(4, 3, 16, 16)
-        >>> target = torch.rand(4, 3, 16, 16)
+        >>> preds = rand(4, 3, 16, 16)
+        >>> target = rand(4, 3, 16, 16)
         >>> root_mean_squared_error_using_sliding_window(preds, target)
-        tensor(0.3999)
+        tensor(0.4158)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
 
     """
-    if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
+    if not isinstance(window_size, int) or (isinstance(window_size, int) and window_size < 1):
         raise ValueError("Argument `window_size` is expected to be a positive integer.")
 
     rmse_val_sum, rmse_map, total_images = _rmse_sw_update(

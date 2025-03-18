@@ -18,26 +18,27 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
+
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa
 from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, multiclass_cohen_kappa
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases
 
 seed_all(42)
 
 
-def _sklearn_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
+def _reference_sklearn_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_cohen_kappa(y1=target, y2=preds, weights=weights)
 
 
@@ -49,7 +50,7 @@ class TestBinaryCohenKappa(MetricTester):
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_cohen_kappa(self, inputs, ddp, weights, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -60,7 +61,7 @@ class TestBinaryCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryCohenKappa,
-            reference_metric=partial(_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "weights": weights,
@@ -79,7 +80,7 @@ class TestBinaryCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_cohen_kappa,
-            reference_metric=partial(_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "weights": weights,
@@ -103,8 +104,8 @@ class TestBinaryCohenKappa(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -129,14 +130,14 @@ class TestBinaryCohenKappa(MetricTester):
         )
 
 
-def _sklearn_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
+def _reference_sklearn_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_cohen_kappa(y1=target, y2=preds, weights=weights)
 
 
@@ -148,7 +149,7 @@ class TestMulticlassCohenKappa(MetricTester):
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_cohen_kappa(self, inputs, ddp, weights, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -159,7 +160,9 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassCohenKappa,
-            reference_metric=partial(_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,
@@ -178,7 +181,9 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_cohen_kappa,
-            reference_metric=partial(_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,
@@ -202,8 +207,8 @@ class TestMulticlassCohenKappa(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

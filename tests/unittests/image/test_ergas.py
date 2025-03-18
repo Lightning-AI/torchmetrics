@@ -11,23 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
-from typing import Union
+from typing import NamedTuple
 
 import pytest
 import torch
 from torch import Tensor
+
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target", "ratio"])
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    ratio: int
+
 
 _inputs = []
 for size, channel, coef, ratio, dtype in [
@@ -37,13 +42,13 @@ for size, channel, coef, ratio, dtype in [
     (15, 3, 0.5, 4, torch.float64),
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(Input(preds=preds, target=preds * coef, ratio=ratio))
+    _inputs.append(_Input(preds=preds, target=preds * coef, ratio=ratio))
 
 
-def _baseline_ergas(
+def _reference_ergas(
     preds: Tensor,
     target: Tensor,
-    ratio: Union[int, float] = 4,
+    ratio: float = 4,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
     """Baseline implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
@@ -60,7 +65,7 @@ def _baseline_ergas(
     rmse_per_band = torch.sqrt(sum_squared_error / (h * w))
     mean_target = torch.mean(sk_target, dim=2)
     # compute ergas score
-    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
+    ergas_score = 100 / ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     # reduction
     if reduction == "sum":
         return torch.sum(ergas_score)
@@ -77,15 +82,15 @@ def _baseline_ergas(
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
     """Test class for `ErrorRelativeGlobalDimensionlessSynthesis` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_ergas(self, reduction, preds, target, ratio, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            ErrorRelativeGlobalDimensionlessSynthesis,
-            partial(_baseline_ergas, ratio=ratio, reduction=reduction),
+            metric_class=ErrorRelativeGlobalDimensionlessSynthesis,
+            reference_metric=partial(_reference_ergas, ratio=ratio, reduction=reduction),
             metric_args={"ratio": ratio, "reduction": reduction},
         )
 
@@ -94,13 +99,16 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            error_relative_global_dimensionless_synthesis,
-            partial(_baseline_ergas, ratio=ratio, reduction=reduction),
+            metric_functional=error_relative_global_dimensionless_synthesis,
+            reference_metric=partial(_reference_ergas, ratio=ratio, reduction=reduction),
             metric_args={"ratio": ratio, "reduction": reduction},
         )
 
     # ERGAS half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="ERGAS metric does not support cpu + half precision")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1,
+        reason="Pytoch below 2.1 does not support cpu + half precision used in ERGAS metric",
+    )
     def test_ergas_half_cpu(self, reduction, preds, target, ratio):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(

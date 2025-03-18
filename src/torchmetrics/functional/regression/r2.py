@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Union
+from typing import Union
 
 import torch
 from torch import Tensor
@@ -20,7 +20,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, int]:
+def _r2_score_update(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor, Tensor, int]:
     """Update and returns variables required to compute R2 score.
 
     Check for same shape and 1D/2D input tensors.
@@ -41,15 +41,14 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
     sum_squared_obs = torch.sum(target * target, dim=0)
     residual = target - preds
     rss = torch.sum(residual * residual, dim=0)
-    n_obs = target.size(0)
-    return sum_squared_obs, sum_obs, rss, n_obs
+    return sum_squared_obs, sum_obs, rss, target.size(0)
 
 
 def _r2_score_compute(
     sum_squared_obs: Tensor,
     sum_obs: Tensor,
     rss: Tensor,
-    n_obs: Union[int, Tensor],
+    num_obs: Union[int, Tensor],
     adjusted: int = 0,
     multioutput: str = "uniform_average",
 ) -> Tensor:
@@ -59,7 +58,7 @@ def _r2_score_compute(
         sum_squared_obs: Sum of square of all observations
         sum_obs: Sum of all observations
         rss: Residual sum of squares
-        n_obs: Number of predictions or observations
+        num_obs: Number of predictions or observations
         adjusted: number of independent regressors for calculating adjusted r2 score.
         multioutput: Defines aggregation in the case of multiple output scores. Can be one of the following strings:
 
@@ -70,15 +69,15 @@ def _r2_score_compute(
     Example:
         >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
         >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
-        >>> sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
-        >>> _r2_score_compute(sum_squared_obs, sum_obs, rss, n_obs, multioutput="raw_values")
+        >>> sum_squared_obs, sum_obs, rss, num_obs = _r2_score_update(preds, target)
+        >>> _r2_score_compute(sum_squared_obs, sum_obs, rss, num_obs, multioutput="raw_values")
         tensor([0.9654, 0.9082])
 
     """
-    if n_obs < 2:
+    if num_obs < 2:
         raise ValueError("Needs at least two samples to calculate r2 score.")
 
-    mean_obs = sum_obs / n_obs
+    mean_obs = sum_obs / num_obs
     tss = sum_squared_obs - sum_obs * mean_obs
 
     # Account for near constant targets
@@ -107,16 +106,15 @@ def _r2_score_compute(
         raise ValueError("`adjusted` parameter should be an integer larger or equal to 0.")
 
     if adjusted != 0:
-        if adjusted > n_obs - 1:
+        if adjusted > num_obs - 1:
             rank_zero_warn(
-                "More independent regressions than data points in"
-                " adjusted r2 score. Falls back to standard r2 score.",
+                "More independent regressions than data points in adjusted r2 score. Falls back to standard r2 score.",
                 UserWarning,
             )
-        elif adjusted == n_obs - 1:
+        elif adjusted == num_obs - 1:
             rank_zero_warn("Division by zero in adjusted r2 score. Falls back to standard r2 score.", UserWarning)
         else:
-            return 1 - (1 - r2) * (n_obs - 1) / (n_obs - adjusted - 1)
+            return 1 - (1 - r2) * (num_obs - 1) / (num_obs - adjusted - 1)
     return r2
 
 
@@ -153,7 +151,7 @@ def r2_score(
         ValueError:
             If both ``preds`` and ``targets`` are not ``1D`` or ``2D`` tensors.
         ValueError:
-            If ``len(preds)`` is less than ``2`` since at least ``2`` sampels are needed to calculate r2 score.
+            If ``len(preds)`` is less than ``2`` since at least ``2`` samples are needed to calculate r2 score.
         ValueError:
             If ``multioutput`` is not one of ``raw_values``, ``uniform_average`` or ``variance_weighted``.
         ValueError:
@@ -172,5 +170,5 @@ def r2_score(
         tensor([0.9654, 0.9082])
 
     """
-    sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
-    return _r2_score_compute(sum_squared_obs, sum_obs, rss, n_obs, adjusted, multioutput)
+    sum_squared_obs, sum_obs, rss, num_obs = _r2_score_update(preds, target)
+    return _r2_score_compute(sum_squared_obs, sum_obs, rss, num_obs, adjusted, multioutput)

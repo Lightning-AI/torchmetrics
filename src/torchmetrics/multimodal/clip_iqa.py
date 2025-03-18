@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -39,15 +40,15 @@ if not _PIQ_GREATER_EQUAL_0_8:
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPImageQualityAssessment.plot"]
 
-if _TRANSFORMERS_GREATER_EQUAL_4_10:
+if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
-    def _download_clip() -> None:
-        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
-        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+    def _download_clip_iqa_metric() -> None:
+        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14", resume_download=True)
+        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14", resume_download=True)
 
-    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
+    if not _try_proceed_with_timeout(_download_clip_iqa_metric):
         __doctest_skip__ = ["CLIPImageQualityAssessment", "CLIPImageQualityAssessment.plot"]
 else:
     __doctest_skip__ = ["CLIPImageQualityAssessment", "CLIPImageQualityAssessment.plot"]
@@ -60,13 +61,13 @@ class CLIPImageQualityAssessment(Metric):
     be able to generate a vector representation of the image and the text that is similar if the image and text are
     semantically similar.
 
-    The metric works by calculating the cosine similarity between user provided images and pre-defined promts. The
-    promts always comes in pairs of "positive" and "negative" such as "Good photo." and "Bad photo.". By calculating
+    The metric works by calculating the cosine similarity between user provided images and pre-defined prompts. The
+    prompts always comes in pairs of "positive" and "negative" such as "Good photo." and "Bad photo.". By calculating
     the similartity between image embeddings and both the "positive" and "negative" prompt, the metric can determine
     which prompt the image is more similar to. The metric then returns the probability that the image is more similar
     to the first prompt than the second prompt.
 
-    Build in promts are:
+    Build in prompts are:
         * quality: "Good photo." vs "Bad photo."
         * brightness: "Bright photo." vs "Dark photo."
         * noisiness: "Clean photo." vs "Noisy photo."
@@ -80,7 +81,7 @@ class CLIPImageQualityAssessment(Metric):
         * new: "New photo." vs "Old photo."
         * warm: "Warm photo." vs "Cold photo."
         * real: "Real photo." vs "Abstract photo."
-        * beutiful: "Beautiful photo." vs "Ugly photo."
+        * beautiful: "Beautiful photo." vs "Ugly photo."
         * lonely: "Lonely photo." vs "Sociable photo."
         * relaxing: "Relaxing photo." vs "Stressful photo."
 
@@ -106,13 +107,14 @@ class CLIPImageQualityAssessment(Metric):
         data_range: The maximum value of the input tensor. For example, if the input images are in range [0, 255],
             data_range should be 255. The images are normalized by this value.
         prompts: A string, tuple of strings or nested tuple of strings. If a single string is provided, it must be one
-            of the availble prompts (see above). Else the input is expected to be a tuple, where each element can be one
-            of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
-            availble prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
+            of the available prompts (see above). Else the input is expected to be a tuple, where each element can
+            be one of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
+            available prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
             positive prompt and the second string must be a negative prompt.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    .. note:: If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
+    .. hint::
+        If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
         `pip install piq` or `pip install torchmetrics[image]`.
 
     Raises:
@@ -128,10 +130,9 @@ class CLIPImageQualityAssessment(Metric):
     Example::
         Single prompt:
 
+        >>> from torch import randint
         >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> metric = CLIPImageQualityAssessment()
         >>> metric(imgs)
         tensor([0.8894, 0.8902])
@@ -139,24 +140,22 @@ class CLIPImageQualityAssessment(Metric):
     Example::
         Multiple prompts:
 
+        >>> from torch import randint
         >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> metric = CLIPImageQualityAssessment(prompts=("quality", "brightness"))
         >>> metric(imgs)
-        {'quality': tensor([0.8894, 0.8902]), 'brightness': tensor([0.5507, 0.5208])}
+        {'quality': tensor([0.8693, 0.8705]), 'brightness': tensor([0.5722, 0.4762])}
 
     Example::
         Custom prompts. Must always be a tuple of length 2, with a positive and negative prompt.
 
+        >>> from torch import randint
         >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> metric = CLIPImageQualityAssessment(prompts=(("Super good photo.", "Super bad photo."), "brightness"))
         >>> metric(imgs)
-        {'user_defined_0': tensor([0.9652, 0.9629]), 'brightness': tensor([0.5507, 0.5208])}
+        {'user_defined_0': tensor([0.9578, 0.9654]), 'brightness': tensor([0.5495, 0.5764])}
 
     """
 
@@ -168,6 +167,7 @@ class CLIPImageQualityAssessment(Metric):
 
     anchors: Tensor
     probs_list: List[Tensor]
+    feature_network: str = "model"
 
     def __init__(
         self,
@@ -178,9 +178,9 @@ class CLIPImageQualityAssessment(Metric):
             "openai/clip-vit-large-patch14-336",
             "openai/clip-vit-large-patch14",
         ] = "clip_iqa",
-        data_range: Union[int, float] = 1.0,
-        prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
-        **kwargs: Any
+        data_range: float = 1.0,
+        prompts: tuple[Union[str, tuple[str, str]], ...] = ("quality",),
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not (isinstance(data_range, (int, float)) and data_range > 0):
@@ -213,7 +213,7 @@ class CLIPImageQualityAssessment(Metric):
                 raise ValueError("Output probs should be a tensor")
             self.probs_list.append(probs)
 
-    def compute(self) -> Union[Tensor, Dict[str, Tensor]]:
+    def compute(self) -> Union[Tensor, dict[str, Tensor]]:
         """Compute metric."""
         probs = dim_zero_cat(self.probs_list)
         if len(self.prompts_name) == 1:
@@ -259,3 +259,15 @@ class CLIPImageQualityAssessment(Metric):
 
         """
         return self._plot(val, ax)
+
+
+if TYPE_CHECKING:
+    f = CLIPImageQualityAssessment
+    f(prompts=("colorfullness",))
+    f(
+        prompts=("quality", "brightness", "noisiness"),
+    )
+    f(
+        prompts=("quality", "brightness", "noisiness", "colorfullness"),
+    )
+    f(prompts=(("Photo of a cat", "Photo of a dog"), "quality", ("Colorful photo", "Black and white photo")))

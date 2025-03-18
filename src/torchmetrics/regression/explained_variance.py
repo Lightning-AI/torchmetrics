@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 from typing_extensions import Literal
@@ -81,13 +82,14 @@ class ExplainedVariance(Metric):
         tensor([0.9677, 1.0000])
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    n_obs: Tensor
+    num_obs: Tensor
     sum_error: Tensor
     sum_squared_error: Tensor
     sum_target: Tensor
@@ -109,12 +111,14 @@ class ExplainedVariance(Metric):
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("num_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
-        self.n_obs = self.n_obs + n_obs
+        num_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(
+            preds, target
+        )
+        self.num_obs = self.num_obs + num_obs
         self.sum_error = self.sum_error + sum_error
         self.sum_squared_error = self.sum_squared_error + sum_squared_error
         self.sum_target = self.sum_target + sum_target
@@ -123,7 +127,7 @@ class ExplainedVariance(Metric):
     def compute(self) -> Union[Tensor, Sequence[Tensor]]:
         """Compute explained variance over state."""
         return _explained_variance_compute(
-            self.n_obs,
+            self.num_obs,
             self.sum_error,
             self.sum_squared_error,
             self.sum_target,

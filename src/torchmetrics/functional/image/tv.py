@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
 
 
-def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
+def _total_variation_update(img: Tensor) -> tuple[Tensor, int]:
     """Compute total variation statistics on current batch."""
     if img.ndim != 4:
         raise RuntimeError(f"Expected input `img` to be an 4D tensor, but got {img.shape}")
@@ -64,10 +64,9 @@ def total_variation(img: Tensor, reduction: Optional[Literal["mean", "sum", "non
             If ``img`` is not 4D tensor
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import total_variation
-        >>> _ = torch.manual_seed(42)
-        >>> img = torch.rand(5, 3, 28, 28)
+        >>> img = rand(5, 3, 28, 28)
         >>> total_variation(img)
         tensor(7546.8018)
 

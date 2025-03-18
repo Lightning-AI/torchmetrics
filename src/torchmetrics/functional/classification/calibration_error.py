@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -23,12 +23,13 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _binning_bucketize(
     confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Compute calibration bins using ``torch.bucketize``. Use for ``pytorch >=1.6``.
 
     Args:
@@ -133,7 +134,7 @@ def _binary_calibration_error_tensor_validation(
         )
 
 
-def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     confidences, accuracies = preds, target
     return confidences, accuracies
 
@@ -238,9 +239,8 @@ def _multiclass_calibration_error_tensor_validation(
 def _multiclass_calibration_error_update(
     preds: Tensor,
     target: Tensor,
-) -> Tuple[Tensor, Tensor]:
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.softmax(1)
+) -> tuple[Tensor, Tensor]:
+    preds = normalize_logits_if_needed(preds, "softmax")
     confidences, predictions = preds.max(dim=1)
     accuracies = predictions.eq(target)
     return confidences.float(), accuracies.float()
@@ -287,7 +287,7 @@ def multiclass_calibration_error(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         n_bins: Number of bins to use when computing the metric.
         norm: Norm used to compare empirical and expected probability bins.
         ignore_index:

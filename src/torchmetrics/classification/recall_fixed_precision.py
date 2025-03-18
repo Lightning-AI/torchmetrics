@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -59,7 +60,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -104,6 +105,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         (tensor(1.), tensor(0.5000))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -113,7 +115,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
     def __init__(
         self,
         min_precision: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -124,7 +126,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_recall_at_fixed_precision_compute(state, self.thresholds, self.min_precision)
@@ -181,7 +183,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
     a given precision level.
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
-    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -193,7 +195,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
@@ -211,7 +213,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         min_precision: float value specifying minimum precision threshold.
         thresholds:
             Can be one of:
@@ -244,6 +246,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -255,7 +258,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         self,
         num_classes: int,
         min_precision: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -268,7 +271,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_recall_at_fixed_precision_arg_compute(
@@ -335,7 +338,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
@@ -353,7 +356,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         min_precision: float value specifying minimum precision threshold.
         thresholds:
             Can be one of:
@@ -389,6 +392,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         (tensor([1., 1., 1.]), tensor([0.0000, 0.5000, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -400,7 +404,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         self,
         num_labels: int,
         min_precision: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -413,7 +417,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_recall_at_fixed_precision_arg_compute(
@@ -472,7 +476,7 @@ class RecallAtFixedPrecision(_ClassificationTaskWrapper):
     a given precision level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryRecallAtFixedPrecision`,
     :class:`~torchmetrics.classification.MulticlassRecallAtFixedPrecision` and
     :class:`~torchmetrics.classification.MultilabelRecallAtFixedPrecision` for the specific details of each argument
@@ -481,10 +485,10 @@ class RecallAtFixedPrecision(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["RecallAtFixedPrecision"],
         task: Literal["binary", "multiclass", "multilabel"],
         min_precision: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,

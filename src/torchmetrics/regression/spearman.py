@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 
@@ -67,6 +68,7 @@ class SpearmanCorrCoef(Metric):
         tensor([1.0000, 1.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -87,7 +89,7 @@ class SpearmanCorrCoef(Metric):
             " For large datasets, this may lead to large memory footprint."
         )
         if not isinstance(num_outputs, int) and num_outputs < 1:
-            raise ValueError("Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
+            raise ValueError(f"Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
         self.num_outputs = num_outputs
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
@@ -96,8 +98,8 @@ class SpearmanCorrCoef(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         preds, target = _spearman_corrcoef_update(preds, target, num_outputs=self.num_outputs)
-        self.preds.append(preds)
-        self.target.append(target)
+        self.preds.append(preds.to(self.dtype))
+        self.target.append(target.to(self.dtype))
 
     def compute(self) -> Tensor:
         """Compute Spearman's correlation coefficient."""

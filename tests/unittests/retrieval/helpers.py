@@ -12,35 +12,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from itertools import chain
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import Metric, MetricTester
-from unittests.retrieval.inputs import _input_retrieval_scores as _irs
-from unittests.retrieval.inputs import _input_retrieval_scores_all_target as _irs_all
-from unittests.retrieval.inputs import _input_retrieval_scores_empty as _irs_empty
-from unittests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
-from unittests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
-from unittests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
-from unittests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
-from unittests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
+from unittests._helpers import seed_all
+from unittests._helpers.testers import Metric, MetricTester
+from unittests.retrieval._inputs import _input_retrieval_scores as _irs
+from unittests.retrieval._inputs import _input_retrieval_scores_all_target as _irs_all
+from unittests.retrieval._inputs import _input_retrieval_scores_empty as _irs_empty
+from unittests.retrieval._inputs import _input_retrieval_scores_extra as _irs_extra
+from unittests.retrieval._inputs import _input_retrieval_scores_float_target as _irs_float_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
+from unittests.retrieval._inputs import _input_retrieval_scores_int_target as _irs_int_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_mismatching_sizes as _irs_bad_sz
+from unittests.retrieval._inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_bad_sz_fn
+from unittests.retrieval._inputs import _input_retrieval_scores_no_target as _irs_no_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
+from unittests.retrieval._inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
 
 seed_all(42)
 
 # a version of get_group_indexes that depends on NumPy is here to avoid this dependency for the full library
 
 
-def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
+def _retrieval_aggregate(
+    values: Tensor,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+    dim: Optional[int] = None,
+) -> Tensor:
+    """Aggregate the final retrieval values into a single value."""
+    if aggregation == "mean":
+        return values.mean() if dim is None else values.mean(dim=dim)
+    if aggregation == "median":
+        return values.median() if dim is None else values.median(dim=dim).values
+    if aggregation == "min":
+        return values.min() if dim is None else values.min(dim=dim).values
+    if aggregation == "max":
+        return values.max() if dim is None else values.max(dim=dim).values
+    return aggregation(values, dim=dim)
+
+
+def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> list[Union[Tensor, np.ndarray]]:
     """Extract group indexes.
 
     Given an integer :class:`~torch.Tensor` or `np.ndarray` `indexes`, return a :class:`~torch.Tensor` or
@@ -71,6 +90,10 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
     return [structure(x, dtype=dtype) for x in res.values()]
 
 
+def _custom_aggregate_fn(val: Tensor, dim=None) -> Tensor:
+    return (val**2).mean() if dim is None else (val**2).mean(dim=dim)
+
+
 def _compute_sklearn_metric(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
@@ -79,6 +102,7 @@ def _compute_sklearn_metric(
     empty_target_action: str = "skip",
     ignore_index: Optional[int] = None,
     reverse: bool = False,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
     **kwargs: Any,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
@@ -122,21 +146,23 @@ def _compute_sklearn_metric(
     sk_results = np.array(sk_results)
     sk_results[np.isnan(sk_results)] = 0.0  # this is needed with old versions of sklearn
 
-    return sk_results.mean() if len(sk_results) > 0 else np.array(0.0)
+    if len(sk_results) > 0:
+        return _retrieval_aggregate(torch.from_numpy(sk_results), aggregation=aggregation).numpy()
+    return np.array(0.0)
 
 
-def _concat_tests(*tests: Tuple[Dict]) -> Dict:
+def _concat_tests(*tests: tuple[dict]) -> dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
     assert all(tests[0]["argnames"] == x["argnames"] for x in tests[1:]), "the header must be the same for all tests"
-    return {"argnames": tests[0]["argnames"], "argvalues": sum((x["argvalues"] for x in tests), [])}
+    return {"argnames": tests[0]["argnames"], "argvalues": list(chain.from_iterable(x["argvalues"] for x in tests))}
 
 
 _errors_test_functional_metric_parameters_default = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_bad_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
@@ -150,7 +176,7 @@ _errors_test_functional_metric_parameters_with_nonbinary = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_bad_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
@@ -224,9 +250,9 @@ _errors_test_class_metric_parameters_with_nonbinary = {
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes,
-            _irs_mis_sz.preds,
-            _irs_mis_sz.target,
+            _irs_bad_sz.indexes,
+            _irs_bad_sz.preds,
+            _irs_bad_sz.target,
             "`indexes`, `preds` and `target` must be of the same shape",
             {"empty_target_action": "skip"},
         ),
@@ -278,9 +304,9 @@ _errors_test_class_metric_parameters_default = {
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes,
-            _irs_mis_sz.preds,
-            _irs_mis_sz.target,
+            _irs_bad_sz.indexes,
+            _irs_bad_sz.preds,
+            _irs_bad_sz.target,
             "`indexes`, `preds` and `target` must be of the same shape",
             {"empty_target_action": "skip"},
         ),
@@ -382,7 +408,7 @@ def _errors_test_class_metric(
     metric_class: Metric,
     message: str = "",
     metric_args: Optional[dict] = None,
-    exception_type: Type[Exception] = ValueError,
+    exception_type: type[Exception] = ValueError,
     kwargs_update: Optional[dict] = None,
 ):
     """Check types, parameters and errors.
@@ -411,7 +437,7 @@ def _errors_test_functional_metric(
     target: Tensor,
     metric_functional: Metric,
     message: str = "",
-    exception_type: Type[Exception] = ValueError,
+    exception_type: type[Exception] = ValueError,
     kwargs_update: Optional[dict] = None,
 ):
     """Check types, parameters and errors.
@@ -538,7 +564,7 @@ class RetrievalMetricTester(MetricTester):
         metric_class: Metric,
         message: str = "",
         metric_args: Optional[dict] = None,
-        exception_type: Type[Exception] = ValueError,
+        exception_type: type[Exception] = ValueError,
         kwargs_update: Optional[dict] = None,
     ) -> None:
         """Test that specific errors are raised for incorrect input."""
@@ -559,7 +585,7 @@ class RetrievalMetricTester(MetricTester):
         target: Tensor,
         metric_functional: Callable,
         message: str = "",
-        exception_type: Type[Exception] = ValueError,
+        exception_type: type[Exception] = ValueError,
         kwargs_update: Optional[dict] = None,
     ) -> None:
         """Test that specific errors are raised for incorrect input."""

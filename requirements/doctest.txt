@@ -1,6 +1,0 @@
-# NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
-#  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
-
-pytest >=6.0.0, <7.5.0
-pytest-doctestplus >=0.9.0, <=1.0.0
-pytest-rerunfailures >=10.0, <13.0

@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -43,13 +44,13 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
-        >>> g = torch.manual_seed(22)
-        >>> preds = torch.rand(4, 3, 16, 16)
-        >>> target = torch.rand(4, 3, 16, 16)
+        >>> preds = rand(4, 3, 16, 16)
+        >>> target = rand(4, 3, 16, 16)
         >>> rmse_sw = RootMeanSquaredErrorUsingSlidingWindow()
         >>> rmse_sw(preds, target)
-        tensor(0.3999)
+        tensor(0.4158)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
@@ -68,10 +69,10 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
     def __init__(
         self,
         window_size: int = 8,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
-        if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
+        if not isinstance(window_size, int) or (isinstance(window_size, int) and window_size < 1):
             raise ValueError("Argument `window_size` is expected to be a positive integer.")
         self.window_size = window_size
 

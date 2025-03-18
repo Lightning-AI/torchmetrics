@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -31,7 +32,7 @@ if not _MATPLOTLIB_AVAILABLE:
 def _bootstrap_sampler(
     size: int,
     sampling_strategy: str = "poisson",
-) -> Tensor:
+) -> torch.Tensor:
     """Resample a tensor along its first dimension with replacement.
 
     Args:
@@ -62,7 +63,7 @@ class BootStrapper(WrapperMetric):
         base_metric: base metric class to wrap
         num_bootstraps: number of copies to make of the base metric for bootstrapping
         mean: if ``True`` return the mean of the bootstraps
-        std: if ``True`` return the standard diviation of the bootstraps
+        std: if ``True`` return the standard deviation of the bootstraps
         quantile: if given, returns the quantile of the bootstraps. Can only be used with pytorch version 1.6 or higher
         raw: if ``True``, return all bootstrapped values
         sampling_strategy:
@@ -75,17 +76,18 @@ class BootStrapper(WrapperMetric):
 
     Example::
         >>> from pprint import pprint
+        >>> from torch import randint
         >>> from torchmetrics.wrappers import BootStrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
-        >>> _ = torch.manual_seed(123)
         >>> base_metric = MulticlassAccuracy(num_classes=5, average='micro')
         >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
-        >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
+        >>> bootstrap.update(randint(5, (20,)), randint(5, (20,)))
         >>> output = bootstrap.compute()
         >>> pprint(output)
-        {'mean': tensor(0.2205), 'std': tensor(0.0859)}
+        {'mean': tensor(0.2089), 'std': tensor(0.0772)}
 
     """
+
     full_state_update: Optional[bool] = True
 
     def __init__(
@@ -117,7 +119,7 @@ class BootStrapper(WrapperMetric):
         if sampling_strategy not in allowed_sampling:
             raise ValueError(
                 f"Expected argument ``sampling_strategy`` to be one of {allowed_sampling}"
-                f" but recieved {sampling_strategy}"
+                f" but received {sampling_strategy}"
             )
         self.sampling_strategy = sampling_strategy
 
@@ -127,12 +129,12 @@ class BootStrapper(WrapperMetric):
         Any tensor passed in will be bootstrapped along dimension 0.
 
         """
-        args_sizes = apply_to_collection(args, Tensor, len)
-        kwargs_sizes = list(apply_to_collection(kwargs, Tensor, len))
+        args_sizes = apply_to_collection(args, torch.Tensor, len)
+        kwargs_sizes = apply_to_collection(kwargs, torch.Tensor, len)
         if len(args_sizes) > 0:
             size = args_sizes[0]
         elif len(kwargs_sizes) > 0:
-            size = kwargs_sizes[0]
+            size = next(iter(kwargs_sizes.values()))
         else:
             raise ValueError("None of the input contained tensors, so could not determine the sampling size")
 
@@ -140,11 +142,11 @@ class BootStrapper(WrapperMetric):
             sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
             if sample_idx.numel() == 0:
                 continue
-            new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
-            new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
-            self.metrics[idx].update(*new_args, **new_kwargs)
+            new_args = apply_to_collection(args, torch.Tensor, torch.index_select, dim=0, index=sample_idx)
+            new_kwargs = apply_to_collection(kwargs, torch.Tensor, torch.index_select, dim=0, index=sample_idx)
+            self.metrics[idx].update(*new_args, **new_kwargs)  # type: ignore[operator]  # needed for mypy
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Compute the bootstrapped metric values.
 
         Always returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
@@ -166,6 +168,12 @@ class BootStrapper(WrapperMetric):
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Use the original forward method of the base metric class."""
         return super(WrapperMetric, self).forward(*args, **kwargs)
+
+    def reset(self) -> None:
+        """Reset the state of the base metric."""
+        for m in self.metrics:
+            m.reset()
+        super().reset()
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

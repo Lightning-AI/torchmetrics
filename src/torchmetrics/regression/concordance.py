@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Optional, Union
 
 from torch import Tensor
 
@@ -67,6 +68,7 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         tensor([0.7273, 0.9887])
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = True

@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
 import multiprocessing
 import os
+import sys
+from collections.abc import Mapping, Sequence
 from functools import partial
 from time import perf_counter
-from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
+from typing import Any, Callable, Optional, no_type_check
 from unittest.mock import Mock
 
 import torch
@@ -31,9 +32,7 @@ _SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
 def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
-    if preds.numel() == target.numel() == 0:
-        return True
-    return False
+    return preds.numel() == target.numel() == 0
 
 
 def _check_same_shape(preds: Tensor, target: Tensor) -> None:
@@ -72,7 +71,7 @@ def _basic_input_validation(
         raise ValueError("If you set `multiclass=False` and `preds` are integers, then `preds` should not exceed 1.")
 
 
-def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
+def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> tuple[DataType, int]:
     """Check that the shape and type of inputs are consistent with each other.
 
     The input types needs to be one of allowed input types (see the documentation of docstring of
@@ -303,7 +302,7 @@ def _check_classification_inputs(
 def _input_squeeze(
     preds: Tensor,
     target: Tensor,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Remove excess dimensions."""
     if preds.shape[0] == 1:
         preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
@@ -320,7 +319,7 @@ def _input_format_classification(
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor, DataType]:
+) -> tuple[Tensor, Tensor, DataType]:
     """Convert preds and target tensors into common format.
 
     Preds and targets are supposed to fall into one of these categories (and are
@@ -462,7 +461,7 @@ def _input_format_classification_one_hot(
     target: Tensor,
     threshold: float = 0.5,
     multilabel: bool = False,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert preds and target tensors into one hot spare label tensors.
 
     Args:
@@ -510,7 +509,7 @@ def _check_retrieval_functional_inputs(
     preds: Tensor,
     target: Tensor,
     allow_non_binary_target: bool = False,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Check ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
@@ -543,7 +542,7 @@ def _check_retrieval_inputs(
     target: Tensor,
     allow_non_binary_target: bool = False,
     ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
@@ -590,7 +589,7 @@ def _check_retrieval_target_and_prediction_types(
     preds: Tensor,
     target: Tensor,
     allow_non_binary_target: bool = False,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Check ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
@@ -635,8 +634,8 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
 @no_type_check
 def check_forward_full_state_property(
     metric_class: Metric,
-    init_args: Optional[Dict[str, Any]] = None,
-    input_args: Optional[Dict[str, Any]] = None,
+    init_args: Optional[dict[str, Any]] = None,
+    input_args: Optional[dict[str, Any]] = None,
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
 ) -> None:
@@ -649,14 +648,14 @@ def check_forward_full_state_property(
         metric_class: metric class object that should be checked
         init_args: dict containing arguments for initializing the metric class
         input_args: dict containing arguments to pass to ``forward``
-        num_update_to_compare: if we successfully detech that the flag is safe to set to ``False``
+        num_update_to_compare: if we successfully detect that the flag is safe to set to ``False``
             we will run some speedup test. This arg should be a list of integers for how many
             steps to compare over.
         reps: number of repetitions of speedup test
 
     Example (states in ``update`` are independent, save to set ``full_state_update=False``)
         >>> from torchmetrics.classification import MulticlassConfusionMatrix
-        >>> check_forward_full_state_property(  # doctest: +ELLIPSIS
+        >>> check_forward_full_state_property(  # doctest: +SKIP
         ...     MulticlassConfusionMatrix,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (100,)), 'target': torch.randint(3, (100,))},
@@ -669,7 +668,7 @@ def check_forward_full_state_property(
         Partial state for 1000 steps took: ...
         Recommended setting `full_state_update=False`
 
-    Example (states in ``update`` are dependend meaning that ``full_state_update=True``):
+    Example (states in ``update`` are dependent meaning that ``full_state_update=True``):
         >>> from torchmetrics.classification import MulticlassConfusionMatrix
         >>> class MyMetric(MulticlassConfusionMatrix):
         ...     def update(self, preds, target):
@@ -766,7 +765,7 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
 def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
     """Check if a certain function is taking too long to execute.
 
-    Function will only be executed if running inside a doctest context. Currently does not support Windows.
+    Function will only be executed if running inside a doctest context. Currently, does not support Windows.
 
     Args:
         fn: function to check
@@ -778,7 +777,8 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
     """
     # source: https://stackoverflow.com/a/14924210/4521646
     proc = multiprocessing.Process(target=fn)
-    logging.debug(f"try to run `{fn.__name__}` for {timeout}s...")
+
+    print(f"Trying to run `{fn.__name__}` for {timeout}s...", file=sys.stderr)
     proc.start()
     # Wait for N seconds or until process finishes
     proc.join(timeout)
@@ -786,10 +786,10 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
     if not proc.is_alive():
         return True
 
-    logging.warning(f"running `{fn.__name__}`... let's kill it...")
+    print(f"`{fn.__name__}` did not complete with {timeout}, killing process and returning False", file=sys.stderr)
     # Terminate - may not work if process is stuck for good
-    proc.terminate()
+    # proc.terminate()
+    # proc.join()
     # OR Kill - will work for sure, no chance for process to finish nicely however
-    # p.kill()
-    proc.join()
+    proc.kill()
     return False

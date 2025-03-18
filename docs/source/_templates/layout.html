@@ -1,10 +1,22 @@
 {% extends "!layout.html" %}
 <link rel="canonical" href="{{ theme_canonical_url }}{{ pagename }}.html" />
 
-{% block footer %}
-{{ super() }}
+{% block footer %} {{ super() }}
 <script script type="text/javascript">
-  var collapsedSections = ['Audio', 'Classification', 'Image', 'Detection', 'Pairwise', 'Regression', 'Retrieval', 'Text', 'Aggregation', 'Wrappers', 'API Reference', 'Community'];
+  var collapsedSections = [
+    "Audio",
+    "Classification",
+    "Image",
+    "Detection",
+    "Pairwise",
+    "Regression",
+    "Retrieval",
+    "Text",
+    "Aggregation",
+    "Wrappers",
+    "API Reference",
+    "Community",
+  ];
 </script>
 
 {% endblock %}

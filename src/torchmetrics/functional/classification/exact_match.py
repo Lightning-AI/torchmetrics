@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -42,7 +42,7 @@ def _multiclass_exact_match_update(
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Compute the statistics."""
     if ignore_index is not None:
         preds = preds.clone()
@@ -77,7 +77,7 @@ def multiclass_exact_match(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of labels
+        num_classes: Integer specifying the number of labels
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
 
@@ -123,7 +123,7 @@ def multiclass_exact_match(
 
 def _multilabel_exact_match_update(
     preds: Tensor, target: Tensor, num_labels: int, multidim_average: Literal["global", "samplewise"] = "global"
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Compute the statistics."""
     if multidim_average == "global":
         preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
@@ -151,14 +151,14 @@ def multilabel_exact_match(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:

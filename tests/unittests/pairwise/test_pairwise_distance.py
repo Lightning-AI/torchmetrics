@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
@@ -23,6 +23,8 @@ from sklearn.metrics.pairwise import (
     manhattan_distances,
     pairwise_distances,
 )
+from torch import Tensor
+
 from torchmetrics.functional import (
     pairwise_cosine_similarity,
     pairwise_euclidean_distance,
@@ -30,26 +32,27 @@ from torchmetrics.functional import (
     pairwise_manhattan_distance,
     pairwise_minkowski_distance,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
-
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
 extra_dim = 5
 
-Input = namedtuple("Input", ["x", "y"])
+
+class _Input(NamedTuple):
+    x: Tensor
+    y: Tensor
 
 
-_inputs1 = Input(
+_inputs1 = _Input(
     x=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
     y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )
 
 
-_inputs2 = Input(
+_inputs2 = _Input(
     x=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
     y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )
@@ -78,7 +81,7 @@ def _wrap_reduction(x, y, sk_fn, reduction):
     [
         pytest.param(pairwise_cosine_similarity, cosine_similarity, id="cosine"),
         pytest.param(pairwise_euclidean_distance, euclidean_distances, id="euclidean"),
-        pytest.param(pairwise_manhattan_distance, manhattan_distances, id="manhatten"),
+        pytest.param(pairwise_manhattan_distance, manhattan_distances, id="manhattan"),
         pytest.param(pairwise_linear_similarity, linear_kernel, id="linear"),
         pytest.param(
             partial(pairwise_minkowski_distance, exponent=3),
@@ -112,8 +115,6 @@ class TestPairwise(MetricTester):
         """Test half precision support on cpu."""
         if "euclidean" in request.node.callspec.id:
             pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
-        if "minkowski" in request.node.callspec.id and not _TORCH_GREATER_EQUAL_1_9:
-            pytest.xfail("pairwise_minkowski_distance metric does not support cpu + half precision for pytorch<1.9")
         self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -153,7 +154,7 @@ def test_error_on_wrong_shapes(metric):
         (partial(pairwise_minkowski_distance, exponent=3), partial(pairwise_distances, metric="minkowski", p=3)),
     ],
 )
-def test_precison_case(metric_functional, sk_fn):
+def test_precision_case(metric_functional, sk_fn):
     """Test that metrics are robust towars cases where high precision is needed."""
     x = torch.tensor([[772.0, 112.0], [772.20001, 112.0]])
     res1 = metric_functional(x, zero_diagonal=False)

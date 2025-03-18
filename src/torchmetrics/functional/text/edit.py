@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Literal, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -38,7 +39,8 @@ def _edit_distance_update(
         )
 
     distance = [
-        _LE_distance(t, op_substitute=substitution_cost)(p)[0] for p, t in zip(preds, target)  # type: ignore[arg-type]
+        _LE_distance(t, op_substitute=substitution_cost)(p)[0]  # type: ignore[arg-type]
+        for p, t in zip(preds, target)
     ]
     return torch.tensor(distance, dtype=torch.int)
 

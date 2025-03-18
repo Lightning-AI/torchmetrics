@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Sequence, Tuple, Union, no_type_check
+from collections.abc import Sequence
+from typing import Any, Callable, Optional, Union, no_type_check
 
 import torch
 from torch import Tensor
@@ -20,6 +21,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.classification.dice import _dice_compute
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -75,7 +77,7 @@ class Dice(Metric):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            .. note::
+            .. hint::
                What is considered a sample in the multi-dimensional multi-class case
                depends on the value of ``mdmc_average``.
 
@@ -114,6 +116,12 @@ class Dice(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    .. warning::
+        The ``dice`` metrics is being deprecated from the classification subpackage in v1.6.0 of torchmetrics and will
+        be removed in v1.7.0. Please instead consider using ``f1score`` metric from the classification subpackage as it
+        provides the same functionality. Additionally, we are going to re-add the ``dice`` metric in the segmentation
+        domain in v1.6.0 with slight modifications to functionality.
+
     Raises:
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"samples"``, ``"none"``, ``None``.
@@ -134,6 +142,7 @@ class Dice(Metric):
         tensor(0.2500)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -154,6 +163,14 @@ class Dice(Metric):
         multiclass: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:
+        rank_zero_warn(
+            "The `dice` metrics is being deprecated from the classification subpackage in v1.6.0 of torchmetrics and"
+            " will removed in v1.7.0. Please instead consider using `f1score` metric from the classification subpackage"
+            " as it provides the same functionality. Additionally, we are going to re-add the `dice` metric in the"
+            " segmentation domain in v1.6.0 with slight modifications to functionality.",
+            DeprecationWarning,
+        )
+
         super().__init__(**kwargs)
         allowed_average = ("micro", "macro", "samples", "none", None)
         if average not in allowed_average:
@@ -231,8 +248,8 @@ class Dice(Metric):
             self.fn.append(fn)
 
     @no_type_check
-    def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Perform concatenation on the stat scores if neccesary, before passing them to a compute function."""
+    def _get_final_stats(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+        """Perform concatenation on the stat scores if necessary, before passing them to a compute function."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
         tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn

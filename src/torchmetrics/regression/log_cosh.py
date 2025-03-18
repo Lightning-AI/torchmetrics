@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -90,9 +91,9 @@ class LogCoshError(Metric):
                 If ``preds`` or ``target`` has multiple outputs when ``num_outputs=1``
 
         """
-        sum_log_cosh_error, n_obs = _log_cosh_error_update(preds, target, self.num_outputs)
+        sum_log_cosh_error, num_obs = _log_cosh_error_update(preds, target, self.num_outputs)
         self.sum_log_cosh_error += sum_log_cosh_error
-        self.total += n_obs
+        self.total += num_obs
 
     def compute(self) -> Tensor:
         """Compute LogCosh error over state."""

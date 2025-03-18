@@ -20,6 +20,7 @@ Core Maintainers
 - Daniel Stancl (`stancld <https://github.com/stancld>`_)
 - Luca Di Liello (`lucadiliello <https://github.com/lucadiliello>`_)
 - Changsheng Quan (`quancs <https://github.com/quancs>`_)
+- Shion Matsumoto (`matsumotosan <https://github.com/matsumotosan>`_)
 
 
 Alumni

@@ -15,8 +15,8 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.clustering.utils import (
-    calcualte_pair_cluster_confusion_matrix,
     calculate_contingency_matrix,
+    calculate_pair_cluster_confusion_matrix,
     check_cluster_labels,
 )
 
@@ -46,7 +46,7 @@ def _adjusted_rand_score_compute(contingency: Tensor) -> Tensor:
         rand_score: rand score
 
     """
-    (tn, fp), (fn, tp) = calcualte_pair_cluster_confusion_matrix(contingency=contingency)
+    (tn, fp), (fn, tp) = calculate_pair_cluster_confusion_matrix(contingency=contingency)
     if fn == 0 and fp == 0:
         return torch.ones_like(tn, dtype=torch.float32)
     return 2.0 * (tp * tn - fn * fp) / ((tp + fn) * (fn + tn) + (tp + fp) * (fp + tn))

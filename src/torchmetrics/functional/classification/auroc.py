@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -47,12 +47,13 @@ def _reduce_auroc(
     tpr: Union[Tensor, List[Tensor]],
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
+    direction: float = 1.0,
 ) -> Tensor:
     """Reduce multiple average precision score into one number."""
     if isinstance(fpr, Tensor) and isinstance(tpr, Tensor):
-        res = _auc_compute_without_check(fpr, tpr, 1.0, axis=1)
+        res = _auc_compute_without_check(fpr, tpr, direction=direction, axis=1)
     else:
-        res = torch.stack([_auc_compute_without_check(x, y, 1.0) for x, y in zip(fpr, tpr)])
+        res = torch.stack([_auc_compute_without_check(x, y, direction=direction) for x, y in zip(fpr, tpr)])
     if average is None or average == "none":
         return res
     if torch.isnan(res).any():
@@ -71,7 +72,7 @@ def _reduce_auroc(
 
 def _binary_auroc_arg_validation(
     max_fpr: Optional[float] = None,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -80,7 +81,7 @@ def _binary_auroc_arg_validation(
 
 
 def _binary_auroc_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
     max_fpr: Optional[float] = None,
     pos_label: int = 1,
@@ -110,7 +111,7 @@ def binary_auroc(
     preds: Tensor,
     target: Tensor,
     max_fpr: Optional[float] = None,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -180,7 +181,7 @@ def binary_auroc(
 def _multiclass_auroc_arg_validation(
     num_classes: int,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -190,7 +191,7 @@ def _multiclass_auroc_arg_validation(
 
 
 def _multiclass_auroc_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_classes: int,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     thresholds: Optional[Tensor] = None,
@@ -209,7 +210,7 @@ def multiclass_auroc(
     target: Tensor,
     num_classes: int,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -238,7 +239,7 @@ def multiclass_auroc(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over classes. Should be one of the following:
 
@@ -295,7 +296,7 @@ def multiclass_auroc(
 def _multilabel_auroc_arg_validation(
     num_labels: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -305,7 +306,7 @@ def _multilabel_auroc_arg_validation(
 
 
 def _multilabel_auroc_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_labels: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
     thresholds: Optional[Tensor],
@@ -337,7 +338,7 @@ def multilabel_auroc(
     target: Tensor,
     num_labels: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -366,7 +367,7 @@ def multilabel_auroc(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -428,7 +429,7 @@ def auroc(
     preds: Tensor,
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
@@ -443,7 +444,7 @@ def auroc(
     corresponds to random guessing.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_auroc`,
     :func:`~torchmetrics.functional.classification.multiclass_auroc` and
     :func:`~torchmetrics.functional.classification.multilabel_auroc` for the specific details of

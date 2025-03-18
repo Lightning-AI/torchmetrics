@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -51,7 +52,7 @@ class MultilabelCoverageError(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -59,17 +60,17 @@ class MultilabelCoverageError(Metric):
     - ``mlce`` (:class:`~torch.Tensor`): A tensor containing the multilabel coverage error.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.classification import MultilabelCoverageError
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> mlce = MultilabelCoverageError(num_labels=5)
         >>> mlce(preds, target)
         tensor(3.9000)
@@ -106,13 +107,24 @@ class MultilabelCoverageError(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_coverage_error_update(preds, target)
+        measure, num_elements = _multilabel_coverage_error_update(preds, target)
+
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _ranking_reduce(self.measure, self.total)
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -171,7 +183,7 @@ class MultilabelRankingAveragePrecision(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -179,17 +191,17 @@ class MultilabelRankingAveragePrecision(Metric):
     - ``mlrap`` (:class:`~torch.Tensor`): A tensor containing the multilabel ranking average precision.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.classification import MultilabelRankingAveragePrecision
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> mlrap = MultilabelRankingAveragePrecision(num_labels=5)
         >>> mlrap(preds, target)
         tensor(0.7744)
@@ -226,13 +238,23 @@ class MultilabelRankingAveragePrecision(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_ranking_average_precision_update(preds, target)
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
+        measure, num_elements = _multilabel_ranking_average_precision_update(preds, target)
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _ranking_reduce(self.measure, self.total)
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -291,7 +313,7 @@ class MultilabelRankingLoss(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -301,17 +323,17 @@ class MultilabelRankingLoss(Metric):
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.classification import MultilabelRankingLoss
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> mlrl = MultilabelRankingLoss(num_labels=5)
         >>> mlrl(preds, target)
         tensor(0.4167)
@@ -348,13 +370,23 @@ class MultilabelRankingLoss(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_ranking_loss_update(preds, target)
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
+        measure, num_elements = _multilabel_ranking_loss_update(preds, target)
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _ranking_reduce(self.measure, self.total)
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

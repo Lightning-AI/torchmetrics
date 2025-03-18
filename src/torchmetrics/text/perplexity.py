@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -33,8 +34,8 @@ class Perplexity(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): Logits or a unnormalized score assigned to each token in a sequence with shape
-        [batch_size, seq_len, vocab_size], which is the output of a language model. Scores will be normalized internally
-        using softmax.
+      [batch_size, seq_len, vocab_size], which is the output of a language model. Scores will be normalized internally
+      using softmax.
     - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
@@ -48,17 +49,17 @@ class Perplexity(Metric):
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Examples:
+        >>> from torch import rand, randint
         >>> from torchmetrics.text import Perplexity
-        >>> import torch
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand(2, 8, 5, generator=gen)
-        >>> target = torch.randint(5, (2, 8), generator=gen)
+        >>> preds = rand(2, 8, 5)
+        >>> target = randint(5, (2, 8))
         >>> target[0, 6:] = -100
         >>> perp = Perplexity(ignore_index=-100)
         >>> perp(preds, target)
         tensor(5.8540)
 
     """
+
     is_differentiable = True
     higher_is_better = False
     full_state_update = False
@@ -68,7 +69,7 @@ class Perplexity(Metric):
     def __init__(
         self,
         ignore_index: Optional[int] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
         if ignore_index is not None and not isinstance(ignore_index, int):

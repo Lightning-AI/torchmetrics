@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Callable, Optional, Union
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.retrieval.base import RetrievalMetric
@@ -57,6 +59,15 @@ class RetrievalHitRate(RetrievalMetric):
 
         ignore_index: Ignore predictions where the target is equal to this number.
         top_k: Consider only the top k elements for each query (default: ``None``, which considers them all)
+        aggregation:
+            Specify how to aggregate over indexes. Can either a custom callable function that takes in a single tensor
+            and returns a scalar value or one of the following strings:
+
+            - ``'mean'``: average value is returned
+            - ``'median'``: median value is returned
+            - ``'max'``: max value is returned
+            - ``'min'``: min value is returned
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -90,11 +101,13 @@ class RetrievalHitRate(RetrievalMetric):
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
+        aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
         **kwargs: Any,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
+            aggregation=aggregation,
             **kwargs,
         )
 

@@ -19,18 +19,17 @@ import torch_fidelity
 from torch import nn
 from torch_fidelity.sample_similarity_lpips import SampleSimilarityLPIPS
 from torch_fidelity.utils import batch_interp
+
 from torchmetrics.functional.image.lpips import _LPIPS
 from torchmetrics.functional.image.perceptual_path_length import _interpolate, perceptual_path_length
 from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
-
-from unittests import skip_on_running_out_of_memory
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all, skip_on_running_out_of_memory
 
 seed_all(42)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("interpolation_method", ["lerp", "slerp_any", "slerp_unit"])
 def test_interpolation_methods(interpolation_method):
     """Test that interpolation method works as expected."""
@@ -42,10 +41,10 @@ def test_interpolation_methods(interpolation_method):
     assert torch.allclose(res1, res2)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @skip_on_running_out_of_memory()
 def test_sim_net():
-    """Check that the similiarity network is the same as the one used in torch_fidelity."""
+    """Check that the similarity network is the same as the one used in torch_fidelity."""
     compare = SampleSimilarityLPIPS("sample_similarity", resize=64)
     simnet = _LPIPS(net="vgg", resize=64)
 
@@ -101,7 +100,7 @@ class DummyGenerator(torch.nn.Module):
         return torch.randn(num_samples, self.z_size)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize(
     ("argument", "match"),
     [
@@ -175,7 +174,7 @@ def test_raises_error_on_wrong_generator(generator, errortype, match):
         ppl.update(generator=generator)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU machine")
 @skip_on_running_out_of_memory()
 def test_compare():

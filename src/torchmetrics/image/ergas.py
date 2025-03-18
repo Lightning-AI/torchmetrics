@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -29,10 +30,17 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
-    """Calculate `Relative dimensionless global error synthesis`_ (ERGAS).
+    r"""Calculate the `Error relative global dimensionless synthesis`_  (ERGAS) metric.
 
     This metric is used to calculate the accuracy of Pan sharpened image considering normalized average error of each
-    band of the result image.
+    band of the result image. It is defined as:
+
+    .. math::
+        ERGAS = \frac{100}{r} \cdot \sqrt{\frac{1}{N} \sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\mu_k^2}}
+
+    where :math:`r=h/l` denote the ratio in spatial resolution (pixel size) between the high and low resolution images.
+    :math:`N` is the number of spectral bands, :math:`RMSE(B_k)` is the root mean square error of the k-th band between
+    low and high resolution images, and :math:`\\mu_k` is the mean value of the k-th band of the reference image.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -45,7 +53,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
       value over sample else returns tensor of shape ``(N,)`` with ERGAS values per sample
 
     Args:
-        ratio: ratio of high resolution to low resolution
+        ratio: ratio of high resolution to low resolution.
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -55,13 +63,13 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
-        >>> torch.round(ergas(preds, target))
-        tensor(154.)
+        >>> ergas(preds, target).round()
+        tensor(10.)
 
     """
 
@@ -75,7 +83,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
     def __init__(
         self,
-        ratio: Union[int, float] = 4,
+        ratio: float = 4,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         **kwargs: Any,
     ) -> None:
@@ -124,9 +132,9 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> import torch
+            >>> from torch import rand
             >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> preds = rand([16, 1, 16, 16])
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
             >>> metric.update(preds, target)
@@ -136,9 +144,9 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import rand
             >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> preds = rand([16, 1, 16, 16])
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
             >>> values = [ ]

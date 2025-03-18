@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 
@@ -30,20 +31,20 @@ class DaviesBouldinScore(Metric):
 
     Given the following quantities:
 
-    ..math::
+    .. math::
         S_i = \left( \frac{1}{T_i} \sum_{j=1}^{T_i} ||X_j - A_i||^2_2 \right)^{1/2}
 
     where :math:`T_i` is the number of samples in cluster :math:`i`, :math:`X_j` is the :math:`j`-th sample in cluster
     :math:`i`, and :math:`A_i` is the centroid of cluster :math:`i`. This quantity is the average distance between all
     the samples in cluster :math:`i` and its centroid. Let
 
-    ..math::
+    .. math::
         M_{i,j} = ||A_i - A_j||_2
 
     e.g. the distance between the centroids of cluster :math:`i` and cluster :math:`j`. Then the Davies-Bouldin score
     is defined as:
 
-    ..math::
+    .. math::
         DB = \frac{1}{n_{clusters}} \sum_{i=1}^{n_{clusters}} \max_{j \neq i} \left( \frac{S_i + S_j}{M_{i,j}} \right)
 
     This clustering metric is an intrinsic measure, because it does not rely on ground truth labels for the evaluation.
@@ -63,17 +64,17 @@ class DaviesBouldinScore(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
-        >>> import torch
+    Example::
+        >>> from torch import randn, randint
         >>> from torchmetrics.clustering import DaviesBouldinScore
-        >>> _ = torch.manual_seed(42)
-        >>> data = torch.randn(10, 3)
-        >>> labels = torch.randint(3, (10,))
+        >>> data = randn(10, 3)
+        >>> labels = randint(3, (10,))
         >>> metric = DaviesBouldinScore()
         >>> metric(data, labels)
         tensor(1.2540)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -128,9 +129,10 @@ class DaviesBouldinScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import DaviesBouldinScore
             >>> metric = DaviesBouldinScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randn(10, 3), torch.randint(0, 2, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

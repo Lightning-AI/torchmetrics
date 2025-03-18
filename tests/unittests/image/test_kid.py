@@ -18,13 +18,15 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
+
 from torchmetrics.image.kid import KernelInceptionDistance
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from unittests._helpers import seed_all
 
-torch.manual_seed(42)
+seed_all(42)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
@@ -42,7 +44,7 @@ def test_no_train():
     assert not model.metric.inception.training, "FID metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_kid_pickle():
     """Assert that we can initialize the metric and pickle it."""
     metric = KernelInceptionDistance()
@@ -83,7 +85,7 @@ def test_kid_raises_errors_and_warnings():
         m.compute()
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_kid_extra_parameters():
     """Test that the different input arguments raises expected errors if wrong."""
     with pytest.raises(ValueError, match="Argument `subsets` expected to be integer larger than 0"):
@@ -102,8 +104,19 @@ def test_kid_extra_parameters():
         KernelInceptionDistance(coef=-1)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
-@pytest.mark.parametrize("feature", [64, 192, 768, 2048])
+class _DummyFeatureExtractor(Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.flatten = torch.nn.Flatten()
+        self.extractor = torch.nn.Linear(3 * 299 * 299, 64)
+
+    def __call__(self, img) -> torch.Tensor:
+        img = (img / 125.5).float()  # Convert int img input to float as Linear layer expects float inputs
+        return self.extractor(self.flatten(img))
+
+
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
+@pytest.mark.parametrize("feature", [64, 192, 768, 2048, _DummyFeatureExtractor()])
 def test_kid_same_input(feature):
     """Test that the metric works."""
     metric = KernelInceptionDistance(feature=feature, subsets=5, subset_size=2)
@@ -132,7 +145,7 @@ class _ImgDataset(Dataset):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_compare_kid(tmpdir, feature=2048):
     """Check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics

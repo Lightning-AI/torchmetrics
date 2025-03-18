@@ -11,46 +11,57 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
-from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
-from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
+from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["img1", "img2"])
 
-_inputs = Input(
+class _Input(NamedTuple):
+    img1: Tensor
+    img2: Tensor
+
+
+_inputs = _Input(
     img1=torch.rand(4, 2, 3, 50, 50),
     img2=torch.rand(4, 2, 3, 50, 50),
 )
 
 
-def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool = False, reduction: str = "mean") -> Tensor:
+def _reference_lpips(
+    img1: Tensor, img2: Tensor, net_type: str, normalize: bool = False, reduction: str = "mean"
+) -> Tensor:
     """Comparison function for tm implementation."""
-    ref = LPIPS_reference(net=net_type)
+    try:
+        from lpips import LPIPS
+    except ImportError:
+        pytest.skip("test requires lpips package to be installed")
+
+    ref = LPIPS(net=net_type)
     res = ref(img1, img2, normalize=normalize).detach().cpu().numpy()
     if reduction == "mean":
         return res.mean()
     return res.sum()
 
 
-@pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 class TestLPIPS(MetricTester):
     """Test class for `LearnedPerceptualImagePatchSimilarity` metric."""
 
     atol: float = 1e-4
 
     @pytest.mark.parametrize("net_type", ["alex", "squeeze"])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_lpips(self, net_type, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -58,10 +69,20 @@ class TestLPIPS(MetricTester):
             preds=_inputs.img1,
             target=_inputs.img2,
             metric_class=LearnedPerceptualImagePatchSimilarity,
-            reference_metric=partial(_compare_fn, net_type=net_type),
+            reference_metric=partial(_reference_lpips, net_type=net_type),
             check_scriptable=False,
             check_state_dict=False,
             metric_args={"net_type": net_type},
+        )
+
+    def test_lpips_functional(self):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=_inputs.img1,
+            target=_inputs.img2,
+            metric_functional=learned_perceptual_image_patch_similarity,
+            reference_metric=partial(_reference_lpips, net_type="alex"),
+            metric_args={"net_type": "alex"},
         )
 
     def test_lpips_differentiability(self):
@@ -73,8 +94,6 @@ class TestLPIPS(MetricTester):
     # LPIPS half + cpu does not work due to missing support in torch.min for older version of torch
     def test_lpips_half_cpu(self):
         """Test for half + cpu support."""
-        if not _TORCH_GREATER_EQUAL_1_9:
-            pytest.xfail(reason="LPIPS metric does not support cpu + half precision for v1.8.1 or lower of Pytorch")
         self.run_precision_test_cpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -88,11 +107,11 @@ def test_normalize_arg(normalize):
     """Test that normalize argument works as expected."""
     metric = LearnedPerceptualImagePatchSimilarity(net_type="squeeze", normalize=normalize)
     res = metric(_inputs.img1[0], _inputs.img2[1])
-    res2 = _compare_fn(_inputs.img1[0], _inputs.img2[1], net_type="squeeze", normalize=normalize)
+    res2 = _reference_lpips(_inputs.img1[0], _inputs.img2[1], net_type="squeeze", normalize=normalize)
     assert res == res2
 
 
-@pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
     with pytest.raises(ValueError, match="Argument `net_type` must be one .*"):
@@ -102,7 +121,7 @@ def test_error_on_wrong_init():
         LearnedPerceptualImagePatchSimilarity(net_type="squeeze", reduction=None)
 
 
-@pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 @pytest.mark.parametrize(
     ("inp1", "inp2"),
     [
@@ -117,3 +136,15 @@ def test_error_on_wrong_update(inp1, inp2):
     metric = LearnedPerceptualImagePatchSimilarity()
     with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
         metric(inp1, inp2)
+
+
+def test_check_for_backprop():
+    """Check that by default the metric supports propagation of gradients, but does not update its parameters."""
+    metric = LearnedPerceptualImagePatchSimilarity()
+    assert not metric.net.lin0.model[1].weight.requires_grad
+    preds, target = _inputs.img1[0], _inputs.img2[0]
+    preds.requires_grad = True
+    loss = metric(preds, target)
+    assert loss.requires_grad
+    loss.backward()
+    assert metric.net.lin0.model[1].weight.grad is None

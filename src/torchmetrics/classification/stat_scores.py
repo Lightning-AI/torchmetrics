@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -69,17 +69,17 @@ class _AbstractStatScores(Metric):
     def _update_state(self, tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> None:
         """Update states depending on multidim_average argument."""
         if self.multidim_average == "samplewise":
-            self.tp.append(tp)
-            self.fp.append(fp)
-            self.tn.append(tn)
-            self.fn.append(fn)
+            self.tp.append(tp)  # type: ignore[union-attr]
+            self.fp.append(fp)  # type: ignore[union-attr]
+            self.tn.append(tn)  # type: ignore[union-attr]
+            self.fn.append(fn)  # type: ignore[union-attr]
         else:
-            self.tp += tp
-            self.fp += fp
-            self.tn += tn
-            self.fn += fn
+            self.tp = self.tp + tp if not isinstance(self.tp, list) else [*self.tp, tp]
+            self.fp = self.fp + fp if not isinstance(self.fp, list) else [*self.fp, fp]
+            self.tn = self.tn + tn if not isinstance(self.tn, list) else [*self.tn, tn]
+            self.fn = self.fn + fn if not isinstance(self.fn, list) else [*self.fn, fn]
 
-    def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def _final_state(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Aggregate states that are lists and return final states."""
         tp = dim_zero_cat(self.tp)
         fp = dim_zero_cat(self.fp)
@@ -97,7 +97,7 @@ class BinaryStatScores(_AbstractStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
 
@@ -107,8 +107,11 @@ class BinaryStatScores(_AbstractStatScores):
       to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
       depends on the ``multidim_average`` parameter:
 
-    - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)``
-    - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
+      - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)``
+      - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -153,6 +156,7 @@ class BinaryStatScores(_AbstractStatScores):
                 [0, 2, 1, 3, 3]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -165,13 +169,15 @@ class BinaryStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
+        zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+            _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, zero_division)
         self.threshold = threshold
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.zero_division = zero_division
 
         self._create_state(size=1, multidim_average=multidim_average)
 
@@ -208,15 +214,21 @@ class MulticlassStatScores(_AbstractStatScores):
       to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
       depends on ``average`` and ``multidim_average`` parameters:
 
-    - If ``multidim_average`` is set to ``global``
-    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
-    - If ``average=None/'none'``, the shape will be ``(C, 5)``
-    - If ``multidim_average`` is set to ``samplewise``
-    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
-    - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
+      - If ``multidim_average`` is set to ``global``:
+
+        - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
+        - If ``average=None/'none'``, the shape will be ``(C, 5)``
+
+      - If ``multidim_average`` is set to ``samplewise``:
+
+        - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
+        - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -288,13 +300,14 @@ class MulticlassStatScores(_AbstractStatScores):
                  [1, 2, 2, 1, 2]]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
 
     def __init__(
         self,
-        num_classes: int,
+        num_classes: Optional[int] = None,
         top_k: int = 1,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         multidim_average: Literal["global", "samplewise"] = "global",
@@ -302,18 +315,22 @@ class MulticlassStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
+        zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+            _multiclass_stat_scores_arg_validation(
+                num_classes, top_k, average, multidim_average, ignore_index, zero_division
+            )
         self.num_classes = num_classes
         self.top_k = top_k
         self.average = average
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.zero_division = zero_division
 
         self._create_state(
-            size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
+            size=1 if (average == "micro" and top_k == 1) else (num_classes or 1), multidim_average=multidim_average
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:
@@ -323,8 +340,9 @@ class MulticlassStatScores(_AbstractStatScores):
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
             )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
+        num_classes = self.num_classes if self.num_classes is not None else 1
         tp, fp, tn, fn = _multiclass_stat_scores_update(
-            preds, target, self.num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
+            preds, target, num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
         )
         self._update_state(tp, fp, tn, fn)
 
@@ -343,7 +361,7 @@ class MultilabelStatScores(_AbstractStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -352,15 +370,21 @@ class MultilabelStatScores(_AbstractStatScores):
       to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
       depends on ``average`` and ``multidim_average`` parameters:
 
-    - If ``multidim_average`` is set to ``global``
-    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
-    - If ``average=None/'none'``, the shape will be ``(C, 5)``
-    - If ``multidim_average`` is set to ``samplewise``
-    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
-    - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
+      - If ``multidim_average`` is set to ``global``:
+
+        - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
+        - If ``average=None/'none'``, the shape will be ``(C, 5)``
+
+      - If ``multidim_average`` is set to ``samplewise``:
+
+        - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
+        - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -429,6 +453,7 @@ class MultilabelStatScores(_AbstractStatScores):
                  [0, 0, 1, 1, 1]]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -443,15 +468,19 @@ class MultilabelStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
+        zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+            _multilabel_stat_scores_arg_validation(
+                num_labels, threshold, average, multidim_average, ignore_index, zero_division
+            )
         self.num_labels = num_labels
         self.threshold = threshold
         self.average = average
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.zero_division = zero_division
 
         self._create_state(size=num_labels, multidim_average=multidim_average)
 
@@ -477,7 +506,7 @@ class StatScores(_ClassificationTaskWrapper):
     r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryStatScores`, :class:`~torchmetrics.classification.MulticlassStatScores`
     and :class:`~torchmetrics.classification.MultilabelStatScores` for the specific details of each argument influence
     and examples.
@@ -497,8 +526,8 @@ class StatScores(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
-        cls,
+    def __new__(  # type: ignore[misc]
+        cls: type["StatScores"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
@@ -513,9 +542,11 @@ class StatScores(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryStatScores(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:

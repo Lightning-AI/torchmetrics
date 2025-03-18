@@ -15,20 +15,27 @@ from typing import Optional
 
 import torch
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
-    from torchvision.ops import distance_box_iou
-else:
-    distance_box_iou = None
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["distance_intersection_over_union"]
-
-__doctest_requires__ = {("distance_intersection_over_union",): ["torchvision"]}
 
 
 def _diou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
 ) -> torch.Tensor:
+    if preds.ndim != 2 or preds.shape[-1] != 4:
+        raise ValueError(f"Expected preds to be of shape (N, 4) but got {preds.shape}")
+    if target.ndim != 2 or target.shape[-1] != 4:
+        raise ValueError(f"Expected target to be of shape (N, 4) but got {target.shape}")
+
+    from torchvision.ops import distance_box_iou
+
+    if preds.numel() == 0:  # if no boxes are predicted
+        return torch.zeros(target.shape[0], target.shape[0], device=target.device, dtype=torch.float32)
+    if target.numel() == 0:  # if no boxes are true
+        return torch.zeros(preds.shape[0], preds.shape[0], device=preds.device, dtype=torch.float32)
+
     iou = distance_box_iou(preds, target)
     if iou_threshold is not None:
         iou[iou < iou_threshold] = replacement_val
@@ -111,11 +118,10 @@ def distance_intersection_over_union(
                 [-0.3971, -0.1510,  0.5609]])
 
     """
-    if not _TORCHVISION_GREATER_EQUAL_0_13:
+    if not _TORCHVISION_AVAILABLE:
         raise ModuleNotFoundError(
-            f"`{distance_intersection_over_union.__name__}` requires that `torchvision` version 0.13.0 or newer"
-            " is installed."
-            " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
+            f"`{distance_intersection_over_union.__name__}` requires that `torchvision` is installed."
+            " Please install with `pip install torchmetrics[detection]`."
         )
     iou = _diou_update(preds, target, iou_threshold, replacement_val)
     return _diou_compute(iou, aggregate)

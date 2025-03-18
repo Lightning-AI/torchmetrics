@@ -16,11 +16,12 @@ from functools import partial
 import pytest
 import torch
 from torch.nn import functional as F  # noqa: N812
+
 from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.text.perplexity import Perplexity
-
-from unittests.helpers.testers import MetricTester
-from unittests.text.inputs import (
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2
+from unittests._helpers.testers import MetricTester
+from unittests.text._inputs import (
     MASK_INDEX,
     _logits_inputs_fp32,
     _logits_inputs_fp32_with_mask,
@@ -29,7 +30,7 @@ from unittests.text.inputs import (
 )
 
 
-def _baseline_perplexity(preds, target, ignore_index):
+def _reference_local_perplexity(preds, target, ignore_index):
     """Baseline implementation of perplexity metric based upon PyTorch Cross Entropy."""
     preds = preds.reshape(-1, preds.shape[-1])
     target = target.reshape(-1)
@@ -49,7 +50,7 @@ def _baseline_perplexity(preds, target, ignore_index):
 class TestPerplexity(MetricTester):
     """Test class for `Perplexity` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_perplexity_class(self, ddp, preds, target, ignore_index):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -57,7 +58,7 @@ class TestPerplexity(MetricTester):
             preds=preds,
             target=target,
             metric_class=Perplexity,
-            reference_metric=partial(_baseline_perplexity, ignore_index=ignore_index),
+            reference_metric=partial(_reference_local_perplexity, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -67,11 +68,11 @@ class TestPerplexity(MetricTester):
             preds,
             target,
             metric_functional=perplexity,
-            reference_metric=partial(_baseline_perplexity, ignore_index=ignore_index),
+            reference_metric=partial(_reference_local_perplexity, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
-    def test_accuracy_differentiability(self, preds, target, ignore_index):
+    def test_perplexity_differentiability(self, preds, target, ignore_index):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
@@ -79,4 +80,25 @@ class TestPerplexity(MetricTester):
             metric_module=Perplexity,
             metric_functional=perplexity,
             metric_args={"ignore_index": ignore_index},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_perplexity_dtypes_cpu(self, preds, target, ignore_index, dtype):
+        """Test dtype support of the metric on CPU."""
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_2_2:
+            with pytest.raises(RuntimeError, match="\"softmax_lastdim_kernel_impl\" not implemented for 'Half'"):
+                self.run_precision_test_cpu(
+                    preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
+                )
+        else:
+            self.run_precision_test_cpu(
+                preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
+            )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_perplexity_dtypes_gpu(self, preds, target, ignore_index, dtype):
+        """Test dtype support of the metric on GPU."""
+        self.run_precision_test_gpu(
+            preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
         )

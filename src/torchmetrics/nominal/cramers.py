@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -55,7 +56,7 @@ class CramersV(Metric):
     - ``cramers_v`` (:class:`~torch.Tensor`): Scalar tensor containing the Cramer's V statistic.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
@@ -69,10 +70,10 @@ class CramersV(Metric):
 
     Example::
 
+        >>> from torch import randint, randn
         >>> from torchmetrics.nominal import CramersV
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = (preds + randn(100)).round().clamp(0, 4)
         >>> cramers_v = CramersV(num_classes=5)
         >>> cramers_v(preds, target)
         tensor(0.5284)
@@ -91,7 +92,7 @@ class CramersV(Metric):
         num_classes: int,
         bias_correction: bool = True,
         nan_strategy: Literal["replace", "drop"] = "replace",
-        nan_replace_value: Optional[Union[int, float]] = 0.0,
+        nan_replace_value: Optional[float] = 0.0,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

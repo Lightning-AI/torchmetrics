@@ -11,31 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
-from typing import Callable
 
 import pytest
 import torch
 from mir_eval.separation import bss_eval_images as mir_eval_bss_eval_images
 from torch import Tensor
+
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional.audio import signal_noise_ratio
-
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.audio import _average_metric_wrapper
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-inputs = Input(
+inputs = _Input(
     preds=torch.rand(2, 1, 1, 25),
     target=torch.rand(2, 1, 1, 25),
 )
 
 
-def _bss_eval_images_snr(preds: Tensor, target: Tensor, zero_mean: bool):
+def _reference_bss_snr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -53,21 +52,11 @@ def _bss_eval_images_snr(preds: Tensor, target: Tensor, zero_mean: bool):
     return torch.tensor(mss)
 
 
-def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
-
-
-mireval_snr_zeromean = partial(_bss_eval_images_snr, zero_mean=True)
-mireval_snr_nozeromean = partial(_bss_eval_images_snr, zero_mean=False)
-
-
 @pytest.mark.parametrize(
     "preds, target, ref_metric, zero_mean",
     [
-        (inputs.preds, inputs.target, mireval_snr_zeromean, True),
-        (inputs.preds, inputs.target, mireval_snr_nozeromean, False),
+        (inputs.preds, inputs.target, partial(_reference_bss_snr, zero_mean=True), True),
+        (inputs.preds, inputs.target, partial(_reference_bss_snr, zero_mean=False), False),
     ],
 )
 class TestSNR(MetricTester):
@@ -75,7 +64,7 @@ class TestSNR(MetricTester):
 
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_snr(self, preds, target, ref_metric, zero_mean, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -83,7 +72,7 @@ class TestSNR(MetricTester):
             preds,
             target,
             SignalNoiseRatio,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric_wrapper, metric_func=ref_metric),
             metric_args={"zero_mean": zero_mean},
         )
 

@@ -8,11 +8,11 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-    # Uploads repository content to the runner
-    - uses: actions/checkout@v3
-    - uses: actions/labeler@v4
-      with:
-        # The path to the label configuration file.
-        configuration-path: .github/labeler.yml
-        # Whether removing labels when matching files are reverted or no longer changed by the PR
-        sync-labels: true
+      # Uploads repository content to the runner
+      - uses: actions/checkout@v4
+      - uses: actions/labeler@v5
+        with:
+          # The path to the label configuration file.
+          configuration-path: .github/labeling-config.yml
+          # Whether removing labels when matching files are reverted or no longer changed by the PR
+          sync-labels: true

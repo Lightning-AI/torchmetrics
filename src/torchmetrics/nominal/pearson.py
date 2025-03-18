@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -60,7 +61,7 @@ class PearsonsContingencyCoefficient(Metric):
     - ``pearsons_cc`` (:class:`~torch.Tensor`): Scalar tensor containing the Pearsons Contingency Coefficient statistic.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -73,10 +74,10 @@ class PearsonsContingencyCoefficient(Metric):
 
     Example::
 
+        >>> from torch import randint, randn
         >>> from torchmetrics.nominal import PearsonsContingencyCoefficient
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = (preds + randn(100)).round().clamp(0, 4)
         >>> pearsons_contingency_coefficient = PearsonsContingencyCoefficient(num_classes=5)
         >>> pearsons_contingency_coefficient(preds, target)
         tensor(0.6948)
@@ -94,7 +95,7 @@ class PearsonsContingencyCoefficient(Metric):
         self,
         num_classes: int,
         nan_strategy: Literal["replace", "drop"] = "replace",
-        nan_replace_value: Optional[Union[int, float]] = 0.0,
+        nan_replace_value: Optional[float] = 0.0,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

@@ -68,7 +68,7 @@ class BoringModel(LightningModule):
     or:
 
     model = BaseTestModel()
-    model.training_epoch_end = None
+    model.validation_step = None
 
     """
 
@@ -123,5 +123,5 @@ class BoringModel(LightningModule):
         return torch.utils.data.DataLoader(RandomDataset(32, 64))
 
     def test_dataloader(self):
-        """Define test dataloader used for testing the mdoel."""
+        """Define test dataloader used for testing the model."""
         return torch.utils.data.DataLoader(RandomDataset(32, 64))

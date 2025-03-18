@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -55,7 +56,7 @@ class ROUGEScore(Metric):
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a ``str`` and return a ``str``.
         tokenizer:
-            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
+            A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a ``str`` and return ``Sequence[str]``
         accumulate:
             Useful in case of multi-reference rouge score.
@@ -108,7 +109,7 @@ class ROUGEScore(Metric):
         normalizer: Optional[Callable[[str], str]] = None,
         tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
         accumulate: Literal["avg", "best"] = "best",
-        rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
+        rouge_keys: Union[str, tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -155,7 +156,7 @@ class ROUGEScore(Metric):
         if isinstance(target, str):
             target = [[target]]
 
-        output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
+        output: dict[Union[int, str], list[dict[str, Tensor]]] = _rouge_score_update(
             preds,
             target,
             self.rouge_keys_values,
@@ -169,7 +170,7 @@ class ROUGEScore(Metric):
                 for tp, value in metric.items():
                     getattr(self, f"rouge{rouge_key}_{tp}").append(value.to(self.device))  # todo
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score."""
         update_output = {}
         for rouge_key in self.rouge_keys_values:

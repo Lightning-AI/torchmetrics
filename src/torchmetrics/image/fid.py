@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -20,13 +21,11 @@ from torch.nn import Module
 from torch.nn.functional import adaptive_avg_pool2d
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-__doctest_skip__ = ["FrechetInceptionDistance.__init__"] if not _TORCH_GREATER_EQUAL_1_9 else []
-
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ += ["FrechetInceptionDistance.plot"]
+    __doctest_skip__ = ["FrechetInceptionDistance.plot"]
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
@@ -42,19 +41,22 @@ else:
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
 
-if not _TORCH_GREATER_EQUAL_1_9:
-    __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
-
 
 class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
-    """Module that nevers leaves evaluation mode."""
+    """Module that never leaves evaluation mode."""
 
     def __init__(
         self,
         name: str,
-        features_list: List[str],
+        features_list: list[str],
         feature_extractor_weights_path: Optional[str] = None,
     ) -> None:
+        if not _TORCH_FIDELITY_AVAILABLE:
+            raise ModuleNotFoundError(
+                "NoTrainInceptionV3 module requires that `Torch-fidelity` is installed."
+                " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
+            )
+
         super().__init__(name, features_list, feature_extractor_weights_path)
         # put into evaluation mode
         self.eval()
@@ -63,7 +65,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         """Force network to always be in evaluation mode."""
         return super().train(False)
 
-    def _torch_fidelity_forward(self, x: Tensor) -> Tuple[Tensor, ...]:
+    def _torch_fidelity_forward(self, x: Tensor) -> tuple[Tensor, ...]:
         """Forward method of inception net.
 
         Copy of the forward method from this file:
@@ -179,7 +181,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor) -> Te
 
 
 class FrechetInceptionDistance(Metric):
-    r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images.
+    r"""Calculate Fréchet inception distance (FID_) which is used to assess the quality of generated images.
 
     .. math::
         FID = \|\mu - \mu_w\|^2 + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
@@ -197,13 +199,21 @@ class FrechetInceptionDistance(Metric):
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
 
+    Using custom feature extractor is also possible. One can give a torch.nn.Module as `feature` argument. This
+    custom feature extractor is expected to have output shape of ``(1, num_features)``. This would change the
+    used feature extractor from default (Inception v3) to the given network. In case network doesn't have
+    ``num_features`` attribute, a random tensor will be given to the network to infer feature dimensionality.
+    Size of this tensor can be controlled by ``input_img_size`` argument and type of the tensor can be controlled
+    with ``normalize`` argument (``True`` uses float32 tensors and ``False`` uses int8 tensors). In this case, update
+    method expects to have the tensor given to `imgs` argument to be in the correct shape and type that is compatible
+    to the custom feature extractor.
+
     This metric is known to be unstable in its calculatations, and we recommend for the best results using this metric
     that you calculate using `torch.float64` (default is `torch.float32`) which can be set using the `.set_dtype`
     method of the metric.
 
-    .. note:: using this metrics requires you to have torch 1.9 or higher installed
-
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or ``pip install torch-fidelity``
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -227,6 +237,19 @@ class FrechetInceptionDistance(Metric):
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
+        normalize:
+            Argument for controlling the input image dtype normalization:
+
+            - If default feature extractor is used, controls whether input imgs have values in range [0, 1] or not:
+
+              - True: if input imgs have values ranged in [0, 1]. They are cast to int8/byte tensors.
+              - False: if input imgs have values ranged in [0, 255]. No casting is done.
+
+            - If custom feature extractor module is used, controls type of the input img tensors:
+
+              - True: if input imgs are expected to be in the data type of torch.float32.
+              - False: if input imgs are expected to be in the data type of torch.int8.
+        input_img_size: tuple of integers. Indicates input img size to the custom feature extractor network if provided.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -242,8 +265,7 @@ class FrechetInceptionDistance(Metric):
             If ``reset_real_features`` is not an ``bool``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.fid import FrechetInceptionDistance
         >>> fid = FrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
@@ -252,7 +274,7 @@ class FrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist1, real=True)
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
-        tensor(12.7202)
+        tensor(12.6388)
 
     """
 
@@ -270,18 +292,23 @@ class FrechetInceptionDistance(Metric):
     fake_features_num_samples: Tensor
 
     inception: Module
+    feature_network: str = "inception"
 
     def __init__(
         self,
         feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
         normalize: bool = False,
+        input_img_size: tuple[int, int, int] = (3, 299, 299),
+        feature_extractor_weights_path: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        if not _TORCH_GREATER_EQUAL_1_9:
-            raise ValueError("FrechetInceptionDistance metric requires that PyTorch is version 1.9.0 or higher.")
+        if not isinstance(normalize, bool):
+            raise ValueError("Argument `normalize` expected to be a bool")
+        self.normalize = normalize
+        self.used_custom_model = False
 
         if isinstance(feature, int):
             num_features = feature
@@ -296,12 +323,28 @@ class FrechetInceptionDistance(Metric):
                     f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
                 )
 
-            self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
+            self.inception = NoTrainInceptionV3(
+                name="inception-v3-compat",
+                features_list=[str(feature)],
+                feature_extractor_weights_path=feature_extractor_weights_path,
+            )
 
         elif isinstance(feature, Module):
             self.inception = feature
-            dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
-            num_features = self.inception(dummy_image).shape[-1]
+            self.used_custom_model = True
+            if hasattr(self.inception, "num_features"):
+                if isinstance(self.inception.num_features, int):
+                    num_features = self.inception.num_features
+                elif isinstance(self.inception.num_features, Tensor):
+                    num_features = int(self.inception.num_features.item())
+                else:
+                    raise TypeError("Expected `self.inception.num_features` to be of type int or Tensor.")
+            else:
+                if self.normalize:
+                    dummy_image = torch.rand(1, *input_img_size, dtype=torch.float32)
+                else:
+                    dummy_image = torch.randint(0, 255, (1, *input_img_size), dtype=torch.uint8)
+                num_features = self.inception(dummy_image).shape[-1]
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
@@ -309,22 +352,25 @@ class FrechetInceptionDistance(Metric):
             raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
-        if not isinstance(normalize, bool):
-            raise ValueError("Argument `normalize` expected to be a bool")
-        self.normalize = normalize
-
-        mx_nb_feets = (num_features, num_features)
+        mx_num_feats = (num_features, num_features)
         self.add_state("real_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
-        self.add_state("real_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
+        self.add_state("real_features_cov_sum", torch.zeros(mx_num_feats).double(), dist_reduce_fx="sum")
         self.add_state("real_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
         self.add_state("fake_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
-        self.add_state("fake_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
+        self.add_state("fake_features_cov_sum", torch.zeros(mx_num_feats).double(), dist_reduce_fx="sum")
         self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:
-        """Update the state with extracted features."""
-        imgs = (imgs * 255).byte() if self.normalize else imgs
+        """Update the state with extracted features.
+
+        Args:
+            imgs: Input img tensors to evaluate. If used custom feature extractor please
+                make sure dtype and size is correct for the model.
+            real: Whether given image is real or fake.
+
+        """
+        imgs = (imgs * 255).byte() if self.normalize and (not self.used_custom_model) else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype
         features = features.double()

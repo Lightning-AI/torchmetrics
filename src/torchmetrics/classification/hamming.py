@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -46,7 +47,7 @@ class BinaryHammingDistance(BinaryStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
-      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
 
@@ -57,6 +58,9 @@ class BinaryHammingDistance(BinaryStatScores):
         - If ``multidim_average`` is set to ``global``, the metric returns a scalar value.
         - If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a
           scalar value per sample.
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -171,7 +175,6 @@ class MulticlassHammingDistance(MulticlassStatScores):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mchd`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``average`` and
@@ -187,8 +190,11 @@ class MulticlassHammingDistance(MulticlassStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -320,10 +326,9 @@ class MultilabelHammingDistance(MultilabelStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, C, ...)``. If preds is a
       floating point tensor with values outside [0,1] range we consider the input to be logits and will auto
-      apply sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in
+      apply sigmoid per element. Additionally, we convert to int tensor with thresholding using the value in
       ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -340,8 +345,11 @@ class MultilabelHammingDistance(MultilabelStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -469,7 +477,7 @@ class HammingDistance(_ClassificationTaskWrapper):
     tensor.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryHammingDistance`,
     :class:`~torchmetrics.classification.MulticlassHammingDistance` and
     :class:`~torchmetrics.classification.MultilabelHammingDistance` for the specific details of each argument influence
@@ -486,7 +494,7 @@ class HammingDistance(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["HammingDistance"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
@@ -501,9 +509,11 @@ class HammingDistance(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryHammingDistance(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:

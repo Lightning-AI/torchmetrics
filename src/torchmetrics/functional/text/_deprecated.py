@@ -1,5 +1,6 @@
 import os
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, List, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -31,19 +32,19 @@ __doctest_requires__ = {("_rouge_score"): ["nltk"]}
 if not _TRANSFORMERS_GREATER_EQUAL_4_4:
     __doctest_skip__ = ["_bert_score", "_infolm"]
 
-SQUAD_SINGLE_TARGET_TYPE = Dict[str, Union[str, Dict[str, Union[List[str], List[int]]]]]
-SQUAD_TARGETS_TYPE = Union[SQUAD_SINGLE_TARGET_TYPE, List[SQUAD_SINGLE_TARGET_TYPE]]
+SQUAD_SINGLE_TARGET_TYPE = dict[str, Union[str, dict[str, Union[list[str], list[int]]]]]
+SQUAD_TARGETS_TYPE = Union[SQUAD_SINGLE_TARGET_TYPE, list[SQUAD_SINGLE_TARGET_TYPE]]
 
 
 def _bert_score(
-    preds: Union[List[str], Dict[str, Tensor]],
-    target: Union[List[str], Dict[str, Tensor]],
+    preds: Union[list[str], dict[str, Tensor]],
+    target: Union[list[str], dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
     model: Optional[Module] = None,
     user_tokenizer: Any = None,
-    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
+    user_forward_fn: Optional[Callable[[Module, dict[str, Tensor]], Tensor]] = None,
     verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
@@ -55,7 +56,7 @@ def _bert_score(
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
-) -> Dict[str, Union[Tensor, List[float], str]]:
+) -> dict[str, Union[Tensor, list[float], str]]:
     """Wrapper for deprecated import.
 
     >>> preds = ["hello there", "general kenobi"]
@@ -111,7 +112,7 @@ def _bleu_score(
     return bleu_score(preds=preds, target=target, n_gram=n_gram, smooth=smooth, weights=weights)
 
 
-def _char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def _char_error_rate(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Wrapper for deprecated import.
 
     >>> preds = ["this is the prediction", "there is an other sample"]
@@ -133,7 +134,7 @@ def _chrf_score(
     lowercase: bool = False,
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Wrapper for deprecated import.
 
     >>> preds = ['the cat is on the mat']
@@ -164,7 +165,7 @@ def _extended_edit_distance(
     rho: float = 0.3,
     deletion: float = 0.2,
     insertion: float = 1.0,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Wrapper for deprecated import.
 
     >>> preds = ["this is the prediction", "here is an other sample"]
@@ -201,7 +202,7 @@ def _infolm(
     num_threads: int = 0,
     verbose: bool = True,
     return_sentence_level_score: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Wrapper for deprecated import.
 
     >>> preds = ['he read the book because he was interested in world history']
@@ -229,7 +230,7 @@ def _infolm(
     )
 
 
-def _match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def _match_error_rate(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Wrapper for deprecated import.
 
     >>> preds = ["this is the prediction", "there is an other sample"]
@@ -245,10 +246,9 @@ def _match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]
 def _perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None) -> Tensor:
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> gen = torch.manual_seed(42)
-    >>> preds = torch.rand(2, 8, 5, generator=gen)
-    >>> target = torch.randint(5, (2, 8), generator=gen)
+    >>> from torch import rand, randint
+    >>> preds = rand(2, 8, 5)
+    >>> target = randint(5, (2, 8))
     >>> target[0, 6:] = -100
     >>> _perplexity(preds, target, ignore_index=-100)
     tensor(5.8540)
@@ -265,8 +265,8 @@ def _rouge_score(
     use_stemmer: bool = False,
     normalizer: Optional[Callable[[str], str]] = None,
     tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
-    rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
-) -> Dict[str, Tensor]:
+    rouge_keys: Union[str, tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
+) -> dict[str, Tensor]:
     """Wrapper for deprecated import.
 
     >>> preds = "My name is John"
@@ -328,7 +328,7 @@ def _sacre_bleu_score(
     )
 
 
-def _squad(preds: Union[Dict[str, str], List[Dict[str, str]]], target: SQUAD_TARGETS_TYPE) -> Dict[str, Tensor]:
+def _squad(preds: Union[dict[str, str], list[dict[str, str]]], target: SQUAD_TARGETS_TYPE) -> dict[str, Tensor]:
     """Wrapper for deprecated import.
 
     >>> preds = [{"prediction_text": "1976", "id": "56e10a3be3433e1400422b22"}]
@@ -349,7 +349,7 @@ def _translation_edit_rate(
     lowercase: bool = True,
     asian_support: bool = False,
     return_sentence_level_score: bool = False,
-) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
+) -> Union[Tensor, tuple[Tensor, List[Tensor]]]:
     """Wrapper for deprecated import.
 
     >>> preds = ['the cat is on the mat']
@@ -370,7 +370,7 @@ def _translation_edit_rate(
     )
 
 
-def _word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def _word_error_rate(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Wrapper for deprecated import.
 
     >>> preds = ["this is the prediction", "there is an other sample"]
@@ -383,7 +383,7 @@ def _word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]
     return word_error_rate(preds=preds, target=target)
 
 
-def _word_information_lost(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def _word_information_lost(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Wrapper for deprecated import.
 
     >>> preds = ["this is the prediction", "there is an other sample"]
@@ -396,7 +396,7 @@ def _word_information_lost(preds: Union[str, List[str]], target: Union[str, List
     return word_information_lost(preds=preds, target=target)
 
 
-def _word_information_preserved(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def _word_information_preserved(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Wrapper for deprecated import.
 
     >>> preds = ["this is the prediction", "there is an other sample"]

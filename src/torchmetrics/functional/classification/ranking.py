@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -33,8 +33,8 @@ def _rank_data(x: Tensor) -> Tensor:
     return ranks[inverse]
 
 
-def _ranking_reduce(score: Tensor, n_elements: int) -> Tensor:
-    return score / n_elements
+def _ranking_reduce(score: Tensor, num_elements: int) -> Tensor:
+    return score / num_elements
 
 
 def _multilabel_ranking_tensor_validation(
@@ -45,7 +45,7 @@ def _multilabel_ranking_tensor_validation(
         raise ValueError(f"Expected preds tensor to be floating point, but received input with dtype {preds.dtype}")
 
 
-def _multilabel_coverage_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _multilabel_coverage_error_update(preds: Tensor, target: Tensor) -> tuple[Tensor, int]:
     """Accumulate state for coverage error."""
     offset = torch.zeros_like(preds)
     offset[target == 0] = preds.min().abs() + 10  # Any number >1 works
@@ -80,17 +80,17 @@ def multilabel_coverage_error(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.functional.classification import multilabel_coverage_error
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> multilabel_coverage_error(preds, target, num_labels=5)
         tensor(3.9000)
 
@@ -109,23 +109,23 @@ def multilabel_coverage_error(
     return _ranking_reduce(coverage, total)
 
 
-def _multilabel_ranking_average_precision_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _multilabel_ranking_average_precision_update(preds: Tensor, target: Tensor) -> tuple[Tensor, int]:
     """Accumulate state for label ranking average precision."""
     # Invert so that the highest score receives rank 1
     neg_preds = -preds
 
     score = torch.tensor(0.0, device=neg_preds.device)
-    n_preds, n_labels = neg_preds.shape
-    for i in range(n_preds):
+    num_preds, num_labels = neg_preds.shape
+    for i in range(num_preds):
         relevant = target[i] == 1
         ranking = _rank_data(neg_preds[i][relevant]).float()
-        if len(ranking) > 0 and len(ranking) < n_labels:
+        if len(ranking) > 0 and len(ranking) < num_labels:
             rank = _rank_data(neg_preds[i])[relevant].float()
             score_idx = (ranking / rank).mean()
         else:
             score_idx = torch.ones_like(score)
         score += score_idx
-    return score, n_preds
+    return score, num_preds
 
 
 def multilabel_ranking_average_precision(
@@ -153,17 +153,17 @@ def multilabel_ranking_average_precision(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.functional.classification import multilabel_ranking_average_precision
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> multilabel_ranking_average_precision(preds, target, num_labels=5)
         tensor(0.7744)
 
@@ -178,11 +178,11 @@ def multilabel_ranking_average_precision(
     preds, target = _multilabel_confusion_matrix_format(
         preds, target, num_labels, threshold=0.0, ignore_index=ignore_index, should_threshold=False
     )
-    score, n_elements = _multilabel_ranking_average_precision_update(preds, target)
-    return _ranking_reduce(score, n_elements)
+    score, num_elements = _multilabel_ranking_average_precision_update(preds, target)
+    return _ranking_reduce(score, num_elements)
 
 
-def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> tuple[Tensor, int]:
     """Accumulate state for label ranking loss.
 
     Args:
@@ -191,26 +191,26 @@ def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> Tuple[Tens
         sample_weight: optional tensor with weight for each sample
 
     """
-    n_preds, n_labels = preds.shape
+    num_preds, num_labels = preds.shape
     relevant = target == 1
-    n_relevant = relevant.sum(dim=1)
+    num_relevant = relevant.sum(dim=1)
 
     # Ignore instances where number of true labels is 0 or n_labels
-    mask = (n_relevant > 0) & (n_relevant < n_labels)
+    mask = (num_relevant > 0) & (num_relevant < num_labels)
     preds = preds[mask]
     relevant = relevant[mask]
-    n_relevant = n_relevant[mask]
+    num_relevant = num_relevant[mask]
 
     # Nothing is relevant
     if len(preds) == 0:
         return torch.tensor(0.0, device=preds.device), 1
 
     inverse = preds.argsort(dim=1).argsort(dim=1)
-    per_label_loss = ((n_labels - inverse) * relevant).to(torch.float32)
-    correction = 0.5 * n_relevant * (n_relevant + 1)
-    denom = n_relevant * (n_labels - n_relevant)
+    per_label_loss = ((num_labels - inverse) * relevant).to(torch.float32)
+    correction = 0.5 * num_relevant * (num_relevant + 1)
+    denom = num_relevant * (num_labels - num_relevant)
     loss = (per_label_loss.sum(dim=1) - correction) / denom
-    return loss.sum(), n_preds
+    return loss.sum(), num_preds
 
 
 def multilabel_ranking_loss(
@@ -238,17 +238,17 @@ def multilabel_ranking_loss(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.functional.classification import multilabel_ranking_loss
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> multilabel_ranking_loss(preds, target, num_labels=5)
         tensor(0.4167)
 
@@ -263,5 +263,5 @@ def multilabel_ranking_loss(
     preds, target = _multilabel_confusion_matrix_format(
         preds, target, num_labels, threshold=0.0, ignore_index=ignore_index, should_threshold=False
     )
-    loss, n_elements = _multilabel_ranking_loss_update(preds, target)
-    return _ranking_reduce(loss, n_elements)
+    loss, num_elements = _multilabel_ranking_loss_update(preds, target)
+    return _ranking_reduce(loss, num_elements)

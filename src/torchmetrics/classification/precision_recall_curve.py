@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -67,7 +67,7 @@ class BinaryPrecisionRecallCurve(Metric):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -103,6 +103,8 @@ class BinaryPrecisionRecallCurve(Metric):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -123,6 +125,7 @@ class BinaryPrecisionRecallCurve(Metric):
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -133,7 +136,7 @@ class BinaryPrecisionRecallCurve(Metric):
 
     def __init__(
         self,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -168,14 +171,14 @@ class BinaryPrecisionRecallCurve(Metric):
             self.preds.append(state[0])
             self.target.append(state[1])
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_precision_recall_curve_compute(state, self.thresholds)
 
     def plot(
         self,
-        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
+        curve: Optional[tuple[Tensor, Tensor, Tensor]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
@@ -185,7 +188,8 @@ class BinaryPrecisionRecallCurve(Metric):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -208,13 +212,16 @@ class BinaryPrecisionRecallCurve(Metric):
 
         """
         curve_computed = curve or self.compute()
+        # switch order as the standard way is recall along x-axis and precision along y-axis
+        curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
+
         score = (
-            _auc_compute_without_check(curve_computed[0], curve_computed[1], 1.0)
+            _auc_compute_without_check(curve_computed[0], curve_computed[1], direction=-1.0)
             if not curve and score is True
             else None
         )
         return plot_curve(
-            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+            curve_computed, score=score, ax=ax, label_names=("Recall", "Precision"), name=self.__class__.__name__
         )
 
 
@@ -225,7 +232,7 @@ class MulticlassPrecisionRecallCurve(Metric):
     tradeoff between the two values can been seen.
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
-    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -237,7 +244,7 @@ class MulticlassPrecisionRecallCurve(Metric):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -254,7 +261,7 @@ class MulticlassPrecisionRecallCurve(Metric):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         thresholds:
             Can be one of:
 
@@ -266,6 +273,15 @@ class MulticlassPrecisionRecallCurve(Metric):
             - If set to a 1D `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        average:
+            If aggregation of curves should be applied. By default, the curves are not aggregated and a curve for
+            each class is returned. If `average` is set to ``"micro"``, the metric will aggregate the curves by one hot
+            encoding the targets and flattening the predictions, considering all classes jointly as a binary problem.
+            If `average` is set to ``"macro"``, the metric will aggregate the curves by first interpolating the curves
+            from each class at a combined set of thresholds and then average over the classwise interpolated curves.
+            See `averaging curve objects`_ for more info on the different averaging methods.
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -302,6 +318,7 @@ class MulticlassPrecisionRecallCurve(Metric):
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -313,16 +330,18 @@ class MulticlassPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_classes: int,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
+        average: Optional[Literal["micro", "macro"]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
-            _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
+            _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average)
 
         self.num_classes = num_classes
+        self.average = average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
 
@@ -344,23 +363,25 @@ class MulticlassPrecisionRecallCurve(Metric):
         if self.validate_args:
             _multiclass_precision_recall_curve_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target, _ = _multiclass_precision_recall_curve_format(
-            preds, target, self.num_classes, self.thresholds, self.ignore_index
+            preds, target, self.num_classes, self.thresholds, self.ignore_index, self.average
         )
-        state = _multiclass_precision_recall_curve_update(preds, target, self.num_classes, self.thresholds)
+        state = _multiclass_precision_recall_curve_update(
+            preds, target, self.num_classes, self.thresholds, self.average
+        )
         if isinstance(state, Tensor):
             self.confmat += state
         else:
             self.preds.append(state[0])
             self.target.append(state[1])
 
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
-        return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds)
+        return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds, self.average)
 
     def plot(
         self,
-        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
@@ -370,7 +391,8 @@ class MulticlassPrecisionRecallCurve(Metric):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -393,11 +415,15 @@ class MulticlassPrecisionRecallCurve(Metric):
 
         """
         curve_computed = curve or self.compute()
+        # switch order as the standard way is recall along x-axis and precision along y-axis
+        curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
         score = (
-            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None, direction=-1.0)
+            if not curve and score is True
+            else None
         )
         return plot_curve(
-            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+            curve_computed, score=score, ax=ax, label_names=("Recall", "Precision"), name=self.__class__.__name__
         )
 
 
@@ -415,7 +441,7 @@ class MultilabelPrecisionRecallCurve(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor containing
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following a tuple of either 3 tensors or
@@ -444,7 +470,7 @@ class MultilabelPrecisionRecallCurve(Metric):
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         thresholds:
             Can be one of:
 
@@ -456,6 +482,8 @@ class MultilabelPrecisionRecallCurve(Metric):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
@@ -490,6 +518,7 @@ class MultilabelPrecisionRecallCurve(Metric):
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -501,7 +530,7 @@ class MultilabelPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_labels: int,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -541,14 +570,14 @@ class MultilabelPrecisionRecallCurve(Metric):
             self.preds.append(state[0])
             self.target.append(state[1])
 
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
     def plot(
         self,
-        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
@@ -558,7 +587,8 @@ class MultilabelPrecisionRecallCurve(Metric):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -581,11 +611,15 @@ class MultilabelPrecisionRecallCurve(Metric):
 
         """
         curve_computed = curve or self.compute()
+        # switch order as the standard way is recall along x-axis and precision along y-axis
+        curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
         score = (
-            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None, direction=-1.0)
+            if not curve and score is True
+            else None
         )
         return plot_curve(
-            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+            curve_computed, score=score, ax=ax, label_names=("Recall", "Precision"), name=self.__class__.__name__
         )
 
 
@@ -596,7 +630,7 @@ class PrecisionRecallCurve(_ClassificationTaskWrapper):
     tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryPrecisionRecallCurve`,
     :class:`~torchmetrics.classification.MulticlassPrecisionRecallCurve` and
     :class:`~torchmetrics.classification.MultilabelPrecisionRecallCurve` for the specific details of each argument
@@ -633,9 +667,9 @@ class PrecisionRecallCurve(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["PrecisionRecallCurve"],
         task: Literal["binary", "multiclass", "multilabel"],
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,

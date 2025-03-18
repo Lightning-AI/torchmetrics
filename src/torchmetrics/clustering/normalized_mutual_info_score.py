@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Literal, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Literal, Optional, Union
 
 from torch import Tensor
 
@@ -55,7 +56,7 @@ class NormalizedMutualInfoScore(MutualInfoScore):
         average_method: Method used to calculate generalized mean for normalization
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import NormalizedMutualInfoScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
@@ -73,7 +74,6 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     plot_upper_bound: float = 0.0
     preds: List[Tensor]
     target: List[Tensor]
-    contingency: Tensor
 
     def __init__(
         self, average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic", **kwargs: Any
@@ -118,9 +118,10 @@ class NormalizedMutualInfoScore(MutualInfoScore):
             >>> import torch
             >>> from torchmetrics.clustering import NormalizedMutualInfoScore
             >>> metric = NormalizedMutualInfoScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

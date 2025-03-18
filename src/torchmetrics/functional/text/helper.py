@@ -29,8 +29,9 @@
 # limitations under the License.
 
 import math
+from collections.abc import Sequence
 from enum import Enum, unique
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Union
 
 # Tercom-inspired limits
 _BEAM_WIDTH = 25
@@ -54,7 +55,7 @@ class _EditOperations(str, Enum):
 class _LevenshteinEditDistance:
     """A convenience class for calculating the Levenshtein edit distance.
 
-    Class will cache some intermediate values to hasten the calculation. The implementation follows the implemenation
+    Class will cache some intermediate values to hasten the calculation. The implementation follows the implementation
     from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py,
     where the most of this implementation is adapted and copied from.
 
@@ -67,12 +68,12 @@ class _LevenshteinEditDistance:
     """
 
     def __init__(
-        self, reference_tokens: List[str], op_insert: int = 1, op_delete: int = 1, op_substitute: int = 1
+        self, reference_tokens: list[str], op_insert: int = 1, op_delete: int = 1, op_substitute: int = 1
     ) -> None:
         self.reference_tokens = reference_tokens
         self.reference_len = len(reference_tokens)
 
-        self.cache: Dict[str, Tuple[int, str]] = {}
+        self.cache: dict[str, tuple[int, str]] = {}
         self.cache_size = 0
 
         self.op_insert = op_insert
@@ -81,7 +82,7 @@ class _LevenshteinEditDistance:
         self.op_nothing = 0
         self.op_undefined = _INT_INFINITY
 
-    def __call__(self, prediction_tokens: List[str]) -> Tuple[int, Tuple[_EditOperations, ...]]:
+    def __call__(self, prediction_tokens: list[str]) -> tuple[int, tuple[_EditOperations, ...]]:
         """Calculate edit distance between self._words_ref and the hypothesis. Uses cache to skip some computations.
 
         Args:
@@ -104,10 +105,10 @@ class _LevenshteinEditDistance:
 
     def _levenshtein_edit_distance(
         self,
-        prediction_tokens: List[str],
+        prediction_tokens: list[str],
         prediction_start: int,
-        cache: List[List[Tuple[int, _EditOperations]]],
-    ) -> Tuple[int, List[List[Tuple[int, _EditOperations]]], Tuple[_EditOperations, ...]]:
+        cache: list[list[tuple[int, _EditOperations]]],
+    ) -> tuple[int, list[list[tuple[int, _EditOperations]]], tuple[_EditOperations, ...]]:
         """Dynamic programming algorithm to compute the Levenhstein edit distance.
 
         Args:
@@ -121,10 +122,10 @@ class _LevenshteinEditDistance:
         """
         prediction_len = len(prediction_tokens)
 
-        empty_rows: List[List[Tuple[int, _EditOperations]]] = [
+        empty_rows: list[list[tuple[int, _EditOperations]]] = [
             list(self._get_empty_row(self.reference_len)) for _ in range(prediction_len - prediction_start)
         ]
-        edit_distance: List[List[Tuple[int, _EditOperations]]] = cache + empty_rows
+        edit_distance: list[list[tuple[int, _EditOperations]]] = cache + empty_rows
         length_ratio = self.reference_len / prediction_len if prediction_tokens else 1.0
 
         # Ensure to not end up with zero overlaip with previous role
@@ -171,8 +172,8 @@ class _LevenshteinEditDistance:
         return edit_distance[-1][-1][0], edit_distance[len(cache) :], trace
 
     def _get_trace(
-        self, prediction_len: int, edit_distance: List[List[Tuple[int, _EditOperations]]]
-    ) -> Tuple[_EditOperations, ...]:
+        self, prediction_len: int, edit_distance: list[list[tuple[int, _EditOperations]]]
+    ) -> tuple[_EditOperations, ...]:
         """Get a trace of executed operations from the edit distance matrix.
 
         Args:
@@ -189,7 +190,7 @@ class _LevenshteinEditDistance:
                 If an unknown operation has been applied.
 
         """
-        trace: Tuple[_EditOperations, ...] = ()
+        trace: tuple[_EditOperations, ...] = ()
         i = prediction_len
         j = self.reference_len
 
@@ -208,7 +209,7 @@ class _LevenshteinEditDistance:
 
         return trace
 
-    def _add_cache(self, prediction_tokens: List[str], edit_distance: List[List[Tuple[int, _EditOperations]]]) -> None:
+    def _add_cache(self, prediction_tokens: list[str], edit_distance: list[list[tuple[int, _EditOperations]]]) -> None:
         """Add newly computed rows to cache.
 
         Since edit distance is only calculated on the hypothesis suffix that was not in cache, the number of rows in
@@ -241,8 +242,8 @@ class _LevenshteinEditDistance:
             value = node[word]
             node = value[0]  # type: ignore
 
-    def _find_cache(self, prediction_tokens: List[str]) -> Tuple[int, List[List[Tuple[int, _EditOperations]]]]:
-        """Find the already calculated rows of the Levenshtein edit distance matric.
+    def _find_cache(self, prediction_tokens: list[str]) -> tuple[int, list[list[tuple[int, _EditOperations]]]]:
+        """Find the already calculated rows of the Levenshtein edit distance metric.
 
         Args:
             prediction_tokens: A tokenized predicted sentence.
@@ -258,7 +259,7 @@ class _LevenshteinEditDistance:
         """
         node = self.cache
         start_position = 0
-        edit_distance: List[List[Tuple[int, _EditOperations]]] = [self._get_initial_row(self.reference_len)]
+        edit_distance: list[list[tuple[int, _EditOperations]]] = [self._get_initial_row(self.reference_len)]
         for word in prediction_tokens:
             if word in node:
                 start_position += 1
@@ -269,7 +270,7 @@ class _LevenshteinEditDistance:
 
         return start_position, edit_distance
 
-    def _get_empty_row(self, length: int) -> List[Tuple[int, _EditOperations]]:
+    def _get_empty_row(self, length: int) -> list[tuple[int, _EditOperations]]:
         """Precomputed empty matrix row for Levenhstein edit distance.
 
         Args:
@@ -281,8 +282,8 @@ class _LevenshteinEditDistance:
         """
         return [(int(self.op_undefined), _EditOperations.OP_UNDEFINED)] * (length + 1)
 
-    def _get_initial_row(self, length: int) -> List[Tuple[int, _EditOperations]]:
-        """First row corresponds to insertion operations of the reference, so we do 1 edit operation per reference word.
+    def _get_initial_row(self, length: int) -> list[tuple[int, _EditOperations]]:
+        """First row corresponds to insertion operations of the reference, so 1 edit operation per reference word.
 
         Args:
             length: A length of a tokenized sentence.
@@ -297,7 +298,7 @@ class _LevenshteinEditDistance:
 def _validate_inputs(
     ref_corpus: Union[Sequence[str], Sequence[Sequence[str]]],
     hypothesis_corpus: Union[str, Sequence[str]],
-) -> Tuple[Sequence[Sequence[str]], Sequence[str]]:
+) -> tuple[Sequence[Sequence[str]], Sequence[str]]:
     """Check and update (if needed) the format of reference and hypothesis corpora for various text evaluation metrics.
 
     Args:
@@ -326,7 +327,7 @@ def _validate_inputs(
     return ref_corpus, hypothesis_corpus
 
 
-def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) -> int:
+def _edit_distance(prediction_tokens: list[str], reference_tokens: list[str]) -> int:
     """Dynamic programming algorithm to compute the edit distance.
 
     Args:
@@ -350,7 +351,7 @@ def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) ->
     return dp[-1][-1]
 
 
-def _flip_trace(trace: Tuple[_EditOperations, ...]) -> Tuple[_EditOperations, ...]:
+def _flip_trace(trace: tuple[_EditOperations, ...]) -> tuple[_EditOperations, ...]:
     """Flip the trace of edit operations.
 
     Instead of rewriting a->b, get a recipe for rewriting b->a. Simply flips insertions and deletions.
@@ -363,13 +364,13 @@ def _flip_trace(trace: Tuple[_EditOperations, ...]) -> Tuple[_EditOperations, ..
             A tuple of inverted edit operations.
 
     """
-    _flip_operations: Dict[_EditOperations, _EditOperations] = {
+    _flip_operations: dict[_EditOperations, _EditOperations] = {
         _EditOperations.OP_INSERT: _EditOperations.OP_DELETE,
         _EditOperations.OP_DELETE: _EditOperations.OP_INSERT,
     }
 
     def _replace_operation_or_retain(
-        operation: _EditOperations, _flip_operations: Dict[_EditOperations, _EditOperations]
+        operation: _EditOperations, _flip_operations: dict[_EditOperations, _EditOperations]
     ) -> _EditOperations:
         if operation in _flip_operations:
             return _flip_operations.get(operation)  # type: ignore
@@ -378,7 +379,7 @@ def _flip_trace(trace: Tuple[_EditOperations, ...]) -> Tuple[_EditOperations, ..
     return tuple(_replace_operation_or_retain(operation, _flip_operations) for operation in trace)
 
 
-def _trace_to_alignment(trace: Tuple[_EditOperations, ...]) -> Tuple[Dict[int, int], List[int], List[int]]:
+def _trace_to_alignment(trace: tuple[_EditOperations, ...]) -> tuple[dict[int, int], list[int], list[int]]:
     """Transform trace of edit operations into an alignment of the sequences.
 
     Args:
@@ -395,9 +396,9 @@ def _trace_to_alignment(trace: Tuple[_EditOperations, ...]) -> Tuple[Dict[int, i
 
     """
     reference_position = hypothesis_position = -1
-    reference_errors: List[int] = []
-    hypothesis_errors: List[int] = []
-    alignments: Dict[int, int] = {}
+    reference_errors: list[int] = []
+    hypothesis_errors: list[int] = []
+    alignments: dict[int, int] = {}
 
     # we are rewriting a into b
     for operation in trace:

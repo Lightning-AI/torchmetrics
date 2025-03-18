@@ -11,18 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# this is just a bypass for this module name collision with build-in one
+# this is just a bypass for this module name collision with built-in one
 import re
 
 import pytest
 import torch
+
 from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryAccuracy, BinaryF1Score
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_5
 from torchmetrics.wrappers import MultitaskWrapper
-
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(42)
 
@@ -74,12 +75,10 @@ def test_errors_on_wrong_input():
 
 def test_error_on_wrong_keys():
     """Check that ValueError is raised when the sets of keys of the task metrics, preds, and targets do not match."""
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-            "Regression": MeanSquaredError(),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+        "Regression": MeanSquaredError(),
+    })
 
     # Classification preds, but not regression preds
     wrong_key_preds = {"Classification": _classification_preds}
@@ -88,19 +87,19 @@ def test_error_on_wrong_keys():
     wrong_key_targets = {"Classification": _classification_target}
 
     # Classification metric, but not regression metric
-    wrong_key_multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-        }
-    )
+    wrong_key_multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+    })
+
+    order_dict = "" if _TORCH_GREATER_EQUAL_2_5 else "o"
 
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
-            "Found task_preds.keys() = dict_keys(['Classification']), task_targets.keys() = "
-            "dict_keys(['Classification', 'Regression']) and self.task_metrics.keys() = "
-            "odict_keys(['Classification', 'Regression'])"
+            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`."
+            " Found task_preds.keys() = dict_keys(['Classification']),"
+            " task_targets.keys() = dict_keys(['Classification', 'Regression'])"
+            f" and self.task_metrics.keys() = {order_dict}dict_keys(['Classification', 'Regression'])"
         ),
     ):
         multitask_metrics.update(wrong_key_preds, _multitask_targets)
@@ -108,9 +107,10 @@ def test_error_on_wrong_keys():
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
-            "Found task_preds.keys() = dict_keys(['Classification', 'Regression']), task_targets.keys() = "
-            "dict_keys(['Classification']) and self.task_metrics.keys() = odict_keys(['Classification', 'Regression'])"
+            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`."
+            " Found task_preds.keys() = dict_keys(['Classification', 'Regression']),"
+            " task_targets.keys() = dict_keys(['Classification'])"
+            f" and self.task_metrics.keys() = {order_dict}dict_keys(['Classification', 'Regression'])"
         ),
     ):
         multitask_metrics.update(_multitask_preds, wrong_key_targets)
@@ -118,9 +118,10 @@ def test_error_on_wrong_keys():
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
-            "Found task_preds.keys() = dict_keys(['Classification', 'Regression']), task_targets.keys() = "
-            "dict_keys(['Classification', 'Regression']) and self.task_metrics.keys() = odict_keys(['Classification'])"
+            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`."
+            " Found task_preds.keys() = dict_keys(['Classification', 'Regression']),"
+            " task_targets.keys() = dict_keys(['Classification', 'Regression'])"
+            f" and self.task_metrics.keys() = {order_dict}dict_keys(['Classification'])"
         ),
     ):
         wrong_key_multitask_metrics.update(_multitask_preds, _multitask_targets)
@@ -139,12 +140,10 @@ def test_metric_collection_multitask():
     """Check that wrapping some MetricCollections in a MultitaskWrapper is the same as computing them individually."""
     classification_metric = MetricCollection([BinaryAccuracy(), BinaryF1Score()])
     regression_metric = MetricCollection([MeanSquaredError(), MeanAbsoluteError()])
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
-            "Regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
+        "Regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+    })
 
     assert _multitask_same_as_individual_tasks(classification_metric, regression_metric, multitask_metrics)
 
@@ -167,17 +166,13 @@ def test_nested_multitask_wrapper():
     classification_metric = BinaryAccuracy()
     regression_position_metric = MeanSquaredError()
     regression_size_metric = MeanAbsoluteError()
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-            "Regression": MultitaskWrapper(
-                {
-                    "Position": MeanSquaredError(),
-                    "Size": MeanAbsoluteError(),
-                }
-            ),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+        "Regression": MultitaskWrapper({
+            "Position": MeanSquaredError(),
+            "Size": MeanAbsoluteError(),
+        }),
+    })
 
     multitask_preds = {
         "Classification": _classification_preds,
@@ -207,3 +202,75 @@ def test_nested_multitask_wrapper():
     multitask_results = multitask_metrics.compute()
 
     assert _dict_results_same_as_individual_results(classification_results, regression_results, multitask_results)
+
+
+@pytest.mark.parametrize("method", ["keys", "items", "values"])
+@pytest.mark.parametrize("flatten", [True, False])
+def test_key_value_items_method(method, flatten):
+    """Test the keys, items, and values methods of the MultitaskWrapper."""
+    multitask = MultitaskWrapper({
+        "classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
+        "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+    })
+    if method == "keys":
+        output = list(multitask.keys(flatten=flatten))
+    elif method == "items":
+        output = list(multitask.items(flatten=flatten))
+    elif method == "values":
+        output = list(multitask.values(flatten=flatten))
+
+    if flatten:
+        assert len(output) == 4
+        if method == "keys":
+            assert output == [
+                "classification_BinaryAccuracy",
+                "classification_BinaryF1Score",
+                "regression_MeanSquaredError",
+                "regression_MeanAbsoluteError",
+            ]
+        elif method == "items":
+            assert output == [
+                ("classification_BinaryAccuracy", BinaryAccuracy()),
+                ("classification_BinaryF1Score", BinaryF1Score()),
+                ("regression_MeanSquaredError", MeanSquaredError()),
+                ("regression_MeanAbsoluteError", MeanAbsoluteError()),
+            ]
+        elif method == "values":
+            assert output == [BinaryAccuracy(), BinaryF1Score(), MeanSquaredError(), MeanAbsoluteError()]
+    else:
+        assert len(output) == 2
+        if method == "keys":
+            assert output == ["classification", "regression"]
+        elif method == "items":
+            assert output[0][0] == "classification"
+            assert output[1][0] == "regression"
+            assert isinstance(output[0][1], MetricCollection)
+            assert isinstance(output[1][1], MetricCollection)
+        elif method == "values":
+            assert isinstance(output[0], MetricCollection)
+            assert isinstance(output[1], MetricCollection)
+
+
+def test_clone_with_prefix_and_postfix():
+    """Check that the clone method works with prefix and postfix arguments."""
+    multitask_metrics = MultitaskWrapper(
+        {"Classification": BinaryAccuracy(), "Regression": MeanSquaredError()},
+        prefix="prefix_",
+        postfix="_postfix",
+    )
+    assert set(multitask_metrics.keys()) == {"prefix_Classification_postfix", "prefix_Regression_postfix"}
+
+    output = multitask_metrics(
+        {"Classification": _classification_preds, "Regression": _regression_preds},
+        {"Classification": _classification_target, "Regression": _regression_target},
+    )
+    assert set(output.keys()) == {"prefix_Classification_postfix", "prefix_Regression_postfix"}
+
+    cloned_metrics = multitask_metrics.clone(prefix="new_prefix_", postfix="_new_postfix")
+    assert set(cloned_metrics.keys()) == {"new_prefix_Classification_new_postfix", "new_prefix_Regression_new_postfix"}
+
+    output = cloned_metrics(
+        {"Classification": _classification_preds, "Regression": _regression_preds},
+        {"Classification": _classification_target, "Regression": _regression_target},
+    )
+    assert set(output.keys()) == {"new_prefix_Classification_new_postfix", "new_prefix_Regression_new_postfix"}

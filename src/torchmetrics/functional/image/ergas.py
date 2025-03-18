@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -21,7 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _ergas_update(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Erreur Relative Globale Adimensionnelle de Synthèse.
 
     Args:
@@ -37,8 +36,7 @@ def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     _check_same_shape(preds, target)
     if len(preds.shape) != 4:
         raise ValueError(
-            "Expected `preds` and `target` to have BxCxHxW shape."
-            f" Got preds: {preds.shape} and target: {target.shape}."
+            f"Expected `preds` and `target` to have BxCxHxW shape. Got preds: {preds.shape} and target: {target.shape}."
         )
     return preds, target
 
@@ -46,7 +44,7 @@ def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 def _ergas_compute(
     preds: Tensor,
     target: Tensor,
-    ratio: Union[int, float] = 4,
+    ratio: float = 4,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Erreur Relative Globale Adimensionnelle de Synthèse.
@@ -62,12 +60,12 @@ def _ergas_compute(
             - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 1, 16, 16], generator=gen)
+        >>> from torch import rand
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> preds, target = _ergas_update(preds, target)
         >>> torch.round(_ergas_compute(preds, target))
-        tensor(154.)
+        tensor(10.)
 
     """
     b, c, h, w = preds.shape
@@ -79,17 +77,17 @@ def _ergas_compute(
     rmse_per_band = torch.sqrt(sum_squared_error / (h * w))
     mean_target = torch.mean(target, dim=2)
 
-    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
+    ergas_score = 100 / ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     return reduce(ergas_score, reduction)
 
 
 def error_relative_global_dimensionless_synthesis(
     preds: Tensor,
     target: Tensor,
-    ratio: Union[int, float] = 4,
+    ratio: float = 4,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
-    """Erreur Relative Globale Adimensionnelle de Synthèse.
+    """Calculates `Error relative global dimensionless synthesis`_ (ERGAS) metric.
 
     Args:
         preds: estimated image
@@ -111,18 +109,12 @@ def error_relative_global_dimensionless_synthesis(
             If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import error_relative_global_dimensionless_synthesis
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 1, 16, 16], generator=gen)
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
-        >>> ergds = error_relative_global_dimensionless_synthesis(preds, target)
-        >>> torch.round(ergds)
-        tensor(154.)
-
-    References:
-        [1] Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
-        Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
-        15 October 2007, doi: 10.1109/LGRS.2007.896328.
+        >>> error_relative_global_dimensionless_synthesis(preds, target)
+        tensor(9.6193)
 
     """
     preds, target = _ergas_update(preds, target)

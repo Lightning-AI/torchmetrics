@@ -14,93 +14,89 @@ inputs:
     description: location to pull PyTorch from
     required: false
     default: "https://download.pytorch.org/whl/cpu/torch_stable.html"
-
+  cache-artifact-appendix:
+    description: "unique name or running index"
+    required: false
+    default: ""
+  cache-torch-HF:
+    description: "cache torch and HF"
+    required: false
+    default: "true"
+  cache-references:
+    description: "cache metrics references"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
   steps:
+    - name: install dev. env
+      run: pip install -q setuptools wheel
+      shell: bash
 
-  - name: install dev. env
-    run: pip install -q setuptools wheel
-    shell: bash
+    - name: Freeze local emv.
+      if: inputs.cache-artifact-appendix != ''
+      run: |
+        pip freeze > requirements.dump
+        cat requirements.dump
+      shell: bash
 
-  - name: Freeze local emv.
-    run: |
-      pip freeze > requirements.dump
-      cat requirements.dump
-    shell: bash
+    - name: Dump wheels
+      if: inputs.cache-artifact-appendix != ''
+      run: |
+        pip wheel -r requirements/_devel.txt --prefer-binary \
+          --wheel-dir=_pip-wheels \
+          -f ${{ inputs.torch-url }} -f ${{ inputs.pypi-dir }}
+        ls -lh _pip-wheels
+      shell: bash
 
-  #- name: Filter self pkg
-  #  run: |
-  #    import os
-  #    fp = 'requirements.dump'
-  #    with open(fp) as fo:
-  #      lines = [ln.strip() for ln in fo.readlines()]
-  #    lines = [ln.split('+')[0] for ln in lines if '-e ' not in ln]
-  #    with open(fp, 'w') as fw:
-  #      fw.writelines([ln + os.linesep for ln in lines])
-  #  shell: python
+    - name: Move new packages to staging
+      if: inputs.cache-artifact-appendix != ''
+      run: |
+        mkdir -p _pip-staging
+        python .github/assistant.py move_new_packages \
+          --dir-cache="${{ inputs.pypi-dir }}" \
+          --dir_local="_pip-wheels" \
+          --dir_staging="_pip-staging"
+        ls -lh _pip-staging/
+        # count files in the staging dir
+        file_count=$(ls -1 "_pip-staging/" | wc -l)
+        echo "NUM_PACKAGES=$file_count" >> $GITHUB_ENV
+      shell: bash
 
-  - name: Dump wheels
-    run: |
-      pip wheel -r requirements/devel.txt --prefer-binary \
-        --wheel-dir=.pip-wheels \
-        -f ${{ inputs.torch-url }} -f ${{ inputs.pypi-dir }}
-      ls -lh .pip-wheels
-    shell: bash
+    - name: Upload new packages
+      if: inputs.cache-artifact-appendix != '' && env.NUM_PACKAGES != 0
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.pypi-key }}-run-${{ inputs.cache-artifact-appendix }}
+        path: _pip-staging
+        retention-days: 1
 
-  - name: Cache pull
-    uses: actions/cache/restore@v3
-    with:
-      path: ${{ inputs.pypi-dir }}
-      key: ${{ inputs.pypi-key }}
+    - name: Post Torch & HF
+      if: inputs.cache-torch-HF == 'true' # since the input is string
+      run: py-tree $CACHES_DIR
+      shell: bash
 
-  - name: Find diff
-    id: wheels-diff
-    run: |
-      import os, glob
-      wheels = [os.path.basename(p) for p in glob.glob(".pip-wheels/*")]
-      pkgs = [os.path.basename(p) for p in glob.glob("${{ inputs.pypi-dir }}/*")]
-      diff = [w for w in wheels if w not in pkgs]
-      print(diff)
-      with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-          print(f'count-new={len(diff)}', file=fh)
-    shell: python
+    - name: Cache Torch & HF
+      if: inputs.cache-torch-HF == 'true' # since the input is string
+      continue-on-error: true
+      uses: actions/cache/save@v3
+      with:
+        enableCrossOsArchive: true
+        path: ${{ env.CACHES_DIR }}
+        key: ci-caches
 
-  - run: cp .pip-wheels/* ${{ inputs.pypi-dir }}
-    if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
-    shell: bash
+    - name: Cache references
+      if: inputs.cache-references == 'true' # since the input is string
+      continue-on-error: true
+      uses: actions/cache/save@v3
+      with:
+        #enableCrossOsArchive: true
+        path: tests/_cache-references
+        key: cache-references
 
-  - name: Cache push
-    if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
-    uses: actions/cache/save@v3
-    with:
-      path: ${{ inputs.pypi-dir }}
-      key: ${{ inputs.pypi-key }}
-
-  - name: Post PT
-    if: ${{ runner.os == 'Linux' }}
-    run: |
-      printf "list $TORCH_HOME:\n"
-      tree -h $TORCH_HOME
-    shell: bash
-
-  - name: Cache Torch
-    continue-on-error: true
-    uses: actions/cache/save@v3
-    with:
-      path: ${{ env.TORCH_HOME }}
-      key: cache-pytorch
-
-  - name: Post HF
-    run: |
-      printf "list $TRANSFORMERS_CACHE:\n"
-      ls -lh $TRANSFORMERS_CACHE
-    shell: bash
-
-  - name: Cache HF
-    continue-on-error: true
-    uses: actions/cache/save@v3
-    with:
-      path: ${{ env.TRANSFORMERS_CACHE }}
-      key: cache-transformers
+    #- name: Post References
+    #  # This print taken soo many lines, so it is commented out
+    #  if: inputs.cache-references == 'true' # since the input is string
+    #  run: py-tree tests/_cache-references/ --show_hidden
+    #  shell: bash

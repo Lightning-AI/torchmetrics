@@ -13,18 +13,28 @@
 # limitations under the License.
 from torchmetrics.wrappers.bootstrapping import BootStrapper
 from torchmetrics.wrappers.classwise import ClasswiseWrapper
+from torchmetrics.wrappers.feature_share import FeatureShare
 from torchmetrics.wrappers.minmax import MinMaxMetric
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
 from torchmetrics.wrappers.multitask import MultitaskWrapper
 from torchmetrics.wrappers.running import Running
 from torchmetrics.wrappers.tracker import MetricTracker
+from torchmetrics.wrappers.transformations import (
+    BinaryTargetTransformer,
+    LambdaInputTransformer,
+    MetricInputTransformer,
+)
 
 __all__ = [
+    "BinaryTargetTransformer",
     "BootStrapper",
     "ClasswiseWrapper",
+    "FeatureShare",
+    "LambdaInputTransformer",
+    "MetricInputTransformer",
+    "MetricTracker",
     "MinMaxMetric",
     "MultioutputWrapper",
     "MultitaskWrapper",
-    "MetricTracker",
     "Running",
 ]

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 
 import numpy as np
 import pytest
@@ -20,32 +19,32 @@ from sklearn.metrics.cluster import contingency_matrix as sklearn_contingency_ma
 from sklearn.metrics.cluster import entropy as sklearn_entropy
 from sklearn.metrics.cluster import pair_confusion_matrix as sklearn_pair_confusion_matrix
 from sklearn.metrics.cluster._supervised import _generalized_average as sklearn_generalized_average
+
 from torchmetrics.functional.clustering.utils import (
-    calcualte_pair_cluster_confusion_matrix,
     calculate_contingency_matrix,
     calculate_entropy,
     calculate_generalized_mean,
+    calculate_pair_cluster_confusion_matrix,
 )
-
-from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
+
 NUM_CLASSES = 10
 
-_sklearn_inputs = Input(
+_sklearn_inputs = _Input(
     preds=torch.tensor([1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3]),
     target=torch.tensor([1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 3, 1, 3, 3, 3, 2, 2]),
 )
 
-_single_dim_inputs = Input(
+_single_dim_inputs = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE,)),
     target=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE,)),
 )
 
-_multi_dim_inputs = Input(
+_multi_dim_inputs = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE, 2)),
     target=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE, 2)),
 )
@@ -113,6 +112,6 @@ class TestPairClusterConfusionMatrix:
 
     def test_pair_cluster_confusion_matrix(self, preds, target):
         """Check that pair cluster confusion matrix is calculated correctly."""
-        tm_res = calcualte_pair_cluster_confusion_matrix(preds, target)
+        tm_res = calculate_pair_cluster_confusion_matrix(preds, target)
         sklearn_res = sklearn_pair_confusion_matrix(preds, target)
         assert np.allclose(tm_res, sklearn_res, atol=self.atol)

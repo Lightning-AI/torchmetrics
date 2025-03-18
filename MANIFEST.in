@@ -1,9 +1,9 @@
-# Manifest syntax https://docs.python.org/2/distutils/sourcedist.html
+# Manifest syntax https://packaging.python.org/en/latest/guides/using-manifest-in/
 graft wheelhouse
 
 recursive-exclude __pycache__  *.py[cod] *.orig
 # include also models
-recursive-include src *.pth
+recursive-include src *.pth *.pt
 
 # Include the README and CHANGELOG
 include *.md

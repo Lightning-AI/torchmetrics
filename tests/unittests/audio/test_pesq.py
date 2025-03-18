@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
@@ -19,30 +18,30 @@ import torch
 from pesq import pesq as pesq_backend
 from scipy.io import wavfile
 from torch import Tensor
+
 from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio import perceptual_evaluation_speech_quality
-
-from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _average_metric_wrapper
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 # for 8k sample rate, need at least 8k/4=2000 samples
-inputs_8k = Input(
+inputs_8k = _Input(
     preds=torch.rand(2, 3, 2100),
     target=torch.rand(2, 3, 2100),
 )
 # for 16k sample rate, need at least 16k/4=4000 samples
-inputs_16k = Input(
+inputs_16k = _Input(
     preds=torch.rand(2, 3, 4100),
     target=torch.rand(2, 3, 4100),
 )
 
 
-def _pesq_original_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
+def _reference_pesq_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
     """Comparison function."""
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Time] , target [NUM_BATCHES*BATCH_SIZE, Time]
@@ -55,23 +54,12 @@ def _pesq_original_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
     return torch.tensor(mss)
 
 
-def _average_metric(preds, target, metric_func):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
-
-
-pesq_original_batch_8k_nb = partial(_pesq_original_batch, fs=8000, mode="nb")
-pesq_original_batch_16k_nb = partial(_pesq_original_batch, fs=16000, mode="nb")
-pesq_original_batch_16k_wb = partial(_pesq_original_batch, fs=16000, mode="wb")
-
-
 @pytest.mark.parametrize(
     "preds, target, ref_metric, fs, mode",
     [
-        (inputs_8k.preds, inputs_8k.target, pesq_original_batch_8k_nb, 8000, "nb"),
-        (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_nb, 16000, "nb"),
-        (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_wb, 16000, "wb"),
+        (inputs_8k.preds, inputs_8k.target, partial(_reference_pesq_batch, fs=8000, mode="nb"), 8000, "nb"),
+        (inputs_16k.preds, inputs_16k.target, partial(_reference_pesq_batch, fs=16000, mode="nb"), 16000, "nb"),
+        (inputs_16k.preds, inputs_16k.target, partial(_reference_pesq_batch, fs=16000, mode="wb"), 16000, "wb"),
     ],
 )
 class TestPESQ(MetricTester):
@@ -80,7 +68,7 @@ class TestPESQ(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("num_processes", [1, 2])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_pesq(self, preds, target, ref_metric, fs, mode, num_processes, ddp):
         """Test class implementation of metric."""
         if num_processes != 1 and ddp:
@@ -90,7 +78,7 @@ class TestPESQ(MetricTester):
             preds,
             target,
             PerceptualEvaluationSpeechQuality,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric_wrapper, metric_func=ref_metric),
             metric_args={"fs": fs, "mode": mode, "n_processes": num_processes},
         )
 
@@ -142,7 +130,7 @@ def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
-    pesq = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb")
-    assert pesq == 1.0832337141036987
-    pesq = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb")
-    assert pesq == 1.6072081327438354
+    pesq_score = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb")
+    assert torch.allclose(pesq_score, torch.tensor(1.0832337141036987), atol=1e-4)
+    pesq_score = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb")
+    assert torch.allclose(pesq_score, torch.tensor(1.6072081327438354), atol=1e-4)

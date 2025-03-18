@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -55,7 +56,7 @@ class BinaryHingeLoss(Metric):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -83,6 +84,7 @@ class BinaryHingeLoss(Metric):
         tensor(0.6905)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -188,7 +190,7 @@ class MulticlassHingeLoss(Metric):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -196,7 +198,7 @@ class MulticlassHingeLoss(Metric):
     - ``mchl`` (:class:`~torch.Tensor`): A tensor containing the multi-class hinge loss.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         squared:
             If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss.
         multiclass_mode:
@@ -225,6 +227,7 @@ class MulticlassHingeLoss(Metric):
         tensor([0.8750, 1.1250, 1.1000])
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -351,7 +354,7 @@ class HingeLoss(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["HingeLoss"],
         task: Literal["binary", "multiclass"],
         num_classes: Optional[int] = None,
         squared: bool = False,

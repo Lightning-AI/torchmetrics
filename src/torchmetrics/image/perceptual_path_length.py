@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Literal, Optional, Tuple, Union
+from typing import Any, Literal, Optional, Union
 
 from torch import Tensor, nn
 
@@ -51,7 +51,8 @@ class PerceptualPathLength(Metric):
     if `conditional=False`, and `forward(z: Tensor, labels: Tensor) -> Tensor` if `conditional=True`. The returned
     tensor should have shape `(num_samples, C, H, W)` and be scaled to the range [0, 255].
 
-    .. note:: using this metric with the default feature extractor requires that ``torchvision`` is installed.
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torchvision`` is installed.
         Either install as ``pip install torchmetrics[image]`` or ``pip install torchvision``
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -98,9 +99,7 @@ class PerceptualPathLength(Metric):
             If ``upper_discard`` is not a float between 0 and 1 or None.
 
     Example::
-        >>> from torchmetrics.image import PerceptualPathLength
         >>> import torch
-        >>> _ = torch.manual_seed(42)
         >>> class DummyGenerator(torch.nn.Module):
         ...    def __init__(self, z_size) -> None:
         ...       super().__init__()
@@ -112,15 +111,17 @@ class PerceptualPathLength(Metric):
         ...      return torch.randn(num_samples, self.z_size)
         >>> generator = DummyGenerator(2)
         >>> ppl = PerceptualPathLength(num_samples=10)
-        >>> ppl(generator)  # doctest: +SKIP
-        (tensor(0.2371),
-        tensor(0.1763),
-        tensor([0.3502, 0.1362, 0.2535, 0.0902, 0.1784, 0.0769, 0.5871, 0.0691, 0.3921]))
+        >>> ppl(generator)
+        (tensor(...), tensor(...), tensor([...]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
+
+    net: nn.Module
+    feature_network: str = "net"
 
     def __init__(
         self,
@@ -165,7 +166,7 @@ class PerceptualPathLength(Metric):
         _validate_generator_model(generator, self.conditional)
         self.generator = generator
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute the perceptual path length."""
         return perceptual_path_length(
             generator=self.generator,

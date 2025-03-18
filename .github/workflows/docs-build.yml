@@ -6,6 +6,7 @@ on:
     tags: ["*"]
   pull_request:
     branches: ["master", "release/*"]
+    types: [opened, reopened, ready_for_review, synchronize]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
@@ -17,10 +18,13 @@ defaults:
 
 env:
   FREEZE_REQUIREMENTS: "1"
-  TORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
+  TORCH_URL: "https://download.pytorch.org/whl/cpu/"
   PYPI_CACHE: "_ci-cache_PyPI"
-  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: 'python'
+  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
   TOKENIZERS_PARALLELISM: false
+  SPHINX_MOCK_REQUIREMENTS: 0
+  SPHINX_FETCH_ASSETS: 0
+  SPHINX_PIN_RELEASE_VERSIONS: 1
 
 jobs:
   docs-make:
@@ -29,78 +33,54 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [html, doctest, linkcheck]
-    env:
-      SPHINX_MOCK_REQUIREMENTS: 0
+        target: [html, doctest, linkcheck]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: source cashing
         uses: ./.github/actions/pull-caches
         with:
-          requires: ${{ matrix.requires }}
           pytorch-version: ${{ matrix.pytorch-version }}
           pypi-dir: ${{ env.PYPI_CACHE }}
 
-      - name: Install Latex
-        if: ${{ matrix.check == 'html' }}
-        # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            texlive-latex-extra texlive-pictures texlive-fonts-recommended dvipng cm-super
-
       - name: Install package & dependencies
         run: |
-          sudo apt-get update --fix-missing
-          sudo apt-get install -y cmake
-          pip --version
-          pip install . -U -r requirements/docs.txt \
-            --find-links=${PYPI_CACHE} --find-links=${TORCH_URL}
-          pip list
-
-      - name: Test Examples in Documentation
-        if: ${{ matrix.check == 'doctest' }}
+          make get-sphinx-template
+          # install with -e so the path to source link comes from this project not from the installed package
+          pip install -e . -U -r requirements/_docs.txt \
+            --find-links="${PYPI_CACHE}" --extra-index-url="${TORCH_URL}"
+      - run: pip list
+      - name: Full build for deployment
+        if: github.event_name != 'pull_request'
+        run: echo "SPHINX_FETCH_ASSETS=1" >> $GITHUB_ENV
+      - name: Disable Gallery build
+        if: matrix.target != 'html'
+        run: echo "SPHINX_ENABLE_GALLERY=0" >> $GITHUB_ENV
+      - name: make ${{ matrix.target }}
         working-directory: ./docs
-        env:
-          SPHINX_FETCH_ASSETS: 0
         run: |
-          make doctest
-          make coverage
-
-      - name: Check External Links
-        if: ${{ matrix.check == 'linkcheck' }}
-        working-directory: ./docs
-        env:
-          SPHINX_FETCH_ASSETS: 0
-        run: make --jobs $(nproc) linkcheck SPHINXOPTS="--keep-going"
-
-      - name: Make Documentation
-        if: ${{ matrix.check == 'html' }}
-        working-directory: ./docs
-        env:
-          SPHINX_FETCH_ASSETS: 1
-        run: make html --debug SPHINXOPTS="-W --keep-going"
+          pwd
+          ls -la
+          make ${{ matrix.target }} --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
 
       - name: Upload built docs
-        if: ${{ matrix.check == 'html' && github.event_name == 'push' }}
-        uses: actions/upload-artifact@v3
+        if: ${{ matrix.target == 'html' && github.event_name != 'pull_request' }}
+        uses: actions/upload-artifact@v4
         with:
-          name: docs-${{ github.sha }}
+          name: docs-${{ matrix.target }}-${{ github.sha }}
           path: docs/build/
           retention-days: ${{ steps.keep-artifact.outputs.DAYS }}
 
       - name: update cashing
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && matrix.target == 'html' }}
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
           pypi-dir: ${{ env.PYPI_CACHE }}
-
 
   deploy-docs:
     needs: docs-make
@@ -109,20 +89,34 @@ jobs:
     env:
       GCP_TARGET: "gs://lightning-docs-metrics"
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: docs-${{ github.sha }}
+          name: docs-html-${{ github.sha }}
           path: docs/build/
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCS_SA_KEY }}
-
       - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCS_PROJECT }}
+
+      # Uploading docs as archive to GCS, so they can be as backup
+      - name: Upload docs as archive to GCS 🪣
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: docs/build
+        run: |
+          zip ${{ github.ref_name }}.zip -r html/
+          gsutil cp ${{ github.ref_name }}.zip ${GCP_TARGET}
+
+      - name: Inject version selector
+        working-directory: docs/build
+        run: |
+          pip install -q wget
+          python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/inject-selector-script.py
+          python inject-selector-script.py html torchmetrics
 
       # Uploading docs to GCS, so they can be served on lightning.ai
       - name: Upload docs/metrics/stable to GCS 🪣
@@ -138,11 +132,3 @@ jobs:
       - name: Upload docs/metrics/release to GCS 🪣
         if: startsWith(github.ref, 'refs/tags/')
         run: gsutil -m rsync -d -R docs/build/html/ ${GCP_TARGET}/${{ github.ref_name }}
-
-      # Uploading docs as archive to GCS, so they can be as backup
-      - name: Upload docs as archive to GCS 🪣
-        if: startsWith(github.ref, 'refs/tags/')
-        working-directory: docs/build
-        run: |
-          zip ${{ github.ref_name }}.zip -r html/
-          gsutil cp ${{ github.ref_name }}.zip ${GCP_TARGET}

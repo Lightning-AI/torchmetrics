@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from functools import partial
 
 import numpy as np
@@ -19,24 +20,25 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_curve as sk_roc_curve
+
 from torchmetrics.classification.roc import ROC, BinaryROC, MulticlassROC, MultilabelROC
 from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _sklearn_roc_binary(preds, target, ignore_index=None):
+def _reference_sklearn_roc_binary(preds, target, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     fpr, tpr, thresholds = sk_roc_curve(target, preds, drop_intermediate=False)
     thresholds[0] = 1.0
     return [np.nan_to_num(x, nan=0.0) for x in [fpr, tpr, thresholds]]
@@ -47,7 +49,7 @@ class TestBinaryROC(MetricTester):
     """Test class for `BinaryROC` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_roc(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -58,7 +60,7 @@ class TestBinaryROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryROC,
-            reference_metric=partial(_sklearn_roc_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -75,7 +77,7 @@ class TestBinaryROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_roc,
-            reference_metric=partial(_sklearn_roc_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -97,8 +99,8 @@ class TestBinaryROC(MetricTester):
     def test_binary_roc_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -134,12 +136,12 @@ class TestBinaryROC(MetricTester):
             assert torch.allclose(t1, t2)
 
 
-def _sklearn_roc_multiclass(preds, target, ignore_index=None):
+def _reference_sklearn_roc_multiclass(preds, target, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     fpr, tpr, thresholds = [], [], []
     for i in range(NUM_CLASSES):
@@ -161,7 +163,7 @@ class TestMulticlassROC(MetricTester):
     """Test class for `MulticlassROC` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_roc(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -172,7 +174,7 @@ class TestMulticlassROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassROC,
-            reference_metric=partial(_sklearn_roc_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -190,7 +192,7 @@ class TestMulticlassROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_roc,
-            reference_metric=partial(_sklearn_roc_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -251,11 +253,26 @@ class TestMulticlassROC(MetricTester):
                 assert torch.allclose(r1[i], r2[i])
                 assert torch.allclose(t1[i], t2)
 
+    @pytest.mark.parametrize("average", ["macro", "micro"])
+    @pytest.mark.parametrize("thresholds", [None, 100])
+    def test_multiclass_average(self, inputs, average, thresholds):
+        """Test that the average argument works as expected."""
+        preds, target = inputs
+        output = multiclass_roc(preds[0], target[0], num_classes=NUM_CLASSES, thresholds=thresholds, average=average)
+        assert all(isinstance(o, torch.Tensor) for o in output)
+        none_output = multiclass_roc(preds[0], target[0], num_classes=NUM_CLASSES, thresholds=thresholds, average=None)
+        if average == "macro":
+            assert len(output[0]) == len(none_output[0][0]) * NUM_CLASSES
+            assert len(output[1]) == len(none_output[1][0]) * NUM_CLASSES
+            assert (
+                len(output[2]) == (len(none_output[2][0]) if thresholds is None else len(none_output[2])) * NUM_CLASSES
+            )
 
-def _sklearn_roc_multilabel(preds, target, ignore_index=None):
+
+def _reference_sklearn_roc_multilabel(preds, target, ignore_index=None):
     fpr, tpr, thresholds = [], [], []
     for i in range(NUM_CLASSES):
-        res = _sklearn_roc_binary(preds[:, i], target[:, i], ignore_index)
+        res = _reference_sklearn_roc_binary(preds[:, i], target[:, i], ignore_index)
         fpr.append(res[0])
         tpr.append(res[1])
         thresholds.append(res[2])
@@ -269,7 +286,7 @@ class TestMultilabelROC(MetricTester):
     """Test class for `MultilabelROC` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_roc(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -280,7 +297,7 @@ class TestMultilabelROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelROC,
-            reference_metric=partial(_sklearn_roc_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -298,7 +315,7 @@ class TestMultilabelROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_roc,
-            reference_metric=partial(_sklearn_roc_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -369,11 +386,10 @@ class TestMultilabelROC(MetricTester):
     ],
 )
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
-def test_valid_input_thresholds(metric, thresholds):
+def test_valid_input_thresholds(recwarn, metric, thresholds):
     """Test valid formats of the threshold argument."""
-    with pytest.warns(None) as record:
-        metric(thresholds=thresholds)
-    assert len(record) == 0
+    metric(thresholds=thresholds)
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 @pytest.mark.parametrize(

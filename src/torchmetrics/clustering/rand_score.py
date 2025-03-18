@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 
@@ -50,7 +51,7 @@ class RandScore(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import RandScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
@@ -63,11 +64,10 @@ class RandScore(Metric):
 
     is_differentiable = True
     higher_is_better = None
-    full_state_update: bool = True
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
     preds: List[Tensor]
     target: List[Tensor]
-    contingency: Tensor
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -116,9 +116,10 @@ class RandScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import RandScore
             >>> metric = RandScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

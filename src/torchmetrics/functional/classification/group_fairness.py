@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import torch
 from typing_extensions import Literal
@@ -41,7 +41,7 @@ def _groups_validation(groups: torch.Tensor, num_groups: int) -> None:
             f"number of groups {num_groups}. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.",
         )
     if groups.dtype != torch.long:
-        raise ValueError(f"Excpected dtype of argument groups to be long, not {groups.dtype}.")
+        raise ValueError(f"Expected dtype of argument groups to be long, not {groups.dtype}.")
 
 
 def _groups_format(groups: torch.Tensor) -> torch.Tensor:
@@ -57,7 +57,7 @@ def _binary_groups_stat_scores(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
+) -> list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
     """Compute the true/false positives and true/false negatives rates for binary classification by group.
 
     Related to `Type I and Type II errors`_.
@@ -84,15 +84,15 @@ def _binary_groups_stat_scores(
 
 
 def _groups_reduce(
-    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
-) -> Dict[str, torch.Tensor]:
+    group_stats: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
+) -> dict[str, torch.Tensor]:
     """Compute rates for all the group statistics."""
     return {f"group_{group}": torch.stack(stats) / torch.stack(stats).sum() for group, stats in enumerate(group_stats)}
 
 
 def _groups_stat_transform(
-    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
-) -> Dict[str, torch.Tensor]:
+    group_stats: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
+) -> dict[str, torch.Tensor]:
     """Transform group statistics by creating a tensor for each statistic."""
     return {
         "tp": torch.stack([stat[0] for stat in group_stats]),
@@ -110,7 +110,7 @@ def binary_groups_stat_rates(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     r"""Compute the true/false positives and true/false negatives rates for binary classification by group.
 
     Related to `Type I and Type II errors`_.
@@ -118,7 +118,7 @@ def binary_groups_stat_rates(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
@@ -163,7 +163,7 @@ def binary_groups_stat_rates(
 
 def _compute_binary_demographic_parity(
     tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """Compute demographic parity based on the binary stats."""
     pos_rates = _safe_divide(tp + fp, tp + fp + tn + fn)
     min_pos_rate_id = torch.argmin(pos_rates)
@@ -180,7 +180,7 @@ def demographic_parity(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     r"""`Demographic parity`_ compares the positivity rates between all groups.
 
     If more than two groups are present, the disparity between the lowest and highest group is reported. The lowest
@@ -195,7 +195,7 @@ def demographic_parity(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
     - ``target`` (int tensor): ``(N, ...)``.
@@ -242,7 +242,7 @@ def demographic_parity(
 
 def _compute_binary_equal_opportunity(
     tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """Compute equal opportunity based on the binary stats."""
     true_pos_rates = _safe_divide(tp, tp + fn)
     min_pos_rate_id = torch.argmin(true_pos_rates)
@@ -262,7 +262,7 @@ def equal_opportunity(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     r"""`Equal opportunity`_ compares the true positive rates between all groups.
 
     If more than two groups are present, the disparity between the lowest and highest group is reported. The lowest
@@ -277,7 +277,7 @@ def equal_opportunity(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
@@ -331,7 +331,7 @@ def binary_fairness(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     r"""Compute either `Demographic parity`_ and `Equal opportunity`_ ratio for binary classification problems.
 
     This is done by setting the ``task`` argument to either ``'demographic_parity'``, ``'equal_opportunity'``
@@ -344,7 +344,7 @@ def binary_fairness(
         preds: Tensor with predictions.
         target: Tensor with true labels (not required for demographic_parity).
         groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
-        task: The task to compute. Can be either ``demographic_parity`` or ``equal_oppotunity`` or ``all``.
+        task: The task to compute. Can be either ``demographic_parity`` or ``equal_opportunity`` or ``all``.
         threshold: Threshold for transforming probability to binary {0,1} predictions.
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation

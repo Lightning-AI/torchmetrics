@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Generator, Sequence
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union, no_type_check
+from typing import Any, List, Optional, Union, no_type_check
 
 import numpy as np
 import torch
@@ -26,13 +27,15 @@ if _MATPLOTLIB_AVAILABLE:
     import matplotlib.axes
     import matplotlib.pyplot as plt
 
-    _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
+    _PLOT_OUT_TYPE = tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
+    _CMAP_TYPE = Union[matplotlib.colors.Colormap, str]
 
     style_change = plt.style.context
 else:
-    _PLOT_OUT_TYPE = Tuple[object, object]  # type: ignore[misc]
+    _PLOT_OUT_TYPE = tuple[object, object]  # type: ignore[misc]
     _AX_TYPE = object
+    _CMAP_TYPE = object  # type: ignore[misc]
 
     from contextlib import contextmanager
 
@@ -60,7 +63,7 @@ def _error_on_missing_matplotlib() -> None:
 
 @style_change(_style)
 def plot_single_or_multi_val(
-    val: Union[Tensor, Sequence[Tensor], Dict[str, Tensor], Sequence[Dict[str, Tensor]]],
+    val: Union[Tensor, Sequence[Tensor], dict[str, Tensor], Sequence[dict[str, Tensor]]],
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
     higher_is_better: Optional[bool] = None,
     lower_bound: Optional[float] = None,
@@ -169,7 +172,7 @@ def plot_single_or_multi_val(
     return fig, ax
 
 
-def _get_col_row_split(n: int) -> Tuple[int, int]:
+def _get_col_row_split(n: int) -> tuple[int, int]:
     """Split `n` figures into `rows` x `cols` figures."""
     nsq = sqrt(n)
     if int(nsq) == nsq:  # square number
@@ -177,6 +180,25 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     if floor(nsq) * ceil(nsq) >= n:
         return floor(nsq), ceil(nsq)
     return ceil(nsq), ceil(nsq)
+
+
+def _get_text_color(patch_color: tuple[float, float, float, float]) -> str:
+    """Get the text color for a given value and colormap.
+
+    Following Wikipedia's recommendations: https://en.wikipedia.org/wiki/Relative_luminance.
+
+    Args:
+        patch_color: RGBA color tuple
+
+    """
+    # Convert to linear color space
+    r, g, b, a = patch_color
+    r, g, b = (c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in (r, g, b))
+
+    # Get the relative luminance
+    y = 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+    return ".1" if y > 0.4 else "white"
 
 
 def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX_TYPE]:  # type: ignore[valid-type]
@@ -200,7 +222,8 @@ def plot_confusion_matrix(
     confmat: Tensor,
     ax: Optional[_AX_TYPE] = None,
     add_text: bool = True,
-    labels: Optional[List[Union[int, str]]] = None,
+    labels: Optional[list[Union[int, str]]] = None,
+    cmap: Optional[_CMAP_TYPE] = None,
 ) -> _PLOT_OUT_TYPE:
     """Plot an confusion matrix.
 
@@ -213,6 +236,8 @@ def plot_confusion_matrix(
         ax: Axis from a figure. If not provided, a new figure and axis will be created
         add_text: if text should be added to each cell with the given value
         labels: labels to add the x- and y-axis
+        cmap: matplotlib colormap to use for the confusion matrix
+            https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -242,15 +267,17 @@ def plot_confusion_matrix(
         fig_label = None
         labels = labels or np.arange(n_classes).tolist()
 
-    fig, axs = plt.subplots(nrows=rows, ncols=cols) if ax is None else (ax.get_figure(), ax)
+    fig, axs = plt.subplots(nrows=rows, ncols=cols, constrained_layout=True) if ax is None else (ax.get_figure(), ax)
     axs = trim_axs(axs, nb)
     for i in range(nb):
-        ax = axs[i] if rows != 1 and cols != 1 else axs
+        ax = axs[i] if (rows != 1 or cols != 1) else axs
         if fig_label is not None:
             ax.set_title(f"Label {fig_label[i]}", fontsize=15)
-        ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())
-        ax.set_xlabel("Predicted class", fontsize=15)
-        ax.set_ylabel("True class", fontsize=15)
+        im = ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach(), cmap=cmap)
+        if i // cols == rows - 1:  # bottom row only
+            ax.set_xlabel("Predicted class", fontsize=15)
+        if i % cols == 0:  # leftmost column only
+            ax.set_ylabel("True class", fontsize=15)
         ax.set_xticks(list(range(n_classes)))
         ax.set_yticks(list(range(n_classes)))
         ax.set_xticklabels(labels, rotation=45, fontsize=10)
@@ -259,19 +286,22 @@ def plot_confusion_matrix(
         if add_text:
             for ii, jj in product(range(n_classes), range(n_classes)):
                 val = confmat[i, ii, jj] if confmat.ndim == 3 else confmat[ii, jj]
-                ax.text(jj, ii, str(val.item()), ha="center", va="center", fontsize=15)
+                patch_color = im.cmap(im.norm(val.item()))
+                c = _get_text_color(patch_color)
+                ax.text(jj, ii, str(round(val.item(), 2)), ha="center", va="center", fontsize=15, color=c)
 
     return fig, axs
 
 
 @style_change(_style)
 def plot_curve(
-    curve: Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]],
+    curve: Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]],
     score: Optional[Tensor] = None,
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
-    label_names: Optional[Tuple[str, str]] = None,
+    label_names: Optional[tuple[str, str]] = None,
     legend_name: Optional[str] = None,
     name: Optional[str] = None,
+    labels: Optional[list[Union[int, str]]] = None,
 ) -> _PLOT_OUT_TYPE:
     """Inspired by: https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_plot/roc_curve.py.
 
@@ -285,6 +315,7 @@ def plot_curve(
         label_names: Tuple containing the names of the x and y axis
         legend_name: Name of the curve to be used in the legend
         name: Custom name to describe the metric
+        labels: Optional labels for the different curves that will be added to the plot
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -296,7 +327,7 @@ def plot_curve(
             If `curve` does not have 3 elements, being in the wrong format
     """
     if len(curve) < 2:
-        raise ValueError("Expected 2 or 3 elements in curve but got {len(curve)}")
+        raise ValueError(f"Expected 2 or 3 elements in curve but got {len(curve)}")
     x, y = curve[:2]
 
     _error_on_missing_matplotlib()
@@ -305,23 +336,30 @@ def plot_curve(
     if isinstance(x, Tensor) and isinstance(y, Tensor) and x.ndim == 1 and y.ndim == 1:
         label = f"AUC={score.item():0.3f}" if score is not None else None
         ax.plot(x.detach().cpu(), y.detach().cpu(), linestyle="-", linewidth=2, label=label)
-        if label_names is not None:
-            ax.set_xlabel(label_names[0])
-            ax.set_ylabel(label_names[1])
         if label is not None:
             ax.legend()
     elif (isinstance(x, list) and isinstance(y, list)) or (
         isinstance(x, Tensor) and isinstance(y, Tensor) and x.ndim == 2 and y.ndim == 2
     ):
+        n_classes = len(x)
+        if labels is not None and len(labels) != n_classes:
+            raise ValueError(
+                "Expected number of elements in arg `labels` to match number of labels in roc curves but "
+                f"got {len(labels)} and {n_classes}"
+            )
+
         for i, (x_, y_) in enumerate(zip(x, y)):
-            label = f"{legend_name}_{i}" if legend_name is not None else str(i)
+            label = f"{legend_name}_{i}" if legend_name is not None else str(i) if labels is None else str(labels[i])
             label += f" AUC={score[i].item():0.3f}" if score is not None else ""
-            ax.plot(x_.detach().cpu(), y_.detach().cpu(), label=label)
+            ax.plot(x_.detach().cpu(), y_.detach().cpu(), linestyle="-", linewidth=2, label=label)
             ax.legend()
     else:
         raise ValueError(
             f"Unknown format for argument `x` and `y`. Expected either list or tensors but got {type(x)} and {type(y)}."
         )
+    if label_names is not None:
+        ax.set_xlabel(label_names[0])
+        ax.set_ylabel(label_names[1])
     ax.grid(True)
     ax.set_title(name)
 

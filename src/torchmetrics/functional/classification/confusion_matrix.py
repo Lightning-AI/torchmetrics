@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
@@ -94,7 +95,7 @@ def _binary_confusion_matrix_tensor_validation(
     _check_same_shape(preds, target)
 
     # Check that target only contains {0,1} values or value in ignore_index
-    unique_values = torch.unique(target)
+    unique_values = torch.unique(target, dim=None)
     if ignore_index is None:
         check = torch.any((unique_values != 0) & (unique_values != 1))
     else:
@@ -107,7 +108,7 @@ def _binary_confusion_matrix_tensor_validation(
 
     # If preds is label tensor, also check that it only contains {0,1} values
     if not preds.is_floating_point():
-        unique_values = torch.unique(preds)
+        unique_values = torch.unique(preds, dim=None)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
@@ -121,7 +122,7 @@ def _binary_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     convert_to_labels: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - Remove all datapoints that should be ignored
@@ -137,9 +138,7 @@ def _binary_confusion_matrix_format(
         target = target[idx]
 
     if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            # preds is logits, convert with sigmoid
-            preds = preds.sigmoid()
+        preds = normalize_logits_if_needed(preds, "sigmoid")
         if convert_to_labels:
             preds = preds > threshold
 
@@ -177,7 +176,7 @@ def binary_confusion_matrix(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
@@ -285,21 +284,13 @@ def _multiclass_confusion_matrix_tensor_validation(
             " and `preds` should be (N, C, ...)."
         )
 
-    num_unique_values = len(torch.unique(target))
-    check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
-    if check:
-        raise RuntimeError(
-            "Detected more unique values in `target` than `num_classes`. Expected only "
-            f"{num_classes if ignore_index is None else num_classes + 1} but found "
-            f"{num_unique_values} in `target`."
-        )
-
-    if not preds.is_floating_point():
-        num_unique_values = len(torch.unique(preds))
-        if num_unique_values > num_classes:
+    check_value = num_classes if ignore_index is None else num_classes + 1
+    for t, name in ((target, "target"),) + ((preds, "preds"),) if not preds.is_floating_point() else ():  # noqa: RUF005
+        num_unique_values = len(torch.unique(t, dim=None))
+        if num_unique_values > check_value:
             raise RuntimeError(
-                "Detected more unique values in `preds` than `num_classes`. Expected only "
-                f"{num_classes} but found {num_unique_values} in `preds`."
+                f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
+                f" {num_unique_values} in `target`."
             )
 
 
@@ -308,7 +299,7 @@ def _multiclass_confusion_matrix_format(
     target: Tensor,
     ignore_index: Optional[int] = None,
     convert_to_labels: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - Applies argmax if preds have one more dimension than target
@@ -370,7 +361,7 @@ def multiclass_confusion_matrix(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         normalize: Normalization mode for confusion matrix. Choose from:
 
             - ``None`` or ``'none'``: no normalization (default)
@@ -462,7 +453,7 @@ def _multilabel_confusion_matrix_tensor_validation(
         )
 
     # Check that target only contains [0,1] values or value in ignore_index
-    unique_values = torch.unique(target)
+    unique_values = torch.unique(target, dim=None)
     if ignore_index is None:
         check = torch.any((unique_values != 0) & (unique_values != 1))
     else:
@@ -475,7 +466,7 @@ def _multilabel_confusion_matrix_tensor_validation(
 
     # If preds is label tensor, also check that it only contains [0,1] values
     if not preds.is_floating_point():
-        unique_values = torch.unique(preds)
+        unique_values = torch.unique(preds, dim=None)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
@@ -490,7 +481,7 @@ def _multilabel_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     should_threshold: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
@@ -499,8 +490,7 @@ def _multilabel_confusion_matrix_format(
 
     """
     if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            preds = preds.sigmoid()
+        preds = normalize_logits_if_needed(preds, "sigmoid")
         if should_threshold:
             preds = preds > threshold
     preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
@@ -551,7 +541,7 @@ def multilabel_confusion_matrix(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
@@ -560,7 +550,7 @@ def multilabel_confusion_matrix(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         normalize: Normalization mode for confusion matrix. Choose from:
 
@@ -618,7 +608,7 @@ def confusion_matrix(
     r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_confusion_matrix`,
     :func:`~torchmetrics.functional.classification.multiclass_confusion_matrix` and
     :func:`~torchmetrics.functional.classification.multilabel_confusion_matrix` for

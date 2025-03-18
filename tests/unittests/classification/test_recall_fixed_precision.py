@@ -20,6 +20,7 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
+
 from torchmetrics.classification.recall_fixed_precision import (
     BinaryRecallAtFixedPrecision,
     MulticlassRecallAtFixedPrecision,
@@ -32,11 +33,11 @@ from torchmetrics.functional.classification.recall_fixed_precision import (
     multilabel_recall_at_fixed_precision,
 )
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
@@ -53,12 +54,12 @@ def _recall_at_precision_x_multilabel(predictions, targets, min_precision):
     return float(max_recall), float(best_threshold)
 
 
-def _sklearn_recall_at_fixed_precision_binary(preds, target, min_precision, ignore_index=None):
+def _reference_sklearn_recall_at_fixed_precision_binary(preds, target, min_precision, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return _recall_at_precision_x_multilabel(preds, target, min_precision)
 
 
@@ -68,7 +69,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("min_precision", [0.05, 0.1, 0.3, 0.5, 0.85])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_recall_at_fixed_precision(self, inputs, ddp, min_precision, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -80,7 +81,9 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=BinaryRecallAtFixedPrecision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_binary,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -101,7 +104,9 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=binary_recall_at_fixed_precision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_binary,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -125,8 +130,8 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
     def test_binary_recall_at_fixed_precision_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -164,12 +169,12 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             assert torch.allclose(r1, r2)
 
 
-def _sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, ignore_index=None):
+def _reference_sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     recall, thresholds = [], []
     for i in range(NUM_CLASSES):
@@ -189,7 +194,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_recall_at_fixed_precision(self, inputs, ddp, min_precision, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -201,7 +206,9 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=MulticlassRecallAtFixedPrecision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multiclass,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -223,7 +230,9 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=multiclass_recall_at_fixed_precision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multiclass,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -290,10 +299,12 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
 
-def _sklearn_recall_at_fixed_precision_multilabel(preds, target, min_precision, ignore_index=None):
+def _reference_sklearn_recall_at_fixed_precision_multilabel(preds, target, min_precision, ignore_index=None):
     recall, thresholds = [], []
     for i in range(NUM_CLASSES):
-        res = _sklearn_recall_at_fixed_precision_binary(preds[:, i], target[:, i], min_precision, ignore_index)
+        res = _reference_sklearn_recall_at_fixed_precision_binary(
+            preds[:, i], target[:, i], min_precision, ignore_index
+        )
         recall.append(res[0])
         thresholds.append(res[1])
     return recall, thresholds
@@ -307,7 +318,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
 
     @pytest.mark.parametrize("min_precision", [0.05, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_recall_at_fixed_precision(self, inputs, ddp, min_precision, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -319,7 +330,9 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=MultilabelRecallAtFixedPrecision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multilabel,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -341,7 +354,9 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=multilabel_recall_at_fixed_precision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multilabel,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -417,11 +432,10 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
     ],
 )
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
-def test_valid_input_thresholds(metric, thresholds):
+def test_valid_input_thresholds(recwarn, metric, thresholds):
     """Test valid formats of the threshold argument."""
-    with pytest.warns(None) as record:
-        metric(min_precision=0.5, thresholds=thresholds)
-    assert len(record) == 0
+    metric(min_precision=0.5, thresholds=thresholds)
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 @pytest.mark.parametrize(

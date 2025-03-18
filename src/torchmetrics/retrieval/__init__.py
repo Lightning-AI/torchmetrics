@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.retrieval.auroc import RetrievalAUROC
 from torchmetrics.retrieval.average_precision import RetrievalMAP
 from torchmetrics.retrieval.fall_out import RetrievalFallOut
 from torchmetrics.retrieval.hit_rate import RetrievalHitRate
@@ -22,6 +23,7 @@ from torchmetrics.retrieval.recall import RetrievalRecall
 from torchmetrics.retrieval.reciprocal_rank import RetrievalMRR
 
 __all__ = [
+    "RetrievalAUROC",
     "RetrievalFallOut",
     "RetrievalHitRate",
     "RetrievalMAP",
@@ -29,7 +31,7 @@ __all__ = [
     "RetrievalNormalizedDCG",
     "RetrievalPrecision",
     "RetrievalPrecisionRecallCurve",
+    "RetrievalRPrecision",
     "RetrievalRecall",
     "RetrievalRecallAtFixedPrecision",
-    "RetrievalRPrecision",
 ]

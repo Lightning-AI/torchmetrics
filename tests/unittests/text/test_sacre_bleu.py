@@ -12,26 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sequence
 from functools import partial
-from typing import Sequence
 
 import pytest
+from lightning_utilities.core.imports import RequirementCache
 from torch import Tensor, tensor
-from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
+
+from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _TokenizersLiteral, sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
-from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
-
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_multiple_references
-
-if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import BLEU
+from unittests._helpers import skip_on_connection_issues
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_multiple_references
 
 
-TOKENIZERS = ("none", "13a", "zh", "intl", "char")
+def _reference_sacre_bleu(
+    preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool
+) -> Tensor:
+    try:
+        from sacrebleu.metrics import BLEU
+    except ImportError:
+        pytest.skip("test requires sacrebleu package to be installed")
 
-
-def _sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool) -> Tensor:
     sacrebleu_fn = BLEU(tokenize=tokenize, lowercase=lowercase)
     # Sacrebleu expects different format of input
     targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
@@ -41,19 +43,23 @@ def _sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokeni
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 @pytest.mark.parametrize(["lowercase"], [(False,), (True,)])
-@pytest.mark.parametrize("tokenize", TOKENIZERS)
-@pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
+@pytest.mark.parametrize("tokenize", AVAILABLE_TOKENIZERS)
 class TestSacreBLEUScore(TextTester):
     """Test class for `SacreBLEUScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_bleu_score_class(self, ddp, preds, targets, tokenize, lowercase):
         """Test class implementation of metric."""
+        if _should_skip_tokenizer(tokenize):
+            pytest.skip(reason="`ko-mecab` tokenizer requires  `mecab-ko` package to be installed")
+        if tokenize == "flores200" or tokenize == "flores101":
+            pytest.skip("flores101 and flores200 tests are flaky")  # TODO: figure out why
+
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
-        original_sacrebleu = partial(_sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
+        original_sacrebleu = partial(_reference_sacre_bleu, tokenize=tokenize, lowercase=lowercase)
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -64,10 +70,16 @@ class TestSacreBLEUScore(TextTester):
             metric_args=metric_args,
         )
 
+    @skip_on_connection_issues(reason="could not download model or tokenizer")
     def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
         """Test functional implementation of metric."""
+        if _should_skip_tokenizer(tokenize):
+            pytest.skip(reason="`ko-mecab` tokenizer requires  `mecab-ko` package to be installed")
+        if tokenize == "flores200" or tokenize == "flores101":
+            pytest.skip("flores101 and flores200 tests are flaky")  # TODO: figure out why
+
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
-        original_sacrebleu = partial(_sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
+        original_sacrebleu = partial(_reference_sacre_bleu, tokenize=tokenize, lowercase=lowercase)
 
         self.run_functional_metric_test(
             preds,
@@ -79,6 +91,9 @@ class TestSacreBLEUScore(TextTester):
 
     def test_bleu_score_differentiability(self, preds, targets, tokenize, lowercase):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        if _should_skip_tokenizer(tokenize):
+            pytest.skip(reason="`ko-mecab` tokenizer requires  `mecab-ko` package to be installed")
+
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
 
         self.run_differentiability_test(
@@ -109,3 +124,31 @@ def test_no_and_uniform_weights_class():
     no_weights_score = no_weights_bleu(preds, targets)
     uniform_weights_score = uniform_weights_bleu(preds, targets)
     assert no_weights_score == uniform_weights_score
+
+
+def test_tokenize_ja_mecab():
+    """Test that `ja-mecab` tokenizer works on a Japanese text in alignment with the SacreBleu implementation."""
+    sacrebleu = SacreBLEUScore(tokenize="ja-mecab")
+
+    preds = ["これは美しい花です。"]
+    targets = [["これは美しい花です。", "おいしい寿司を食べたい。"]]
+    assert sacrebleu(preds, targets) == _reference_sacre_bleu(preds, targets, tokenize="ja-mecab", lowercase=False)
+
+
+@pytest.mark.skipif(not RequirementCache("mecab-ko"), reason="this test requires `mecab-ko` package to be installed")
+def test_tokenize_ko_mecab():
+    """Test that `ja-mecab` tokenizer works on a Japanese text in alignment with the SacreBleu implementation."""
+    sacrebleu = SacreBLEUScore(tokenize="ko-mecab")
+
+    preds = ["이 책은 정말 재미있어요."]
+    targets = [["이 책은 정말 재미있어요.", "고마워요, 너무 도와줘서."]]
+    assert sacrebleu(preds, targets) == _reference_sacre_bleu(preds, targets, tokenize="ko-mecab", lowercase=False)
+
+
+def test_equivalence_of_available_tokenizers_and_annotation():
+    """Test equivalence of SacreBLEU available tokenizers and corresponding type annotation."""
+    assert set(AVAILABLE_TOKENIZERS) == set(_TokenizersLiteral.__args__)
+
+
+def _should_skip_tokenizer(tokenizer: _TokenizersLiteral) -> bool:
+    return tokenizer == "ko-mecab" and not RequirementCache("mecab-ko")

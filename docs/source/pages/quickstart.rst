@@ -11,7 +11,7 @@ TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
 
-You can use TorchMetrics in any PyTorch model, or within `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy additional features:
+You can use TorchMetrics in any PyTorch model, or within `PyTorch Lightning <https://lightning.ai/docs/pytorch/stable/>`_ to enjoy additional features:
 
 * This means that your data will always be placed on the same device as your metrics.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
@@ -101,7 +101,7 @@ The code below shows how to use the class-based interface:
     acc = metric.compute()
     print(f"Accuracy on all data: {acc}")
 
-    # Reseting internal state such that metric ready for new data
+    # Resetting internal state such that metric ready for new data
     metric.reset()
 
 .. testoutput::

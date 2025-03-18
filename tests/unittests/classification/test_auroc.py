@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from functools import partial
 
 import numpy as np
@@ -19,25 +20,26 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_auc_score as sk_roc_auc_score
+
 from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=None):
+def _reference_sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_roc_auc_score(target, preds, max_fpr=max_fpr)
 
 
@@ -47,7 +49,7 @@ class TestBinaryAUROC(MetricTester):
 
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_auroc(self, inputs, ddp, max_fpr, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -58,7 +60,7 @@ class TestBinaryAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAUROC,
-            reference_metric=partial(_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
             metric_args={
                 "max_fpr": max_fpr,
                 "thresholds": None,
@@ -77,7 +79,7 @@ class TestBinaryAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_auroc,
-            reference_metric=partial(_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
             metric_args={
                 "max_fpr": max_fpr,
                 "thresholds": None,
@@ -101,8 +103,8 @@ class TestBinaryAUROC(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -138,12 +140,12 @@ class TestBinaryAUROC(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-def _sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
+def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_roc_auc_score(target, preds, average=average, multi_class="ovr", labels=list(range(NUM_CLASSES)))
 
 
@@ -155,7 +157,7 @@ class TestMulticlassAUROC(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "weighted"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_auroc(self, inputs, average, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -166,7 +168,7 @@ class TestMulticlassAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassAUROC,
-            reference_metric=partial(_sklearn_auroc_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -186,7 +188,7 @@ class TestMulticlassAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_auroc,
-            reference_metric=partial(_sklearn_auroc_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -251,7 +253,7 @@ class TestMulticlassAUROC(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None):
+def _reference_sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None):
     if ignore_index is None:
         if preds.ndim > 2:
             target = target.transpose(2, 1).reshape(-1, NUM_CLASSES)
@@ -262,9 +264,11 @@ def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None)
             preds = sigmoid(preds)
         return sk_roc_auc_score(target, preds, average=average, max_fpr=None)
     if average == "micro":
-        return _sklearn_auroc_binary(preds.flatten(), target.flatten(), max_fpr=None, ignore_index=ignore_index)
+        return _reference_sklearn_auroc_binary(
+            preds.flatten(), target.flatten(), max_fpr=None, ignore_index=ignore_index
+        )
     res = [
-        _sklearn_auroc_binary(preds[:, i], target[:, i], max_fpr=None, ignore_index=ignore_index)
+        _reference_sklearn_auroc_binary(preds[:, i], target[:, i], max_fpr=None, ignore_index=ignore_index)
         for i in range(NUM_CLASSES)
     ]
     if average == "macro":
@@ -284,7 +288,7 @@ class TestMultilabelAUROC(MetricTester):
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_auroc(self, inputs, ddp, average, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -295,7 +299,7 @@ class TestMultilabelAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAUROC,
-            reference_metric=partial(_sklearn_auroc_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -315,7 +319,7 @@ class TestMultilabelAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_auroc,
-            reference_metric=partial(_sklearn_auroc_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -389,11 +393,10 @@ class TestMultilabelAUROC(MetricTester):
     ],
 )
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
-def test_valid_input_thresholds(metric, thresholds):
+def test_valid_input_thresholds(recwarn, metric, thresholds):
     """Test valid formats of the threshold argument."""
-    with pytest.warns(None) as record:
-        metric(thresholds=thresholds)
-    assert len(record) == 0
+    metric(thresholds=thresholds)
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])

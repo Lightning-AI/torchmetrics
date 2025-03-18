@@ -17,7 +17,7 @@ Plotting
     `Scienceplot package <https://github.com/garrettj403/SciencePlots>`_ is also installed and all plots in
     Torchmetrics will default to using that style.
 
-Torchmetrics comes with build-in support for quick visualization of your metrics, by simply using the ``.plot`` method
+Torchmetrics comes with built-in support for quick visualization of your metrics, by simply using the ``.plot`` method
 that all modular metrics implement. This method provides a consistent interface for basic plotting of all metrics.
 
 .. code-block:: python
@@ -146,7 +146,7 @@ a model over time, we could do it like this:
     :include-source: false
 
 Do note that metrics that do not return simple scalar tensors, such as `ConfusionMatrix`, `ROC` that have specialized
-visualzation does not support plotting multiple steps, out of the box and the user needs to manually plot the values
+visualization does not support plotting multiple steps, out of the box and the user needs to manually plot the values
 for each step.
 
 ********************************
@@ -235,7 +235,7 @@ to rely on ``MetricTracker`` to keep track of the metrics over multiple steps.
     # Extract all metrics from all steps
     all_results = tracker.compute_all()
 
-    # Constuct a single figure with appropriate layout for all metrics
+    # Construct a single figure with appropriate layout for all metrics
     fig = plt.figure(layout="constrained")
     ax1 = plt.subplot(2, 2, 1)
     ax2 = plt.subplot(2, 2, 2)
@@ -245,7 +245,7 @@ to rely on ``MetricTracker`` to keep track of the metrics over multiple steps.
     confmat.plot(val=all_results[-1]['BinaryConfusionMatrix'], ax=ax1)
     roc.plot(all_results[-1]["BinaryROC"], ax=ax2)
 
-    # For the remainig we plot the full history, but we need to extract the scalar values from the results
+    # For the remaining we plot the full history, but we need to extract the scalar values from the results
     scalar_results = [
         {k: v for k, v in ar.items() if isinstance(v, torch.Tensor) and v.numel() == 1} for ar in all_results
     ]

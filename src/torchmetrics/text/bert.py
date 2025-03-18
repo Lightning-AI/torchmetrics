@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -32,21 +33,21 @@ if not _MATPLOTLIB_AVAILABLE:
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL: str = "roberta-large"
 
-if _TRANSFORMERS_GREATER_EQUAL_4_4:
+if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModel, AutoTokenizer
 
-    def _download_model() -> None:
+    def _download_model_for_bert_score() -> None:
         """Download intensive operations."""
-        AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
-        AutoModel.from_pretrained(_DEFAULT_MODEL)
+        AutoTokenizer.from_pretrained(_DEFAULT_MODEL, resume_download=True)
+        AutoModel.from_pretrained(_DEFAULT_MODEL, resume_download=True)
 
-    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
+    if not _try_proceed_with_timeout(_download_model_for_bert_score):
         __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 else:
     __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 
 
-def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
+def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> dict[str, Tensor]:
     """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
     return {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
 
@@ -57,7 +58,7 @@ class BERTScore(Metric):
     BERT leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
     sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
     system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
-    evaluating different language generation tasks. This implemenation follows the original implementation from
+    evaluating different language generation tasks. This implementation follows the original implementation from
     `BERT_score`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -107,6 +108,7 @@ class BERTScore(Metric):
             of the files from `BERT_score`_.
         baseline_path: A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url: A url path to the user's own  csv/tsv file with the baseline scale.
+        truncation: An indication of whether the input sequences should be truncated to the ``max_length``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -138,7 +140,7 @@ class BERTScore(Metric):
         all_layers: bool = False,
         model: Optional[Module] = None,
         user_tokenizer: Optional[Any] = None,
-        user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
+        user_forward_fn: Optional[Callable[[Module, dict[str, Tensor]], Tensor]] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,
@@ -150,6 +152,7 @@ class BERTScore(Metric):
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
+        truncation: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -169,6 +172,7 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
+        self.truncation = truncation
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -179,6 +183,8 @@ class BERTScore(Metric):
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
                     " Either install with `pip install transformers>=4.4` or `pip install torchmetrics[text]`."
                 )
+            from transformers import AutoTokenizer
+
             if model_name_or_path is None:
                 rank_zero_warn(
                     "The argument `model_name_or_path` was not specified while it is required when the default"
@@ -208,7 +214,7 @@ class BERTScore(Metric):
             preds,
             self.tokenizer,
             self.max_length,
-            truncation=False,
+            truncation=self.truncation,
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
@@ -216,7 +222,7 @@ class BERTScore(Metric):
             target,
             self.tokenizer,
             self.max_length,
-            truncation=False,
+            truncation=self.truncation,
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
@@ -226,7 +232,7 @@ class BERTScore(Metric):
         self.target_input_ids.append(target_dict["input_ids"])
         self.target_attention_mask.append(target_dict["attention_mask"])
 
-    def compute(self) -> Dict[str, Union[Tensor, List[float], str]]:
+    def compute(self) -> dict[str, Union[Tensor, list[float], str]]:
         """Calculate BERT scores."""
         preds = {
             "input_ids": dim_zero_cat(self.preds_input_ids),

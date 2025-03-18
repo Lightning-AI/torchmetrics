@@ -20,6 +20,7 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import coverage_error as sk_coverage_error
 from sklearn.metrics import label_ranking_average_precision_score as sk_label_ranking
 from sklearn.metrics import label_ranking_loss as sk_label_ranking_loss
+
 from torchmetrics.classification.ranking import (
     MultilabelCoverageError,
     MultilabelRankingAveragePrecision,
@@ -30,17 +31,16 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_average_precision,
     multilabel_ranking_loss,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index
+from unittests.classification._inputs import _multilabel_cases
 
 seed_all(42)
 
 
-def _sklearn_ranking(preds, target, fn, ignore_index):
+def _reference_sklearn_ranking(preds, target, fn, ignore_index):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
@@ -68,7 +68,7 @@ class TestMultilabelRanking(MetricTester):
     """Test class for `MultilabelRanking` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_ranking(self, inputs, metric, functional_metric, ref_metric, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -79,7 +79,7 @@ class TestMultilabelRanking(MetricTester):
             preds=preds,
             target=target,
             metric_class=metric,
-            reference_metric=partial(_sklearn_ranking, fn=ref_metric, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_ranking, fn=ref_metric, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -96,7 +96,7 @@ class TestMultilabelRanking(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional_metric,
-            reference_metric=partial(_sklearn_ranking, fn=ref_metric, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_ranking, fn=ref_metric, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -118,16 +118,11 @@ class TestMultilabelRanking(MetricTester):
     def test_multilabel_ranking_dtype_cpu(self, inputs, metric, functional_metric, ref_metric, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         if dtype == torch.half and functional_metric == multilabel_ranking_average_precision:
             pytest.xfail(
                 reason="multilabel_ranking_average_precision requires torch.unique which is not implemented for half"
-            )
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_9 and functional_metric == multilabel_coverage_error:
-            pytest.xfail(
-                reason="multilabel_coverage_error requires torch.min which is only implemented for half"
-                " in v1.9 or higher of torch."
             )
         self.run_precision_test_cpu(
             preds=preds,

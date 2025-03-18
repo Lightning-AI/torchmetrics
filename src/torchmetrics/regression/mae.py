@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
+import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mae import _mean_absolute_error_compute, _mean_absolute_error_update
@@ -41,6 +43,7 @@ class MeanAbsoluteError(Metric):
     - ``mean_absolute_error`` (:class:`~torch.Tensor`): A tensor with the mean absolute error over the state
 
     Args:
+        num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -52,7 +55,19 @@ class MeanAbsoluteError(Metric):
         >>> mean_absolute_error(preds, target)
         tensor(0.5000)
 
+    Example::
+        Multioutput mse computation:
+
+        >>> from torch import tensor
+        >>> from torchmetrics.regression import MeanAbsoluteError
+        >>> target = tensor([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+        >>> preds = tensor([[1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
+        >>> mean_absolute_error = MeanAbsoluteError(num_outputs=3)
+        >>> mean_absolute_error(preds, target)
+        tensor([1., 2., 3.])
+
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -63,19 +78,24 @@ class MeanAbsoluteError(Metric):
 
     def __init__(
         self,
+        num_outputs: int = 1,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        self.add_state("sum_abs_error", default=tensor(0.0), dist_reduce_fx="sum")
+        if not (isinstance(num_outputs, int) and num_outputs > 0):
+            raise ValueError(f"Expected num_outputs to be a positive integer but got {num_outputs}")
+        self.num_outputs = num_outputs
+
+        self.add_state("sum_abs_error", default=torch.zeros(num_outputs), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
+        sum_abs_error, num_obs = _mean_absolute_error_update(preds, target, num_outputs=self.num_outputs)
 
         self.sum_abs_error += sum_abs_error
-        self.total += n_obs
+        self.total += num_obs
 
     def compute(self) -> Tensor:
         """Compute mean absolute error over state."""

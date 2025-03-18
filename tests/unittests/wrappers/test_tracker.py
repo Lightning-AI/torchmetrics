@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
 import pytest
 import torch
-from torchmetrics import MetricCollection
+
+from torchmetrics import Metric, MetricCollection
 from torchmetrics.classification import (
     MulticlassAccuracy,
     MulticlassConfusionMatrix,
@@ -22,9 +25,9 @@ from torchmetrics.classification import (
     MulticlassRecall,
 )
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
-from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
-
-from unittests.helpers import seed_all
+from torchmetrics.utilities.imports import _TORCHMETRICS_GREATER_EQUAL_1_6
+from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MultioutputWrapper
+from unittests._helpers import seed_all
 
 seed_all(42)
 
@@ -75,24 +78,20 @@ def test_raises_error_if_increment_not_called(method, method_input):
         (MeanSquaredError(), (torch.randn(50), torch.randn(50)), False),
         (MeanAbsoluteError(), (torch.randn(50), torch.randn(50)), False),
         (
-            MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=10),
-                    MulticlassPrecision(num_classes=10),
-                    MulticlassRecall(num_classes=10),
-                ]
-            ),
+            MetricCollection([
+                MulticlassAccuracy(num_classes=10),
+                MulticlassPrecision(num_classes=10),
+                MulticlassRecall(num_classes=10),
+            ]),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             True,
         ),
         (
-            MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=10),
-                    MulticlassPrecision(num_classes=10),
-                    MulticlassRecall(num_classes=10),
-                ]
-            ),
+            MetricCollection([
+                MulticlassAccuracy(num_classes=10),
+                MulticlassPrecision(num_classes=10),
+                MulticlassRecall(num_classes=10),
+            ]),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             [True, True, True],
         ),
@@ -101,6 +100,11 @@ def test_raises_error_if_increment_not_called(method, method_input):
             MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
             (torch.randn(50), torch.randn(50)),
             [False, False],
+        ),
+        (
+            ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None)),
+            (torch.randint(3, (50,)), torch.randint(3, (50,))),
+            True,
         ),
     ],
 )
@@ -193,12 +197,10 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     [
         (MultioutputWrapper(MeanSquaredError(), num_outputs=2), torch.Tensor),
         (  # nested version
-            MetricCollection(
-                {
-                    "mse": MultioutputWrapper(MeanSquaredError(), num_outputs=2),
-                    "mae": MultioutputWrapper(MeanAbsoluteError(), num_outputs=2),
-                }
-            ),
+            MetricCollection({
+                "mse": MultioutputWrapper(MeanSquaredError(), num_outputs=2),
+                "mae": MultioutputWrapper(MeanAbsoluteError(), num_outputs=2),
+            }),
             dict,
         ),
     ],
@@ -222,3 +224,45 @@ def test_metric_tracker_and_collection_multioutput(input_to_tracker, assert_type
     else:
         assert best_metric is None
         assert which_epoch is None
+
+
+def test_tracker_futurewarning():
+    """Check that future warning is raised for the maximize argument.
+
+    Also to make sure that we remove it in future versions of TM.
+
+    """
+    if _TORCHMETRICS_GREATER_EQUAL_1_6:
+        # Check that for future versions that we remove the warning
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            MetricTracker(MeanSquaredError(), maximize=True)
+    else:
+        with pytest.warns(FutureWarning, match="The default value for `maximize` will be changed from `True` to.*"):
+            MetricTracker(MeanSquaredError(), maximize=True)
+
+
+@pytest.mark.parametrize(
+    "base_metric",
+    [
+        MeanSquaredError(),
+        MeanAbsoluteError(),
+        MulticlassAccuracy(num_classes=10),
+        MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+        ClasswiseWrapper(MulticlassAccuracy(num_classes=10, average=None)),
+        MetricCollection([ClasswiseWrapper(MulticlassAccuracy(num_classes=10, average=None))]),
+    ],
+)
+def test_tracker_higher_is_better_integration(base_metric):
+    """Check that the maximize argument is correctly set based on the metric higher_is_better attribute."""
+    tracker = MetricTracker(base_metric, maximize=None)
+    if isinstance(base_metric, Metric):
+        assert tracker.maximize == base_metric.higher_is_better
+    else:
+        collection_higher_is_better = []
+        for m in base_metric.values():
+            if isinstance(m, ClasswiseWrapper):
+                collection_higher_is_better.extend([m.higher_is_better] * m.metric.num_classes)
+            else:
+                collection_higher_is_better.append(m.higher_is_better)
+        assert tracker.maximize == collection_higher_is_better

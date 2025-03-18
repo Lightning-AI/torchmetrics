@@ -11,18 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 from typing import Any
 
 import pytest
 import torch
 from kornia.losses import total_variation as kornia_total_variation
+
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
-
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -36,11 +36,11 @@ class TotalVariationTester(TotalVariation):
         super().update(img=img)
 
 
-def _total_variaion_tester(preds, target, reduction="mean"):
+def _total_variaion_wrapped(preds, target, reduction="mean"):
     return total_variation(preds, reduction)
 
 
-def _total_variation_kornia_tester(preds, target, reduction):
+def _reference_kornia_tv(preds, target, reduction):
     score = kornia_total_variation(preds).sum(-1)
     if reduction == "sum":
         return score.sum()
@@ -50,7 +50,7 @@ def _total_variation_kornia_tester(preds, target, reduction):
 
 
 # define inputs
-Input = namedtuple("Input", ["preds", "target"])
+
 
 _inputs = []
 for size, channel, dtype in [
@@ -61,7 +61,7 @@ for size, channel, dtype in [
 ]:
     preds = torch.rand(2, 4, channel, size, size, dtype=dtype)
     target = torch.rand(2, 4, channel, size, size, dtype=dtype)
-    _inputs.append(Input(preds=preds, target=target))
+    _inputs.append(_Input(preds=preds, target=target))
 
 
 @pytest.mark.parametrize(
@@ -72,7 +72,7 @@ for size, channel, dtype in [
 class TestTotalVariation(MetricTester):
     """Test class for `TotalVariation` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_total_variation(self, preds, target, reduction, ddp):
         """Test class implementation of metric."""
         if reduction is None and ddp:
@@ -82,7 +82,7 @@ class TestTotalVariation(MetricTester):
             preds,
             target,
             TotalVariationTester,
-            partial(_total_variation_kornia_tester, reduction=reduction),
+            partial(_reference_kornia_tv, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -91,8 +91,8 @@ class TestTotalVariation(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            _total_variaion_tester,
-            partial(_total_variation_kornia_tester, reduction=reduction),
+            _total_variaion_wrapped,
+            partial(_reference_kornia_tv, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -102,13 +102,13 @@ class TestTotalVariation(MetricTester):
             preds,
             target,
             TotalVariationTester,
-            _total_variaion_tester,
+            _total_variaion_wrapped,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, preds, target, reduction):
         """Test for half precision on GPU."""
-        self.run_precision_test_gpu(preds, target, TotalVariationTester, _total_variaion_tester)
+        self.run_precision_test_gpu(preds, target, TotalVariationTester, _total_variaion_wrapped)
 
 
 def test_correct_args():

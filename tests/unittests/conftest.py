@@ -14,8 +14,6 @@
 import contextlib
 import os
 import sys
-from functools import wraps
-from typing import Any, Callable, Optional
 
 import pytest
 import torch
@@ -35,10 +33,29 @@ THRESHOLD = 0.5
 MAX_PORT = 8100
 START_PORT = 8088
 CURRENT_PORT = START_PORT
+USE_PYTEST_POOL = os.getenv("USE_PYTEST_POOL", "0") == "1"
+
+
+@pytest.fixture
+def use_deterministic_algorithms():
+    """Set deterministic algorithms for the test."""
+    torch.use_deterministic_algorithms(True)
+    yield
+    torch.use_deterministic_algorithms(False)
 
 
 def setup_ddp(rank, world_size):
-    """Initialize ddp environment."""
+    """Initialize ddp environment.
+
+    If a particular test relies on the order of the processes in the pool to be [0, 1, 2, ...], then this function
+    should be called inside the test to ensure that the processes are initialized in the same order they are used in
+    the tests.
+
+    Args:
+        rank: the rank of the process
+        world_size: the number of processes
+
+    """
     global CURRENT_PORT
 
     os.environ["MASTER_ADDR"] = "localhost"
@@ -48,44 +65,25 @@ def setup_ddp(rank, world_size):
     if CURRENT_PORT > MAX_PORT:
         CURRENT_PORT = START_PORT
 
+    if torch.distributed.group.WORLD is not None:  # if already initialized, destroy the process group
+        torch.distributed.destroy_process_group()
+
     if torch.distributed.is_available() and sys.platform not in ("win32", "cygwin"):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
 def pytest_sessionstart():
-    """Global initialization of multiprocessing pool.
-
-    Runs before any test.
-
-    """
+    """Global initialization of multiprocessing pool; runs before any test."""
+    if not USE_PYTEST_POOL:
+        return
     pool = Pool(processes=NUM_PROCESSES)
     pool.starmap(setup_ddp, [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)])
     pytest.pool = pool
 
 
 def pytest_sessionfinish():
-    """Correctly closes the global multiprocessing pool.
-
-    Runs after all tests.
-
-    """
+    """Correctly closes the global multiprocessing pool; runs after all tests."""
+    if not USE_PYTEST_POOL:
+        return
     pytest.pool.close()
     pytest.pool.join()
-
-
-def skip_on_running_out_of_memory(reason: str = "Skipping test as it ran out of memory."):
-    """Handle tests that sometimes runs out of memory, by simply skipping them."""
-
-    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
-        @wraps(function)
-        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
-            try:
-                return function(*args, **kwargs)
-            except RuntimeError as ex:
-                if "DefaultCPUAllocator: not enough memory:" not in str(ex):
-                    raise ex
-                pytest.skip(reason)
-
-        return run_test
-
-    return test_decorator

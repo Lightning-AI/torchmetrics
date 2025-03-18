@@ -1,14 +1,27 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import os
 
 import pytest
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
+
 from torchmetrics.functional.text import squad
 from torchmetrics.text.squad import SQuAD
-
-from unittests.helpers.testers import _assert_allclose, _assert_tensor
-from unittests.text.inputs import _inputs_squad_batch_match, _inputs_squad_exact_match, _inputs_squad_exact_mismatch
+from unittests._helpers.testers import _assert_allclose, _assert_tensor
+from unittests.text._inputs import _inputs_squad_batch_match, _inputs_squad_exact_match, _inputs_squad_exact_mismatch
 
 
 @pytest.mark.parametrize(
@@ -16,13 +29,13 @@ from unittests.text.inputs import _inputs_squad_batch_match, _inputs_squad_exact
     [
         (
             _inputs_squad_exact_match.preds,
-            _inputs_squad_exact_match.targets,
+            _inputs_squad_exact_match.target,
             _inputs_squad_exact_match.exact_match,
             _inputs_squad_exact_match.f1,
         ),
         (
             _inputs_squad_exact_mismatch.preds,
-            _inputs_squad_exact_mismatch.targets,
+            _inputs_squad_exact_mismatch.target,
             _inputs_squad_exact_mismatch.exact_match,
             _inputs_squad_exact_mismatch.f1,
         ),
@@ -42,7 +55,7 @@ def test_score_fn(preds, targets, exact_match, f1):
     [
         (
             _inputs_squad_batch_match.preds,
-            _inputs_squad_batch_match.targets,
+            _inputs_squad_batch_match.target,
             _inputs_squad_batch_match.exact_match,
             _inputs_squad_batch_match.f1,
         )
@@ -86,7 +99,7 @@ def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
     [
         (
             _inputs_squad_batch_match.preds,
-            _inputs_squad_batch_match.targets,
+            _inputs_squad_batch_match.target,
             _inputs_squad_batch_match.exact_match,
             _inputs_squad_batch_match.f1,
         )

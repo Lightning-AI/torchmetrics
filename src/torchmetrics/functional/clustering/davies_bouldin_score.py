@@ -31,26 +31,25 @@ def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
         Scalar tensor with the Davies bouldin score
 
     Example:
-        >>> import torch
+        >>> from torch import randn, randint
         >>> from torchmetrics.functional.clustering import davies_bouldin_score
-        >>> _ = torch.manual_seed(42)
-        >>> data = torch.randn(10, 3)
-        >>> labels = torch.randint(0, 2, (10,))
+        >>> data = randn(20, 3)
+        >>> labels = randint(0, 3, (20,))
         >>> davies_bouldin_score(data, labels)
-        tensor(1.3249)
+        tensor(2.7418)
 
     """
     _validate_intrinsic_cluster_data(data, labels)
 
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
-    n_labels = len(unique_labels)
-    n_samples, dim = data.shape
-    _validate_intrinsic_labels_to_samples(n_labels, n_samples)
+    num_labels = len(unique_labels)
+    num_samples, dim = data.shape
+    _validate_intrinsic_labels_to_samples(num_labels, num_samples)
 
-    intra_dists = torch.zeros(n_labels, device=data.device)
-    centroids = torch.zeros((n_labels, dim), device=data.device)
-    for k in range(n_labels):
+    intra_dists = torch.zeros(num_labels, device=data.device)
+    centroids = torch.zeros((num_labels, dim), device=data.device)
+    for k in range(num_labels):
         cluster_k = data[labels == k, :]
         centroids[k] = cluster_k.mean(dim=0)
         intra_dists[k] = (cluster_k - centroids[k]).pow(2.0).sum(dim=1).sqrt().mean()

@@ -12,24 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-import operator
-from collections import namedtuple
 from functools import partial
 
 import pytest
 import torch
-from dython.nominal import cramers_v as dython_cramers_v
-from lightning_utilities.core.imports import compare_version
+
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers.testers import MetricTester
 
-from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers.testers import MetricTester
-
-Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
 
-_input_default = Input(
+_input_default = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
@@ -41,14 +36,14 @@ _preds[-1, -1] = float("nan")
 _target = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.float)
 _target[1, 0] = float("nan")
 _target[-1, 0] = float("nan")
-_input_with_nans = Input(preds=_preds, target=_target)
+_input_with_nans = _Input(preds=_preds, target=_target)
 
-_input_logits = Input(
+_input_logits = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def cramers_matrix_input():
     """Define input in matrix format for the metric."""
     matrix = torch.cat(
@@ -64,11 +59,16 @@ def cramers_matrix_input():
     return matrix
 
 
-def _dython_cramers_v(preds, target, bias_correction, nan_strategy, nan_replace_value):
+def _reference_dython_cramers_v(preds, target, bias_correction, nan_strategy, nan_replace_value):
+    try:
+        from dython.nominal import cramers_v
+    except ImportError:
+        pytest.skip("This test requires `dython` package to be installed.")
+
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
 
-    v = dython_cramers_v(
+    v = cramers_v(
         preds.numpy(),
         target.numpy(),
         bias_correction=bias_correction,
@@ -83,13 +83,12 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
     cramers_v_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        cramers_v_matrix_value[i, j] = cramers_v_matrix_value[j, i] = _dython_cramers_v(
+        cramers_v_matrix_value[i, j] = cramers_v_matrix_value[j, i] = _reference_dython_cramers_v(
             x, y, bias_correction, nan_strategy, nan_replace_value
         )
     return cramers_v_matrix_value
 
 
-@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -105,7 +104,7 @@ class TestCramersV(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_cramers_v(self, ddp, preds, target, bias_correction, nan_strategy, nan_replace_value):
         """Test class implementation of metric."""
         metric_args = {
@@ -115,7 +114,7 @@ class TestCramersV(MetricTester):
             "num_classes": NUM_CLASSES,
         }
         reference_metric = partial(
-            _dython_cramers_v,
+            _reference_dython_cramers_v,
             bias_correction=bias_correction,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
@@ -137,7 +136,7 @@ class TestCramersV(MetricTester):
             "nan_replace_value": nan_replace_value,
         }
         reference_metric = partial(
-            _dython_cramers_v,
+            _reference_dython_cramers_v,
             bias_correction=bias_correction,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
@@ -163,7 +162,6 @@ class TestCramersV(MetricTester):
         )
 
 
-@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.parametrize("bias_correction", [False, True])
 @pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value):

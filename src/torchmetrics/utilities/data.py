@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor
 
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _XLA_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_LESS_THAN_2_6, _XLA_AVAILABLE
 from torchmetrics.utilities.prints import rank_zero_warn
 
 METRIC_EPS = 1e-6
@@ -60,7 +61,7 @@ def _flatten(x: Sequence) -> list:
     return [item for sublist in x for item in sublist]
 
 
-def _flatten_dict(x: Dict) -> Tuple[Dict, bool]:
+def _flatten_dict(x: dict) -> tuple[dict, bool]:
     """Flatten dict of dicts into single dict and checking for duplicates in keys along the way."""
     new_dict = {}
     duplicates = False
@@ -112,6 +113,14 @@ def to_onehot(
     return tensor_onehot.scatter_(1, index, 1.0)
 
 
+def _top_k_with_half_precision_support(x: Tensor, k: int = 1, dim: int = 1) -> Tensor:
+    """torch.top_k does not support half precision on CPU."""
+    if x.dtype == torch.half and not x.is_cuda:
+        idx = torch.argsort(x, dim=dim, stable=True).flip(dim)
+        return idx.narrow(dim, 0, k)
+    return x.topk(k=k, dim=dim).indices
+
+
 def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
     """Convert a probability tensor to binary by selecting top-k the highest entries.
 
@@ -131,11 +140,11 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
                 [1, 1, 0]], dtype=torch.int32)
 
     """
-    zeros = torch.zeros_like(prob_tensor)
+    topk_tensor = torch.zeros_like(prob_tensor, dtype=torch.int)
     if topk == 1:  # argmax has better performance than topk
-        topk_tensor = zeros.scatter(dim, prob_tensor.argmax(dim=dim, keepdim=True), 1.0)
+        topk_tensor.scatter_(dim, prob_tensor.argmax(dim=dim, keepdim=True), 1.0)
     else:
-        topk_tensor = zeros.scatter(dim, prob_tensor.topk(k=topk, dim=dim).indices, 1.0)
+        topk_tensor.scatter_(dim, _top_k_with_half_precision_support(prob_tensor, k=topk, dim=dim), 1.0)
     return topk_tensor.int()
 
 
@@ -169,12 +178,10 @@ def _squeeze_if_scalar(data: Any) -> Any:
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """Implement custom bincount.
 
-    PyTorch currently does not support ``torch.bincount`` for:
-
-        - deterministic mode on GPU.
-        - MPS devices
-
-    This implementation fallback to a for-loop counting occurrences in that case.
+    PyTorch currently does not support ``torch.bincount`` when running in deterministic mode on GPU or when running
+    MPS devices or when running on XLA device. This implementation therefore falls back to using a combination of
+    `torch.arange` and `torch.eq` in these scenarios. A small performance hit can expected and higher memory consumption
+    as `[batch_size, mincount]` tensor needs to be initialized compared to native ``torch.bincount``.
 
     Args:
         x: tensor to count
@@ -191,23 +198,25 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """
     if minlength is None:
         minlength = len(torch.unique(x))
-    if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
-        output = torch.zeros(minlength, device=x.device, dtype=torch.long)
-        for i in range(minlength):
-            output[i] = (x == i).sum()
-        return output
+
+    if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or x.is_mps:
+        mesh = torch.arange(minlength, device=x.device).repeat(len(x), 1)
+        return torch.eq(x.reshape(-1, 1), mesh).sum(dim=0)
+
     return torch.bincount(x, minlength=minlength)
 
 
 def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = None) -> Tensor:
-    if torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point() and sys.platform != "win32":
+    """Implement custom cumulative summation for Torch versions which does not support it natively."""
+    is_cuda_fp_deterministic = torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point()
+    if _TORCH_LESS_THAN_2_6 and is_cuda_fp_deterministic and sys.platform != "win32":
         rank_zero_warn(
-            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum`, which is currently "
-            "not supported. The tensor will be copied to the CPU memory to compute it and then copied back to GPU. "
-            "Expect some slowdowns.",
+            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum`, which is currently"
+            " not supported. The tensor will be copied to the CPU memory to compute it and then copied back to GPU."
+            " Expect some slowdowns.",
             TorchMetricsUserWarning,
         )
-        return x.cpu().cumsum(dim=dim, dtype=dtype).cuda()
+        return x.cpu().cumsum(dim=dim, dtype=dtype).to(x.device)
     return torch.cumsum(x, dim=dim, dtype=dtype)
 
 
@@ -235,3 +244,28 @@ def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
     if tensor1.dtype != tensor2.dtype:
         tensor2 = tensor2.to(dtype=tensor1.dtype)
     return torch.allclose(tensor1, tensor2)
+
+
+def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
+    """Interpolation function comparable to numpy.interp.
+
+    Args:
+        x: x-coordinates where to evaluate the interpolated values
+        xp: x-coordinates of the data points
+        fp: y-coordinates of the data points
+
+    """
+    # Sort xp and fp based on xp for compatibility with np.interp
+    sorted_indices = torch.argsort(xp)
+    xp = xp[sorted_indices]
+    fp = fp[sorted_indices]
+
+    # Calculate slopes for each interval
+    slopes = (fp[1:] - fp[:-1]) / (xp[1:] - xp[:-1])
+
+    # Identify where x falls relative to xp
+    indices = torch.searchsorted(xp, x) - 1
+    indices = torch.clamp(indices, 0, len(slopes) - 1)
+
+    # Compute interpolated values
+    return fp[indices] + slopes[indices] * (x - xp[indices])

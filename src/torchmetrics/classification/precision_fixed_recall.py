@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -60,7 +61,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -105,6 +106,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
         (tensor(0.6667), tensor(0.5000))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -114,7 +116,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
     def __init__(
         self,
         min_recall: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -125,7 +127,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_recall = min_recall
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_recall_at_fixed_precision_compute(
@@ -192,7 +194,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
@@ -210,7 +212,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         min_recall: float value specifying minimum recall threshold.
         thresholds:
             Can be one of:
@@ -245,6 +247,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
          tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -256,7 +259,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
         self,
         num_classes: int,
         min_recall: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -269,7 +272,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_recall = min_recall
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_recall_at_fixed_precision_arg_compute(
@@ -336,7 +339,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
@@ -354,7 +357,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         min_recall: float value specifying minimum recall threshold.
         thresholds:
             Can be one of:
@@ -390,6 +393,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         (tensor([1.0000, 0.6667, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -401,7 +405,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         self,
         num_labels: int,
         min_recall: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -414,7 +418,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_recall = min_recall
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_recall_at_fixed_precision_arg_compute(
@@ -473,7 +477,7 @@ class PrecisionAtFixedRecall(_ClassificationTaskWrapper):
     a given precision level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryPrecisionAtFixedRecall`,
     :class:`~torchmetrics.classification.MulticlassPrecisionAtFixedRecall` and
     :class:`~torchmetrics.classification.MultilabelPrecisionAtFixedRecall` for the specific details of each argument
@@ -482,10 +486,10 @@ class PrecisionAtFixedRecall(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["PrecisionAtFixedRecall"],
         task: Literal["binary", "multiclass", "multilabel"],
         min_recall: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,

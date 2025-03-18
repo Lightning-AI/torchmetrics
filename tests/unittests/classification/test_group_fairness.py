@@ -13,7 +13,7 @@
 # limitations under the License.
 import inspect
 from functools import partial
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 from unittest import mock
 
 import numpy as np
@@ -23,28 +23,28 @@ import torch
 from fairlearn.metrics import MetricFrame, selection_rate, true_positive_rate
 from scipy.special import expit as sigmoid
 from torch import Tensor
+
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
-from torchmetrics.utilities.imports import _PYTHON_LOWER_3_8
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import THRESHOLD
-from unittests.classification.inputs import _group_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import (
+from unittests._helpers import seed_all
+from unittests._helpers.testers import (
     MetricTester,
     _assert_dtype_support,
     inject_ignore_index,
     remove_ignore_index_groups,
 )
-from unittests.helpers.testers import _assert_allclose as _core_assert_allclose
-from unittests.helpers.testers import _assert_requires_grad as _core_assert_requires_grad
-from unittests.helpers.testers import _assert_tensor as _core_assert_tensor
+from unittests._helpers.testers import _assert_allclose as _core_assert_allclose
+from unittests._helpers.testers import _assert_requires_grad as _core_assert_requires_grad
+from unittests._helpers.testers import _assert_tensor as _core_assert_tensor
+from unittests.classification._inputs import _group_cases
 
 seed_all(42)
 
 
-def _fairlearn_binary(preds, target, groups, ignore_index):
+def _reference_fairlearn_binary(preds, target, groups, ignore_index):
     metrics = {"dp": selection_rate, "eo": true_positive_rate}
 
     preds = preds.numpy()
@@ -73,7 +73,7 @@ def _fairlearn_binary(preds, target, groups, ignore_index):
     }
 
 
-def _assert_tensor(pl_result: Dict[str, Tensor], key: Optional[str] = None) -> None:
+def _assert_tensor(pl_result: dict[str, Tensor], key: Optional[str] = None) -> None:
     if isinstance(pl_result, dict) and key is None:
         for key, val in pl_result.items():
             assert isinstance(val, Tensor), f"{key!r} is not a Tensor!"
@@ -81,14 +81,14 @@ def _assert_tensor(pl_result: Dict[str, Tensor], key: Optional[str] = None) -> N
         _core_assert_tensor(pl_result, key)
 
 
-def _assert_allclose(
-    pl_result: Dict[str, Tensor], sk_result: Dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
+def _assert_allclose(  # todo: unify with the general assert_allclose
+    pl_result: dict[str, Tensor], sk_result: dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
 ) -> None:
     if isinstance(pl_result, dict) and key is None:
         for (pl_key, pl_val), (sk_key, sk_val) in zip(pl_result.items(), sk_result.items()):
-            assert np.allclose(
-                pl_val.detach().cpu().numpy(), sk_val.numpy(), atol=atol, equal_nan=True
-            ), f"{pl_key} != {sk_key}"
+            assert np.allclose(pl_val.detach().cpu().numpy(), sk_val.numpy(), atol=atol, equal_nan=True), (
+                f"{pl_key} != {sk_key}"
+            )
     else:
         _core_assert_allclose(pl_result, sk_result, atol, key)
 
@@ -220,15 +220,14 @@ class BinaryFairnessTester(MetricTester):
         )
 
 
-@mock.patch("unittests.helpers.testers._assert_tensor", _assert_tensor)
-@mock.patch("unittests.helpers.testers._assert_allclose", _assert_allclose)
-@pytest.mark.skipif(_PYTHON_LOWER_3_8, reason="`TestBinaryFairness` requires `python>=3.8`.")
+@mock.patch("unittests._helpers.testers._assert_tensor", _assert_tensor)
+@mock.patch("unittests._helpers.testers._assert_allclose", _assert_allclose)
 @pytest.mark.parametrize("inputs", _group_cases)
 class TestBinaryFairness(BinaryFairnessTester):
     """Test class for `BinaryFairness` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_fairness(self, ddp, inputs, ignore_index):
         """Test class implementation of metric."""
         preds, target, groups = inputs
@@ -240,7 +239,7 @@ class TestBinaryFairness(BinaryFairnessTester):
             preds=preds,
             target=target,
             metric_class=BinaryFairness,
-            reference_metric=partial(_fairlearn_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_fairlearn_binary, ignore_index=ignore_index),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "num_groups": 2, "task": "all"},
             groups=groups,
             fragment_kwargs=True,
@@ -257,7 +256,7 @@ class TestBinaryFairness(BinaryFairnessTester):
             preds=preds,
             target=target,
             metric_functional=binary_fairness,
-            reference_metric=partial(_fairlearn_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_fairlearn_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -284,8 +283,8 @@ class TestBinaryFairness(BinaryFairnessTester):
         """Test class implementation of metric."""
         preds, target, groups = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

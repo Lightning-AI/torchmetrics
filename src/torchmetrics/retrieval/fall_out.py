@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Callable, Optional, Union
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
-from torchmetrics.retrieval.base import RetrievalMetric
+from torchmetrics.retrieval.base import RetrievalMetric, _retrieval_aggregate
 from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -40,7 +42,7 @@ class RetrievalFallOut(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``fo@k`` (:class:`~torch.Tensor`): A tensor with the computed metric
+    - ``fallout@k`` (:class:`~torch.Tensor`): A tensor with the computed metric
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
     so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
@@ -57,6 +59,15 @@ class RetrievalFallOut(RetrievalMetric):
 
         ignore_index: Ignore predictions where the target is equal to this number.
         top_k: Consider only the top k elements for each query (default: `None`, which considers them all)
+        aggregation:
+            Specify how to aggregate over indexes. Can either a custom callable function that takes in a single tensor
+            and returns a scalar value or one of the following strings:
+
+            - ``'mean'``: average value is returned
+            - ``'median'``: median value is returned
+            - ``'max'``: max value is returned
+            - ``'min'``: min value is returned
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -72,8 +83,8 @@ class RetrievalFallOut(RetrievalMetric):
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
-        >>> fo = RetrievalFallOut(top_k=2)
-        >>> fo(preds, target, indexes=indexes)
+        >>> rfo = RetrievalFallOut(top_k=2)
+        >>> rfo(preds, target, indexes=indexes)
         tensor(0.5000)
 
     """
@@ -89,11 +100,13 @@ class RetrievalFallOut(RetrievalMetric):
         empty_target_action: str = "pos",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
+        aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
         **kwargs: Any,
     ) -> None:
         super().__init__(
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
+            aggregation=aggregation,
             **kwargs,
         )
 
@@ -131,10 +144,14 @@ class RetrievalFallOut(RetrievalMetric):
                 elif self.empty_target_action == "neg":
                     res.append(tensor(0.0))
             else:
-                # ensure list containt only float tensors
+                # ensure list contains only float tensors
                 res.append(self._metric(mini_preds, mini_target))
 
-        return torch.stack([x.to(preds) for x in res]).mean() if res else tensor(0.0).to(preds)
+        return (
+            _retrieval_aggregate(torch.stack([x.to(preds) for x in res]), aggregation=self.aggregation)
+            if res
+            else tensor(0.0).to(preds)
+        )
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
         return retrieval_fall_out(preds, target, top_k=self.top_k)

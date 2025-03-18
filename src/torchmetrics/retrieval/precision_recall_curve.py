@@ -11,13 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve
+from torchmetrics.retrieval.base import _retrieval_aggregate
 from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -32,7 +35,7 @@ def _retrieval_recall_at_fixed_precision(
     recall: Tensor,
     top_k: Tensor,
     min_precision: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Compute maximum recall with condition that corresponding precision >= `min_precision`.
 
     Args:
@@ -99,6 +102,15 @@ class RetrievalPrecisionRecallCurve(Metric):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
+        aggregation:
+            Specify how to aggregate over indexes. Can either a custom callable function that takes in a single tensor
+            and returns a scalar value or one of the following strings:
+
+            - ``'mean'``: average value is returned
+            - ``'median'``: median value is returned
+            - ``'max'``: max value is returned
+            - ``'min'``: min value is returned
+
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -141,6 +153,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         adaptive_k: bool = False,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
+        aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -165,6 +178,13 @@ class RetrievalPrecisionRecallCurve(Metric):
             raise ValueError("`adaptive_k` has to be a boolean")
         self.adaptive_k = adaptive_k
 
+        if not (aggregation in ("mean", "median", "min", "max") or callable(aggregation)):
+            raise ValueError(
+                "Argument `aggregation` must be one of `mean`, `median`, `min`, `max` or a custom callable function"
+                f"which takes tensor of values, but got {aggregation}."
+            )
+        self.aggregation = aggregation
+
         self.add_state("indexes", default=[], dist_reduce_fx=None)
         self.add_state("preds", default=[], dist_reduce_fx=None)
         self.add_state("target", default=[], dist_reduce_fx=None)
@@ -182,7 +202,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         # concat all data
         indexes = dim_zero_cat(self.indexes)
@@ -222,16 +242,22 @@ class RetrievalPrecisionRecallCurve(Metric):
                 recalls.append(recall)
 
         precision = (
-            torch.stack([x.to(preds) for x in precisions]).mean(dim=0) if precisions else torch.zeros(max_k).to(preds)
+            _retrieval_aggregate(torch.stack([x.to(preds) for x in precisions]), aggregation=self.aggregation, dim=0)
+            if precisions
+            else torch.zeros(max_k).to(preds)
         )
-        recall = torch.stack([x.to(preds) for x in recalls]).mean(dim=0) if recalls else torch.zeros(max_k).to(preds)
+        recall = (
+            _retrieval_aggregate(torch.stack([x.to(preds) for x in recalls]), aggregation=self.aggregation, dim=0)
+            if recalls
+            else torch.zeros(max_k).to(preds)
+        )
         top_k = torch.arange(1, max_k + 1, device=preds.device)
 
         return precision, recall, top_k
 
     def plot(
         self,
-        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
+        curve: Optional[tuple[Tensor, Tensor, Tensor]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -278,9 +304,10 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    .. note:: All ``indexes``, ``preds`` and ``target`` must have the same dimension.
+    .. important::
+         All ``indexes``, ``preds`` and ``target`` must have the same dimension.
 
-    .. note::
+    .. attention::
         Predictions will be first grouped by ``indexes`` and then `RetrievalRecallAtFixedPrecision`
         will be computed as the mean of the `RetrievalRecallAtFixedPrecision` over each query.
 
@@ -354,7 +381,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         precisions, recalls, top_k = super().compute()
 

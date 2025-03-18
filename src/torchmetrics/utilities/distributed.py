@@ -89,13 +89,16 @@ def class_reduce(
 
 
 def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> List[Tensor]:
-    gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
-    torch.distributed.all_gather(gathered_result, result, group)
+    with torch.no_grad():
+        gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
+        torch.distributed.all_gather(gathered_result, result, group)
+    # to propagate autograd graph from local rank
+    gathered_result[torch.distributed.get_rank(group)] = result
     return gathered_result
 
 
 def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tensor]:
-    """Gather all tensors from several ddp processes onto a list that is broadcasted to all processes.
+    """Gather all tensors from several ddp processes onto a list that is broadcast to all processes.
 
     Works on tensors that have the same number of dimensions, but where each dimension may differ. In this case
     tensors are padded, gathered and then trimmed to secure equal workload for all processes.
@@ -133,15 +136,18 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
         return _simple_gather_all_tensors(result, group, world_size)
 
     # 3. If not, we need to pad each local tensor to maximum size, gather and then truncate
-    pad_dims = []
-    pad_by = (max_size - local_size).detach().cpu()
-    for val in reversed(pad_by):
-        pad_dims.append(0)
-        pad_dims.append(val.item())
-    result_padded = F.pad(result, pad_dims)
-    gathered_result = [torch.zeros_like(result_padded) for _ in range(world_size)]
-    torch.distributed.all_gather(gathered_result, result_padded, group)
-    for idx, item_size in enumerate(local_sizes):
-        slice_param = [slice(dim_size) for dim_size in item_size]
-        gathered_result[idx] = gathered_result[idx][slice_param]
+    with torch.no_grad():
+        pad_dims = []
+        pad_by = (max_size - local_size).detach().cpu()
+        for val in reversed(pad_by):
+            pad_dims.append(0)
+            pad_dims.append(val.item())
+        result_padded = F.pad(result, pad_dims)
+        gathered_result = [torch.zeros_like(result_padded) for _ in range(world_size)]
+        torch.distributed.all_gather(gathered_result, result_padded, group)
+        for idx, item_size in enumerate(local_sizes):
+            slice_param = [slice(dim_size) for dim_size in item_size]
+            gathered_result[idx] = gathered_result[idx][slice_param]
+    # to propagate autograd graph from local rank
+    gathered_result[torch.distributed.get_rank(group)] = result
     return gathered_result

@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
+from torchmetrics.image.d_s import SpatialDistortionIndex
+from torchmetrics.image.dists import DeepImageStructureAndTextureSimilarity
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
 from torchmetrics.image.psnr import PeakSignalNoiseRatio
 from torchmetrics.image.psnrb import PeakSignalNoiseRatioWithBlockedEffect
+from torchmetrics.image.qnr import QualityWithNoReference
 from torchmetrics.image.rase import RelativeAverageSpectralError
 from torchmetrics.image.rmse_sw import RootMeanSquaredErrorUsingSlidingWindow
 from torchmetrics.image.sam import SpectralAngleMapper
+from torchmetrics.image.scc import SpatialCorrelationCoefficient
 from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure, StructuralSimilarityIndexMeasure
 from torchmetrics.image.tv import TotalVariation
 from torchmetrics.image.uqi import UniversalImageQualityIndex
@@ -29,19 +33,23 @@ from torchmetrics.utilities.imports import (
 )
 
 __all__ = [
-    "SpectralDistortionIndex",
+    "DeepImageStructureAndTextureSimilarity",
     "ErrorRelativeGlobalDimensionlessSynthesis",
+    "MemorizationInformedFrechetInceptionDistance",
+    "MultiScaleStructuralSimilarityIndexMeasure",
     "PeakSignalNoiseRatio",
     "PeakSignalNoiseRatioWithBlockedEffect",
+    "QualityWithNoReference",
     "RelativeAverageSpectralError",
     "RootMeanSquaredErrorUsingSlidingWindow",
+    "SpatialCorrelationCoefficient",
+    "SpatialDistortionIndex",
     "SpectralAngleMapper",
-    "MultiScaleStructuralSimilarityIndexMeasure",
-    "MemorizationInformedFrechetInceptionDistance",
+    "SpectralDistortionIndex",
     "StructuralSimilarityIndexMeasure",
+    "TotalVariation",
     "UniversalImageQualityIndex",
     "VisualInformationFidelity",
-    "TotalVariation",
 ]
 
 if _TORCH_FIDELITY_AVAILABLE:

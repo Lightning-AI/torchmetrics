@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 
@@ -32,7 +33,7 @@ class AdjustedRandScore(Metric):
         ARS(U, V) = (\text{RS} - \text{Expected RS}) / (\text{Max RS} - \text{Expected RS})
 
     The adjusted rand score :math:`\text{ARS}` is in essence the :math:`\text{RS}` (rand score) adjusted for chance.
-    The score ensures that completly randomly cluster labels have a score close to zero and only a perfect match will
+    The score ensures that completely randomly cluster labels have a score close to zero and only a perfect match will
     have a score of 1 (up to a permutation of the labels). The adjusted rand score is symmetric, therefore swapping
     :math:`U` and :math:`V` yields the same adjusted rand score.
 
@@ -51,7 +52,7 @@ class AdjustedRandScore(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import AdjustedRandScore
         >>> metric = AdjustedRandScore()
@@ -64,7 +65,7 @@ class AdjustedRandScore(Metric):
 
     is_differentiable = True
     higher_is_better = None
-    full_state_update: bool = True
+    full_state_update: bool = False
     plot_lower_bound: float = -0.5
     plot_upper_bound: float = 1.0
     preds: List[Tensor]
@@ -117,9 +118,10 @@ class AdjustedRandScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import AdjustedRandScore
             >>> metric = AdjustedRandScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -53,11 +54,10 @@ class SpectralDistortionIndex(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import rand
         >>> from torchmetrics.image import SpectralDistortionIndex
-        >>> preds = torch.rand([16, 3, 16, 16])
-        >>> target = torch.rand([16, 3, 16, 16])
+        >>> preds = rand([16, 3, 16, 16])
+        >>> target = rand([16, 3, 16, 16])
         >>> sdi = SpectralDistortionIndex()
         >>> sdi(preds, target)
         tensor(0.0234)
@@ -126,11 +126,10 @@ class SpectralDistortionIndex(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import rand
             >>> from torchmetrics.image import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
+            >>> preds = rand([16, 3, 16, 16])
+            >>> target = rand([16, 3, 16, 16])
             >>> metric = SpectralDistortionIndex()
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
@@ -139,11 +138,10 @@ class SpectralDistortionIndex(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import rand
             >>> from torchmetrics.image import SpectralDistortionIndex
-            >>> preds = torch.rand([16, 3, 16, 16])
-            >>> target = torch.rand([16, 3, 16, 16])
+            >>> preds = rand([16, 3, 16, 16])
+            >>> target = rand([16, 3, 16, 16])
             >>> metric = SpectralDistortionIndex()
             >>> values = [ ]
             >>> for _ in range(10):

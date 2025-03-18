@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -92,7 +93,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         sigma: Union[float, Sequence[float]] = 1.5,
         kernel_size: Union[int, Sequence[int]] = 11,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         return_full_image: bool = False,
@@ -147,25 +148,46 @@ class StructuralSimilarityIndexMeasure(Metric):
             similarity = similarity_pack
 
         if self.return_contrast_sensitivity or self.return_full_image:
+            if not isinstance(self.image_return, list):
+                raise TypeError("Expected `self.image_return` to be a list when returning images.")
             self.image_return.append(image)
 
         if self.reduction in ("elementwise_mean", "sum"):
+            if not isinstance(self.similarity, torch.Tensor):  # Ensure it's a Tensor
+                raise TypeError("Expected `self.similarity` to be a Tensor for reductions.")
             self.similarity += similarity.sum()
+            if not isinstance(self.total, torch.Tensor):
+                raise TypeError("Expected `self.total` to be a Tensor.")
             self.total += preds.shape[0]
         else:
+            if not isinstance(self.similarity, list):
+                raise TypeError("Expected `self.similarity` to be a list when reduction='none'.")
             self.similarity.append(similarity)
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute SSIM over state."""
         if self.reduction == "elementwise_mean":
-            similarity = self.similarity / self.total
+            if isinstance(self.similarity, Tensor) and isinstance(self.total, Tensor):
+                similarity = self.similarity / self.total
+            else:
+                raise TypeError(
+                    "Expected `self.similarity`and `self.total` to be of type Tensor for elementwise_mean reduction."
+                )
         elif self.reduction == "sum":
+            if not isinstance(self.similarity, Tensor):
+                raise TypeError("Expected `self.similarity` to be a Tensor for sum reduction.")
             similarity = self.similarity
         else:
-            similarity = dim_zero_cat(self.similarity)
+            if isinstance(self.similarity, list):
+                similarity = dim_zero_cat(self.similarity)  # Concatenate list of Tensors
+            else:
+                raise TypeError("Expected `self.similarity` to be a list for reduction='none'.")
 
         if self.return_contrast_sensitivity or self.return_full_image:
-            image_return = dim_zero_cat(self.image_return)
+            if isinstance(self.image_return, list):
+                image_return = dim_zero_cat(self.image_return)  # Concatenate list of Tensors
+            else:
+                raise TypeError("Expected `self.image_return` to be a list when returning images.")
             return similarity, image_return
 
         return similarity
@@ -249,7 +271,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             The ``data_range`` must be given when ``dim`` is not None.
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
-        betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
+        betas: Exponent parameters for individual similarities and contrastive sensitivities returned by different image
             resolutions.
         normalize: When MultiScaleStructuralSimilarityIndexMeasure loss is used for training, it is desirable to use
             normalizes to improve the training stability. This `normalize` argument is out of scope of the original
@@ -263,19 +285,18 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         ValueError:
             If ``kernel_size`` is not an int or a Sequence of ints with size 2 or 3.
         ValueError:
-            If ``betas`` is not a tuple of floats with lengt 2.
+            If ``betas`` is not a tuple of floats with length 2.
         ValueError:
             If ``normalize`` is neither `None`, `ReLU` nor `simple`.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.image import MultiScaleStructuralSimilarityIndexMeasure
-        >>> import torch
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+        >>> preds = torch.rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ms_ssim(preds, target)
-        tensor(0.9627)
+        tensor(0.9628)
 
     """
 
@@ -294,10 +315,10 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         kernel_size: Union[int, Sequence[int]] = 11,
         sigma: Union[float, Sequence[float]] = 1.5,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+        betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Literal["relu", "simple", None] = "relu",
         **kwargs: Any,
     ) -> None:
@@ -359,19 +380,31 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         )
 
         if self.reduction in ("none", None):
+            if not isinstance(self.similarity, list):
+                raise TypeError("Expected `self.similarity` to be a list for reduction='none'.")
             self.similarity.append(similarity)
         else:
+            if not isinstance(self.similarity, Tensor):
+                raise TypeError("Expected `self.similarity` to be a Tensor for elementwise_mean or sum reduction.")
             self.similarity += similarity.sum()
 
-        self.total += preds.shape[0]
+        if not isinstance(self.total, Tensor):
+            raise TypeError("Expected `self.total` to be a Tensor.")
+        self.total += torch.tensor(preds.shape[0], dtype=self.total.dtype, device=self.total.device)
 
     def compute(self) -> Tensor:
         """Compute MS-SSIM over state."""
         if self.reduction in ("none", None):
-            return dim_zero_cat(self.similarity)
+            if isinstance(self.similarity, list):
+                return dim_zero_cat(self.similarity)
+            raise TypeError("Expected `self.similarity` to be a list for reduction='none'.")
         if self.reduction == "sum":
-            return self.similarity
-        return self.similarity / self.total
+            if isinstance(self.similarity, Tensor):
+                return self.similarity
+            raise TypeError("Expected `self.similarity` to be a Tensor for sum reduction.")
+        if isinstance(self.similarity, Tensor) and isinstance(self.total, Tensor):
+            return self.similarity / self.total
+        raise TypeError("Expected `self.similarity` and `self.total` to be Tensors for elementwise_mean reduction.")
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -394,9 +427,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
+            >>> from torch import rand
             >>> from torchmetrics.image import MultiScaleStructuralSimilarityIndexMeasure
-            >>> import torch
-            >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+            >>> preds = rand([3, 3, 256, 256])
             >>> target = preds * 0.75
             >>> metric = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
             >>> metric.update(preds, target)
@@ -406,9 +439,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
+            >>> from torch import rand
             >>> from torchmetrics.image import MultiScaleStructuralSimilarityIndexMeasure
-            >>> import torch
-            >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+            >>> preds = rand([3, 3, 256, 256])
             >>> target = preds * 0.75
             >>> metric = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
             >>> values = [ ]

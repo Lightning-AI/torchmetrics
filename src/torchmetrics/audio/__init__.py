@@ -23,34 +23,54 @@ from torchmetrics.audio.snr import (
     SignalNoiseRatio,
 )
 from torchmetrics.utilities.imports import (
-    _GAMMATONE_AVAILABEL,
+    _GAMMATONE_AVAILABLE,
+    _LIBROSA_AVAILABLE,
+    _ONNXRUNTIME_AVAILABLE,
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
-    _TORCHAUDIO_AVAILABEL,
-    _TORCHAUDIO_GREATER_EQUAL_0_10,
+    _REQUESTS_AVAILABLE,
+    _SCIPI_AVAILABLE,
+    _TORCHAUDIO_AVAILABLE,
 )
 
+if _SCIPI_AVAILABLE:
+    import scipy.signal
+
+    # back compatibility patch due to SMRMpy using scipy.signal.hamming
+    if not hasattr(scipy.signal, "hamming"):
+        scipy.signal.hamming = scipy.signal.windows.hamming
+
 __all__ = [
+    "ComplexScaleInvariantSignalNoiseRatio",
     "PermutationInvariantTraining",
     "ScaleInvariantSignalDistortionRatio",
-    "SignalDistortionRatio",
-    "SourceAggregatedSignalDistortionRatio",
     "ScaleInvariantSignalNoiseRatio",
+    "SignalDistortionRatio",
     "SignalNoiseRatio",
-    "ComplexScaleInvariantSignalNoiseRatio",
+    "SourceAggregatedSignalDistortionRatio",
 ]
 
 if _PESQ_AVAILABLE:
-    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality  # noqa: F401
+    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 
-    __all__.append("PerceptualEvaluationSpeechQuality")
+    __all__ += ["PerceptualEvaluationSpeechQuality"]
 
 if _PYSTOI_AVAILABLE:
-    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility  # noqa: F401
+    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
 
-    __all__.append("ShortTimeObjectiveIntelligibility")
+    __all__ += ["ShortTimeObjectiveIntelligibility"]
 
-if _GAMMATONE_AVAILABEL and _TORCHAUDIO_AVAILABEL and _TORCHAUDIO_GREATER_EQUAL_0_10:
-    from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio  # noqa: F401
+if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE:
+    from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 
-    __all__.append("SpeechReverberationModulationEnergyRatio")
+    __all__ += ["SpeechReverberationModulationEnergyRatio"]
+
+if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE:
+    from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
+
+    __all__ += ["DeepNoiseSuppressionMeanOpinionScore"]
+
+if _LIBROSA_AVAILABLE and _REQUESTS_AVAILABLE:
+    from torchmetrics.audio.nisqa import NonIntrusiveSpeechQualityAssessment
+
+    __all__ += ["NonIntrusiveSpeechQualityAssessment"]

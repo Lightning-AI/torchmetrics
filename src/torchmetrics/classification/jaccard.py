@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -39,7 +40,7 @@ if not _MATPLOTLIB_AVAILABLE:
 class BinaryJaccardIndex(BinaryConfusionMatrix):
     r"""Calculate the Jaccard index for binary tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -49,10 +50,10 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
 
     - ``preds`` (:class:`~torch.Tensor`): A int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per element.
-      Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -65,6 +66,8 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -85,6 +88,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         tensor(0.5000)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -96,15 +100,17 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         threshold: float = 0.5,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
             threshold=threshold, ignore_index=ignore_index, normalize=None, validate_args=validate_args, **kwargs
         )
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _jaccard_index_reduce(self.confmat, average="binary")
+        return _jaccard_index_reduce(self.confmat, average="binary", zero_division=self.zero_division)
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -152,7 +158,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
 class MulticlassJaccardIndex(MulticlassConfusionMatrix):
     r"""Calculate the Jaccard index for multiclass tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -165,7 +171,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -173,7 +179,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
     - ``mcji`` (:class:`~torch.Tensor`): A tensor containing the Multi-class Jaccard Index.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         average:
@@ -186,6 +192,8 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
@@ -209,6 +217,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         tensor(0.6667)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -222,6 +231,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -231,10 +241,13 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
             _multiclass_jaccard_index_arg_validation(num_classes, ignore_index, average)
         self.validate_args = validate_args
         self.average = average
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _jaccard_index_reduce(self.confmat, average=self.average, ignore_index=self.ignore_index)
+        return _jaccard_index_reduce(
+            self.confmat, average=self.average, ignore_index=self.ignore_index, zero_division=self.zero_division
+        )
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -282,7 +295,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
     r"""Calculate the Jaccard index for multilabel tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -292,10 +305,10 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 
     - ``preds`` (:class:`~torch.Tensor`): A int tensor or float tensor of shape ``(N, C, ...)``. If preds is a
       floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      sigmoid per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -303,7 +316,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
     - ``mlji`` (:class:`~torch.Tensor`): A tensor containing the Multi-label Jaccard Index loss.
 
     Args:
-        num_classes: Integer specifing the number of labels
+        num_classes: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -317,6 +330,8 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -352,6 +367,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -366,10 +382,11 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
             _multilabel_jaccard_index_arg_validation(num_labels, threshold, ignore_index, average)
         self.validate_args = validate_args
         self.average = average
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _jaccard_index_reduce(self.confmat, average=self.average)
+        return _jaccard_index_reduce(self.confmat, average=self.average, zero_division=self.zero_division)
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -417,14 +434,14 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 class JaccardIndex(_ClassificationTaskWrapper):
     r"""Calculate the Jaccard index for multilabel tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryJaccardIndex`,
     :class:`~torchmetrics.classification.MulticlassJaccardIndex` and
     :class:`~torchmetrics.classification.MultilabelJaccardIndex` for the specific details of each argument influence
@@ -442,7 +459,7 @@ class JaccardIndex(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["JaccardIndex"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -20,7 +21,7 @@ from torch.nn import Module
 from torchmetrics.image.fid import NoTrainInceptionV3, _compute_fid
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {
@@ -28,12 +29,6 @@ __doctest_requires__ = {
         "torch_fidelity"
     ]
 }
-
-if not _TORCH_GREATER_EQUAL_1_10:
-    __doctest_skip__ = [
-        "MemorizationInformedFrechetInceptionDistance",
-        "MemorizationInformedFrechetInceptionDistance.plot",
-    ]
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MemorizationInformedFrechetInceptionDistance.plot"]
@@ -90,10 +85,12 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
 
-    .. note:: using this metrics requires you to have ``scipy`` install. Either install as ``pip install
+    .. hint::
+        Using this metrics requires you to have ``scipy`` install. Either install as ``pip install
         torchmetrics[image]`` or ``pip install scipy``
 
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
@@ -135,19 +132,19 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
             If ``reset_real_features`` is not an ``bool``
 
     Example::
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import randint
         >>> from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
         >>> mifid = MemorizationInformedFrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist1 = randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> mifid.update(imgs_dist1, real=True)
         >>> mifid.update(imgs_dist2, real=False)
         >>> mifid.compute()
         tensor(3003.3691)
 
     """
+
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
@@ -156,6 +153,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
     fake_features: List[Tensor]
 
     inception: Module
+    feature_network: str = "inception"
 
     def __init__(
         self,
@@ -166,11 +164,6 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not _TORCH_GREATER_EQUAL_1_10:
-            raise RuntimeError(
-                "MemorizationInformedFrechetInceptionDistance metric requires PyTorch version greater or equal to 1.10"
-            )
-
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(

@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
-from torch import Tensor
+from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.uqi import _uqi_compute, _uqi_update
@@ -73,6 +74,8 @@ class UniversalImageQualityIndex(Metric):
 
     preds: List[Tensor]
     target: List[Tensor]
+    sum_uqi: Tensor
+    numel: Tensor
 
     def __init__(
         self,
@@ -82,14 +85,20 @@ class UniversalImageQualityIndex(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        rank_zero_warn(
-            "Metric `UniversalImageQualityIndex` will save all targets and"
-            " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
-        )
-
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        if reduction not in ("elementwise_mean", "sum", "none", None):
+            raise ValueError(
+                f"The `reduction` {reduction} is not valid. Valid options are `elementwise_mean`, `sum`, `none`, None."
+            )
+        if reduction is None or reduction == "none":
+            rank_zero_warn(
+                "Metric `UniversalImageQualityIndex` will save all targets and predictions in the buffer when using"
+                "`reduction=None` or `reduction='none'. For large datasets, this may lead to a large memory footprint."
+            )
+            self.add_state("preds", default=[], dist_reduce_fx="cat")
+            self.add_state("target", default=[], dist_reduce_fx="cat")
+        else:
+            self.add_state("sum_uqi", tensor(0.0), dist_reduce_fx="sum")
+            self.add_state("numel", tensor(0), dist_reduce_fx="sum")
         self.kernel_size = kernel_size
         self.sigma = sigma
         self.reduction = reduction
@@ -97,14 +106,22 @@ class UniversalImageQualityIndex(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         preds, target = _uqi_update(preds, target)
-        self.preds.append(preds)
-        self.target.append(target)
+        if self.reduction is None or self.reduction == "none":
+            self.preds.append(preds)
+            self.target.append(target)
+        else:
+            uqi_score = _uqi_compute(preds, target, self.kernel_size, self.sigma, reduction="sum")
+            self.sum_uqi += uqi_score
+            ps = preds.shape
+            self.numel += ps[0] * ps[1] * (ps[2] - self.kernel_size[0] + 1) * (ps[3] - self.kernel_size[1] + 1)
 
     def compute(self) -> Tensor:
         """Compute explained variance over state."""
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction)
+        if self.reduction == "none" or self.reduction is None:
+            preds = dim_zero_cat(self.preds)
+            target = dim_zero_cat(self.target)
+            return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction)
+        return self.sum_uqi / self.numel if self.reduction == "elementwise_mean" else self.sum_uqi
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

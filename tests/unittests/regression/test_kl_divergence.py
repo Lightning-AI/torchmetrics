@@ -11,32 +11,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
-from typing import Optional
+from typing import NamedTuple, Optional
 
 import numpy as np
 import pytest
 import torch
 from scipy.stats import entropy
 from torch import Tensor
+
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
 from torchmetrics.regression.kl_divergence import KLDivergence
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["p", "q"])
 
-_probs_inputs = Input(
+class _Input(NamedTuple):
+    p: Tensor
+    q: Tensor
+
+
+_probs_inputs = _Input(
     p=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     q=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_log_probs_inputs = Input(
+_log_probs_inputs = _Input(
     p=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM).softmax(dim=-1).log(),
     q=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM).softmax(dim=-1).log(),
 )
@@ -63,7 +67,7 @@ class TestKLDivergence(MetricTester):
 
     atol = 1e-6
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_kldivergence(self, reduction, p, q, log_prob, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -96,7 +100,10 @@ class TestKLDivergence(MetricTester):
         )
 
     # KLDivergence half + cpu does not work due to missing support in torch.clamp
-    @pytest.mark.xfail(reason="KLDivergence metric does not support cpu + half precision")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1,
+        reason="Pytoch below 2.1 does not support cpu + half precision used in KLDivergence metric",
+    )
     def test_kldivergence_half_cpu(self, reduction, p, q, log_prob):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(p, q, KLDivergence, kl_divergence, {"log_prob": log_prob, "reduction": reduction})

@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -82,7 +83,7 @@ class MinMaxMetric(WrapperMetric):
         """Update the underlying metric."""
         self._base_metric.update(*args, **kwargs)
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Compute the underlying metric as well as max and min values for this metric.
 
         Returns a dictionary that consists of the computed value (``raw``), as well as the minimum (``min``) and maximum
@@ -91,9 +92,7 @@ class MinMaxMetric(WrapperMetric):
         """
         val = self._base_metric.compute()
         if not self._is_suitable_val(val):
-            raise RuntimeError(
-                f"Returned value from base metric should be a scalar (int, float or tensor of size 1, but got {val}"
-            )
+            raise RuntimeError(f"Returned value from base metric should be a float or scalar tensor, but got {val}.")
         self.max_val = val if self.max_val.to(val.device) < val else self.max_val.to(val.device)
         self.min_val = val if self.min_val.to(val.device) > val else self.min_val.to(val.device)
         return {"raw": val, "max": self.max_val, "min": self.min_val}
@@ -108,7 +107,7 @@ class MinMaxMetric(WrapperMetric):
         self._base_metric.reset()
 
     @staticmethod
-    def _is_suitable_val(val: Union[int, float, Tensor]) -> bool:
+    def _is_suitable_val(val: Union[float, Tensor]) -> bool:
         """Check whether min/max is a scalar value."""
         if isinstance(val, (int, float)):
             return True

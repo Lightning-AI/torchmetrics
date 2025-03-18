@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -53,9 +54,8 @@ class TotalVariation(Metric):
             If ``reduction`` is not one of ``'sum'``, ``'mean'``, ``'none'`` or ``None``
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.image import TotalVariation
-        >>> _ = torch.manual_seed(42)
         >>> tv = TotalVariation()
         >>> img = torch.rand(5, 3, 28, 28)
         >>> tv(img)

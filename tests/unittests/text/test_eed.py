@@ -16,14 +16,14 @@ from functools import partial
 
 import pytest
 from torch import Tensor, tensor
+
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.text.eed import ExtendedEditDistance
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
 
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
 
-
-def _rwth_manual_metric(preds, targets) -> Tensor:
+def _reference_rwth_manual(preds, targets) -> Tensor:
     """Baseline implementation of metric.
 
     The results were obtained w.r.t. the examples defined in `tests.text.inputs` with the script from
@@ -46,15 +46,15 @@ def _rwth_manual_metric(preds, targets) -> Tensor:
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
+    [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 class TestExtendedEditDistance(TextTester):
     """Test class for `ExtendedEditDistance` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_eed_class(self, preds, targets, ddp):
         """Test class implementation of metric."""
-        rwth_metric = partial(_rwth_manual_metric)
+        rwth_metric = partial(_reference_rwth_manual)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -65,7 +65,7 @@ class TestExtendedEditDistance(TextTester):
 
     def test_eed_functional(self, preds, targets):
         """Test functional implementation of metric."""
-        rwth_metric = partial(_rwth_manual_metric)
+        rwth_metric = partial(_reference_rwth_manual)
         self.run_functional_metric_test(
             preds,
             targets,
@@ -117,7 +117,7 @@ def test_eed_empty_with_non_empty_hyp_class():
 def test_eed_return_sentence_level_score_functional():
     """Test that eed can return sentence level scores."""
     hyp = _inputs_single_sentence_multiple_references.preds
-    ref = _inputs_single_sentence_multiple_references.targets
+    ref = _inputs_single_sentence_multiple_references.target
     _, sentence_eed = extended_edit_distance(hyp, ref, return_sentence_level_score=True)
     isinstance(sentence_eed, Tensor)
 
@@ -126,6 +126,6 @@ def test_eed_return_sentence_level_class():
     """Test that eed can return sentence level scores."""
     metric = ExtendedEditDistance(return_sentence_level_score=True)
     hyp = _inputs_single_sentence_multiple_references.preds
-    ref = _inputs_single_sentence_multiple_references.targets
+    ref = _inputs_single_sentence_multiple_references.target
     _, sentence_eed = metric(hyp, ref)
     isinstance(sentence_eed, Tensor)

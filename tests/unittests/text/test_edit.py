@@ -15,11 +15,11 @@ from functools import partial
 
 import pytest
 from nltk.metrics.distance import edit_distance as nltk_edit_distance
+
 from torchmetrics.functional.text.edit import edit_distance
 from torchmetrics.text.edit import EditDistance
-
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_single_reference
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_single_reference
 
 
 @pytest.mark.parametrize(
@@ -69,7 +69,7 @@ def test_for_correctness(
         assert predicted == expected
 
 
-def _ref_implementation(preds, target, substitution_cost=1, reduction="mean"):
+def _reference_nltk_edit_dist(preds, target, substitution_cost=1, reduction="mean"):
     costs = [nltk_edit_distance(p, t, substitution_cost=substitution_cost) for p, t in zip(preds, target)]
     if reduction == "mean":
         return sum(costs) / len(costs)
@@ -80,12 +80,12 @@ def _ref_implementation(preds, target, substitution_cost=1, reduction="mean"):
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
+    [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 class TestEditDistance(TextTester):
     """Test class for `EditDistance` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("substitution_cost", [1, 2])
     @pytest.mark.parametrize("reduction", ["none", "mean", "sum"])
     def test_edit_class(self, preds, targets, ddp, substitution_cost, reduction):
@@ -97,7 +97,9 @@ class TestEditDistance(TextTester):
             preds=preds,
             targets=targets,
             metric_class=EditDistance,
-            reference_metric=partial(_ref_implementation, substitution_cost=substitution_cost, reduction=reduction),
+            reference_metric=partial(
+                _reference_nltk_edit_dist, substitution_cost=substitution_cost, reduction=reduction
+            ),
             metric_args={"substitution_cost": substitution_cost, "reduction": reduction},
         )
 
@@ -109,7 +111,9 @@ class TestEditDistance(TextTester):
             preds=preds,
             targets=targets,
             metric_functional=edit_distance,
-            reference_metric=partial(_ref_implementation, substitution_cost=substitution_cost, reduction=reduction),
+            reference_metric=partial(
+                _reference_nltk_edit_dist, substitution_cost=substitution_cost, reduction=reduction
+            ),
             metric_args={"substitution_cost": substitution_cost, "reduction": reduction},
         )
 

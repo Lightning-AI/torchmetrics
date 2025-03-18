@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -52,10 +53,11 @@ class MeanSquaredLogError(Metric):
         >>> mean_squared_log_error(preds, target)
         tensor(0.0397)
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -75,10 +77,10 @@ class MeanSquaredLogError(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
+        sum_squared_log_error, num_obs = _mean_squared_log_error_update(preds, target)
 
         self.sum_squared_log_error += sum_squared_log_error
-        self.total += n_obs
+        self.total += num_obs
 
     def compute(self) -> Tensor:
         """Compute mean squared logarithmic error over state."""

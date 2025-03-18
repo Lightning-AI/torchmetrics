@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, ClassVar, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, ClassVar, Optional, Union
 
 import torch
 from torch import Tensor
@@ -38,7 +39,7 @@ else:
 
 
 class LearnedPerceptualImagePatchSimilarity(Metric):
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.
 
     LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure has been shown to match human perception well. A low LPIPS score means that image patches are
@@ -47,11 +48,9 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Both input image patches are expected to have shape ``(N, 3, H, W)``. The minimum size of `H, W` depends on the
     chosen backbone (see `net_type` arg).
 
-    .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
-        as ``pip install torchmetrics[image]`` or ``pip install lpips``
-
-    .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
-        if this is a issue.
+    .. hint::
+        Using this metrics requires you to have ``torchvision`` package installed. Either install as
+        ``pip install torchmetrics[image]`` or ``pip install torchvision``.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -71,22 +70,21 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     Raises:
         ModuleNotFoundError:
-            If ``lpips`` package is not installed
+            If ``torchvision`` package is not installed
         ValueError:
             If ``net_type`` is not one of ``"vgg"``, ``"alex"`` or ``"squeeze"``
         ValueError:
             If ``reduction`` is not one of ``"mean"`` or ``"sum"``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
         >>> lpips = LearnedPerceptualImagePatchSimilarity(net_type='squeeze')
         >>> # LPIPS needs the images to be in the [-1, 1] range.
-        >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
-        >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
+        >>> img1 = (rand(10, 3, 100, 100) * 2) - 1
+        >>> img2 = (rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
-        tensor(0.1046, grad_fn=<SqueezeBackward0>)
+        tensor(0.1024)
 
     """
 
@@ -98,9 +96,10 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     sum_scores: Tensor
     total: Tensor
+    feature_network: str = "net"
 
     # due to the use of named tuple in the backbone the net variable cannot be scripted
-    __jit_ignored_attributes__: ClassVar[List[str]] = ["net"]
+    __jit_ignored_attributes__: ClassVar[list[str]] = ["net"]
 
     def __init__(
         self,

@@ -1,7 +1,8 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-pandas >=1.4.0, <=2.0.3
-netcal >1.0.0, <=1.3.5  # calibration_error
-numpy <1.25.0
+pandas >1.4.0, <=2.2.3
+netcal >1.0.0, <1.4.0 # calibration_error
+numpy <2.3.0
 fairlearn # group_fairness
+PyTDC ==0.4.1 ; python_version <"3.12"  # locauc, temporal_dependency

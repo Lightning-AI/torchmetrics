@@ -14,13 +14,13 @@
 import pytest
 import torch
 from sklearn.metrics import mutual_info_score as sklearn_mutual_info_score
+
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
-
 from unittests import BATCH_SIZE, NUM_CLASSES
-from unittests.clustering.inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 
 seed_all(42)
 
@@ -37,7 +37,7 @@ class TestMutualInfoScore(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_mutual_info_score(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -76,6 +76,6 @@ def test_mutual_info_score_functional_raises_invalid_task():
 def test_mutual_info_score_functional_is_symmetric(
     preds=_single_target_extrinsic1.preds, target=_single_target_extrinsic1.target
 ):
-    """Check that the metric funtional is symmetric."""
+    """Check that the metric functional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(mutual_info_score(p, t), mutual_info_score(t, p))

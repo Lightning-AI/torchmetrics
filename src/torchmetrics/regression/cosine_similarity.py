@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -58,6 +59,7 @@ class CosineSimilarity(Metric):
         tensor(0.8536)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -118,7 +120,7 @@ class CosineSimilarity(Metric):
             >>> # Example plotting a single value
             >>> from torchmetrics.regression import CosineSimilarity
             >>> metric = CosineSimilarity()
-            >>> metric.update(randn(10,), randn(10,))
+            >>> metric.update(randn(10,2), randn(10,2))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -130,7 +132,7 @@ class CosineSimilarity(Metric):
             >>> metric = CosineSimilarity()
             >>> values = []
             >>> for _ in range(10):
-            ...     values.append(metric(randn(10,), randn(10,)))
+            ...     values.append(metric(randn(10,2), randn(10,2)))
             >>> fig, ax = metric.plot(values)
 
         """

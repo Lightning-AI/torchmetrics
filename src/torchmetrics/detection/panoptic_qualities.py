@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Collection, Optional, Sequence, Union
+from collections.abc import Collection, Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -40,12 +41,33 @@ class PanopticQuality(Metric):
         PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
 
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
-    the number of true postitives, false positives and false negatives. This metric is inspired by the PQ
+    the number of true positives, false positives and false negatives. This metric is inspired by the PQ
     implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
         computation.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+        - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)`` containing
+          the pair ``(category_id, instance_id)`` for each point, where there needs to
+          be at least one spatial dimension.
+        - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)`` containing
+          the pair ``(category_id, instance_id)`` for each point, where there needs to
+          be at least one spatial dimension.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+        - ``quality`` (:class:`~torch.Tensor`): If ``return_sq_and_rq=False`` and ``return_per_class=False`` then a
+          single scalar tensor is returned with average panoptic quality over all classes. If ``return_sq_and_rq=True``
+          and ``return_per_class=False`` a tensor of length 3 is returned with panoptic, segmentation and recognition
+          quality (in that order). If If ``return_sq_and_rq=False`` and ``return_per_class=True`` a tensor of length
+          equal to the number of classes are returned, with panoptic quality for each class. The order of classes is
+          ``things`` first and then ``stuffs``, and numerically sorted within each.
+          (ex. with ``things=[4, 1], stuffs=[3, 2]``, the output classes are ordered by ``[1, 4, 2, 3]``)
+          Finally, if both arguments are ``True`` a tensor of shape ``(3, C)`` is returned with individual panoptic,
+          segmentation and recognition quality for each class.
 
     Args:
         things:
@@ -55,6 +77,10 @@ class PanopticQuality(Metric):
         allow_unknown_preds_category:
             Boolean flag to specify if unknown categories in the predictions are to be ignored in the metric
             computation or raise an exception when found.
+        return_sq_and_rq:
+            Boolean flag to specify if Segmentation Quality and Recognition Quality should be also returned.
+        return_per_class:
+            Boolean flag to specify if the per-class values should be returned or the class average.
 
 
     Raises:
@@ -80,7 +106,42 @@ class PanopticQuality(Metric):
         >>> panoptic_quality(preds, target)
         tensor(0.5463, dtype=torch.float64)
 
+    You can also return the segmentation and recognition quality alognside the PQ
+        >>> from torch import tensor
+        >>> from torchmetrics.detection import PanopticQuality
+        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7}, return_sq_and_rq=True)
+        >>> panoptic_quality(preds, target)
+        tensor([0.5463, 0.6111, 0.6667], dtype=torch.float64)
+
+    You can also specify to return the per-class metrics
+        >>> from torch import tensor
+        >>> from torchmetrics.detection import PanopticQuality
+        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7}, return_per_class=True)
+        >>> panoptic_quality(preds, target)
+        tensor([[0.5185, 0.0000, 0.6667, 1.0000]], dtype=torch.float64)
+
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -97,23 +158,26 @@ class PanopticQuality(Metric):
         things: Collection[int],
         stuffs: Collection[int],
         allow_unknown_preds_category: bool = False,
+        return_sq_and_rq: bool = False,
+        return_per_class: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-
         things, stuffs = _parse_categories(things, stuffs)
         self.things = things
         self.stuffs = stuffs
         self.void_color = _get_void_color(things, stuffs)
         self.cat_id_to_continuous_id = _get_category_id_to_continuous_id(things, stuffs)
         self.allow_unknown_preds_category = allow_unknown_preds_category
+        self.return_sq_and_rq = return_sq_and_rq
+        self.return_per_class = return_per_class
 
         # per category intermediate metrics
-        n_categories = len(things) + len(stuffs)
-        self.add_state("iou_sum", default=torch.zeros(n_categories, dtype=torch.double), dist_reduce_fx="sum")
-        self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
+        num_categories = len(things) + len(stuffs)
+        self.add_state("iou_sum", default=torch.zeros(num_categories, dtype=torch.double), dist_reduce_fx="sum")
+        self.add_state("true_positives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("false_positives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("false_negatives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         r"""Update state with predictions and targets.
@@ -153,7 +217,16 @@ class PanopticQuality(Metric):
 
     def compute(self) -> Tensor:
         """Compute panoptic quality based on inputs passed in to ``update`` previously."""
-        return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
+        pq, sq, rq, pq_avg, sq_avg, rq_avg = _panoptic_quality_compute(
+            self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
+        )
+        if self.return_per_class:
+            if self.return_sq_and_rq:
+                return torch.stack((pq, sq, rq), dim=-1)
+            return pq.view(1, -1)
+        if self.return_sq_and_rq:
+            return torch.stack((pq_avg, sq_avg, rq_avg), dim=0)
+        return pq_avg
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -259,6 +332,7 @@ class ModifiedPanopticQuality(Metric):
         tensor(0.7667, dtype=torch.float64)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -287,11 +361,11 @@ class ModifiedPanopticQuality(Metric):
         self.allow_unknown_preds_category = allow_unknown_preds_category
 
         # per category intermediate metrics
-        n_categories = len(things) + len(stuffs)
-        self.add_state("iou_sum", default=torch.zeros(n_categories, dtype=torch.double), dist_reduce_fx="sum")
-        self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
+        num_categories = len(things) + len(stuffs)
+        self.add_state("iou_sum", default=torch.zeros(num_categories, dtype=torch.double), dist_reduce_fx="sum")
+        self.add_state("true_positives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("false_positives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("false_negatives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         r"""Update state with predictions and targets.
@@ -335,7 +409,10 @@ class ModifiedPanopticQuality(Metric):
 
     def compute(self) -> Tensor:
         """Compute panoptic quality based on inputs passed in to ``update`` previously."""
-        return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
+        _, _, _, pq_avg, _, _ = _panoptic_quality_compute(
+            self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
+        )
+        return pq_avg
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

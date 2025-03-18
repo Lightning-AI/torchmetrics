@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -45,7 +46,7 @@ class TranslationEditRate(Metric):
     Args:
         normalize: An indication whether a general tokenization to be applied.
         no_punctuation: An indication whteher a punctuation to be removed from the sentences.
-        lowercase: An indication whether to enable case-insesitivity.
+        lowercase: An indication whether to enable case-insensitivity.
         asian_support: An indication whether asian characters to be processed.
         return_sentence_level_score: An indication whether a sentence-level TER to be returned.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -108,7 +109,7 @@ class TranslationEditRate(Metric):
             self.sentence_ter,
         )
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Calculate the translate error rate (TER)."""
         ter = _ter_compute(self.total_num_edits, self.total_tgt_len)
         if self.sentence_ter is not None:

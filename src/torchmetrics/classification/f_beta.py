@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -49,13 +50,14 @@ class BinaryFBetaScore(BinaryStatScores):
 
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
-    positives and false negatives respectively. If this case is encountered a score of 0 is returned.
+    positives and false negatives respectively. If this case is encountered a score of `zero_division`
+    (0 or 1, default is 0) is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -65,6 +67,9 @@ class BinaryFBetaScore(BinaryStatScores):
         - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)`` consisting of
           a scalar value per sample.
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
@@ -80,6 +85,8 @@ class BinaryFBetaScore(BinaryStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -108,6 +115,7 @@ class BinaryFBetaScore(BinaryStatScores):
         tensor([0.5882, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -121,6 +129,7 @@ class BinaryFBetaScore(BinaryStatScores):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -131,14 +140,24 @@ class BinaryFBetaScore(BinaryStatScores):
             **kwargs,
         )
         if validate_args:
-            _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index)
+            _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index, zero_division)
         self.validate_args = validate_args
+        self.zero_division = zero_division
         self.beta = beta
 
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
-        return _fbeta_reduce(tp, fp, tn, fn, self.beta, average="binary", multidim_average=self.multidim_average)
+        return _fbeta_reduce(
+            tp,
+            fp,
+            tn,
+            fn,
+            self.beta,
+            average="binary",
+            multidim_average=self.multidim_average,
+            zero_division=self.zero_division,
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -193,7 +212,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
     positives and false negatives respectively. If this case is encountered for any class, the metric for that class
-    will be set to 0 and the overall metric may therefore be affected in turn.
+    will be set to `zero_division` (0 or 1, default is 0) and the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -201,7 +220,6 @@ class MulticlassFBetaScore(MulticlassStatScores):
       If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -218,9 +236,12 @@ class MulticlassFBetaScore(MulticlassStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -243,6 +264,8 @@ class MulticlassFBetaScore(MulticlassStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -283,6 +306,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
                 [0.0000, 0.3571, 0.4545]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -299,6 +323,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -311,14 +336,26 @@ class MulticlassFBetaScore(MulticlassStatScores):
             **kwargs,
         )
         if validate_args:
-            _multiclass_fbeta_score_arg_validation(beta, num_classes, top_k, average, multidim_average, ignore_index)
+            _multiclass_fbeta_score_arg_validation(
+                beta, num_classes, top_k, average, multidim_average, ignore_index, zero_division
+            )
         self.validate_args = validate_args
+        self.zero_division = zero_division
         self.beta = beta
 
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
-        return _fbeta_reduce(tp, fp, tn, fn, self.beta, average=self.average, multidim_average=self.multidim_average)
+        return _fbeta_reduce(
+            tp,
+            fp,
+            tn,
+            fn,
+            self.beta,
+            average=self.average,
+            multidim_average=self.multidim_average,
+            zero_division=self.zero_division,
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -373,15 +410,14 @@ class MultilabelFBetaScore(MultilabelStatScores):
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
     positives and false negatives respectively. If this case is encountered for any label, the metric for that label
-    will be set to 0 and the overall metric may therefore be affected in turn.
+    will be set to `zero_division` (0 or 1, default is 0) and the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -398,9 +434,12 @@ class MultilabelFBetaScore(MultilabelStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -421,6 +460,8 @@ class MultilabelFBetaScore(MultilabelStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -459,6 +500,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
                 [0.0000, 0.0000, 0.0000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -475,6 +517,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -487,15 +530,26 @@ class MultilabelFBetaScore(MultilabelStatScores):
             **kwargs,
         )
         if validate_args:
-            _multilabel_fbeta_score_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
+            _multilabel_fbeta_score_arg_validation(
+                beta, num_labels, threshold, average, multidim_average, ignore_index, zero_division
+            )
         self.validate_args = validate_args
+        self.zero_division = zero_division
         self.beta = beta
 
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _fbeta_reduce(
-            tp, fp, tn, fn, self.beta, average=self.average, multidim_average=self.multidim_average, multilabel=True
+            tp,
+            fp,
+            tn,
+            fn,
+            self.beta,
+            average=self.average,
+            multidim_average=self.multidim_average,
+            multilabel=True,
+            zero_division=self.zero_division,
         )
 
     def plot(
@@ -549,13 +603,14 @@ class BinaryF1Score(BinaryFBetaScore):
 
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
-    positives and false negatives respectively. If this case is encountered a score of 0 is returned.
+    positives and false negatives respectively. If this case is encountered a score of `zero_division`
+    (0 or 1, default is 0) is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
-      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -565,6 +620,9 @@ class BinaryF1Score(BinaryFBetaScore):
         - If ``multidim_average`` is set to ``global``, the metric returns a scalar value.
         - If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar
           value per sample.
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -579,6 +637,8 @@ class BinaryF1Score(BinaryFBetaScore):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -607,6 +667,7 @@ class BinaryF1Score(BinaryFBetaScore):
         tensor([0.5000, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -619,6 +680,7 @@ class BinaryF1Score(BinaryFBetaScore):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -627,6 +689,7 @@ class BinaryF1Score(BinaryFBetaScore):
             multidim_average=multidim_average,
             ignore_index=ignore_index,
             validate_args=validate_args,
+            zero_division=zero_division,
             **kwargs,
         )
 
@@ -682,7 +745,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
     positives and false negatives respectively.  If this case is encountered for any class, the metric for that class
-    will be set to 0 and the overall metric may therefore be affected in turn.
+    will be set to `zero_division` (0 or 1, default is 0) and the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -706,10 +769,13 @@ class MulticlassF1Score(MulticlassFBetaScore):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -731,6 +797,8 @@ class MulticlassF1Score(MulticlassFBetaScore):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -771,6 +839,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
                 [0.0000, 0.4000, 0.4000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -786,6 +855,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -796,6 +866,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
             multidim_average=multidim_average,
             ignore_index=ignore_index,
             validate_args=validate_args,
+            zero_division=zero_division,
             **kwargs,
         )
 
@@ -851,13 +922,13 @@ class MultilabelF1Score(MultilabelFBetaScore):
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
     positives and false negatives respectively. If this case is encountered for any label, the metric for that label
-    will be set to 0 and the overall metric may therefore be affected in turn.
+    will be set to `zero_division` (0 or 1, default is 0) and the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``.
       If preds is a floating point tensor with values outside [0,1] range we consider the input to be logits and
-      will auto apply sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value
+      will auto apply sigmoid per element. Additionally, we convert to int tensor with thresholding using the value
       in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
 
@@ -876,8 +947,11 @@ class MultilabelF1Score(MultilabelFBetaScore):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)```
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -898,6 +972,8 @@ class MultilabelF1Score(MultilabelFBetaScore):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -936,6 +1012,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
                 [0.0000, 0.0000, 0.0000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -951,6 +1028,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -961,6 +1039,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
             multidim_average=multidim_average,
             ignore_index=ignore_index,
             validate_args=validate_args,
+            zero_division=zero_division,
             **kwargs,
         )
 
@@ -1017,10 +1096,11 @@ class FBetaScore(_ClassificationTaskWrapper):
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
     positives and false negatives respectively. If this case is encountered for any class/label, the metric for that
-    class/label will be set to 0 and the overall metric may therefore be affected in turn.
+    class/label will be set to `zero_division` (0 or 1, default is 0) and the overall metric may therefore be
+    affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryFBetaScore`,
     :class:`~torchmetrics.classification.MulticlassFBetaScore` and
     :class:`~torchmetrics.classification.MultilabelFBetaScore` for the specific details of each argument influence
@@ -1036,8 +1116,8 @@ class FBetaScore(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
-        cls,
+    def __new__(  # type: ignore[misc]
+        cls: type["FBetaScore"],
         task: Literal["binary", "multiclass", "multilabel"],
         beta: float = 1.0,
         threshold: float = 0.5,
@@ -1048,14 +1128,18 @@ class FBetaScore(_ClassificationTaskWrapper):
         top_k: Optional[int] = 1,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+            "zero_division": zero_division,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryFBetaScore(beta, threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
@@ -1080,10 +1164,11 @@ class F1Score(_ClassificationTaskWrapper):
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
     positives and false negatives respectively. If this case is encountered for any class/label, the metric for that
-    class/label will be set to 0 and the overall metric may therefore be affected in turn.
+    class/label will be set to `zero_division` (0 or 1, default is 0) and the overall metric may therefore be
+    affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryF1Score`, :class:`~torchmetrics.classification.MulticlassF1Score` and
     :class:`~torchmetrics.classification.MultilabelF1Score` for the specific details of each argument influence and
     examples.
@@ -1098,8 +1183,8 @@ class F1Score(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
-        cls,
+    def __new__(  # type: ignore[misc]
+        cls: type["F1Score"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
@@ -1109,14 +1194,18 @@ class F1Score(_ClassificationTaskWrapper):
         top_k: Optional[int] = 1,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+            "zero_division": zero_division,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryF1Score(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:

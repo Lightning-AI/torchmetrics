@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+from collections.abc import Sequence
 from enum import unique
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -30,10 +31,10 @@ from torchmetrics.functional.text.helper_embedding_metric import (
 from torchmetrics.utilities.enums import EnumStr
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_GREATER_EQUAL_4_4:
+if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
-else:
-    PreTrainedModel = PreTrainedTokenizerBase = None
+
+if not _TRANSFORMERS_GREATER_EQUAL_4_4:
     __doctest_skip__ = ["infolm"]
 
 
@@ -137,9 +138,9 @@ class _InformationMeasure:
         self.alpha = alpha or 0
         self.beta = beta or 0
 
-    def __call__(self, preds_distribution: Tensor, target_distribtuion: Tensor) -> Tensor:
+    def __call__(self, preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
         information_measure_function = getattr(self, f"_calculate_{self.information_measure.value}")
-        return torch.nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
+        return torch.nan_to_num(information_measure_function(preds_distribution, target_distribution))
 
     @staticmethod
     def _calculate_kl_divergence(preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
@@ -320,7 +321,7 @@ def _get_dataloader(
     return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
 
-def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int]:
+def _get_special_tokens_map(tokenizer: "PreTrainedTokenizerBase") -> dict[str, int]:
     """Build a dictionary of model/tokenizer special tokens.
 
     Args:
@@ -365,7 +366,11 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls
 
 
 def _get_batch_distribution(
-    model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool, special_tokens_map: Dict[str, int]
+    model: "PreTrainedModel",
+    batch: dict[str, Tensor],
+    temperature: float,
+    idf: bool,
+    special_tokens_map: dict[str, int],
 ) -> Tensor:
     """Calculate a discrete probability distribution for a batch of examples. See `InfoLM`_ for details.
 
@@ -419,11 +424,11 @@ def _get_batch_distribution(
 
 @torch.no_grad()
 def _get_data_distribution(
-    model: PreTrainedModel,
+    model: "PreTrainedModel",
     dataloader: DataLoader,
     temperature: float,
     idf: bool,
-    special_tokens_map: Dict[str, int],
+    special_tokens_map: dict[str, int],
     verbose: bool,
 ) -> Tensor:
     """Calculate a discrete probability distribution according to the methodology described in `InfoLM`_.
@@ -461,9 +466,9 @@ def _get_data_distribution(
 def _infolm_update(
     preds: Union[str, Sequence[str]],
     target: Union[str, Sequence[str]],
-    tokenizer: PreTrainedTokenizerBase,
+    tokenizer: "PreTrainedTokenizerBase",
     max_length: int,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens.
 
     Args:
@@ -493,13 +498,13 @@ def _infolm_update(
 
 
 def _infolm_compute(
-    model: PreTrainedModel,
+    model: "PreTrainedModel",
     preds_dataloader: DataLoader,
     target_dataloader: DataLoader,
     temperature: float,
     idf: bool,
     information_measure_cls: _InformationMeasure,
-    special_tokens_map: Dict[str, int],
+    special_tokens_map: dict[str, int],
     verbose: bool = True,
 ) -> Tensor:
     """Calculate selected information measure using the pre-trained language model.
@@ -553,7 +558,7 @@ def infolm(
     num_threads: int = 0,
     verbose: bool = True,
     return_sentence_level_score: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Calculate `InfoLM`_ [1].
 
     InfoML corresponds to distance/divergence between predicted and reference sentence discrete distribution using

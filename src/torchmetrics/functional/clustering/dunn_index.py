@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from itertools import combinations
-from typing import Tuple
 
 import torch
 from torch import Tensor
 
 
-def _dunn_index_update(data: Tensor, labels: Tensor, p: float) -> Tuple[Tensor, Tensor]:
+def _dunn_index_update(data: Tensor, labels: Tensor, p: float) -> tuple[Tensor, Tensor]:
     """Update and return variables required to compute the Dunn index.
 
     Args:
@@ -39,9 +38,9 @@ def _dunn_index_update(data: Tensor, labels: Tensor, p: float) -> Tuple[Tensor, 
         torch.stack([a - b for a, b in combinations(centroids, 2)], dim=0), ord=p, dim=1
     )
 
-    max_intracluster_distance = torch.stack(
-        [torch.linalg.norm(ci - mu, ord=p, dim=1).max() for ci, mu in zip(clusters, centroids)]
-    )
+    max_intracluster_distance = torch.stack([
+        torch.linalg.norm(ci - mu, ord=p, dim=1).max() for ci, mu in zip(clusters, centroids)
+    ])
 
     return intercluster_distance, max_intracluster_distance
 

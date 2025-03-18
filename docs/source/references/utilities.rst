@@ -59,7 +59,7 @@ dim_zero_sum
 torchmetrics.utilities.distributed
 **********************************
 
-The `distributed` utilities are used to help with syncronization of metrics across multiple processes.
+The `distributed` utilities are used to help with synchronization of metrics across multiple processes.
 
 gather_all_tensors
 ~~~~~~~~~~~~~~~~~~

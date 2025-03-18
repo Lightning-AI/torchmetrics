@@ -20,6 +20,7 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_curve as sk_roc_curve
+
 from torchmetrics.classification.specificity_sensitivity import (
     BinarySpecificityAtSensitivity,
     MulticlassSpecificityAtSensitivity,
@@ -33,11 +34,11 @@ from torchmetrics.functional.classification.specificity_sensitivity import (
     multilabel_specificity_at_sensitivity,
 )
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
@@ -72,12 +73,12 @@ def _specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivi
     return float(max_spec), float(best_threshold)
 
 
-def _sklearn_specificity_at_sensitivity_binary(preds, target, min_sensitivity, ignore_index=None):
+def _reference_sklearn_specificity_at_sensitivity_binary(preds, target, min_sensitivity, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return _specificity_at_sensitivity_x_multilabel(preds, target, min_sensitivity)
 
 
@@ -87,7 +88,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.85])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_specificity_at_sensitivity(self, inputs, ddp, min_sensitivity, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -99,7 +100,9 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
             target=target,
             metric_class=BinarySpecificityAtSensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_binary, min_sensitivity=min_sensitivity, ignore_index=ignore_index
+                _reference_sklearn_specificity_at_sensitivity_binary,
+                min_sensitivity=min_sensitivity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_sensitivity": min_sensitivity,
@@ -120,7 +123,9 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
             target=target,
             metric_functional=binary_specificity_at_sensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_binary, min_sensitivity=min_sensitivity, ignore_index=ignore_index
+                _reference_sklearn_specificity_at_sensitivity_binary,
+                min_sensitivity=min_sensitivity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_sensitivity": min_sensitivity,
@@ -144,8 +149,8 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
     def test_binary_specificity_at_sensitivity_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -183,12 +188,12 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
             assert torch.allclose(r1, r2)
 
 
-def _sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivity, ignore_index=None):
+def _reference_sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivity, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     specificity, thresholds = [], []
     for i in range(NUM_CLASSES):
@@ -208,7 +213,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_specificity_at_sensitivity(self, inputs, ddp, min_sensitivity, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -220,7 +225,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
             target=target,
             metric_class=MulticlassSpecificityAtSensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_multiclass,
+                _reference_sklearn_specificity_at_sensitivity_multiclass,
                 min_sensitivity=min_sensitivity,
                 ignore_index=ignore_index,
             ),
@@ -244,7 +249,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
             target=target,
             metric_functional=multiclass_specificity_at_sensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_multiclass,
+                _reference_sklearn_specificity_at_sensitivity_multiclass,
                 min_sensitivity=min_sensitivity,
                 ignore_index=ignore_index,
             ),
@@ -317,10 +322,12 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
 
-def _sklearn_specificity_at_sensitivity_multilabel(preds, target, min_sensitivity, ignore_index=None):
+def _reference_sklearn_specificity_at_sensitivity_multilabel(preds, target, min_sensitivity, ignore_index=None):
     specificity, thresholds = [], []
     for i in range(NUM_CLASSES):
-        res = _sklearn_specificity_at_sensitivity_binary(preds[:, i], target[:, i], min_sensitivity, ignore_index)
+        res = _reference_sklearn_specificity_at_sensitivity_binary(
+            preds[:, i], target[:, i], min_sensitivity, ignore_index
+        )
         specificity.append(res[0])
         thresholds.append(res[1])
     return specificity, thresholds
@@ -334,7 +341,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_specificity_at_sensitivity(self, inputs, ddp, min_sensitivity, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -346,7 +353,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
             target=target,
             metric_class=MultilabelSpecificityAtSensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_multilabel,
+                _reference_sklearn_specificity_at_sensitivity_multilabel,
                 min_sensitivity=min_sensitivity,
                 ignore_index=ignore_index,
             ),
@@ -370,7 +377,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
             target=target,
             metric_functional=multilabel_specificity_at_sensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_multilabel,
+                _reference_sklearn_specificity_at_sensitivity_multilabel,
                 min_sensitivity=min_sensitivity,
                 ignore_index=ignore_index,
             ),
@@ -452,11 +459,10 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
     ],
 )
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
-def test_valid_input_thresholds(metric, thresholds):
+def test_valid_input_thresholds(recwarn, metric, thresholds):
     """Test valid formats of the threshold argument."""
-    with pytest.warns(None) as record:
-        metric(min_sensitivity=0.5, thresholds=thresholds)
-    assert len(record) == 0
+    metric(min_sensitivity=0.5, thresholds=thresholds)
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 @pytest.mark.parametrize(

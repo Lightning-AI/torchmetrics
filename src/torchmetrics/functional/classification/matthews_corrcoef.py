@@ -64,12 +64,14 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     denom = cov_ypyp * cov_ytyt
 
     if denom == 0 and confmat.numel() == 4:
-        if tp == 0 or tn == 0:
-            a = tp + tn
-
-        if fp == 0 or fn == 0:
-            b = fp + fn
-
+        if fn == 0 and tn == 0:
+            a, b = tp, fp
+        elif fp == 0 and tn == 0:
+            a, b = tp, fn
+        elif tp == 0 and fn == 0:
+            a, b = tn, fp
+        elif tp == 0 and fp == 0:
+            a, b = tn, fn
         eps = torch.tensor(torch.finfo(torch.float32).eps, dtype=torch.float32, device=confmat.device)
         numerator = torch.sqrt(eps) * (a - b)
         denom = (tp + fp + eps) * (tp + fn + eps) * (tn + fp + eps) * (tn + fn + eps)
@@ -92,7 +94,7 @@ def binary_matthews_corrcoef(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
@@ -155,7 +157,7 @@ def multiclass_matthews_corrcoef(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -204,7 +206,7 @@ def multilabel_matthews_corrcoef(
     Accepts the following input tensors:
 
         - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-          [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+          [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
           we convert to int tensor with thresholding using the value in ``threshold``.
         - ``target`` (int tensor): ``(N, C, ...)``
 
@@ -213,7 +215,7 @@ def multilabel_matthews_corrcoef(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -259,7 +261,7 @@ def matthews_corrcoef(
     This metric measures the general correlation or quality of a classification.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_matthews_corrcoef`,
     :func:`~torchmetrics.functional.classification.multiclass_matthews_corrcoef` and
     :func:`~torchmetrics.functional.classification.multilabel_matthews_corrcoef` for

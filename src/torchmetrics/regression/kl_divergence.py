@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union, cast
 
 import torch
 from torch import Tensor
@@ -35,7 +36,7 @@ class KLDivergence(Metric):
 
     Where :math:`P` and :math:`Q` are probability distributions where :math:`P` usually represents a distribution
     over data and :math:`Q` is often a prior or approximation of :math:`P`. It should be noted that the KL divergence
-    is a non-symetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
+    is a non-symmetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -64,8 +65,8 @@ class KLDivergence(Metric):
         ValueError:
             If ``reduction`` is not one of ``'mean'``, ``'sum'``, ``'none'`` or ``None``.
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     Example:
         >>> from torch import tensor
@@ -77,11 +78,13 @@ class KLDivergence(Metric):
         tensor(0.0853)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
+    measures: Union[Tensor, List[Tensor]]
     total: Tensor
     # FIXME: Apply once minimal torch is 1.10. For torch<=1.9, jit does not support Union types
     # measures: Union[Tensor, List[Tensor]]
@@ -112,17 +115,17 @@ class KLDivergence(Metric):
         """Update metric states with predictions and targets."""
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
-            self.measures.append(measures)  # type: ignore[operator,union-attr]
+            cast(List[Tensor], self.measures).append(measures)
         else:
-            self.measures += measures.sum()
+            self.measures = cast(Tensor, self.measures) + measures.sum()
             self.total += total
 
     def compute(self) -> Tensor:
         """Compute metric."""
         measures: Tensor = (
-            dim_zero_cat(self.measures)  # type: ignore[arg-type]
+            dim_zero_cat(cast(List[Tensor], self.measures))
             if self.reduction in ["none", None]
-            else self.measures  # type: ignore[assignment]
+            else cast(Tensor, self.measures)
         )
         return _kld_compute(measures, self.total, self.reduction)
 

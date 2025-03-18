@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Tuple, Union
+import warnings
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -49,7 +50,7 @@ def _specificity_at_sensitivity(
     sensitivity: Tensor,
     thresholds: Tensor,
     min_sensitivity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     # get indices where sensitivity is greater than min_sensitivity
     indices = sensitivity >= min_sensitivity
 
@@ -72,7 +73,7 @@ def _specificity_at_sensitivity(
 
 def _binary_specificity_at_sensitivity_arg_validation(
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -83,11 +84,11 @@ def _binary_specificity_at_sensitivity_arg_validation(
 
 
 def _binary_specificity_at_sensitivity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
     min_sensitivity: float,
     pos_label: int = 1,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _binary_roc_compute(state, thresholds, pos_label)
     specificity = _convert_fpr_to_specificity(fpr)
     return _specificity_at_sensitivity(specificity, sensitivity, thresholds, min_sensitivity)
@@ -97,11 +98,11 @@ def binary_specificity_at_sensitivity(
     preds: Tensor,
     target: Tensor,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
-    r"""Compute the higest possible specificity value given the minimum sensitivity levels provided for binary tasks.
+) -> tuple[Tensor, Tensor]:
+    r"""Compute the highest possible specificity value given the minimum sensitivity levels provided for binary tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
     the find the specificity for a given sensitivity level.
@@ -169,7 +170,7 @@ def binary_specificity_at_sensitivity(
 def _multiclass_specificity_at_sensitivity_arg_validation(
     num_classes: int,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -180,11 +181,11 @@ def _multiclass_specificity_at_sensitivity_arg_validation(
 
 
 def _multiclass_specificity_at_sensitivity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_classes: int,
     thresholds: Optional[Tensor],
     min_sensitivity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multiclass_roc_compute(state, num_classes, thresholds)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -207,11 +208,11 @@ def multiclass_specificity_at_sensitivity(
     target: Tensor,
     num_classes: int,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
-    r"""Compute the higest possible specificity value given the minimum sensitivity level provided for multiclass tasks.
+) -> tuple[Tensor, Tensor]:
+    r"""Compute the highest possible specificity value given minimum sensitivity level provided for multiclass tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -235,7 +236,7 @@ def multiclass_specificity_at_sensitivity(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
@@ -285,7 +286,7 @@ def multiclass_specificity_at_sensitivity(
 def _multilabel_specificity_at_sensitivity_arg_validation(
     num_labels: int,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -296,12 +297,12 @@ def _multilabel_specificity_at_sensitivity_arg_validation(
 
 
 def _multilabel_specificity_at_sensitivity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_labels: int,
     thresholds: Optional[Tensor],
     ignore_index: Optional[int],
     min_sensitivity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -324,11 +325,11 @@ def multilabel_specificity_at_sensitivity(
     target: Tensor,
     num_labels: int,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
-    r"""Compute the higest possible specificity value given the minimum sensitivity level provided for multilabel tasks.
+) -> tuple[Tensor, Tensor]:
+    r"""Compute the highest possible specificity value given minimum sensitivity level provided for multilabel tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
     the find the specificity for a given sensitivity level.
@@ -352,7 +353,7 @@ def multilabel_specificity_at_sensitivity(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
@@ -408,22 +409,58 @@ def specicity_at_sensitivity(
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the higest possible specicity value given the minimum sensitivity thresholds provided.
+) -> Union[Tensor, tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
+
+    .. warning::
+        This function was deprecated in v1.3.0 of Torchmetrics and will be removed in v2.0.0.
+        Use `specificity_at_sensitivity` instead.
+
+    """
+    warnings.warn(
+        "This method has will be removed in 2.0.0. Use `specificity_at_sensitivity` instead.",
+        DeprecationWarning,
+        stacklevel=1,
+    )
+    return specificity_at_sensitivity(
+        preds=preds,
+        target=target,
+        task=task,
+        min_sensitivity=min_sensitivity,
+        thresholds=thresholds,
+        num_classes=num_classes,
+        num_labels=num_labels,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
+    )
+
+
+def specificity_at_sensitivity(
+    preds: Tensor,
+    target: Tensor,
+    task: Literal["binary", "multiclass", "multilabel"],
+    min_sensitivity: float,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
+    num_classes: Optional[int] = None,
+    num_labels: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Union[Tensor, tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
     the find the specificity for a given sensitivity level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_specificity_at_sensitivity`,
-    :func:`~torchmetrics.functional.classification.multiclass_specicity_at_sensitivity` and
-    :func:`~torchmetrics.functional.classification.multilabel_specifity_at_sensitvity` for the specific details of
+    :func:`~torchmetrics.functional.classification.multiclass_specificity_at_sensitivity` and
+    :func:`~torchmetrics.functional.classification.multilabel_specificity_at_sensitivity` for the specific details of
     each argument influence and examples.
 
     """

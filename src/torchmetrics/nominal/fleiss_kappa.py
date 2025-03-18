@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -54,23 +55,21 @@ class FleissKappa(Metric):
 
     Example:
         >>> # Ratings are provided as counts
-        >>> import torch
+        >>> from torch import randint
         >>> from torchmetrics.nominal import FleissKappa
-        >>> _ = torch.manual_seed(42)
-        >>> ratings = torch.randint(0, 10, size=(100, 5)).long()  # 100 samples, 5 categories, 10 raters
+        >>> ratings = randint(0, 10, size=(100, 5)).long()  # 100 samples, 5 categories, 10 raters
         >>> metric = FleissKappa(mode='counts')
         >>> metric(ratings)
         tensor(0.0089)
 
     Example:
         >>> # Ratings are provided as probabilities
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.nominal import FleissKappa
-        >>> _ = torch.manual_seed(42)
-        >>> ratings = torch.randn(100, 5, 10).softmax(dim=1)  # 100 samples, 5 categories, 10 raters
+        >>> ratings = randn(100, 5, 10).softmax(dim=1)  # 100 samples, 5 categories, 10 raters
         >>> metric = FleissKappa(mode='probs')
         >>> metric(ratings)
-        tensor(-0.0105)
+        tensor(-0.0075)
 
     """
 

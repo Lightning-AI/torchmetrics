@@ -33,18 +33,18 @@ from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "quadratic", "none"]] = None) -> Tensor:
     """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the cohen kappa score."""
     confmat = confmat.float() if not confmat.is_floating_point() else confmat
-    n_classes = confmat.shape[0]
+    num_classes = confmat.shape[0]
     sum0 = confmat.sum(dim=0, keepdim=True)
     sum1 = confmat.sum(dim=1, keepdim=True)
     expected = sum1 @ sum0 / sum0.sum()  # outer product
 
     if weights is None or weights == "none":
         w_mat = torch.ones_like(confmat).flatten()
-        w_mat[:: n_classes + 1] = 0
-        w_mat = w_mat.reshape(n_classes, n_classes)
+        w_mat[:: num_classes + 1] = 0
+        w_mat = w_mat.reshape(num_classes, num_classes)
     elif weights in ("linear", "quadratic"):
         w_mat = torch.zeros_like(confmat)
-        w_mat += torch.arange(n_classes, dtype=w_mat.dtype, device=w_mat.device)
+        w_mat += torch.arange(num_classes, dtype=w_mat.dtype, device=w_mat.device)
         w_mat = torch.abs(w_mat - w_mat.T) if weights == "linear" else torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
@@ -93,7 +93,7 @@ def binary_cohen_kappa(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
@@ -186,7 +186,7 @@ def multiclass_cohen_kappa(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         weights: Weighting type to calculate the score. Choose from:
 
             - ``None`` or ``'none'``: no weighting

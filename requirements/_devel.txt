@@ -1,0 +1,24 @@
+# use mandatory dependencies
+-r base.txt
+
+# add the testing dependencies
+-r _tests.txt
+
+# add extra requirements
+-r audio.txt
+-r detection.txt
+-r image.txt
+-r text.txt
+-r multimodal.txt
+-r visual.txt
+
+# add extra testing
+-r audio_test.txt
+-r classification_test.txt
+-r clustering_test.txt
+-r detection_test.txt
+-r image_test.txt
+-r nominal_test.txt
+-r regression_test.txt
+-r segmentation_test.txt
+-r text_test.txt

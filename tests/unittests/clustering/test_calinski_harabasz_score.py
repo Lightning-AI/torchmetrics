@@ -13,12 +13,12 @@
 # limitations under the License.
 import pytest
 from sklearn.metrics import calinski_harabasz_score as sklearn_calinski_harabasz_score
+
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
 from torchmetrics.functional.clustering.calinski_harabasz_score import calinski_harabasz_score
-
-from unittests.clustering.inputs import _single_target_intrinsic1, _single_target_intrinsic2
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.clustering._inputs import _single_target_intrinsic1, _single_target_intrinsic2
 
 seed_all(42)
 
@@ -35,7 +35,7 @@ class TestCalinskiHarabaszScore(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_calinski_harabasz_score(self, data, labels, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

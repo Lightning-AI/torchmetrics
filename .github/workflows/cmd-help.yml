@@ -1,0 +1,24 @@
+name: /help command
+on:
+  repository_dispatch:
+    types: [help-command]
+
+jobs:
+  help:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update with comment
+        uses: peter-evans/create-or-update-comment@v4.0.0
+        with:
+          token: ${{ secrets.PAT_GHOST }}
+          reaction-token: ${{ secrets.PAT_GHOST }}
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          body: |
+            > Slash command help (added by @pl-ghost bot)
+            >
+            > Command | Description
+            > --- | ---
+            > /rebase | Rebase the pull request on top of the current master.
+            > /help | Print out this help message
+          reaction-type: hooray

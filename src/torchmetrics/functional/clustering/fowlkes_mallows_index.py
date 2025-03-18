@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
 
 import torch
 from torch import Tensor, tensor
@@ -19,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.clustering.utils import calculate_contingency_matrix, check_cluster_labels
 
 
-def _fowlkes_mallows_index_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _fowlkes_mallows_index_update(preds: Tensor, target: Tensor) -> tuple[Tensor, int]:
     """Return contingency matrix required to compute the Fowlkes-Mallows index.
 
     Args:
@@ -63,7 +62,7 @@ def fowlkes_mallows_index(preds: Tensor, target: Tensor) -> Tensor:
         target: ground truth cluster labels
 
     Returns:
-        fowlkes_mallows: Fowlkes-Mallows index
+        Scalar tensor with Fowlkes-Mallows index
 
     Example:
         >>> import torch

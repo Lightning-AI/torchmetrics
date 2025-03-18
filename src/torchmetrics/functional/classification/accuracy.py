@@ -42,6 +42,7 @@ def _accuracy_reduce(
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
     multilabel: bool = False,
+    top_k: int = 1,
 ) -> Tensor:
     """Reduce classification statistics into accuracy score.
 
@@ -66,6 +67,7 @@ def _accuracy_reduce(
             - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
 
         multilabel: If input is multilabel or not
+        top_k: value for top-k accuracy, else 1
 
     Returns:
         Accuracy score
@@ -83,7 +85,7 @@ def _accuracy_reduce(
         return _safe_divide(tp, tp + fn)
 
     score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
-    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn, top_k)
 
 
 def binary_accuracy(
@@ -105,7 +107,7 @@ def binary_accuracy(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
@@ -164,7 +166,7 @@ def binary_accuracy(
 def multiclass_accuracy(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    num_classes: Optional[int] = None,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     top_k: int = 1,
     multidim_average: Literal["global", "samplewise"] = "global",
@@ -189,7 +191,7 @@ def multiclass_accuracy(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -264,9 +266,9 @@ def multiclass_accuracy(
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
-        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+        preds, target, num_classes or 1, top_k, average, multidim_average, ignore_index
     )
-    return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, top_k=top_k)
 
 
 def multilabel_accuracy(
@@ -290,14 +292,14 @@ def multilabel_accuracy(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -392,7 +394,7 @@ def accuracy(
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_accuracy`,
     :func:`~torchmetrics.functional.classification.multiclass_accuracy` and
     :func:`~torchmetrics.functional.classification.multilabel_accuracy` for the specific details of

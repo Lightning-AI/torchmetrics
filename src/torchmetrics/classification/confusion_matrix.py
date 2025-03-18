@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import torch
 from torch import Tensor
@@ -38,7 +38,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_confusion_matrix
+from torchmetrics.utilities.plot import _AX_TYPE, _CMAP_TYPE, _PLOT_OUT_TYPE, plot_confusion_matrix
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = [
@@ -66,7 +66,7 @@ class BinaryConfusionMatrix(Metric):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
-      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -108,6 +108,7 @@ class BinaryConfusionMatrix(Metric):
                 [1, 1]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -149,7 +150,8 @@ class BinaryConfusionMatrix(Metric):
         val: Optional[Tensor] = None,
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
-        labels: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
+        cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -159,6 +161,8 @@ class BinaryConfusionMatrix(Metric):
             ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
+            cmap: matplotlib colormap to use for the confusion matrix
+                https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object
@@ -180,7 +184,7 @@ class BinaryConfusionMatrix(Metric):
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels, cmap=cmap)
         return fig, ax
 
 
@@ -195,14 +199,14 @@ class MulticlassConfusionMatrix(Metric):
 
     - :math:`C_{i, i}` represents the number of true positives for class :math:`i`
     - :math:`\sum_{j=1, j\neq i}^N C_{i, j}` represents the number of false negatives for class :math:`i`
-    - :math:`\sum_{i=1, i\neq j}^N C_{i, j}` represents the number of false positives for class :math:`i`
+    - :math:`\sum_{j=1, j\neq i}^N C_{j, i}` represents the number of false positives for class :math:`i`
     - the sum of the remaining cells in the matrix represents the number of true negatives for class :math:`i`
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
-      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -210,7 +214,7 @@ class MulticlassConfusionMatrix(Metric):
     - ``confusion_matrix``: [num_classes, num_classes] matrix
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         normalize: Normalization mode for confusion matrix. Choose from:
@@ -248,6 +252,7 @@ class MulticlassConfusionMatrix(Metric):
                 [0, 0, 1]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -289,7 +294,8 @@ class MulticlassConfusionMatrix(Metric):
         val: Optional[Tensor] = None,
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
-        labels: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
+        cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -299,6 +305,8 @@ class MulticlassConfusionMatrix(Metric):
             ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
+            cmap: matplotlib colormap to use for the confusion matrix
+                https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object
@@ -320,7 +328,7 @@ class MulticlassConfusionMatrix(Metric):
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels, cmap=cmap)
         return fig, ax
 
 
@@ -342,7 +350,7 @@ class MultilabelConfusionMatrix(Metric):
     As input to 'update' the metric accepts the following input:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
@@ -351,7 +359,7 @@ class MultilabelConfusionMatrix(Metric):
     - ``confusion matrix``: [num_labels,2,2] matrix
 
     Args:
-        num_classes: Integer specifing the number of labels
+        num_classes: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -387,6 +395,7 @@ class MultilabelConfusionMatrix(Metric):
                 [[0, 1], [0, 1]]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -432,7 +441,8 @@ class MultilabelConfusionMatrix(Metric):
         val: Optional[Tensor] = None,
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
-        labels: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
+        cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -442,6 +452,8 @@ class MultilabelConfusionMatrix(Metric):
             ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
+            cmap: matplotlib colormap to use for the confusion matrix
+                https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object
@@ -463,7 +475,7 @@ class MultilabelConfusionMatrix(Metric):
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels, cmap=cmap)
         return fig, ax
 
 
@@ -471,7 +483,7 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
     r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryConfusionMatrix`,
     :class:`~torchmetrics.classification.MulticlassConfusionMatrix` and
     :class:`~torchmetrics.classification.MultilabelConfusionMatrix` for the specific details of each argument influence
@@ -505,7 +517,7 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["ConfusionMatrix"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

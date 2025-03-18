@@ -17,6 +17,7 @@ import pytest
 from sklearn.metrics import completeness_score as sklearn_completeness_score
 from sklearn.metrics import homogeneity_score as sklearn_homogeneity_score
 from sklearn.metrics import v_measure_score as sklearn_v_measure_score
+
 from torchmetrics.clustering.homogeneity_completeness_v_measure import (
     CompletenessScore,
     HomogeneityScore,
@@ -27,15 +28,14 @@ from torchmetrics.functional.clustering.homogeneity_completeness_v_measure impor
     homogeneity_score,
     v_measure_score,
 )
-
-from unittests.clustering.inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 
 seed_all(42)
 
 
-def _sk_reference(preds, target, fn):
+def _reference_sklearn_wrapper(preds, target, fn):
     """Compute reference values using sklearn."""
     return fn(target, preds)
 
@@ -65,7 +65,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_homogeneity_completeness_vmeasure(
         self, modular_metric, functional_metric, reference_metric, preds, target, ddp
     ):
@@ -75,7 +75,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
             preds=preds,
             target=target,
             metric_class=modular_metric,
-            reference_metric=partial(_sk_reference, fn=reference_metric),
+            reference_metric=partial(_reference_sklearn_wrapper, fn=reference_metric),
         )
 
     def test_homogeneity_completeness_vmeasure_functional(
@@ -86,7 +86,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional_metric,
-            reference_metric=partial(_sk_reference, fn=reference_metric),
+            reference_metric=partial(_reference_sklearn_wrapper, fn=reference_metric),
         )
 
 

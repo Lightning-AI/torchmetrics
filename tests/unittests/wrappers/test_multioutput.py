@@ -1,4 +1,16 @@
-from collections import namedtuple
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from functools import partial
 from typing import Any
 
@@ -7,14 +19,14 @@ import torch
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score as sk_r2score
 from torch import Tensor, tensor
+
 from torchmetrics import Metric
 from torchmetrics.classification import ConfusionMatrix, MulticlassAccuracy
 from torchmetrics.regression import R2Score
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
-
-from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -54,13 +66,12 @@ class _MultioutputMetric(Metric):
 
 num_targets = 2
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_multi_target_regression_inputs = Input(
+_multi_target_regression_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
-_multi_target_classification_inputs = Input(
+_multi_target_classification_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, num_targets),
     target=torch.randint(NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, num_targets)),
 )
@@ -103,7 +114,7 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
 class TestMultioutputWrapper(MetricTester):
     """Test the MultioutputWrapper class with regression and classification inner metrics."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multioutput_wrapper(self, base_metric_class, compare_metric, preds, target, num_outputs, ddp):
         """Test correctness of implementation.
 

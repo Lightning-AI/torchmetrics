@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -22,7 +22,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Cosine Similarity. Checks for same shape of input tensors.
 
     Args:
@@ -31,6 +31,11 @@ def _cosine_similarity_update(
 
     """
     _check_same_shape(preds, target)
+    if preds.ndim != 2:
+        raise ValueError(
+            "Expected input to cosine similarity to be 2D tensors of shape `[N,D]` where `N` is the number of samples"
+            f" and `D` is the number of dimensions, but got tensor of shape {preds.shape}"
+        )
     preds = preds.float()
     target = target.float()
 

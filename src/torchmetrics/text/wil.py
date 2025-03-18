@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.text.wil import _wil_compute, _wil_update
+from torchmetrics.functional.text.wil import _word_info_lost_compute, _word_info_lost_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -61,6 +62,7 @@ class WordInfoLost(Metric):
         tensor(0.6528)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -80,16 +82,16 @@ class WordInfoLost(Metric):
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
+    def update(self, preds: Union[str, list[str]], target: Union[str, list[str]]) -> None:
         """Update state with predictions and targets."""
-        errors, target_total, preds_total = _wil_update(preds, target)
+        errors, target_total, preds_total = _word_info_lost_update(preds, target)
         self.errors += errors
         self.target_total += target_total
         self.preds_total += preds_total
 
     def compute(self) -> Tensor:
         """Calculate the Word Information Lost."""
-        return _wil_compute(self.errors, self.target_total, self.preds_total)
+        return _word_info_lost_compute(self.errors, self.target_total, self.preds_total)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

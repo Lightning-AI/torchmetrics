@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -38,7 +39,7 @@ class InceptionScore(Metric):
         IS = exp(\mathbb{E}_x KL(p(y | x ) || p(y)))
 
     where :math:`KL(p(y | x) || p(y))` is the KL divergence between the conditional distribution :math:`p(y|x)`
-    and the margianl distribution :math:`p(y)`. Both the conditional and marginal distribution is calculated
+    and the marginal distribution :math:`p(y)`. Both the conditional and marginal distribution is calculated
     from features extracted from the images. The score is calculated on random splits of the images such that
     both a mean and standard deviation of the score are returned. The metric was originally proposed in
     `inception ref1`_.
@@ -49,7 +50,8 @@ class InceptionScore(Metric):
     ``normalize`` is set to ``False`` images are expected to have dtype uint8 and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data.
 
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
@@ -59,7 +61,9 @@ class InceptionScore(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``fid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
+    - ``inception_mean`` (:class:`~torch.Tensor`): float scalar tensor with mean inception score over subsets
+    - ``inception_std`` (:class:`~torch.Tensor`): float scalar tensor with standard deviation of inception score
+      over subsets
 
     Args:
         feature:
@@ -82,24 +86,25 @@ class InceptionScore(Metric):
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.inception import InceptionScore
         >>> inception = InceptionScore()
         >>> # generate some images
         >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> inception.update(imgs)
         >>> inception.compute()
-        (tensor(1.0544), tensor(0.0117))
+        (tensor(1.0549), tensor(0.0121))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    features: List
+    features: list
     inception: Module
+    feature_network: str = "inception"
 
     def __init__(
         self,
@@ -147,7 +152,7 @@ class InceptionScore(Metric):
         features = self.inception(imgs)
         self.features.append(features)
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor]:
         """Compute metric."""
         features = dim_zero_cat(self.features)
         # random permute the features

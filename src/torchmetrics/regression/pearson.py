@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -26,16 +27,21 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 def _final_aggregation(
-    means_x: Tensor,
-    means_y: Tensor,
-    vars_x: Tensor,
-    vars_y: Tensor,
-    corrs_xy: Tensor,
-    nbs: Tensor,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+    means_x: torch.Tensor,
+    means_y: torch.Tensor,
+    vars_x: torch.Tensor,
+    vars_y: torch.Tensor,
+    corrs_xy: torch.Tensor,
+    nbs: torch.Tensor,
+    eps: float = 1e-10,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """Aggregate the statistics from multiple devices.
 
-    Formula taken from here: `Aggregate the statistics from multiple devices`_
+    Formula taken from here: `Parallel algorithm for calculating variance
+    <https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm>`_
+
+    We use `eps` to avoid division by zero when `n1` and `n2` are both zero. Generally, the value of `eps` should not
+    matter, as if `n1` and `n2` are both zero, all the states will also be zero.
 
     """
     if len(means_x) == 1:
@@ -43,28 +49,22 @@ def _final_aggregation(
     mx1, my1, vx1, vy1, cxy1, n1 = means_x[0], means_y[0], vars_x[0], vars_y[0], corrs_xy[0], nbs[0]
     for i in range(1, len(means_x)):
         mx2, my2, vx2, vy2, cxy2, n2 = means_x[i], means_y[i], vars_x[i], vars_y[i], corrs_xy[i], nbs[i]
-        nb = n1 + n2
+        # count
+        nb = torch.where(torch.logical_or(n1, n2), n1 + n2, eps)
+        # mean_x
         mean_x = (n1 * mx1 + n2 * mx2) / nb
+        # mean_y
         mean_y = (n1 * my1 + n2 * my2) / nb
-
+        # intermediates for running variances
+        n12_b = n1 * n2 / nb
+        delta_x = mx2 - mx1
+        delta_y = my2 - my1
         # var_x
-        element_x1 = (n1 + 1) * mean_x - n1 * mx1
-        vx1 += (element_x1 - mx1) * (element_x1 - mean_x) - (element_x1 - mean_x) ** 2
-        element_x2 = (n2 + 1) * mean_x - n2 * mx2
-        vx2 += (element_x2 - mx2) * (element_x2 - mean_x) - (element_x2 - mean_x) ** 2
-        var_x = vx1 + vx2
-
+        var_x = vx1 + vx2 + n12_b * delta_x**2
         # var_y
-        element_y1 = (n1 + 1) * mean_y - n1 * my1
-        vy1 += (element_y1 - my1) * (element_y1 - mean_y) - (element_y1 - mean_y) ** 2
-        element_y2 = (n2 + 1) * mean_y - n2 * my2
-        vy2 += (element_y2 - my2) * (element_y2 - mean_y) - (element_y2 - mean_y) ** 2
-        var_y = vy1 + vy2
-
-        # corr
-        cxy1 += (element_x1 - mx1) * (element_y1 - mean_y) - (element_x1 - mean_x) * (element_y1 - mean_y)
-        cxy2 += (element_x2 - mx2) * (element_y2 - mean_y) - (element_x2 - mean_x) * (element_y2 - mean_y)
-        corr_xy = cxy1 + cxy2
+        var_y = vy1 + vy2 + n12_b * delta_y**2
+        # corr_xy
+        corr_xy = cxy1 + cxy2 + n12_b * delta_x * delta_y
 
         mx1, my1, vx1, vy1, cxy1, n1 = mean_x, mean_y, var_x, var_y, corr_xy, nb
     return mean_x, mean_y, var_x, var_y, corr_xy, nb
@@ -110,6 +110,7 @@ class PearsonCorrCoef(Metric):
         tensor([1., 1.])
 
     """
+
     is_differentiable: bool = True
     higher_is_better: Optional[bool] = None  # both -1 and 1 are optimal
     full_state_update: bool = True

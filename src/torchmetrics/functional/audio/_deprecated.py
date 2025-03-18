@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -15,8 +15,8 @@ def _permutation_invariant_training(
     metric_func: Callable,
     mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
     eval_func: Literal["max", "min"] = "max",
-    **kwargs: Any
-) -> Tuple[Tensor, Tensor]:
+    **kwargs: Any,
+) -> tuple[Tensor, Tensor]:
     """Wrapper for deprecated import.
 
     >>> from torch import tensor
@@ -69,21 +69,20 @@ def _signal_distortion_ratio(
 ) -> Tensor:
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> g = torch.manual_seed(1)
-    >>> preds = torch.randn(8000)
-    >>> target = torch.randn(8000)
+    >>> from torch import randn
+    >>> preds = randn(8000)
+    >>> target = randn(8000)
     >>> _signal_distortion_ratio(preds, target)
-    tensor(-12.0589)
+    tensor(-11.9930)
     >>> # use with permutation_invariant_training
-    >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
-    >>> target = torch.randn(4, 2, 8000)
+    >>> preds = randn(4, 2, 8000)  # [batch, spk, time]
+    >>> target = randn(4, 2, 8000)
     >>> best_metric, best_perm = _permutation_invariant_training(preds, target, _signal_distortion_ratio)
     >>> best_metric
-    tensor([-11.6375, -11.4358, -11.7148, -11.6325])
+    tensor([-11.7748, -11.7948, -11.7160, -11.6254])
     >>> best_perm
     tensor([[1, 0],
-            [0, 1],
+            [1, 0],
             [1, 0],
             [0, 1]])
 

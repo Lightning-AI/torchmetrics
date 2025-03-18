@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -47,15 +48,15 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
 
     - ``preds`` (:class:`~torch.Tensor`): A int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per element.
-      Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bck`` (:class:`~torch.Tensor`): A tensor containing cohen kappa score
+    - ``bc_kappa`` (:class:`~torch.Tensor`): A tensor containing cohen kappa score
 
     Args:
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -89,6 +90,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         tensor(0.5000)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -174,7 +176,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
       convert probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -182,7 +184,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
     - ``mcck`` (:class:`~torch.Tensor`): A tensor containing cohen kappa score
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         weights: Weighting type to calculate the score. Choose from:
@@ -216,6 +218,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         tensor(0.6364)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -312,7 +315,7 @@ class CohenKappa(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: type["CohenKappa"],
         task: Literal["binary", "multiclass"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

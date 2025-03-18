@@ -1,3 +1,16 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from copy import deepcopy
 from functools import partial
 from typing import Any
@@ -5,13 +18,13 @@ from typing import Any
 import pytest
 import torch
 from torch import Tensor
+
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, MulticlassAccuracy
 from torchmetrics.regression import MeanSquaredError
 from torchmetrics.wrappers import MinMaxMetric
-
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -108,5 +121,5 @@ def test_no_scalar_compute() -> None:
     """Tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
     min_max_nsm = MinMaxMetric(BinaryConfusionMatrix())
 
-    with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a scalar .*"):
+    with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a float.*"):
         min_max_nsm.compute()

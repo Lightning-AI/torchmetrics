@@ -11,19 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
 from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
+from torchmetrics.functional.image.utils import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _ssim_check_inputs(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Structural Similarity Index Measure.
 
     Args:
@@ -48,13 +49,13 @@ def _ssim_update(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Compute Structual Similarity Index Measure.
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
+    """Compute Structural Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -68,7 +69,7 @@ def _ssim_update(
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
         return_full_image: If true, the full ``ssim`` image is returned as a second argument.
-            Mutually exlusive with ``return_contrast_sensitivity``
+            Mutually exclusive with ``return_contrast_sensitivity``
         return_contrast_sensitivity: If true, the contrast term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
@@ -110,25 +111,29 @@ def _ssim_update(
         raise ValueError(f"Expected `sigma` to have positive number. Got {sigma}.")
 
     if data_range is None:
-        data_range = max(preds.max() - preds.min(), target.max() - target.min())
+        data_range = max(preds.max() - preds.min(), target.max() - target.min())  # type: ignore[call-overload]
     elif isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
         data_range = data_range[1] - data_range[0]
 
-    c1 = pow(k1 * data_range, 2)
-    c2 = pow(k2 * data_range, 2)
+    c1 = pow(k1 * data_range, 2)  # type: ignore[operator]
+    c2 = pow(k2 * data_range, 2)  # type: ignore[operator]
     device = preds.device
 
     channel = preds.size(1)
     dtype = preds.dtype
     gauss_kernel_size = [int(3.5 * s + 0.5) * 2 + 1 for s in sigma]
 
-    pad_h = (gauss_kernel_size[0] - 1) // 2
-    pad_w = (gauss_kernel_size[1] - 1) // 2
+    if gaussian_kernel:
+        pad_h = (gauss_kernel_size[0] - 1) // 2
+        pad_w = (gauss_kernel_size[1] - 1) // 2
+    else:
+        pad_h = (kernel_size[0] - 1) // 2
+        pad_w = (kernel_size[1] - 1) // 2
 
     if is_3d:
-        pad_d = (gauss_kernel_size[2] - 1) // 2
+        pad_d = (kernel_size[2] - 1) // 2
         preds = _reflection_pad_3d(preds, pad_d, pad_w, pad_h)
         target = _reflection_pad_3d(target, pad_d, pad_w, pad_h)
         if gaussian_kernel:
@@ -154,8 +159,9 @@ def _ssim_update(
     mu_target_sq = output_list[1].pow(2)
     mu_pred_target = output_list[0] * output_list[1]
 
-    sigma_pred_sq = output_list[2] - mu_pred_sq
-    sigma_target_sq = output_list[3] - mu_target_sq
+    # Calculate the variance of the predicted and target images, should be non-negative
+    sigma_pred_sq = torch.clamp(output_list[2] - mu_pred_sq, min=0.0)
+    sigma_target_sq = torch.clamp(output_list[3] - mu_target_sq, min=0.0)
     sigma_pred_target = output_list[4] - mu_pred_target
 
     upper = 2 * sigma_pred_target.to(dtype) + c2
@@ -163,25 +169,21 @@ def _ssim_update(
 
     ssim_idx_full_image = ((2 * mu_pred_target + c1) * upper) / ((mu_pred_sq + mu_target_sq + c1) * lower)
 
-    if is_3d:
-        ssim_idx = ssim_idx_full_image[..., pad_h:-pad_h, pad_w:-pad_w, pad_d:-pad_d]
-    else:
-        ssim_idx = ssim_idx_full_image[..., pad_h:-pad_h, pad_w:-pad_w]
-
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
         if is_3d:
             contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w, pad_d:-pad_d]
         else:
             contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
-        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
+
+        return ssim_idx_full_image.reshape(ssim_idx_full_image.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
             contrast_sensitivity.shape[0], -1
         ).mean(-1)
 
     if return_full_image:
-        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), ssim_idx_full_image
+        return ssim_idx_full_image.reshape(ssim_idx_full_image.shape[0], -1).mean(-1), ssim_idx_full_image
 
-    return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1)
+    return ssim_idx_full_image.reshape(ssim_idx_full_image.shape[0], -1).mean(-1)
 
 
 def _ssim_compute(
@@ -212,13 +214,13 @@ def structural_similarity_index_measure(
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Compute Structual Similarity Index Measure.
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
+    """Compute Structural Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -296,11 +298,11 @@ def _get_normalized_sim_and_cs(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     normalize: Optional[Literal["relu", "simple"]] = None,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     sim, contrast_sensitivity = _ssim_update(
         preds,
         target,
@@ -324,10 +326,10 @@ def _multiscale_ssim_update(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-    betas: Union[Tuple[float, float, float, float, float], Tuple[float, ...]] = (
+    betas: Union[tuple[float, float, float, float, float], tuple[float, ...]] = (
         0.0448,
         0.2856,
         0.3001,
@@ -336,7 +338,7 @@ def _multiscale_ssim_update(
     ),
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tensor:
-    """Compute Multi-Scale Structual Similarity Index Measure.
+    """Compute Multi-Scale Structural Similarity Index Measure.
 
     Adapted from: https://github.com/jorge-pessoa/pytorch-msssim/blob/master/pytorch_msssim/__init__.py.
 
@@ -420,7 +422,7 @@ def _multiscale_ssim_update(
 
     betas = torch.tensor(betas, device=mcs_stack.device).view(-1, 1)
     mcs_weighted = mcs_stack**betas
-    return torch.prod(mcs_weighted, axis=0)
+    return torch.prod(mcs_weighted, axis=0)  # type: ignore[call-overload]
 
 
 def _multiscale_ssim_compute(
@@ -451,15 +453,15 @@ def multiscale_structural_similarity_index_measure(
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-    betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+    betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
-    """Compute `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure.
 
-    This metric is a generalization of Structual Similarity Index Measure by incorporating image details at different
+    This metric is a generalization of Structural Similarity Index Measure by incorporating image details at different
     resolution scores.
 
     Args:
@@ -479,7 +481,7 @@ def multiscale_structural_similarity_index_measure(
             the range is calculated as the difference and input is clamped between the values.
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
-        betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
+        betas: Exponent parameters for individual similarities and contrastive sensitivities returned by different image
             resolutions.
         normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
             training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
@@ -501,12 +503,12 @@ def multiscale_structural_similarity_index_measure(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import multiscale_structural_similarity_index_measure
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([3, 3, 256, 256], generator=gen)
+        >>> preds = rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)
-        tensor(0.9627)
+        tensor(0.9628)
 
     References:
         [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.

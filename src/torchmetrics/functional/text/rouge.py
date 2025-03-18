@@ -13,7 +13,8 @@
 # limitations under the License.
 import re
 from collections import Counter
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -23,7 +24,7 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE
 
 __doctest_requires__ = {("rouge_score", "_rouge_score_update"): ["nltk"]}
 
-ALLOWED_ROUGE_KEYS: Dict[str, Union[int, str]] = {
+ALLOWED_ROUGE_KEYS: dict[str, Union[int, str]] = {
     "rouge1": 1,
     "rouge2": 2,
     "rouge3": 3,
@@ -48,10 +49,10 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     import nltk
 
     try:
-        nltk.data.find("tokenizers/punkt")
+        nltk.data.find("tokenizers/punkt_tab")
     except LookupError:
         try:
-            nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
+            nltk.download("punkt_tab", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
         except ValueError as err:
             raise OSError(
                 "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
@@ -71,7 +72,7 @@ def _split_sentence(x: str) -> Sequence[str]:
     return nltk.sent_tokenize(x)
 
 
-def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[str, Tensor]:
+def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> dict[str, Tensor]:
     """Compute overall metrics.
 
     This function computes precision, recall and F1 score based on hits/lcs, the length of lists of tokenizer
@@ -128,7 +129,7 @@ def _backtracked_lcs(
     """
     i = len(pred_tokens)
     j = len(target_tokens)
-    backtracked_lcs: List[int] = []
+    backtracked_lcs: list[int] = []
     while i > 0 and j > 0:
         if pred_tokens[i - 1] == target_tokens[j - 1]:
             backtracked_lcs.insert(0, j - 1)
@@ -188,7 +189,7 @@ def _normalize_and_tokenize_text(
     # If normalizer is none, replace any non-alpha-numeric characters with spaces.
     text = normalizer(text) if callable(normalizer) else re.sub(r"[^a-z0-9]+", " ", text.lower())
 
-    # If tokenizer is none, spliting by spaces
+    # If tokenizer is none, splitting by spaces
     tokens = tokenizer(text) if callable(tokenizer) else re.split(r"\s+", text)
 
     if stemmer:
@@ -199,7 +200,7 @@ def _normalize_and_tokenize_text(
     return [x for x in tokens if (isinstance(x, str) and len(x) > 0)]
 
 
-def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> Dict[str, Tensor]:
+def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> dict[str, Tensor]:
     """Compute precision, recall and F1 score for the Rouge-N metric.
 
     Args:
@@ -225,7 +226,7 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
     return _compute_metrics(hits, max(pred_len, 1), max(target_len, 1))
 
 
-def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tensor]:
+def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> dict[str, Tensor]:
     """Compute precision, recall and F1 score for the Rouge-L metric.
 
     Args:
@@ -241,7 +242,7 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
     return _compute_metrics(lcs, pred_len, target_len)
 
 
-def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[str]]) -> Dict[str, Tensor]:
+def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[str]]) -> dict[str, Tensor]:
     r"""Compute precision, recall and F1 score for the Rouge-LSum metric.
 
     More information can be found in Section 3.2 of the referenced paper [1]. This implementation follow the official
@@ -287,19 +288,19 @@ def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[s
 def _rouge_score_update(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],
-    rouge_keys_values: List[Union[int, str]],
+    rouge_keys_values: list[Union[int, str]],
     accumulate: str,
     stemmer: Optional[Any] = None,
     normalizer: Optional[Callable[[str], str]] = None,
     tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
-) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
+) -> dict[Union[int, str], list[dict[str, Tensor]]]:
     """Update the rouge score with the current set of predicted and target sentences.
 
     Args:
         preds: An iterable of predicted sentences.
         target: An iterable of iterable of target sentences.
         rouge_keys_values: List of N-grams/'L'/'Lsum' arguments.
-        accumulate: Useful incase of multi-reference rouge score.
+        accumulate: Useful in case of multi-reference rouge score.
             ``avg`` takes the avg of all references with respect to predictions
             ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
             Allowed values are ``avg`` and ``best``.
@@ -309,38 +310,29 @@ def _rouge_score_update(
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a `str` and return a `str`.
         tokenizer:
-            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
+            A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a `str` and return `Sequence[str]`
 
     Example:
-        >>> preds = "My name is John".split()
-        >>> target = "Is your name John".split()
+        >>> preds = ["My name is John"]
+        >>> target = [["Is your name John"]]
         >>> from pprint import pprint
-        >>> score = _rouge_score_update(preds, target, rouge_keys_values=[1, 2, 3, 'L'], accumulate='best')
+        >>> score = _rouge_score_update(preds, target, rouge_keys_values=[1, 2, 'L'], accumulate='best')
         >>> pprint(score)
-        {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
-         2: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
-         3: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
-         'L': [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}]}
+        {1: [{'fmeasure': tensor(0.7500),
+              'precision': tensor(0.7500),
+              'recall': tensor(0.7500)}],
+         2: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
+         'L': [{'fmeasure': tensor(0.5000),
+                'precision': tensor(0.5000),
+                'recall': tensor(0.5000)}]}
 
     """
-    results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
+    results: dict[Union[int, str], list[dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
 
     for pred_raw, target_raw in zip(preds, target):
-        result_inner: Dict[Union[int, str], Dict[str, Tensor]] = {rouge_key: {} for rouge_key in rouge_keys_values}
-        result_avg: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
+        result_inner: dict[Union[int, str], dict[str, Tensor]] = {rouge_key: {} for rouge_key in rouge_keys_values}
+        result_avg: dict[Union[int, str], list[dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
         list_results = []
         pred = _normalize_and_tokenize_text(pred_raw, stemmer, normalizer, tokenizer)
         if "Lsum" in rouge_keys_values:
@@ -370,19 +362,16 @@ def _rouge_score_update(
             list_results.append(result_inner.copy())
 
         if accumulate == "best":
-            key_curr = rouge_keys_values[0]
-            all_fmeasure = torch.tensor([v[key_curr]["fmeasure"] for v in list_results])
-            highest_idx = int(torch.argmax(all_fmeasure).item())
-
-            for rouge_key in rouge_keys_values:
-                results[rouge_key].append(list_results[highest_idx][rouge_key])  # todo
+            for k in rouge_keys_values:
+                index = torch.argmax(torch.tensor([s[k]["fmeasure"] for s in list_results]))
+                results[k].append(list_results[index][k])
 
         elif accumulate == "avg":
-            new_result_avg: Dict[Union[int, str], Dict[str, Tensor]] = {
+            new_result_avg: dict[Union[int, str], dict[str, Tensor]] = {
                 rouge_key: {} for rouge_key in rouge_keys_values
             }
             for rouge_key, metrics in result_avg.items():
-                _dict_metric_score_batch: Dict[str, List[Tensor]] = {}
+                _dict_metric_score_batch: dict[str, List[Tensor]] = {}
                 for metric in metrics:
                     for _type, value in metric.items():
                         if _type not in _dict_metric_score_batch:
@@ -399,14 +388,14 @@ def _rouge_score_update(
     return results
 
 
-def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str, Tensor]:
+def _rouge_score_compute(sentence_results: dict[str, List[Tensor]]) -> dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
         sentence_results: Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence.
 
     """
-    results: Dict[str, Tensor] = {}
+    results: dict[str, Tensor] = {}
     # Obtain mean scores for individual rouge metrics
     if sentence_results == {}:
         return results
@@ -424,8 +413,8 @@ def rouge_score(
     use_stemmer: bool = False,
     normalizer: Optional[Callable[[str], str]] = None,
     tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
-    rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
-) -> Dict[str, Tensor]:
+    rouge_keys: Union[str, tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
+) -> dict[str, Tensor]:
     """Calculate `Calculate Rouge Score`_ , used for automatic summarization.
 
     Args:
@@ -433,7 +422,7 @@ def rouge_score(
         target:
             An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
         accumulate:
-            Useful incase of multi-reference rouge score.
+            Useful in case of multi-reference rouge score.
 
             - ``avg`` takes the avg of all references with respect to predictions
             - ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
@@ -442,7 +431,7 @@ def rouge_score(
         normalizer: A user's own normalizer function.
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a ``str`` and return a ``str``.
-        tokenizer: A user's own tokenizer function. If this is ``None``, spliting by spaces is default
+        tokenizer: A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a ``str`` and return ``Sequence[str]``
         rouge_keys: A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
@@ -490,7 +479,7 @@ def rouge_score(
     if not isinstance(rouge_keys, tuple):
         rouge_keys = (rouge_keys,)
     for key in rouge_keys:
-        if key not in ALLOWED_ROUGE_KEYS.keys():
+        if key not in ALLOWED_ROUGE_KEYS:
             raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {list(ALLOWED_ROUGE_KEYS.keys())}")
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
@@ -503,7 +492,7 @@ def rouge_score(
     if isinstance(target, str):
         target = [[target]]
 
-    sentence_results: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
+    sentence_results: dict[Union[int, str], list[dict[str, Tensor]]] = _rouge_score_update(
         preds,
         target,
         rouge_keys_values,
@@ -513,7 +502,7 @@ def rouge_score(
         accumulate=accumulate,
     )
 
-    output: Dict[str, List[Tensor]] = {
+    output: dict[str, List[Tensor]] = {
         f"rouge{rouge_key}_{tp}": [] for rouge_key in rouge_keys_values for tp in ["fmeasure", "precision", "recall"]
     }
     for rouge_key, metrics in sentence_results.items():

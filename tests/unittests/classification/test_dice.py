@@ -17,29 +17,29 @@ from typing import Optional
 import pytest
 from scipy.spatial.distance import dice as sc_dice
 from torch import Tensor, tensor
+
 from torchmetrics.classification import Dice
 from torchmetrics.functional import dice
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
-
-from unittests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
-from unittests.classification.inputs import _input_multiclass as _input_mcls
-from unittests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
-from unittests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from unittests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
-from unittests.classification.inputs import _input_multilabel as _input_mlb
-from unittests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
-from unittests.classification.inputs import _input_multilabel_multidim as _input_mlmd
-from unittests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
-from unittests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.classification._inputs import _input_binary, _input_binary_logits, _input_binary_prob
+from unittests.classification._inputs import _input_multiclass as _input_mcls
+from unittests.classification._inputs import _input_multiclass_logits as _input_mcls_logits
+from unittests.classification._inputs import _input_multiclass_prob as _input_mcls_prob
+from unittests.classification._inputs import _input_multiclass_with_missing_class as _input_miss_class
+from unittests.classification._inputs import _input_multilabel as _input_mlb
+from unittests.classification._inputs import _input_multilabel_logits as _input_mlb_logits
+from unittests.classification._inputs import _input_multilabel_multidim as _input_mlmd
+from unittests.classification._inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
+from unittests.classification._inputs import _input_multilabel_prob as _input_mlb_prob
 
 seed_all(42)
 
 
-def _scipy_dice(
+def _reference_scipy_dice(
     preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
@@ -102,7 +102,7 @@ class TestDiceBinary(MetricTester):
             preds=preds,
             target=target,
             metric_class=Dice,
-            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -112,7 +112,7 @@ class TestDiceBinary(MetricTester):
             preds,
             target,
             metric_functional=dice,
-            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -143,7 +143,7 @@ class TestDiceMulti(MetricTester):
             preds=preds,
             target=target,
             metric_class=Dice,
-            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -153,6 +153,6 @@ class TestDiceMulti(MetricTester):
             preds,
             target,
             metric_functional=dice,
-            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )

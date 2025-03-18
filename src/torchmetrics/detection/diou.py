@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.diou import _diou_compute, _diou_update
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not _TORCHVISION_GREATER_EQUAL_0_13:
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["DistanceIntersectionOverUnion", "DistanceIntersectionOverUnion.plot"]
 elif not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["DistanceIntersectionOverUnion.plot"]
@@ -94,6 +95,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
             If torchvision is not installed with version 0.13.0 or newer.
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
@@ -109,10 +111,10 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
         respect_labels: bool = True,
         **kwargs: Any,
     ) -> None:
-        if not _TORCHVISION_GREATER_EQUAL_0_13:
+        if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
-                f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.13.0 or newer is installed."
-                " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
+                f"Metric `{self._iou_type.upper()}` requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
             )
         super().__init__(box_format, iou_threshold, class_metrics, respect_labels, **kwargs)
 

@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -112,6 +113,7 @@ class KendallRankCorrCoef(Metric):
         (tensor([1., 1.]), tensor([nan, nan]))
 
     """
+
     is_differentiable = False
     higher_is_better = None
     full_state_update = True
@@ -152,12 +154,15 @@ class KendallRankCorrCoef(Metric):
             num_outputs=self.num_outputs,
         )
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         tau, p_value = _kendall_corrcoef_compute(
-            preds, target, self.variant, self.alternative  # type: ignore[arg-type]  # todo
+            preds,
+            target,
+            self.variant,  # type: ignore[arg-type]  # todo
+            self.alternative,  # type: ignore[arg-type]  # todo
         )
 
         if p_value is not None:

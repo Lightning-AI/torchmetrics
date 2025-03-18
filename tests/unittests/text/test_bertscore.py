@@ -12,23 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+from collections.abc import Sequence
 from functools import partial
-from typing import Sequence
 
 import pytest
 from torch import Tensor
-from torchmetrics.functional.text.bert import bert_score
-from torchmetrics.text.bert import BERTScore
-from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 from typing_extensions import Literal
 
-from unittests.text.helpers import TextTester, skip_on_connection_issues
-from unittests.text.inputs import _inputs_single_reference
-
-if _BERTSCORE_AVAILABLE:
-    from bert_score import score as original_bert_score
-else:
-    original_bert_score = None
+from torchmetrics.functional.text.bert import bert_score
+from torchmetrics.text.bert import BERTScore
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
+from unittests._helpers import skip_on_connection_issues
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_single_reference
 
 _METRIC_KEY_TO_IDX = {
     "precision": 0,
@@ -42,9 +38,8 @@ MODEL_NAME = "albert-base-v2"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
-@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 @skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
 def _reference_bert_score(
     preds: Sequence[str],
     target: Sequence[str],
@@ -54,6 +49,11 @@ def _reference_bert_score(
     rescale_with_baseline: bool,
     metric_key: Literal["f1", "precision", "recall"],
 ) -> Tensor:
+    try:
+        from bert_score import score as original_bert_score
+    except ImportError:
+        pytest.skip("test requires bert_score package to be installed.")
+
     score_tuple = original_bert_score(
         preds,
         target,
@@ -84,17 +84,16 @@ def _reference_bert_score(
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
+    [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
-@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 class TestBERTScore(TextTester):
     """Tests for BERTScore."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues()
     def test_bertscore_class(self, ddp, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key):
-        """Test the bertscore class."""
+        """Test the bert score class."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,
@@ -171,3 +170,38 @@ class TestBERTScore(TextTester):
             metric_args=metric_args,
             key=metric_key,
         )
+
+
+@skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.parametrize("idf", [True, False])
+def test_bertscore_sorting(idf: bool):
+    """Test that BERTScore is invariant to the order of the inputs."""
+    short = "Short text"
+    long = "This is a longer text"
+
+    preds = [long, long]
+    targets = [long, short]
+
+    metric = BERTScore(idf=idf)
+    score = metric(preds, targets)
+
+    # First index should be the self-comparison - sorting by length should not shuffle this
+    assert score["f1"][0] > score["f1"][1]
+
+
+@skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.parametrize("truncation", [True, False])
+def test_bertscore_truncation(truncation: bool):
+    """Test that BERTScore truncation works as expected."""
+    pred = ["abc " * 2000]
+    gt = ["def " * 2000]
+    bert_score = BERTScore(truncation=truncation)
+
+    if truncation:
+        res = bert_score(pred, gt)
+        assert res["f1"] > 0.0
+    else:
+        with pytest.raises(RuntimeError, match="The expanded size of the tensor.*must match.*"):
+            bert_score(pred, gt)
