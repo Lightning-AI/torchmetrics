@@ -167,6 +167,4 @@ def dice_score(
     _dice_score_validate_args(num_classes, include_background, average, input_format)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
     dice = _dice_score_compute(numerator, denominator, average, aggregation_level=aggregation_level, support=support)
-    if reduce:
-        dice = torch.nanmean(dice, dim=0)
-    return dice
+    return torch.nanmean(dice) if reduce else dice
