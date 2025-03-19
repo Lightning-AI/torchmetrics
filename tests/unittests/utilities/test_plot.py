@@ -125,6 +125,7 @@ from torchmetrics.image import (
 from torchmetrics.nominal import CramersV, FleissKappa, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
 from torchmetrics.regression import (
     ConcordanceCorrCoef,
+    ContinuousRankedProbabilityScore,
     CosineSimilarity,
     ExplainedVariance,
     JensenShannonDivergence,
@@ -482,6 +483,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         ),
         pytest.param(ConcordanceCorrCoef, _rand_input, _rand_input, id="concordance corr coef"),
         pytest.param(CosineSimilarity, _multilabel_rand_input, _multilabel_rand_input, id="cosine similarity"),
+        pytest.param(
+            ContinuousRankedProbabilityScore,
+            lambda: torch.randn(10, 5),
+            _rand_input,
+            id="continues ranked probability score",
+        ),
         pytest.param(ExplainedVariance, _rand_input, _rand_input, id="explained variance"),
         pytest.param(KendallRankCorrCoef, _rand_input, _rand_input, id="kendall rank corr coef"),
         pytest.param(
