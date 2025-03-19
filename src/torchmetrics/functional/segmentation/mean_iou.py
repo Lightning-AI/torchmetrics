@@ -114,8 +114,10 @@ def mean_iou(
         >>> import torch
         >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import mean_iou
-        >>> preds = randint(0, 2, (4, 5, 16, 16), generator=torch.Generator().manual_seed(42))  # 4 samples, 5 classes, 16x16 prediction
-        >>> target = randint(0, 2, (4, 5, 16, 16), generator=torch.Generator().manual_seed(43))  # 4 samples, 5 classes, 16x16 target
+        >>> # 4 samples, 5 classes, 16x16 prediction
+        >>> preds = randint(0, 2, (4, 5, 16, 16), generator=torch.Generator().manual_seed(42))
+        >>> # 4 samples, 5 classes, 16x16 target
+        >>> target = randint(0, 2, (4, 5, 16, 16), generator=torch.Generator().manual_seed(43))
         >>> mean_iou(preds, target)
         tensor([0.3323, 0.3336, 0.3397, 0.3435])
         >>> mean_iou(preds, target, include_background=False, num_classes=5)
