@@ -139,7 +139,7 @@ def test_samples_with_missing_classes(average, aggregation_level, expected_score
     target[0, 1, :6, :6], preds[0, 1, :3, :3] = 1, 1
     target[0, 3, 6:, 6:], preds[0, 3, 8:, 8:] = 1, 1
 
-    # sample 2 only background and false positives
+    # sample with only background and false positives
     preds[1, 3, :2, :2] = 1
 
     dice = DiceScore(
