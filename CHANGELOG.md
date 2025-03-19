@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `DeepImageStructureAndTextureSimilarity` to image package ([#2993](https://github.com/PyTorchLightning/metrics/pull/2993))
 
 
+- Added `Equal Error Rate (EER)` to classification package ([#3013](https://github.com/PyTorchLightning/metrics/pull/3013))
+
+
+- Added functional interface to `MeanAveragePrecision` metric ([#3011](https://github.com/Lightning-AI/torchmetrics/pull/3011))
+
+
 ### Changed
 
 -
@@ -34,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
--
+- Removed `Dice` from classification ([#3017](https://github.com/PyTorchLightning/metrics/pull/3017))
 
 
 ### Fixed
