@@ -109,6 +109,7 @@ def dice_score(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     input_format: Literal["one-hot", "index"] = "one-hot",
     aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
+    reduce: bool = False,
 ) -> Tensor:
     """Compute the Dice score for semantic segmentation.
 
@@ -124,6 +125,7 @@ def dice_score(
         aggregation_level: The level at which to aggregate the dice score. Options are ``"samplewise"`` or ``"global"``.
             For ``"samplewise"`` the dice score is computed for each sample and then averaged. For ``"global"`` the dice
             score is computed globally over all samples.
+        reduce: Whether to reduce the output to a single number. Default is ``False``.
 
     Returns:
         The Dice score.
@@ -161,4 +163,7 @@ def dice_score(
     """
     _dice_score_validate_args(num_classes, include_background, average, input_format)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
-    return _dice_score_compute(numerator, denominator, average, aggregation_level=aggregation_level, support=support)
+    dice = _dice_score_compute(numerator, denominator, average, aggregation_level=aggregation_level, support=support)
+    if reduce:
+        dice = torch.nanmean(dice, dim=0)
+    return dice

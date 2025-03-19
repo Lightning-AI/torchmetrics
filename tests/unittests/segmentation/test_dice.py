@@ -111,8 +111,42 @@ class TestDiceScore(MetricTester):
                 "average": average,
                 "input_format": input_format,
                 "aggregation_level": aggregation_level,
+                "reduce": True,
             },
         )
+
+
+@pytest.mark.parametrize(
+    ("average", "aggregation_level", "expected_score"),
+    [
+        ("micro", "samplewise", 0.2),
+        ("macro", "samplewise", 0.3),
+        ("weighted", "samplewise", 0.1333),
+        ("none", "samplewise", [torch.nan, 0.4, torch.nan, 0.2]),
+        ("micro", "global", 0.3768),
+        ("macro", "global", 0.3667),
+        ("weighted", "global", 0.3795),
+        ("none", "global", [torch.nan, 0.4, torch.nan, 0.3333]),
+    ],
+)
+def test_samples_with_missing_classes(average, aggregation_level, expected_score):
+    """Tests case where not all classes are present in all samples."""
+    num_samples, num_classes = 3, 4
+    target = torch.full((num_samples, num_classes, 10, 10), 0, dtype=torch.int8)
+    preds = torch.full((num_samples, num_classes, 10, 10), 0, dtype=torch.int8)
+
+    # sample with class 1 & 3
+    target[0, 1, :6, :6], preds[0, 1, :3, :3] = 1, 1
+    target[0, 3, 6:, 6:], preds[0, 3, 8:, 8:] = 1, 1
+
+    # sample 2 only background and false positives
+    preds[1, 3, :2, :2] = 1
+
+    dice = DiceScore(
+        num_classes=num_classes, average=average, include_background=True, aggregation_level=aggregation_level
+    )
+    score = dice(preds, target)
+    assert torch.allclose(score, torch.tensor(expected_score), equal_nan=True, atol=1e-4)
 
 
 @pytest.mark.parametrize("average", ["micro", None])
