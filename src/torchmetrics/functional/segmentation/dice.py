@@ -75,31 +75,29 @@ def _dice_score_compute(
     numerator: Tensor,
     denominator: Tensor,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-    aggregation_level: Optional[Literal["samplewise", "global"]] = "global",
+    aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
     support: Optional[Tensor] = None,
 ) -> Tensor:
     """Compute the Dice score from the numerator and denominator."""
     if aggregation_level == "global":
         numerator = torch.sum(numerator, dim=0).unsqueeze(0)
         denominator = torch.sum(denominator, dim=0).unsqueeze(0)
+        support = torch.sum(support, dim=0) if support is not None else None
 
     if average == "micro":
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
-        dice = _safe_divide(numerator, denominator, zero_division="nan")
-        return torch.nanmean(dice, dim=0)
+        return _safe_divide(numerator, denominator, zero_division="nan")
 
     dice = _safe_divide(numerator, denominator, zero_division="nan")
     if average == "macro":
         channel_scores = torch.nanmean(dice, dim=0)
-        return torch.mean(channel_scores)
+        return torch.nanmean(channel_scores, dim=0)
     if average == "weighted":
-        support = torch.sum(support, dim=0)
         weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division="nan")
-        channel_scores = torch.nanmean(dice, dim=0)
-        return torch.sum(channel_scores * weights)
+        return torch.nansum(dice * weights, dim=-1)
     if average in ("none", None):
-        return torch.nanmean(dice, dim=0)
+        return dice
     raise ValueError(f"Invalid value for `average`: {average}.")
 
 
@@ -110,6 +108,7 @@ def dice_score(
     include_background: bool = True,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     input_format: Literal["one-hot", "index"] = "one-hot",
+    aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
 ) -> Tensor:
     """Compute the Dice score for semantic segmentation.
 
@@ -122,6 +121,9 @@ def dice_score(
           or ``None``. This determines how to average the dice score across different classes.
         input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
           or ``"index"`` for index tensors
+        aggregation_level: The level at which to aggregate the dice score. Options are ``"samplewise"`` or ``"global"``.
+            For ``"samplewise"`` the dice score is computed for each sample and then averaged. For ``"global"`` the dice
+            score is computed globally over all samples.
 
     Returns:
         The Dice score.
@@ -159,4 +161,4 @@ def dice_score(
     """
     _dice_score_validate_args(num_classes, include_background, average, input_format)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
-    return _dice_score_compute(numerator, denominator, average, support=support)
+    return _dice_score_compute(numerator, denominator, average, aggregation_level=aggregation_level, support=support)
