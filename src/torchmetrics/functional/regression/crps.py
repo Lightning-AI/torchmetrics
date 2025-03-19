@@ -76,6 +76,20 @@ def continuous_ranked_probability_score(preds: Tensor, target: Tensor) -> Tensor
     Return:
         Tensor with CRPS
 
+    Raises:
+        ValueError:
+            If the number of ensemble members is less than 2.
+        ValueError:
+            If the first dimension of preds and target do not match.
+
+    Example::
+        >>> from torchmetrics.functional.regression import continuous_ranked_probability_score
+        >>> from torch import randn
+        >>> preds = randn(10, 5)
+        >>> target = randn(10)
+        >>> continuous_ranked_probability_score(preds, target)
+        tensor(0.0880)
+
     """
-    batch_size, diff, ensemble_sum_scale_factor, ensemble_sum = _crps_update(preds, target)
-    return _crps_compute(batch_size, diff, ensemble_sum_scale_factor, ensemble_sum)
+    batch_size, diff, ensemble_sum = _crps_update(preds, target)
+    return _crps_compute(batch_size, diff, ensemble_sum)
