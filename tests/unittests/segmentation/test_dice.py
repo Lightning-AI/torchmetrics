@@ -120,7 +120,7 @@ class TestDiceScore(MetricTester):
     ("average", "aggregation_level", "expected_score"),
     [
         ("micro", "samplewise", 0.2),
-        ("macro", "samplewise", 0.3),
+        ("macro", "samplewise", 0.1333),
         ("weighted", "samplewise", 0.1333),
         ("none", "samplewise", [torch.nan, 0.4, torch.nan, 0.2]),
         ("micro", "global", 0.3768),

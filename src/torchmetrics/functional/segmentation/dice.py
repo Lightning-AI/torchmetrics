@@ -91,8 +91,9 @@ def _dice_score_compute(
 
     dice = _safe_divide(numerator, denominator, zero_division="nan")
     if average == "macro":
-        channel_scores = torch.nanmean(dice, dim=0)
-        return torch.nanmean(channel_scores, dim=0)
+        notnan = ~torch.isnan(dice)
+        weights = _safe_divide(notnan, torch.sum(notnan, dim=-1, keepdim=True), zero_division="nan")
+        return torch.nansum(dice * weights, dim=-1)
     if average == "weighted":
         weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division="nan")
         return torch.nansum(dice * weights, dim=-1)
