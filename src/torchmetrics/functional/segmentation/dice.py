@@ -95,6 +95,8 @@ def _dice_score_compute(
         weights = _safe_divide(notnan, torch.sum(notnan, dim=-1, keepdim=True), zero_division="nan")
         return torch.nansum(dice * weights, dim=-1)
     if average == "weighted":
+        if not isinstance(support, torch.Tensor):
+            raise ValueError(f"Expected argument `support` to be a tensor, got: {type(support)}.")
         weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division="nan")
         return torch.nansum(dice * weights, dim=-1)
     if average in ("none", None):
