@@ -91,9 +91,7 @@ def _dice_score_compute(
 
     dice = _safe_divide(numerator, denominator, zero_division="nan")
     if average == "macro":
-        notnan = ~torch.isnan(dice)
-        weights = _safe_divide(notnan, torch.sum(notnan, dim=-1, keepdim=True), zero_division="nan")
-        return torch.nansum(dice * weights, dim=-1)
+        return torch.nanmean(dice, dim=-1)
     if average == "weighted":
         if not isinstance(support, torch.Tensor):
             raise ValueError(f"Expected argument `support` to be a tensor, got: {type(support)}.")
@@ -167,4 +165,4 @@ def dice_score(
     _dice_score_validate_args(num_classes, include_background, average, input_format)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
     dice = _dice_score_compute(numerator, denominator, average, aggregation_level=aggregation_level, support=support)
-    return torch.nanmean(dice) if reduce else dice
+    return torch.nanmean(dice, dim=0) if reduce else dice
