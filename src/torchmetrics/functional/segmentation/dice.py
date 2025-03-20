@@ -96,7 +96,10 @@ def _dice_score_compute(
         if not isinstance(support, torch.Tensor):
             raise ValueError(f"Expected argument `support` to be a tensor, got: {type(support)}.")
         weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division="nan")
-        return torch.nansum(dice * weights, dim=-1)
+        nan_mask = dice.isnan().all(dim=-1)
+        dice = torch.nansum(dice * weights, dim=-1)
+        dice[nan_mask] = torch.nan
+        return dice
     if average in ("none", None):
         return dice
     raise ValueError(f"Invalid value for `average`: {average}.")
