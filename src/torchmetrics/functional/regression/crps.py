@@ -37,8 +37,11 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor]:
     _check_same_shape(preds[:, 0], target)
 
     batch_size, n_ensemble_members = preds.shape
-    if n_ensemble_members == 1:
+    if n_ensemble_members < 2:
         raise ValueError(f"CRPS requires at least 2 ensemble members, but you provided {preds.shape}.")
+    
+    # sort forecasts
+    preds = torch.sort(preds, dim=1)[0]
 
     # inflate observations:
     observation_inflated = target.unsqueeze(1).expand_as(preds)
@@ -54,7 +57,7 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor]:
 
 def _crps_compute(batch_size: int, diff: Tensor, ensemble_sum: Tensor) -> Tensor:
     """Final CRPS computation."""
-    return (1 / batch_size) * torch.sum(diff - ensemble_sum)
+    return torch.sum(diff - ensemble_sum) #/ batch_size
 
 
 def continuous_ranked_probability_score(preds: Tensor, target: Tensor) -> Tensor:
