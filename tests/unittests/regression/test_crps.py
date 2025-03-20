@@ -29,7 +29,7 @@ _input_10ensemble = _Input(
 )
 
 _input2_5ensemble = _Input(
-preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 5),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 5),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
