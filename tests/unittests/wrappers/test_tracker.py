@@ -236,10 +236,10 @@ def test_tracker_futurewarning():
         # Check that for future versions that we remove the warning
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            MetricTracker(MeanSquaredError(), maximize=True)
+            MetricTracker(MeanSquaredError())
     else:
         with pytest.warns(FutureWarning, match="The default value for `maximize` will be changed from `True` to.*"):
-            MetricTracker(MeanSquaredError(), maximize=True)
+            MetricTracker(MeanSquaredError())
 
 
 @pytest.mark.parametrize(
