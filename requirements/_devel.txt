@@ -10,6 +10,7 @@
 -r image.txt
 -r text.txt
 -r multimodal.txt
+-r video.txt
 -r visual.txt
 
 # add extra testing
