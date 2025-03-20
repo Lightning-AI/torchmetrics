@@ -138,6 +138,10 @@ class MetricTracker(ModuleList):
                         m_higher_is_better = [m.higher_is_better]
                     self.maximize.extend(m_higher_is_better)  # type: ignore[arg-type]  # this is false alarm
         else:
+            # The default value for `maximize` has be changed from `True` to `None` in v1.7.0 of TorchMetrics,
+            # will automatically infer the value based on the `higher_is_better` attribute of the metric
+            # (if such attribute exists) or raise an error if it does not. If you are explicitly setting the
+            # `maximize` argument to either `True` or `False` already, you can ignore this warning.
             if not isinstance(maximize, (bool, list)):
                 raise ValueError("Argument `maximize` should either be a single bool or list of bool")
             if isinstance(maximize, list) and not all(isinstance(m, bool) for m in maximize):
