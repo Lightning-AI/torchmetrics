@@ -224,7 +224,7 @@ to rely on ``MetricTracker`` to keep track of the metrics over multiple steps.
     )
 
     # Define tracker over the collection to easy keep track of the metrics over multiple steps
-    tracker = torchmetrics.wrappers.MetricTracker(collection)
+    tracker = torchmetrics.wrappers.MetricTracker(collection, maximize=True)
 
     # Run "training" loop
     for step in range(num_steps):
