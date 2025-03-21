@@ -39,7 +39,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
 
     SRMR is a non-intrusive metric for speech quality and intelligibility based on
     a modulation spectral representation of the speech signal.
-    This code is translated from `SRMRToolbox`_ and `SRMRpy`_.
+    This code is translated from SRMRToolbox and `SRMRpy`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -56,9 +56,9 @@ class SpeechReverberationModulationEnergyRatio(Metric):
 
     .. attention::
         This implementation is experimental, and might not be consistent with the matlab
-        implementation `SRMRToolbox`_, especially the fast implementation.
-        The slow versions, a) fast=False, norm=False, max_cf=128, b) fast=False, norm=True, max_cf=30, have
-        a relatively small inconsistence.
+        implementation SRMRToolbox, especially the fast implementation.
+        The slow versions, a) ``fast=False, norm=False, max_cf=128``, b) ``fast=False, norm=True, max_cf=30``,
+        have a relatively small inconsistency.
 
     Args:
         fs: the sampling rate

@@ -24,6 +24,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.wrappers import ClasswiseWrapper
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricTracker.plot"]
@@ -105,15 +106,13 @@ class MetricTracker(ModuleList):
     """
 
     maximize: Union[bool, list[bool]]
+    _base_metric: Union[Metric, MetricCollection]
 
-    def __init__(
-        self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, list[bool]]] = True
-    ) -> None:
+    def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, list[bool], None] = None) -> None:
         super().__init__()
         if not isinstance(metric, (Metric, MetricCollection)):
             raise TypeError(
-                "Metric arg need to be an instance of a torchmetrics"
-                f" `Metric` or `MetricCollection` but got {metric}"
+                f"Metric arg need to be an instance of a torchmetrics `Metric` or `MetricCollection` but got {metric}"
             )
         self._base_metric = metric
 
@@ -133,16 +132,16 @@ class MetricTracker(ModuleList):
                             f"The metric '{name}' in the MetricCollection does not have a 'higher_is_better' attribute."
                             " Please provide the `maximize` argument explicitly."
                         )
-                    self.maximize.append(m.higher_is_better)  # type: ignore[arg-type]  # this is false alarm
+                    if isinstance(m, ClasswiseWrapper) and isinstance(m.metric.num_classes, int):
+                        m_higher_is_better = [m.higher_is_better for _ in range(int(m.metric.num_classes))]
+                    else:
+                        m_higher_is_better = [m.higher_is_better]
+                    self.maximize.extend(m_higher_is_better)  # type: ignore[arg-type]  # this is false alarm
         else:
-            rank_zero_warn(
-                "The default value for `maximize` will be changed from `True` to `None` in v1.7.0 of TorchMetrics,"
-                "will automatically infer the value based on the `higher_is_better` attribute of the metric"
-                " (if such attribute exists) or raise an error if it does not. If you are explicitly setting the"
-                " `maximize` argument to either `True` or `False` already, you can ignore this warning.",
-                FutureWarning,
-            )
-
+            # The default value for `maximize` has be changed from `True` to `None` in v1.7.0 of TorchMetrics,
+            # will automatically infer the value based on the `higher_is_better` attribute of the metric
+            # (if such attribute exists) or raise an error if it does not. If you are explicitly setting the
+            # `maximize` argument to either `True` or `False` already, you can ignore this warning.
             if not isinstance(maximize, (bool, list)):
                 raise ValueError("Argument `maximize` should either be a single bool or list of bool")
             if isinstance(maximize, list) and not all(isinstance(m, bool) for m in maximize):
@@ -168,16 +167,22 @@ class MetricTracker(ModuleList):
     def forward(self, *args: Any, **kwargs: Any) -> None:
         """Call forward of the current metric being tracked."""
         self._check_for_increment("forward")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         return self[-1](*args, **kwargs)
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update the current metric being tracked."""
         self._check_for_increment("update")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         self[-1].update(*args, **kwargs)
 
     def compute(self) -> Any:
         """Call compute of the current metric being tracked."""
         self._check_for_increment("compute")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         return self[-1].compute()
 
     def compute_all(self) -> Any:
@@ -208,11 +213,15 @@ class MetricTracker(ModuleList):
 
     def reset(self) -> None:
         """Reset the current metric being tracked."""
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         self[-1].reset()
 
     def reset_all(self) -> None:
         """Reset all metrics being tracked."""
         for metric in self:
+            if not isinstance(metric, (Metric, MetricCollection)):
+                raise TypeError(f"Expected all metrics to be Metric or MetricCollection, but got {type(metric)}.")
             metric.reset()
 
     def best_metric(
@@ -259,7 +268,7 @@ class MetricTracker(ModuleList):
                 return None, None
             return None
 
-        if isinstance(self._base_metric, Metric):
+        if isinstance(self._base_metric, Metric) and not isinstance(self._base_metric, ClasswiseWrapper):
             fn = torch.max if self.maximize else torch.min
             try:
                 value, idx = fn(res, 0)
@@ -327,7 +336,7 @@ class MetricTracker(ModuleList):
             >>> import torch
             >>> from torchmetrics.wrappers import MetricTracker
             >>> from torchmetrics.classification import BinaryAccuracy
-            >>> tracker = MetricTracker(BinaryAccuracy())
+            >>> tracker = MetricTracker(BinaryAccuracy(), maximize=True)
             >>> for epoch in range(5):
             ...     tracker.increment()
             ...     for batch_idx in range(5):

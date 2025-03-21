@@ -1,10 +1,11 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-scikit-image >=0.19.0, <0.25.0
-kornia >=0.6.7, <0.8.0
+scikit-image >=0.19.0, <0.26.0
+kornia >=0.6.7, <0.9.0
 pytorch-msssim ==1.0.0
 sewar >=0.4.4, <=0.4.6
-numpy <2.2.0
+numpy <2.3.0
 torch-fidelity @ git+https://github.com/toshas/torch-fidelity@master
 lpips <=0.1.4
+dists-pytorch ==0.1

@@ -22,6 +22,7 @@ _PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.versi
 _TORCH_GREATER_EQUAL_2_1 = RequirementCache("torch>=2.1.0")
 _TORCH_GREATER_EQUAL_2_2 = RequirementCache("torch>=2.2.0")
 _TORCH_GREATER_EQUAL_2_5 = RequirementCache("torch>=2.5.0")
+_TORCH_LESS_THAN_2_6 = RequirementCache("torch<2.6.0")
 _TORCHMETRICS_GREATER_EQUAL_1_6 = RequirementCache("torchmetrics>=1.7.0")
 
 _NLTK_AVAILABLE = RequirementCache("nltk")
@@ -59,6 +60,7 @@ _IPADIC_AVAILABLE = RequirementCache("ipadic")
 _SENTENCEPIECE_AVAILABLE = RequirementCache("sentencepiece")
 _SCIPI_AVAILABLE = RequirementCache("scipy")
 _SKLEARN_GREATER_EQUAL_1_3 = RequirementCache("scikit-learn>=1.3.0")
+_TORCH_LINEAR_ASSIGNMENT_AVAILABLE = RequirementCache("torch_linear_assignment")
+_AEON_AVAILABLE = RequirementCache("aeon")
 _PYTDC_AVAILABLE = RequirementCache("pyTDC")
-
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None

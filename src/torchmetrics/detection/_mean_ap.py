@@ -13,7 +13,7 @@
 # limitations under the License.
 import logging
 from collections.abc import Sequence
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Literal, Optional, Union
 
 import numpy as np
 import torch
@@ -35,7 +35,7 @@ if not _TORCHVISION_AVAILABLE or not _PYCOCOTOOLS_AVAILABLE:
 log = logging.getLogger(__name__)
 
 
-def compute_area(inputs: list[Any], iou_type: str = "bbox") -> Tensor:
+def compute_area(inputs: list[Any], iou_type: Literal["bbox", "segm"] = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is :class:`~torch.Tensor`
@@ -59,7 +59,7 @@ def compute_area(inputs: list[Any], iou_type: str = "bbox") -> Tensor:
 def compute_iou(
     det: list[Any],
     gt: list[Any],
-    iou_type: str = "bbox",
+    iou_type: Literal["bbox", "segm"] = "bbox",
 ) -> Tensor:
     """Compute IOU between detections and ground-truth using the specified iou_type."""
     from torchvision.ops import box_iou
@@ -95,13 +95,13 @@ class BaseMetricResults(dict):
 class MAPMetricResults(BaseMetricResults):
     """Class to wrap the final mAP results."""
 
-    __slots__ = ("map", "map_50", "map_75", "map_small", "map_medium", "map_large", "classes")
+    __slots__ = ("classes", "map", "map_50", "map_75", "map_large", "map_medium", "map_small")
 
 
 class MARMetricResults(BaseMetricResults):
     """Class to wrap the final mAR results."""
 
-    __slots__ = ("mar_1", "mar_10", "mar_100", "mar_small", "mar_medium", "mar_large")
+    __slots__ = ("mar_1", "mar_10", "mar_100", "mar_large", "mar_medium", "mar_small")
 
 
 class COCOMetricResults(BaseMetricResults):
@@ -111,17 +111,17 @@ class COCOMetricResults(BaseMetricResults):
         "map",
         "map_50",
         "map_75",
-        "map_small",
-        "map_medium",
         "map_large",
+        "map_medium",
+        "map_per_class",
+        "map_small",
         "mar_1",
         "mar_10",
         "mar_100",
-        "mar_small",
-        "mar_medium",
-        "mar_large",
-        "map_per_class",
         "mar_100_per_class",
+        "mar_large",
+        "mar_medium",
+        "mar_small",
     )
 
 
@@ -315,7 +315,7 @@ class MeanAveragePrecision(Metric):
     def __init__(
         self,
         box_format: str = "xyxy",
-        iou_type: str = "bbox",
+        iou_type: Literal["bbox", "segm"] = "bbox",
         iou_thresholds: Optional[list[float]] = None,
         rec_thresholds: Optional[list[float]] = None,
         max_detection_thresholds: Optional[list[int]] = None,
@@ -367,7 +367,7 @@ class MeanAveragePrecision(Metric):
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update state with predictions and targets."""
-        _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
+        _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
             detections = self._get_safe_item_values(item)

@@ -18,9 +18,9 @@ import pytest
 import torch
 from lightning_utilities.core.imports import RequirementCache
 from monai.metrics.generalized_dice import compute_generalized_dice
+
 from torchmetrics.functional.segmentation.generalized_dice import generalized_dice_score
 from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
-
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

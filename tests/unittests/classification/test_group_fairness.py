@@ -23,10 +23,11 @@ import torch
 from fairlearn.metrics import MetricFrame, selection_rate, true_positive_rate
 from scipy.special import expit as sigmoid
 from torch import Tensor
+
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import (
@@ -85,9 +86,9 @@ def _assert_allclose(  # todo: unify with the general assert_allclose
 ) -> None:
     if isinstance(pl_result, dict) and key is None:
         for (pl_key, pl_val), (sk_key, sk_val) in zip(pl_result.items(), sk_result.items()):
-            assert np.allclose(
-                pl_val.detach().cpu().numpy(), sk_val.numpy(), atol=atol, equal_nan=True
-            ), f"{pl_key} != {sk_key}"
+            assert np.allclose(pl_val.detach().cpu().numpy(), sk_val.numpy(), atol=atol, equal_nan=True), (
+                f"{pl_key} != {sk_key}"
+            )
     else:
         _core_assert_allclose(pl_result, sk_result, atol, key)
 
@@ -282,8 +283,8 @@ class TestBinaryFairness(BinaryFairnessTester):
         """Test class implementation of metric."""
         preds, target, groups = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

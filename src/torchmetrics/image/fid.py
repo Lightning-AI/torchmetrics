@@ -181,7 +181,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor) -> Te
 
 
 class FrechetInceptionDistance(Metric):
-    r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images.
+    r"""Calculate Fréchet inception distance (FID_) which is used to assess the quality of generated images.
 
     .. math::
         FID = \|\mu - \mu_w\|^2 + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
@@ -300,6 +300,7 @@ class FrechetInceptionDistance(Metric):
         reset_real_features: bool = True,
         normalize: bool = False,
         input_img_size: tuple[int, int, int] = (3, 299, 299),
+        feature_extractor_weights_path: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -322,13 +323,22 @@ class FrechetInceptionDistance(Metric):
                     f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
                 )
 
-            self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
+            self.inception = NoTrainInceptionV3(
+                name="inception-v3-compat",
+                features_list=[str(feature)],
+                feature_extractor_weights_path=feature_extractor_weights_path,
+            )
 
         elif isinstance(feature, Module):
             self.inception = feature
             self.used_custom_model = True
             if hasattr(self.inception, "num_features"):
-                num_features = self.inception.num_features
+                if isinstance(self.inception.num_features, int):
+                    num_features = self.inception.num_features
+                elif isinstance(self.inception.num_features, Tensor):
+                    num_features = int(self.inception.num_features.item())
+                else:
+                    raise TypeError("Expected `self.inception.num_features` to be of type int or Tensor.")
             else:
                 if self.normalize:
                     dummy_image = torch.rand(1, *input_img_size, dtype=torch.float32)

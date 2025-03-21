@@ -19,6 +19,7 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import accuracy_score as sk_accuracy
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+
 from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
 from torchmetrics.functional.classification.accuracy import (
     accuracy,
@@ -27,7 +28,7 @@ from torchmetrics.functional.classification.accuracy import (
     multilabel_accuracy,
 )
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -153,8 +154,8 @@ class TestBinaryAccuracy(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -310,8 +311,8 @@ class TestMulticlassAccuracy(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -413,22 +414,37 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
 _mc_k_targets2 = torch.tensor([0, 0, 2])
 _mc_k_preds2 = torch.tensor([[0.9, 0.1, 0.0], [0.9, 0.1, 0.0], [0.9, 0.1, 0.0]])
 
+_mc_k_targets3 = torch.arange(0, 512) % 10
+_mc_k_preds3 = torch.rand(512, 10, generator=torch.Generator().manual_seed(42))
+
+_mc_k_targets4 = _mc_k_targets3[:1]
+_mc_k_preds4 = _mc_k_preds3[:1, :]
+
 
 @pytest.mark.parametrize(
-    ("k", "preds", "target", "average", "expected"),
+    ("k", "preds", "target", "average", "num_classes", "expected"),
     [
-        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3)),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(3 / 3)),
-        (1, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 2)),
-        (2, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 2)),
+        (1, _mc_k_preds, _mc_k_target, "micro", 3, torch.tensor(2 / 3)),
+        (2, _mc_k_preds, _mc_k_target, "micro", 3, torch.tensor(3 / 3)),
+        (1, _mc_k_preds2, _mc_k_targets2, "macro", 3, torch.tensor(1 / 2)),
+        (2, _mc_k_preds2, _mc_k_targets2, "macro", 3, torch.tensor(1 / 2)),
+        (5, _mc_k_preds3, _mc_k_targets3, "macro", 10, torch.tensor(0.5175)),
+        (5, _mc_k_preds3, _mc_k_targets3, "micro", 10, torch.tensor(0.5176)),
+        (5, _mc_k_preds4, _mc_k_targets4, "macro", 10, torch.tensor(1.0)),
+        (5, _mc_k_preds4, _mc_k_targets4, "micro", 10, torch.tensor(1.0)),
     ],
 )
-def test_top_k(k, preds, target, average, expected):
+def test_top_k(k, preds, target, average, num_classes, expected):
     """A simple test to check that top_k works as expected."""
-    class_metric = MulticlassAccuracy(top_k=k, average=average, num_classes=3)
+    class_metric = MulticlassAccuracy(top_k=k, average=average, num_classes=num_classes)
     class_metric.update(preds, target)
-    assert torch.isclose(class_metric.compute(), expected)
-    assert torch.isclose(multiclass_accuracy(preds, target, top_k=k, average=average, num_classes=3), expected)
+    assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
+    assert torch.isclose(
+        multiclass_accuracy(preds, target, top_k=k, average=average, num_classes=num_classes),
+        expected,
+        rtol=1e-4,
+        atol=1e-4,
+    )
 
 
 def _reference_sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, average):
@@ -585,8 +601,8 @@ class TestMultilabelAccuracy(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -624,6 +640,12 @@ def test_corner_cases():
     metric = MulticlassAccuracy(num_classes=3, average="macro", ignore_index=0)
     res = metric(preds, target)
     assert res == 1.0
+
+    metric_micro1 = MulticlassAccuracy(num_classes=None, average="micro", ignore_index=0)
+    metric_micro2 = MulticlassAccuracy(num_classes=3, average="micro", ignore_index=0)
+    res1 = metric_micro1(preds, target)
+    res2 = metric_micro2(preds, target)
+    assert res1 == res2
 
 
 @pytest.mark.parametrize(

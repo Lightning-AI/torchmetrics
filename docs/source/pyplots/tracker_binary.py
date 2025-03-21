@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import torch
+
 import torchmetrics
 
 N = 10
@@ -19,7 +20,8 @@ tracker = torchmetrics.wrappers.MetricTracker(
         torchmetrics.Precision(task="binary"),
         confmat,
         roc,
-    )
+    ),
+    maximize=True,
 )
 
 fig = plt.figure(layout="constrained", figsize=(6.8, 4.8), dpi=500)

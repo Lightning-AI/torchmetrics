@@ -40,7 +40,7 @@ if not _MATPLOTLIB_AVAILABLE:
 class BinaryJaccardIndex(BinaryConfusionMatrix):
     r"""Calculate the Jaccard index for binary tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -158,7 +158,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
 class MulticlassJaccardIndex(MulticlassConfusionMatrix):
     r"""Calculate the Jaccard index for multiclass tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -295,7 +295,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 class MultilabelJaccardIndex(MultilabelConfusionMatrix):
     r"""Calculate the Jaccard index for multilabel tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -434,14 +434,14 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 class JaccardIndex(_ClassificationTaskWrapper):
     r"""Calculate the Jaccard index for multilabel tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryJaccardIndex`,
     :class:`~torchmetrics.classification.MulticlassJaccardIndex` and
     :class:`~torchmetrics.classification.MultilabelJaccardIndex` for the specific details of each argument influence

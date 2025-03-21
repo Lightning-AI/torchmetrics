@@ -17,6 +17,7 @@ import json
 from copy import deepcopy
 from functools import partial
 from itertools import product
+from typing import Any
 
 import numpy as np
 import pytest
@@ -25,12 +26,13 @@ from lightning_utilities import apply_to_collection
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
+
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchmetrics.functional.detection.map import mean_average_precision
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
 )
-
 from unittests._helpers.testers import MetricTester
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
 
@@ -48,7 +50,7 @@ def _generate_coco_inputs(iou_type):
     and should therefore correspond directly to the result on the webpage
 
     """
-    batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
+    batched_preds, batched_target = MeanAveragePrecision().coco_to_tm(
         _DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM, _DETECTION_VAL, iou_type
     )
 
@@ -62,7 +64,9 @@ _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
 
 
-@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.skipif(
+    not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
+)
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
 def test_tm_to_coco(tmpdir, iou_type, backend):
@@ -72,7 +76,7 @@ def test_tm_to_coco(tmpdir, iou_type, backend):
     for bp, bt in zip(preds, target):
         metric.update(bp, bt)
     metric.tm_to_coco(f"{tmpdir}/tm_map_input")
-    preds_2, target_2 = MeanAveragePrecision.coco_to_tm(
+    preds_2, target_2 = MeanAveragePrecision().coco_to_tm(
         f"{tmpdir}/tm_map_input_preds.json",
         f"{tmpdir}/tm_map_input_target.json",
         iou_type=iou_type,
@@ -172,7 +176,9 @@ def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_t
     }
 
 
-@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.skipif(
+    not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
+)
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
@@ -242,7 +248,7 @@ def test_compare_both_same_time(tmpdir, backend):
     combined = [{**box, **seg} for box, seg in zip(boxes, segmentations)]
     with open(f"{tmpdir}/combined.json", "w") as f:
         json.dump(combined, f)
-    batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
+    batched_preds, batched_target = MeanAveragePrecision().coco_to_tm(
         f"{tmpdir}/combined.json", _DETECTION_VAL, iou_type=["bbox", "segm"]
     )
     batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(10)]
@@ -447,7 +453,9 @@ def _generate_random_segm_input(device, batch_size=2, num_preds_size=10, num_gt_
     return preds, targets
 
 
-@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(
+    not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
+)
 @pytest.mark.parametrize(
     "backend",
     [
@@ -862,12 +870,20 @@ class TestMapProperties:
         should be the same regardless of average argument.
 
         """
-        if class_metrics:
-            _preds = _inputs["preds"]
-            _target = _inputs["target"]
-        else:
-            _preds = apply_to_collection(deepcopy(_inputs["preds"]), IntTensor, lambda x: torch.ones_like(x))
-            _target = apply_to_collection(deepcopy(_inputs["target"]), IntTensor, lambda x: torch.ones_like(x))
+        _preds = deepcopy(_inputs["preds"])
+        _target = deepcopy(_inputs["target"])
+
+        # move all labels by 2 to make sure code still works if zero class not in class labels
+        for target in _target:
+            for batch_idx in range(len(target)):
+                target[batch_idx]["labels"] = target[batch_idx]["labels"] + 2
+        for preds in _preds:
+            for batch_idx in range(len(preds)):
+                preds[batch_idx]["labels"] = preds[batch_idx]["labels"] + 2
+
+        if not class_metrics:
+            _preds = apply_to_collection(deepcopy(_preds), IntTensor, lambda x: torch.ones_like(x))
+            _target = apply_to_collection(deepcopy(_target), IntTensor, lambda x: torch.ones_like(x))
 
         metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
         metric_micro.update(deepcopy(_inputs["preds"][0]), deepcopy(_inputs["target"][0]))
@@ -933,3 +949,150 @@ class TestMapProperties:
             ValueError, match="When providing a list of max detection thresholds it should have length 3.*"
         ):
             MeanAveragePrecision(max_detection_thresholds=max_detection_thresholds, backend=backend)
+
+
+def compare_with_class(functional_result, preds, target, **kwargs: Any):
+    """Helper function to compare the functional output with the class-based implementation.
+
+    kwargs are passed along to instantiate MeanAveragePrecision.
+
+    """
+    map_metric = MeanAveragePrecision(**kwargs)
+    map_metric.update(preds, target)
+    class_result = map_metric.compute()
+    for key in class_result:
+        torch.testing.assert_close(functional_result[key], class_result[key], atol=5e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+def test_mean_average_precision_iou_type_functional(backend, iou_type):
+    """Test that the functional API returns a valid dictionary with the expected keys."""
+    preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+
+    preds_flat = [p for batch in preds for p in batch]
+    target_flat = [t for batch in target for t in batch]
+
+    functional_result = mean_average_precision(
+        preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh"
+    )
+    compare_with_class(
+        functional_result, preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh"
+    )
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_basic_functional(backend):
+    """Test basic functionality with nonempty inputs by comparing function and class outputs."""
+    preds = _inputs["preds"]
+    target = _inputs["target"]
+
+    preds_flat = [p for batch in preds for p in batch]
+    target_flat = [t for batch in target for t in batch]
+
+    functional_result = mean_average_precision(
+        preds_flat,
+        target_flat,
+        backend=backend,
+        iou_type="bbox",
+        box_format="xyxy",
+    )
+
+    compare_with_class(
+        functional_result,
+        preds_flat,
+        target_flat,
+        backend=backend,
+        iou_type="bbox",
+        box_format="xyxy",
+    )
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_empty_preds_functional(backend):
+    """When there are no predictions at all but targets are available."""
+    preds = [{"boxes": Tensor([]), "scores": Tensor([]), "labels": torch.tensor([], dtype=torch.int64)}]
+    target = [{"boxes": Tensor([[214.15, 41.29, 562.41, 285.07]]), "labels": torch.tensor([4], dtype=torch.int64)}]
+
+    functional_result = mean_average_precision(preds, target, backend=backend, iou_type="bbox", box_format="xywh")
+    compare_with_class(functional_result, preds, target, backend=backend, iou_type="bbox", box_format="xywh")
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_empty_targets_functional(backend):
+    """When there are no ground truths."""
+    preds = [
+        {
+            "boxes": Tensor([[214.15, 41.29, 562.41, 285.07]]),
+            "scores": Tensor([0.5]),
+            "labels": torch.tensor([4], dtype=torch.int64),
+        }
+    ]
+    target = [{"boxes": Tensor([]), "labels": torch.tensor([], dtype=torch.int64)}]
+
+    functional_result = mean_average_precision(preds, target, backend=backend, iou_type="bbox", box_format="xywh")
+    compare_with_class(functional_result, preds, target, backend=backend, iou_type="bbox", box_format="xywh")
+
+
+@pytest.mark.parametrize(
+    "box_format",
+    [
+        ("xyxy"),
+        ("xywh"),
+        ("cxcywh"),
+    ],
+)
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_box_format_functional(box_format, backend):
+    """Test that providing different box formats leads to the expected results."""
+    predictions = [
+        {
+            "boxes": torch.tensor([[0.5, 0.5, 1, 1]]),
+            "scores": torch.tensor([1.0]),
+            "labels": torch.tensor([0], dtype=torch.int64),
+        }
+    ]
+    targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0], dtype=torch.int64)}]
+
+    functional_result = mean_average_precision(
+        predictions, targets, iou_thresholds=[0.3, 0.4], backend=backend, box_format=box_format, iou_type="bbox"
+    )
+    compare_with_class(
+        functional_result,
+        predictions,
+        targets,
+        iou_thresholds=[0.3, 0.4],
+        backend=backend,
+        box_format=box_format,
+        iou_type="bbox",
+    )
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_custom_thresholds_functional(backend):
+    """Test that custom recall thresholds and a custom iou_thresholds."""
+    preds = _inputs["preds"]
+    target = _inputs["target"]
+    preds_flat = [p for batch in preds for p in batch]
+    target_flat = [t for batch in target for t in batch]
+
+    functional_result = mean_average_precision(
+        preds_flat,
+        target_flat,
+        iou_thresholds=[0.2, 0.7],
+        rec_thresholds=[0.25, 0.5, 0.75],
+        backend=backend,
+        box_format="xyxy",
+        iou_type="bbox",
+    )
+
+    compare_with_class(
+        functional_result,
+        preds_flat,
+        target_flat,
+        iou_thresholds=[0.2, 0.7],
+        rec_thresholds=[0.25, 0.5, 0.75],
+        backend=backend,
+        box_format="xyxy",
+        iou_type="bbox",
+    )

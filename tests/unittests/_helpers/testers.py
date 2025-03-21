@@ -23,9 +23,9 @@ import pytest
 import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor, tensor
+
 from torchmetrics import Metric
 from torchmetrics.utilities.data import _flatten
-
 from unittests import NUM_PROCESSES, _reference_cachier
 
 
@@ -98,6 +98,7 @@ def _class_test(
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
     check_state_dict: bool = True,
+    check_picklable: bool = True,
     **kwargs_update: Any,
 ):
     """Comparison between class metric and reference metric.
@@ -121,6 +122,7 @@ def _class_test(
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
         check_scriptable: bool indicating if metric should also be tested if it can be scripted
         check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
+        check_picklable: bool indicating if metric should be tested that it can be pickled
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
 
@@ -146,7 +148,7 @@ def _class_test(
     # check that metric can be cloned
     clone = metric.clone()
     assert clone is not metric, "Clone is not a different object than the metric"
-    assert type(clone) == type(metric), "Type of clone did not match metric type"
+    assert type(clone) == type(metric), "Type of clone did not match metric type"  # noqa: E721
 
     # move to device
     metric = metric.to(device)
@@ -156,8 +158,9 @@ def _class_test(
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
     # verify metrics work after being loaded from pickled state
-    pickled_metric = pickle.dumps(metric)
-    metric = pickle.loads(pickled_metric)
+    if check_picklable:
+        pickled_metric = pickle.dumps(metric)
+        metric = pickle.loads(pickled_metric)
     metric_clone = deepcopy(metric)
 
     for i in range(rank, num_batches, world_size):
@@ -431,6 +434,7 @@ class MetricTester:
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
         check_state_dict: bool = True,
+        check_picklable: bool = True,
         atol: Optional[float] = None,
         **kwargs_update: Any,
     ):
@@ -451,6 +455,7 @@ class MetricTester:
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             check_scriptable: bool indicating if metric should also be tested if it can be scripted
             check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
+            check_picklable: bool indicating if metric should be tested that it can be pickled
             atol: absolute tolerance used for comparison of results, if None will use self.atol
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
@@ -470,6 +475,7 @@ class MetricTester:
             "fragment_kwargs": fragment_kwargs,
             "check_scriptable": check_scriptable,
             "check_state_dict": check_state_dict,
+            "check_picklable": check_picklable,
         }
 
         if ddp and hasattr(pytest, "pool"):

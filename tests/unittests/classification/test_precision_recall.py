@@ -21,6 +21,7 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import precision_score as sk_precision_score
 from sklearn.metrics import recall_score as sk_recall_score
 from torch import Tensor, tensor
+
 from torchmetrics.classification.precision_recall import (
     BinaryPrecision,
     BinaryRecall,
@@ -40,7 +41,7 @@ from torchmetrics.functional.classification.precision_recall import (
     multilabel_recall,
 )
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -172,8 +173,8 @@ class TestBinaryPrecisionRecall(MetricTester):
     def test_binary_precision_recall_half_cpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -363,8 +364,8 @@ class TestMulticlassPrecisionRecall(MetricTester):
     def test_multiclass_precision_recall_half_cpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -392,8 +393,16 @@ class TestMulticlassPrecisionRecall(MetricTester):
 _mc_k_target = tensor([0, 1, 2])
 _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
-_mc_k_targets2 = torch.tensor([0, 0, 2])
-_mc_k_preds2 = torch.tensor([[0.9, 0.1, 0.0], [0.9, 0.1, 0.0], [0.9, 0.1, 0.0]])
+_mc_k_targets2 = tensor([0, 0, 2])
+_mc_k_preds2 = tensor([[0.9, 0.1, 0.0], [0.9, 0.1, 0.0], [0.9, 0.1, 0.0]])
+
+_mc_k_target3 = tensor([0, 1, 2, 0])
+_mc_k_preds3 = tensor([
+    [0.1, 0.2, 0.7],
+    [0.4, 0.4, 0.2],
+    [0.3, 0.3, 0.4],
+    [0.3, 0.3, 0.4],
+])
 
 
 @pytest.mark.parametrize(
@@ -402,10 +411,24 @@ _mc_k_preds2 = torch.tensor([[0.9, 0.1, 0.0], [0.9, 0.1, 0.0], [0.9, 0.1, 0.0]])
 @pytest.mark.parametrize(
     ("k", "preds", "target", "average", "expected_prec", "expected_recall"),
     [
-        (1, _mc_k_preds, _mc_k_target, "micro", tensor(2 / 3), tensor(2 / 3)),
-        (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2), tensor(1.0)),
-        (1, _mc_k_preds2, _mc_k_targets2, "macro", tensor(1 / 3), tensor(1 / 2)),
-        (2, _mc_k_preds2, _mc_k_targets2, "macro", tensor(1 / 3), tensor(1 / 2)),
+        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
+        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1.0), torch.tensor(1.0)),
+        (3, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 3), torch.tensor(1 / 2)),
+        (2, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 3), torch.tensor(1 / 2)),
+        (3, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds3, _mc_k_target3, "macro", torch.tensor(0.1111), torch.tensor(0.3333)),
+        (2, _mc_k_preds3, _mc_k_target3, "macro", torch.tensor(0.8333), torch.tensor(0.8333)),
+        (3, _mc_k_preds3, _mc_k_target3, "macro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds3, _mc_k_target3, "micro", torch.tensor(0.2500), torch.tensor(0.2500)),
+        (2, _mc_k_preds3, _mc_k_target3, "micro", torch.tensor(0.7500), torch.tensor(0.7500)),
+        (3, _mc_k_preds3, _mc_k_target3, "micro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds3, _mc_k_target3, "weighted", torch.tensor(0.0833), torch.tensor(0.2500)),
+        (2, _mc_k_preds3, _mc_k_target3, "weighted", torch.tensor(0.8750), torch.tensor(0.7500)),
+        (3, _mc_k_preds3, _mc_k_target3, "weighted", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds3, _mc_k_target3, "none", torch.tensor([0.0000, 0.0000, 0.3333]), torch.tensor([0.0, 0.0, 1.0])),
+        (2, _mc_k_preds3, _mc_k_target3, "none", torch.tensor([1.0000, 1.0000, 0.5000]), torch.tensor([0.5, 1.0, 1.0])),
+        (3, _mc_k_preds3, _mc_k_target3, "none", torch.tensor([1.0, 1.0, 1.0]), torch.tensor([1.0, 1.0, 1.0])),
     ],
 )
 def test_top_k(
@@ -418,14 +441,91 @@ def test_top_k(
     expected_prec: Tensor,
     expected_recall: Tensor,
 ):
-    """A simple test to check that top_k works as expected."""
+    """A test to validate top_k functionality for precision and recall."""
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
     result = expected_prec if metric_class.__name__ == "MulticlassPrecision" else expected_recall
 
-    assert torch.equal(class_metric.compute(), result)
-    assert torch.equal(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
+    assert torch.allclose(class_metric.compute(), result, atol=1e-4, rtol=1e-4)
+    assert torch.allclose(
+        metric_fn(preds, target, top_k=k, average=average, num_classes=3), result, atol=1e-4, rtol=1e-4
+    )
+
+
+@pytest.mark.parametrize("num_classes", [5])
+def test_multiclass_precision_recall_with_top_k(num_classes):
+    """Test that Precision and Recall increase monotonically with top_k and equal 1 when top_k equals num_classes.
+
+    Args:
+        num_classes: Number of classes in the classification task.
+
+    The test verifies two properties:
+    1. Precision and Recall increases or stays the same as top_k increases
+    2. Precision and Recall equals 1 when top_k equals num_classes
+
+    """
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    previous_precision = 0.0
+    for k in range(1, num_classes + 1):
+        precision_score = MulticlassPrecision(num_classes=num_classes, top_k=k, average="macro")
+        precision = precision_score(preds, target)
+
+        assert precision >= previous_precision, f"Precision did not increase for top_k={k}"
+        previous_precision = precision
+
+        if k == num_classes:
+            assert torch.isclose(precision, torch.tensor(1.0)), (
+                f"Precision is not 1 for top_k={k} when num_classes={num_classes}"
+            )
+
+    previous_recall = 0.0
+    for k in range(1, num_classes + 1):
+        recall_score = MulticlassRecall(num_classes=num_classes, top_k=k, average="macro")
+        recall = recall_score(preds, target)
+
+        assert recall >= previous_recall, f"Recall did not increase for top_k={k}"
+        previous_recall = recall
+
+        if k == num_classes:
+            assert torch.isclose(recall, torch.tensor(1.0)), (
+                f"Recall is not 1 for top_k={k} when num_classes={num_classes}"
+            )
+
+
+@pytest.mark.parametrize(("num_classes", "k"), [(5, 3), (10, 5)])
+def test_multiclass_precision_recall_top_k_equivalence(num_classes, k):
+    """Test that top-k Precision and Recall scores are equivalent to corrected top-1 scores."""
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    precision_top_k = MulticlassPrecision(num_classes=num_classes, top_k=k, average="macro")
+    precision_top_1 = MulticlassPrecision(num_classes=num_classes, top_k=1, average="macro")
+
+    recall_top_k = MulticlassRecall(num_classes=num_classes, top_k=k, average="macro")
+    recall_top_1 = MulticlassRecall(num_classes=num_classes, top_k=1, average="macro")
+
+    pred_top_k = torch.argsort(preds, dim=1, descending=True)[:, :k]
+    pred_top_1 = pred_top_k[:, 0]
+    target_in_top_k = (target.unsqueeze(1) == pred_top_k).any(dim=1)
+    pred_corrected_top_k = torch.where(target_in_top_k, target, pred_top_1)
+
+    precision_score_top_k = precision_top_k(preds, target)
+    precision_score_corrected = precision_top_1(pred_corrected_top_k, target)
+
+    recall_score_top_k = recall_top_k(preds, target)
+    recall_score_corrected = recall_top_1(pred_corrected_top_k, target)
+
+    assert torch.isclose(precision_score_top_k, precision_score_corrected), (
+        f"Top-{k} Precision ({precision_score_top_k}) does not match "
+        f"corrected top-1 Precision ({precision_score_corrected})"
+    )
+
+    assert torch.isclose(recall_score_top_k, recall_score_corrected), (
+        f"Top-{k} Recall ({recall_score_top_k}) does not match corrected top-1 Recall ({recall_score_corrected})"
+    )
 
 
 def _reference_sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average, zero_division):
@@ -620,8 +720,8 @@ class TestMultilabelPrecisionRecall(MetricTester):
     def test_multilabel_precision_recall_half_cpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

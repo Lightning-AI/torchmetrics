@@ -107,7 +107,7 @@ def binary_jaccard_index(
 ) -> Tensor:
     r"""Calculate the Jaccard index for binary tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -179,7 +179,7 @@ def multiclass_jaccard_index(
 ) -> Tensor:
     r"""Calculate the Jaccard index for multiclass tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -264,7 +264,7 @@ def multilabel_jaccard_index(
 ) -> Tensor:
     r"""Calculate the Jaccard index for multilabel tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -337,14 +337,14 @@ def jaccard_index(
 ) -> Tensor:
     r"""Calculate the Jaccard index.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
     .. math:: J(A,B) = \frac{|A\cap B|}{|A\cup B|}
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_jaccard_index`,
     :func:`~torchmetrics.functional.classification.multiclass_jaccard_index` and
     :func:`~torchmetrics.functional.classification.multilabel_jaccard_index` for

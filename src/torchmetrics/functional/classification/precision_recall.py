@@ -705,7 +705,7 @@ def precision(
     false positives respecitively.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_precision`,
     :func:`~torchmetrics.functional.classification.multiclass_precision` and
     :func:`~torchmetrics.functional.classification.multilabel_precision` for the specific details of
@@ -765,7 +765,7 @@ def recall(
     false negatives respecitively.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_recall`,
     :func:`~torchmetrics.functional.classification.multiclass_recall` and
     :func:`~torchmetrics.functional.classification.multilabel_recall` for the specific details of

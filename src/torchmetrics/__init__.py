@@ -61,7 +61,6 @@ from torchmetrics.classification import (  # noqa: E402
     CalibrationError,
     CohenKappa,
     ConfusionMatrix,
-    Dice,
     ExactMatch,
     F1Score,
     FBetaScore,
@@ -169,6 +168,7 @@ from torchmetrics.wrappers import (  # noqa: E402
 
 __all__ = [
     "AUROC",
+    "ROC",
     "Accuracy",
     "AveragePrecision",
     "BLEUScore",
@@ -184,7 +184,6 @@ __all__ = [
     "CosineSimilarity",
     "CramersV",
     "CriticalSuccessIndex",
-    "Dice",
     "ErrorRelativeGlobalDimensionlessSynthesis",
     "ExactMatch",
     "ExplainedVariance",
@@ -229,7 +228,6 @@ __all__ = [
     "PrecisionAtFixedRecall",
     "PrecisionRecallCurve",
     "R2Score",
-    "ROC",
     "Recall",
     "RecallAtFixedPrecision",
     "RelativeAverageSpectralError",

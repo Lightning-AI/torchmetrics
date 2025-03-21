@@ -11,10 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
+
+from torchmetrics.utilities import rank_zero_warn
 
 
 def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
@@ -43,7 +46,11 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
     return res
 
 
-def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tensor:
+def _safe_divide(
+    num: Tensor,
+    denom: Tensor,
+    zero_division: Union[float, Literal["warn", "nan"]] = 0.0,
+) -> Tensor:
     """Safe division, by preventing division by zero.
 
     Function will cast to float if input is not already to secure backwards compatibility.
@@ -63,8 +70,13 @@ def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tens
     """
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
-    zero_division_tensor = torch.tensor(zero_division, dtype=num.dtype).to(num.device, non_blocking=True)
-    return torch.where(denom != 0, num / denom, zero_division_tensor)
+    if isinstance(zero_division, (float, int)) or zero_division == "warn":
+        if zero_division == "warn" and torch.any(denom == 0):
+            rank_zero_warn("Detected zero division in _safe_divide. Setting 0/0 to 0.0")
+        zero_division = 0.0 if zero_division == "warn" else zero_division
+        zero_division_tensor = torch.tensor(zero_division, dtype=num.dtype).to(num.device, non_blocking=True)
+        return torch.where(denom != 0, num / denom, zero_division_tensor)
+    return torch.true_divide(num, denom)
 
 
 def _adjust_weights_safe_divide(
@@ -195,3 +207,45 @@ def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
     indices = torch.clamp(indices, 0, len(m) - 1)
 
     return m[indices] * x + b[indices]
+
+
+def normalize_logits_if_needed(tensor: Tensor, normalization: Literal["sigmoid", "softmax"]) -> Tensor:
+    """Normalize logits if needed.
+
+    If input tensor is outside the [0,1] we assume that logits are provided and apply the normalization.
+    Use torch.where to prevent device-host sync.
+
+    Args:
+        tensor: input tensor that may be logits or probabilities
+        normalization: normalization method, either 'sigmoid' or 'softmax'
+
+    Returns:
+        normalized tensor if needed
+
+    Example:
+        >>> import torch
+        >>> tensor = torch.tensor([-1.0, 0.0, 1.0])
+        >>> normalize_logits_if_needed(tensor, normalization="sigmoid")
+        tensor([0.2689, 0.5000, 0.7311])
+        >>> tensor = torch.tensor([[-1.0, 0.0, 1.0], [1.0, 0.0, -1.0]])
+        >>> normalize_logits_if_needed(tensor, normalization="softmax")
+        tensor([[0.0900, 0.2447, 0.6652],
+                [0.6652, 0.2447, 0.0900]])
+        >>> tensor = torch.tensor([0.0, 0.5, 1.0])
+        >>> normalize_logits_if_needed(tensor, normalization="sigmoid")
+        tensor([0.0000, 0.5000, 1.0000])
+
+    """
+    # decrease sigmoid on cpu .
+    if tensor.device == torch.device("cpu"):
+        if not torch.all((tensor >= 0) * (tensor <= 1)):
+            tensor = tensor.sigmoid() if normalization == "sigmoid" else torch.softmax(tensor, dim=1)
+        return tensor
+
+    # decrease device-host sync on device .
+    condition = ((tensor < 0) | (tensor > 1)).any()
+    return torch.where(
+        condition,
+        torch.sigmoid(tensor) if normalization == "sigmoid" else torch.softmax(tensor, dim=1),
+        tensor,
+    )

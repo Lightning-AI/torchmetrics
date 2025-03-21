@@ -21,7 +21,7 @@ from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.compute import _safe_divide, interp
+from torchmetrics.utilities.compute import _safe_divide, interp, normalize_logits_if_needed
 from torchmetrics.utilities.data import _bincount, _cumsum
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
@@ -182,8 +182,7 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.sigmoid()
+    preds = normalize_logits_if_needed(preds, "sigmoid")
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     return preds, target, thresholds
@@ -452,8 +451,7 @@ def _multiclass_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.softmax(1)
+    preds = normalize_logits_if_needed(preds, "softmax")
 
     if average == "micro":
         preds = preds.flatten()
@@ -761,8 +759,8 @@ def _multilabel_precision_recall_curve_format(
     """
     preds = preds.transpose(0, 1).reshape(num_labels, -1).T
     target = target.transpose(0, 1).reshape(num_labels, -1).T
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.sigmoid()
+
+    preds = normalize_logits_if_needed(preds, "sigmoid")
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     if ignore_index is not None and thresholds is not None:
@@ -960,7 +958,7 @@ def precision_recall_curve(
     tradeoff between the two values can been seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_precision_recall_curve`,
     :func:`~torchmetrics.functional.classification.multiclass_precision_recall_curve` and
     :func:`~torchmetrics.functional.classification.multilabel_precision_recall_curve` for the specific details of each

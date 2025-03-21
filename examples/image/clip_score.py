@@ -15,6 +15,7 @@ import numpy as np
 import torch
 from matplotlib.table import Table
 from skimage.data import astronaut, cat, coffee
+
 from torchmetrics.multimodal import CLIPScore
 
 # %%
@@ -40,9 +41,7 @@ captions = [
 
 models = [
     "openai/clip-vit-base-patch16",
-    # "openai/clip-vit-base-patch32",
-    # "openai/clip-vit-large-patch14-336",
-    "openai/clip-vit-large-patch14",
+    # "zer0int/LongCLIP-L-Diffusers",
 ]
 
 # %%
