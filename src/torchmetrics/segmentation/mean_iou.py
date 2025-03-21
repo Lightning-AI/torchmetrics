@@ -77,7 +77,7 @@ class MeanIoU(Metric):
         >>> import torch
         >>> from torch import randint
         >>> from torchmetrics.segmentation import MeanIoU
-        >>> miou = MeanIoU()
+        >>> miou = MeanIoU(num_classes=2, per_class=True, input_format="index")
         >>> preds = randint(0, 2, (10, 3, 128, 128), generator=torch.Generator().manual_seed(42))
         >>> target = randint(0, 2, (10, 3, 128, 128), generator=torch.Generator().manual_seed(43))
         >>> miou(preds, target)
@@ -118,13 +118,14 @@ class MeanIoU(Metric):
         self.input_format = input_format
         self._is_initialized = False
 
-        self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
         if num_classes is not None:
             num_classes = num_classes - 1 if not include_background else num_classes
             self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
+            self.add_state("num_batches", default=torch.zeros(num_classes), dist_reduce_fx="sum")
             self._is_initialized = True
         else:
             self.add_state("score", default=torch.zeros(1), dist_reduce_fx="sum")
+            self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
