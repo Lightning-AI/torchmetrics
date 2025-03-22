@@ -77,7 +77,7 @@ class MeanIoU(Metric):
         >>> import torch
         >>> from torch import randint
         >>> from torchmetrics.segmentation import MeanIoU
-        >>> miou = MeanIoU(num_classes=2, per_class=True, input_format="index")
+        >>> miou = MeanIoU()
         >>> preds = randint(0, 2, (10, 3, 128, 128), generator=torch.Generator().manual_seed(42))
         >>> target = randint(0, 2, (10, 3, 128, 128), generator=torch.Generator().manual_seed(43))
         >>> miou(preds, target)
@@ -117,7 +117,6 @@ class MeanIoU(Metric):
         self.per_class = per_class
         self.input_format = input_format
         self._is_initialized = False
-
         if num_classes is not None:
             num_classes = num_classes - 1 if not include_background else num_classes
             self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
@@ -125,7 +124,7 @@ class MeanIoU(Metric):
             self._is_initialized = True
         else:
             self.add_state("score", default=torch.zeros(1), dist_reduce_fx="sum")
-            self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("num_batches", default=torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
@@ -140,14 +139,18 @@ class MeanIoU(Metric):
                     f"Expected argument `num_classes` to be a positive integer, but got {self.num_classes}."
                 )
 
-            if self.num_classes is not None:
-                num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
-                self.add_state(
-                    "score",
-                    default=torch.zeros(num_out_classes if self.per_class else 1, device=self.device, dtype=self.dtype),
-                    dist_reduce_fx="sum",
-                )
-                self._is_initialized = True
+            num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
+            self.add_state(
+                "score",
+                default=torch.zeros(num_out_classes, device=self.device, dtype=self.dtype),
+                dist_reduce_fx="sum",
+            )
+            self.add_state(
+                "num_batches",
+                default=torch.zeros(num_out_classes),
+                dist_reduce_fx="sum",
+            )
+            self._is_initialized = True
 
         intersection, union = _mean_iou_update(
             preds, target, self.num_classes, self.include_background, self.input_format
@@ -155,8 +158,12 @@ class MeanIoU(Metric):
         score = _mean_iou_compute(intersection, union)
         # only update for classes that are present (i.e. union > 0)
         valid_classes = union > 0
-        self.score += (score * valid_classes).sum(dim=0)
-        self.num_batches += valid_classes.sum(dim=0)
+        if self.per_class:
+            self.score += (score * valid_classes).sum(dim=0)
+            self.num_batches += valid_classes.sum(dim=0)
+        else:
+            self.score += (score * valid_classes).sum()
+            self.num_batches += valid_classes.sum()
 
     def compute(self) -> Tensor:
         """Compute the final Mean Intersection over Union (mIoU)."""
