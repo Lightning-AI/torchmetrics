@@ -155,7 +155,7 @@ class MeanIoU(Metric):
         intersection, union = _mean_iou_update(
             preds, target, self.num_classes, self.include_background, self.input_format
         )
-        score = _mean_iou_compute(intersection, union)
+        score = _mean_iou_compute(intersection, union, zero_division=0.0)
         # only update for classes that are present (i.e. union > 0)
         valid_classes = union > 0
         if self.per_class:
@@ -167,7 +167,7 @@ class MeanIoU(Metric):
 
     def compute(self) -> Tensor:
         """Compute the final Mean Intersection over Union (mIoU)."""
-        return self.score / self.num_batches if self.per_class else (self.score / self.num_batches).mean()
+        return self.score / self.num_batches if self.per_class else (self.score / self.num_batches).nanmean()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
