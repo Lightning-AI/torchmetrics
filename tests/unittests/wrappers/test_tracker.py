@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import warnings
 
 import pytest
 import torch
@@ -25,7 +24,6 @@ from torchmetrics.classification import (
     MulticlassRecall,
 )
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
-from torchmetrics.utilities.imports import _TORCHMETRICS_GREATER_EQUAL_1_6
 from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MultioutputWrapper
 from unittests._helpers import seed_all
 
@@ -154,8 +152,8 @@ def test_tracker(base_metric, metric_input, maximize):
 @pytest.mark.parametrize(
     "base_metric",
     [
-        MulticlassConfusionMatrix(3),
-        MetricCollection([MulticlassConfusionMatrix(3), MulticlassAccuracy(3)]),
+        pytest.param(MulticlassConfusionMatrix(3), id="Multiclass-confusion-matrix"),
+        pytest.param(MetricCollection([MulticlassConfusionMatrix(3), MulticlassAccuracy(3)]), id="Metric-collection"),
     ],
 )
 def test_best_metric_for_not_well_defined_metric_collection(base_metric):
@@ -165,7 +163,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     warning and return None.
 
     """
-    tracker = MetricTracker(base_metric)
+    tracker = MetricTracker(base_metric, maximize=True)
     for _ in range(3):
         tracker.increment()
         for _ in range(5):
@@ -207,7 +205,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
 )
 def test_metric_tracker_and_collection_multioutput(input_to_tracker, assert_type):
     """Check that MetricTracker support wrapper inputs and nested structures."""
-    tracker = MetricTracker(input_to_tracker)
+    tracker = MetricTracker(input_to_tracker, maximize=False)
     for _ in range(5):
         tracker.increment()
         for _ in range(5):
@@ -224,22 +222,6 @@ def test_metric_tracker_and_collection_multioutput(input_to_tracker, assert_type
     else:
         assert best_metric is None
         assert which_epoch is None
-
-
-def test_tracker_futurewarning():
-    """Check that future warning is raised for the maximize argument.
-
-    Also to make sure that we remove it in future versions of TM.
-
-    """
-    if _TORCHMETRICS_GREATER_EQUAL_1_6:
-        # Check that for future versions that we remove the warning
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            MetricTracker(MeanSquaredError(), maximize=True)
-    else:
-        with pytest.warns(FutureWarning, match="The default value for `maximize` will be changed from `True` to.*"):
-            MetricTracker(MeanSquaredError(), maximize=True)
 
 
 @pytest.mark.parametrize(
