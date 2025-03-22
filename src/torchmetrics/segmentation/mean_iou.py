@@ -167,7 +167,8 @@ class MeanIoU(Metric):
 
     def compute(self) -> Tensor:
         """Compute the final Mean Intersection over Union (mIoU)."""
-        return self.score / self.num_batches if self.per_class else (self.score / self.num_batches).nanmean()
+        output_score = self.score / self.num_batches
+        return output_score.nan_to_num(-1.0) if self.per_class else output_score.nanmean()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

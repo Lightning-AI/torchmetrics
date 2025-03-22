@@ -153,10 +153,10 @@ def mean_iou(
         >>> mean_iou(preds, target, num_classes=5, input_format = "index")
         tensor([0.3617, 0.3128, 0.3047, 0.3499])
         >>> mean_iou(preds, target, num_classes=5, per_class=True, input_format="index")
-        tensor([[0.3617, 0.3617, nan, nan, nan],
-                [0.3128, 0.3128, nan, nan, nan],
-                [0.2727, 0.3366, nan, nan, nan],
-                [0.3756, 0.3242, nan, nan, nan]]))
+        tensor([[0.3617, 0.3617, -1.000, -1.000, -1.000],
+                [0.3128, 0.3128, -1.000, -1.000, -1.000],
+                [0.2727, 0.3366, -1.000, -1.000, -1.000],
+                [0.3756, 0.3242, -1.000, -1.000, -1.000]]))
 
     """
     _mean_iou_validate_args(num_classes, include_background, per_class, input_format)
@@ -165,5 +165,5 @@ def mean_iou(
     scores = _mean_iou_compute(intersection, union, zero_division="nan")
     valid_classes = union > 0
     if per_class:
-        return scores
+        return scores.nan_to_num(-1.0)
     return scores.nansum(dim=-1) / valid_classes.sum(dim=-1)

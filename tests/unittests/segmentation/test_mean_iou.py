@@ -141,10 +141,9 @@ def test_mean_iou_absent_class():
     functional_miou = mean_iou(preds, target, num_classes=3, per_class=True, input_format="index").mean(
         dim=0
     )  # reduce over batch dim
-    expected_ious = [1.0, 1.0, float("nan")]
+    expected_ious = [1.0, 1.0, -1.0]
     for idx, (iou, iou_func) in enumerate(zip(miou_per_class, functional_miou)):
-        assert iou == expected_ious[idx] if idx < 2 else torch.isnan(iou)
-        assert iou_func == expected_ious[idx] if idx < 2 else torch.isnan(iou_func)
+        assert iou == iou_func == expected_ious[idx]
     # test that when reducing the nan is ignored and we dont get nan as output if class is absent
     metric = MeanIoU(num_classes=3, per_class=False, input_format="index")
     metric.update(preds, target)
