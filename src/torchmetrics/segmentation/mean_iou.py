@@ -90,7 +90,7 @@ class MeanIoU(Metric):
         tensor([0.3340, 0.3308])
         >>> miou = MeanIoU(num_classes=3, per_class=True, include_background=True, input_format="index")
         >>> miou(preds, target)
-        tensor([0.3334, 0.3336, 0.0000])
+        tensor([0.3334, 0.3336, nan])
 
     """
 
