@@ -11,17 +11,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+-
+
 
 ### Changed
+
+-
 
 
 ### Deprecated
 
+-
+
 
 ### Removed
 
+-
+
 
 ### Fixed
+
+- fix Detection IoU ignores predictions without ground truth ([#3025](https://github.com/Lightning-AI/torchmetrics/pull/3025))
 
 
 ---
