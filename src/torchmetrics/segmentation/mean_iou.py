@@ -147,7 +147,7 @@ class MeanIoU(Metric):
             )
             self.add_state(
                 "num_batches",
-                default=torch.zeros(num_out_classes),
+                default=torch.zeros(num_out_classes, device=self.device, dtype=torch.int32),
                 dist_reduce_fx="sum",
             )
             self._is_initialized = True
