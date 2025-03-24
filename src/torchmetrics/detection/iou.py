@@ -220,7 +220,7 @@ class IntersectionOverUnion(Metric):
         valid_matrices = [
             mat[mat != self._invalid_val] for mat in self.iou_matrix if torch.any(mat != self._invalid_val)
         ]
-        score = torch.cat(valid_matrices, 0).mean() if valid_matrices else torch.tensor(0.0)
+        score = torch.cat(valid_matrices, 0).mean() if valid_matrices else torch.tensor(0.0, device=self.device)
         results: dict[str, Tensor] = {f"{self._iou_type}": score}
         if torch.isnan(score):  # if no valid boxes are found
             results[f"{self._iou_type}"] = torch.tensor(0.0, device=score.device)
