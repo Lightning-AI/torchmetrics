@@ -169,7 +169,6 @@ class IntersectionOverUnion(Metric):
         self.respect_labels = respect_labels
 
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
-        # for keeping track of predicted labels
         self.add_state("pred_labels", default=[], dist_reduce_fx=None)
         self.add_state("iou_matrix", default=[], dist_reduce_fx=None)
 
