@@ -225,11 +225,7 @@ class IntersectionOverUnion(Metric):
             results[f"{self._iou_type}"] = torch.tensor(0.0, device=score.device)
         if self.class_metrics:
             # union of ground truth and predicted labels
-            all_labels = torch.tensor([], dtype=torch.long, device=score.device)
-            if self.groundtruth_labels:
-                all_labels = torch.cat(self.groundtruth_labels)
-            if self.pred_labels:
-                all_labels = torch.cat([all_labels, torch.cat(self.pred_labels)])
+            all_labels = dim_zero_cat([dim_zero_cat(self.groundtruth_labels), dim_zero_cat(self.pred_labels)])
             classes = all_labels.unique().tolist() if all_labels.numel() > 0 else []
             for cl in classes:
                 masked_iou = torch.zeros_like(score)
