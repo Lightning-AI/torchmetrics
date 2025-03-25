@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
+from torchmetrics.functional.regression.crps import continuous_ranked_probability_score
 from torchmetrics.functional.regression.csi import critical_success_index
 from torchmetrics.functional.regression.explained_variance import explained_variance
 from torchmetrics.functional.regression.js_divergence import jensen_shannon_divergence
@@ -35,6 +36,7 @@ from torchmetrics.functional.regression.wmape import weighted_mean_absolute_perc
 
 __all__ = [
     "concordance_corrcoef",
+    "continuous_ranked_probability_score",
     "cosine_similarity",
     "critical_success_index",
     "explained_variance",

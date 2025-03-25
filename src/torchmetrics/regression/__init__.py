@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.regression.concordance import ConcordanceCorrCoef
 from torchmetrics.regression.cosine_similarity import CosineSimilarity
+from torchmetrics.regression.crps import ContinuousRankedProbabilityScore
 from torchmetrics.regression.csi import CriticalSuccessIndex
 from torchmetrics.regression.explained_variance import ExplainedVariance
 from torchmetrics.regression.js_divergence import JensenShannonDivergence
@@ -35,6 +36,7 @@ from torchmetrics.regression.wmape import WeightedMeanAbsolutePercentageError
 
 __all__ = [
     "ConcordanceCorrCoef",
+    "ContinuousRankedProbabilityScore",
     "CosineSimilarity",
     "CriticalSuccessIndex",
     "ExplainedVariance",
