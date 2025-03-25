@@ -13,9 +13,11 @@
 # limitations under the License.
 from functools import partial
 
+import numpy as np
 import pytest
 import torch
 from scipy.stats import pearsonr
+from torch import Tensor
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
@@ -49,10 +51,32 @@ _multi_target_inputs2 = _Input(
 )
 
 
+def _ref_metric(preds, target, weights=None):
+    if weights is None:
+        return _reference_scipy_pearson(preds, target)
+    return _weighted_pearson(preds, target, weights)
+
+
 def _reference_scipy_pearson(preds, target):
     if preds.ndim == 2:
         return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
     return pearsonr(target.numpy(), preds.numpy())[0]
+
+
+def _weighted_pearson(preds, target, weights):
+    preds = preds.numpy() if isinstance(preds, Tensor) else preds
+    target = target.numpy() if isinstance(target, Tensor) else target
+    weights = weights.numpy() if isinstance(weights, Tensor) else weights
+
+    if preds.ndim == 2:
+        return [_weighted_pearson(p, t, weights) for p, t in zip(preds.T, target.T)]
+
+    mx = (weights * preds).sum() / weights.sum()
+    my = (weights * target).sum() / weights.sum()
+    var_x = (weights * (preds - mx) ** 2).sum()
+    var_y = (weights * (target - my) ** 2).sum()
+    cov_xy = (weights * (preds - mx) * (target - my)).sum()
+    return cov_xy / np.sqrt(var_x * var_y)
 
 
 @pytest.mark.parametrize(
@@ -69,9 +93,16 @@ class TestPearsonCorrCoef(MetricTester):
 
     atol = 1e-3
 
+    @pytest.mark.parametrize(
+        "kwargs_update",
+        [
+            pytest.param({}, id="None weights"),
+            pytest.param({"weights": torch.rand(NUM_BATCHES, BATCH_SIZE)}, id="tensor weights"),
+        ],
+    )
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
+    def test_pearson_corrcoef(self, preds, target, kwargs_update, compute_on_cpu, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
@@ -79,14 +110,26 @@ class TestPearsonCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=PearsonCorrCoef,
-            reference_metric=_reference_scipy_pearson,
+            reference_metric=_ref_metric,
             metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
+            weights=kwargs_update.get("weights", None),
         )
 
-    def test_pearson_corrcoef_functional(self, preds, target):
+    @pytest.mark.parametrize(
+        "kwargs_update",
+        [
+            pytest.param({}, id="None weights"),
+            pytest.param({"weights": torch.rand(NUM_BATCHES, BATCH_SIZE)}, id="tensor weights"),
+        ],
+    )
+    def test_pearson_corrcoef_functional(self, preds, target, kwargs_update):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds=preds, target=target, metric_functional=pearson_corrcoef, reference_metric=_reference_scipy_pearson
+            preds=preds,
+            target=target,
+            metric_functional=pearson_corrcoef,
+            reference_metric=_ref_metric,
+            weights=kwargs_update.get("weights", None),
         )
 
     def test_pearson_corrcoef_differentiability(self, preds, target):
@@ -100,7 +143,7 @@ class TestPearsonCorrCoef(MetricTester):
         )
 
     @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_5, reason="Requires torch>=2.5.0")
-    def test_pearson_corrcoef_half_cpu(self, preds, target):
+    def test_pearson_corrcoef_half_cpu(self, preds, target, metric_args):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
