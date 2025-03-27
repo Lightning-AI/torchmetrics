@@ -493,8 +493,7 @@ class MetricCollection(ModuleDict):
                         v._from_collection = True
                         self[k] = v
         elif isinstance(metrics, MetricCollection):
-            # New case: handle MetricCollection input
-            for name, metric in metrics.items(keep_base=True):
+            for name, metric in metrics.items(keep_base=False):
                 if name in self:
                     raise ValueError(f"Metric with name '{name}' already exists in the collection.")
                 self[name] = metric
