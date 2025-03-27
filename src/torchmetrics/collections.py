@@ -430,7 +430,9 @@ class MetricCollection(ModuleDict):
             m.persistent(mode)
 
     def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], dict[str, Metric], MetricCollection], *additional_metrics: Metric
+        self,
+        metrics: Union[Metric, Sequence[Metric], dict[str, Metric], "MetricCollection"],
+        *additional_metrics: Metric,
     ) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
