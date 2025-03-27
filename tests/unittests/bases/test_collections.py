@@ -269,26 +269,24 @@ def test_collection_add_metrics():
     collection.add_metrics({"m1_": DummyMetricSum()})
     collection.add_metrics(m2)
     collection1 = MetricCollection([DummyMetricSum()])
-    collection2 = MetricCollection({"diff_metric": DummyMetricDiff(),"custom_sum": DummyMetricSum()})
+    collection2 = MetricCollection({"diff_metric": DummyMetricDiff(), "custom_sum": DummyMetricSum()})
     collection1.add_metrics(collection2)
-    
 
     collection.update(5)
     results = collection.compute()
     assert results["DummyMetricSum"] == results["m1_"]
     assert results["m1_"] == 5
     assert results["DummyMetricDiff"] == -5
-    
+
     collection1.update(5)
     results = collection1.compute()
-    assert results["DummyMetricSum"] == 5  
-    assert results["diff_metric"] == -5    
-    assert results["custom_sum"] == 5   
-    
+    assert results["DummyMetricSum"] == 5
+    assert results["diff_metric"] == -5
+    assert results["custom_sum"] == 5
+
     duplicate_collection = MetricCollection([DummyMetricSum()])
     with pytest.raises(ValueError, match="Metric with name 'DummyMetricSum' already exists in the collection."):
         collection1.add_metrics(duplicate_collection)
-
 
 
 def test_collection_check_arg():
