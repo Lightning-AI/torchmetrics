@@ -430,7 +430,9 @@ class MetricCollection(ModuleDict):
             m.persistent(mode)
 
     def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], dict[str, Metric]], *additional_metrics: Metric
+        self,
+        metrics: Union[Metric, Sequence[Metric], dict[str, Metric], "MetricCollection"],
+        *additional_metrics: Metric,
     ) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
@@ -490,6 +492,11 @@ class MetricCollection(ModuleDict):
                         v.prefix = metric.prefix
                         v._from_collection = True
                         self[k] = v
+        elif isinstance(metrics, MetricCollection):
+            for name, metric in metrics.items(keep_base=False):
+                if name in self:
+                    raise ValueError(f"Metric with name '{name}' already exists in the collection.")
+                self[name] = metric
         else:
             raise ValueError(
                 "Unknown input to MetricCollection. Expected, `Metric`, `MetricCollection` or `dict`/`sequence` of the"
