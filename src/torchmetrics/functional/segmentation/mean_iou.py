@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -21,6 +21,27 @@ from typing_extensions import Literal
 from torchmetrics.functional.segmentation.utils import _ignore_background
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_divide
+
+
+def _mean_iou_reshape_args(
+    preds: Tensor,
+    targets: Tensor,
+    input_format: Literal["one-hot", "index"] = "one-hot",
+) -> Tuple[Tensor, Tensor]:
+    """Reshape tensors to 3D if needed."""
+    if input_format == "one-hot":
+        return preds, targets
+
+    if preds.dim() == 1:
+        preds = preds.unsqueeze(0).unsqueeze(0)
+    elif preds.dim() == 2:
+        preds = preds.unsqueeze(0)
+
+    if targets.dim() == 1:
+        targets = targets.unsqueeze(0).unsqueeze(0)
+    elif targets.dim() == 2:
+        targets = targets.unsqueeze(0)
+    return preds, targets
 
 
 def _mean_iou_validate_args(
@@ -52,6 +73,7 @@ def _mean_iou_update(
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> tuple[Tensor, Tensor]:
     """Update the intersection and union counts for the mean IoU computation."""
+    preds, target = _mean_iou_reshape_args(preds, target, input_format)
     _check_same_shape(preds, target)
 
     if input_format == "index":
@@ -81,11 +103,10 @@ def _mean_iou_update(
 def _mean_iou_compute(
     intersection: Tensor,
     union: Tensor,
-    per_class: bool = False,
+    zero_division: Union[float, Literal["warn", "nan"]],
 ) -> Tensor:
     """Compute the mean IoU metric."""
-    val = _safe_divide(intersection, union)
-    return val if per_class else torch.mean(val, 1)
+    return _safe_divide(intersection, union, zero_division=zero_division)
 
 
 def mean_iou(
@@ -97,6 +118,8 @@ def mean_iou(
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> Tensor:
     """Calculates the mean Intersection over Union (mIoU) for semantic segmentation.
+
+    Returns -1 if class is completely absent both from predictions and ground truth labels.
 
     Args:
         preds: Predictions from model
@@ -127,15 +150,20 @@ def mean_iou(
                 [0.3646, 0.2893, 0.3297, 0.3073, 0.3770],
                 [0.3756, 0.3168, 0.3505, 0.3400, 0.3155],
                 [0.3579, 0.3317, 0.3797, 0.3523, 0.2957]])
+        >>> # re-initialize tensors for ``input_format="index"``
+        >>> preds = randint(0, 2, (4, 16, 16), generator=torch.Generator().manual_seed(42))
+        >>> target = randint(0, 2, (4, 16, 16), generator=torch.Generator().manual_seed(43))
         >>> mean_iou(preds, target, num_classes=5, input_format = "index")
-        tensor([0.1331, 0.1369, 0.1276, 0.1389])
+        tensor([0.3617, 0.3128, 0.3047, 0.3499])
         >>> mean_iou(preds, target, num_classes=5, per_class=True, input_format="index")
-        tensor([[0.3330, 0.3323, 0.0000, 0.0000, 0.0000],
-                [0.3509, 0.3337, 0.0000, 0.0000, 0.0000],
-                [0.2986, 0.3393, 0.0000, 0.0000, 0.0000],
-                [0.3515, 0.3432, 0.0000, 0.0000, 0.0000]])
+        tensor([[ 0.3617,  0.3617, -1.0000, -1.0000, -1.0000],
+                [ 0.3128,  0.3128, -1.0000, -1.0000, -1.0000],
+                [ 0.2727,  0.3366, -1.0000, -1.0000, -1.0000],
+                [ 0.3756,  0.3242, -1.0000, -1.0000, -1.0000]])
 
     """
     _mean_iou_validate_args(num_classes, include_background, per_class, input_format)
     intersection, union = _mean_iou_update(preds, target, num_classes, include_background, input_format)
-    return _mean_iou_compute(intersection, union, per_class=per_class)
+    scores = _mean_iou_compute(intersection, union, zero_division="nan")
+    valid_classes = union > 0
+    return scores.nan_to_num(-1.0) if per_class else scores.nansum(dim=-1) / valid_classes.sum(dim=-1)

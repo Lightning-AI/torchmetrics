@@ -32,7 +32,8 @@ class MeanIoU(Metric):
 
     The metric is defined by the overlap between the predicted segmentation and the ground truth, divided by the
     total area covered by the union of the two. The metric can be computed for each class separately or for all
-    classes at once. The metric is optimal at a value of 1 and worst at a value of 0.
+    classes at once. The metric is optimal at a value of 1 and worst at a value of 0, -1 is returned if class
+    is completely absent both from prediction and the ground truth labels.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -90,7 +91,7 @@ class MeanIoU(Metric):
         tensor([0.3340, 0.3308])
         >>> miou = MeanIoU(num_classes=3, per_class=True, include_background=True, input_format="index")
         >>> miou(preds, target)
-        tensor([0.3334, 0.3336, 0.0000])
+        tensor([ 0.3334,  0.3336, -1.0000])
 
     """
 
@@ -117,14 +118,14 @@ class MeanIoU(Metric):
         self.per_class = per_class
         self.input_format = input_format
         self._is_initialized = False
-
-        self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
         if num_classes is not None:
             num_classes = num_classes - 1 if not include_background else num_classes
             self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
+            self.add_state("num_batches", default=torch.zeros(num_classes), dist_reduce_fx="sum")
             self._is_initialized = True
         else:
             self.add_state("score", default=torch.zeros(1), dist_reduce_fx="sum")
+            self.add_state("num_batches", default=torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
@@ -139,25 +140,36 @@ class MeanIoU(Metric):
                     f"Expected argument `num_classes` to be a positive integer, but got {self.num_classes}."
                 )
 
-            if self.num_classes is not None:
-                num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
-                self.add_state(
-                    "score",
-                    default=torch.zeros(num_out_classes if self.per_class else 1, device=self.device, dtype=self.dtype),
-                    dist_reduce_fx="sum",
-                )
-                self._is_initialized = True
+            num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
+            self.add_state(
+                "score",
+                default=torch.zeros(num_out_classes, device=self.device, dtype=self.dtype),
+                dist_reduce_fx="sum",
+            )
+            self.add_state(
+                "num_batches",
+                default=torch.zeros(num_out_classes, device=self.device, dtype=torch.int32),
+                dist_reduce_fx="sum",
+            )
+            self._is_initialized = True
 
         intersection, union = _mean_iou_update(
             preds, target, self.num_classes, self.include_background, self.input_format
         )
-        score = _mean_iou_compute(intersection, union, per_class=self.per_class)
-        self.score += score.mean(0) if self.per_class else score.mean()
-        self.num_batches += 1
+        score = _mean_iou_compute(intersection, union, zero_division=0.0)
+        # only update for classes that are present (i.e. union > 0)
+        valid_classes = union > 0
+        if self.per_class:
+            self.score += (score * valid_classes).sum(dim=0)
+            self.num_batches += valid_classes.sum(dim=0)
+        else:
+            self.score += (score * valid_classes).sum()
+            self.num_batches += valid_classes.sum()
 
     def compute(self) -> Tensor:
         """Compute the final Mean Intersection over Union (mIoU)."""
-        return self.score / self.num_batches
+        output_score = self.score / self.num_batches
+        return output_score.nan_to_num(-1.0) if self.per_class else output_score.nanmean()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
