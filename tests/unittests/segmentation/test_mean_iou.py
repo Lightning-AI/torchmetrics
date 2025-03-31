@@ -123,3 +123,56 @@ class TestMeanIoU(MetricTester):
                 "input_format": input_format,
             },
         )
+
+
+def test_mean_iou_absent_class():
+    """Test mean iou returns -1 for absent classes."""
+    metric = MeanIoU(num_classes=3, per_class=True, input_format="index")
+    target = torch.tensor([
+        [0, 1],
+        [1, 0],
+    ])
+    preds = torch.tensor([
+        [0, 1],
+        [1, 0],
+    ])
+    metric.update(preds, target)
+    miou_per_class = metric.compute()
+    functional_miou = mean_iou(preds, target, num_classes=3, per_class=True, input_format="index").mean(
+        dim=0
+    )  # reduce over batch dim
+    expected_ious = [1.0, 1.0, -1.0]
+    for idx, (iou, iou_func) in enumerate(zip(miou_per_class, functional_miou)):
+        assert iou == iou_func == expected_ious[idx]
+    # test that when reducing the nan is ignored and we dont get nan as output if class is absent
+    metric = MeanIoU(num_classes=3, per_class=False, input_format="index")
+    metric.update(preds, target)
+    miou_per_class = metric.compute()
+
+    miou_func = mean_iou(preds, target, num_classes=3, per_class=False, input_format="index").mean(
+        dim=0
+    )  # reduce over batch dim
+    assert miou_per_class.item() == miou_func.item() == 1.0
+
+
+def test_mean_iou_perfect_prediction():
+    """Test perfect IoU prediction and target."""
+    metric = MeanIoU(num_classes=3, per_class=True, input_format="index")
+    target = torch.tensor([
+        [0, 1],
+        [1, 0],
+        [2, 2],
+    ])
+    preds = torch.tensor([
+        [0, 1],
+        [1, 0],
+        [2, 2],
+    ])
+    metric.update(preds, target)
+    miou_per_class = metric.compute()
+    miou_func = mean_iou(preds, target, num_classes=3, per_class=True, input_format="index").mean(
+        dim=0
+    )  # reduce over batch dim
+    expected_ious = [1.0, 1.0, 1.0]
+    for idx, (iou, iou_func) in enumerate(zip(miou_per_class, miou_func)):
+        assert iou == iou_func == expected_ious[idx]
