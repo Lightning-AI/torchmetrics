@@ -5,4 +5,5 @@ pandas >1.4.0, <=2.2.3
 netcal >1.0.0, <1.4.0 # calibration_error
 numpy <2.3.0
 fairlearn # group_fairness
-PyTDC ==1.1.14  # locauc, temporal_dependency
+# TODO: use the next release after 1.1.14 since it shall have unpinned sklearn and transformers dependencies
+PyTDC @ https://github.com/mims-harvard/TDC/archive/refs/heads/main.zip # locauc, temporal_dependency
