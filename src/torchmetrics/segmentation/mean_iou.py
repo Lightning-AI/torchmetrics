@@ -32,7 +32,8 @@ class MeanIoU(Metric):
 
     The metric is defined by the overlap between the predicted segmentation and the ground truth, divided by the
     total area covered by the union of the two. The metric can be computed for each class separately or for all
-    classes at once. The metric is optimal at a value of 1 and worst at a value of 0.
+    classes at once. The metric is optimal at a value of 1 and worst at a value of 0, -1 is returned if class
+    is completely absent both from prediction and the ground truth labels.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

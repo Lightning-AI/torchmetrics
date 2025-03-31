@@ -126,7 +126,7 @@ class TestMeanIoU(MetricTester):
 
 
 def test_mean_iou_absent_class():
-    """Test mean iou."""
+    """Test mean iou returns -1 for absent classes."""
     metric = MeanIoU(num_classes=3, per_class=True, input_format="index")
     target = torch.tensor([
         [0, 1],

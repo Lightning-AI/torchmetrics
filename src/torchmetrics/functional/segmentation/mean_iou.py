@@ -73,6 +73,7 @@ def _mean_iou_update(
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> tuple[Tensor, Tensor]:
     """Update the intersection and union counts for the mean IoU computation."""
+    preds, target = _mean_iou_reshape_args(preds, target, input_format)
     _check_same_shape(preds, target)
 
     if input_format == "index":
@@ -118,6 +119,8 @@ def mean_iou(
 ) -> Tensor:
     """Calculates the mean Intersection over Union (mIoU) for semantic segmentation.
 
+    Returns -1 if class is completely absent both from predictions and ground truth labels.
+
     Args:
         preds: Predictions from model
         target: Ground truth values
@@ -160,10 +163,7 @@ def mean_iou(
 
     """
     _mean_iou_validate_args(num_classes, include_background, per_class, input_format)
-    preds, target = _mean_iou_reshape_args(preds, target, input_format)
     intersection, union = _mean_iou_update(preds, target, num_classes, include_background, input_format)
     scores = _mean_iou_compute(intersection, union, zero_division="nan")
     valid_classes = union > 0
-    if per_class:
-        return scores.nan_to_num(-1.0)
-    return scores.nansum(dim=-1) / valid_classes.sum(dim=-1)
+    return scores.nan_to_num(-1.0) if per_class else scores.nansum(dim=-1) / valid_classes.sum(dim=-1)
