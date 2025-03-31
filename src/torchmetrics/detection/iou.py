@@ -133,6 +133,7 @@ class IntersectionOverUnion(Metric):
     full_state_update: bool = True
 
     groundtruth_labels: List[Tensor]
+    pred_labels: List[Tensor]
     iou_matrix: List[Tensor]
     _iou_type: str = "iou"
     _invalid_val: float = -1.0
@@ -169,6 +170,7 @@ class IntersectionOverUnion(Metric):
         self.respect_labels = respect_labels
 
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
+        self.add_state("pred_labels", default=[], dist_reduce_fx=None)
         self.add_state("iou_matrix", default=[], dist_reduce_fx=None)
 
     @staticmethod
@@ -187,6 +189,7 @@ class IntersectionOverUnion(Metric):
             det_boxes = self._get_safe_item_values(p_i["boxes"])
             gt_boxes = self._get_safe_item_values(t_i["boxes"])
             self.groundtruth_labels.append(t_i["labels"])
+            self.pred_labels.append(p_i["labels"])
 
             iou_matrix = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)  # N x M
             if self.respect_labels:
@@ -213,20 +216,32 @@ class IntersectionOverUnion(Metric):
 
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
-        score = torch.cat([mat[mat != self._invalid_val] for mat in self.iou_matrix], 0).mean()
+        # compute global IoU score using only valid values.
+        valid_matrices = [
+            mat[mat != self._invalid_val] for mat in self.iou_matrix if torch.any(mat != self._invalid_val)
+        ]
+        score = torch.cat(valid_matrices, 0).mean() if valid_matrices else torch.tensor(0.0, device=self.device)
         results: dict[str, Tensor] = {f"{self._iou_type}": score}
         if torch.isnan(score):  # if no valid boxes are found
             results[f"{self._iou_type}"] = torch.tensor(0.0, device=score.device)
         if self.class_metrics:
-            gt_labels = dim_zero_cat(self.groundtruth_labels)
-            classes = gt_labels.unique().tolist() if len(gt_labels) > 0 else []
+            # union of ground truth and predicted labels
+            all_labels = dim_zero_cat([dim_zero_cat(self.groundtruth_labels), dim_zero_cat(self.pred_labels)])
+            classes = all_labels.unique().tolist() if all_labels.numel() > 0 else []
             for cl in classes:
-                masked_iou, observed = torch.zeros_like(score), torch.zeros_like(score)
+                masked_iou = torch.zeros_like(score)
+                observed = torch.zeros_like(score)
+
                 for mat, gt_lab in zip(self.iou_matrix, self.groundtruth_labels):
                     scores = mat[:, gt_lab == cl]
-                    masked_iou += scores[scores != self._invalid_val].sum()
-                    observed += scores[scores != self._invalid_val].numel()
-                results.update({f"{self._iou_type}/cl_{cl}": masked_iou / observed})
+                    valid_scores = scores[scores != self._invalid_val]
+                    masked_iou += valid_scores.sum()
+                    observed += valid_scores.numel()
+                # return 0.0 if no valid scores are observed.
+                if observed.item() == 0:
+                    results.update({f"{self._iou_type}/cl_{cl}": torch.tensor(0.0, device=score.device)})
+                else:
+                    results.update({f"{self._iou_type}/cl_{cl}": masked_iou / observed})
         return results
 
     def plot(
