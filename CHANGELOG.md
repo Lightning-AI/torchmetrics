@@ -31,8 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- fix absent class miou ([#2892](https://github.com/Lightning-AI/torchmetrics/pull/2892))
+- Fixed absent class `MeanIOU` ([#2892](https://github.com/Lightning-AI/torchmetrics/pull/2892))
 
+
+- Fixed detection IoU ignores predictions without ground truth ([#3025](https://github.com/Lightning-AI/torchmetrics/pull/3025))
 
 ---
 
