@@ -14,6 +14,7 @@
 from torchmetrics.functional.image.arniqa import arniqa
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.d_s import spatial_distortion_index
+from torchmetrics.functional.image.dists import deep_image_structure_and_texture_similarity
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
@@ -35,6 +36,7 @@ from torchmetrics.functional.image.vif import visual_information_fidelity
 
 __all__ = [
     "arniqa",
+    "deep_image_structure_and_texture_similarity",
     "error_relative_global_dimensionless_synthesis",
     "image_gradients",
     "learned_perceptual_image_patch_similarity",

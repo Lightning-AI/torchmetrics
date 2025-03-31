@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, List, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, List, Union, cast
 
 import torch
 from torch import Tensor
@@ -39,6 +39,24 @@ else:
     __doctest_skip__ = ["clip_score"]
     _CLIPModel = None
     _CLIPProcessor = None
+
+
+class JinaProcessorWrapper:
+    """Wrapper class to convert tensors to PIL images if needed for Jina CLIP model."""
+
+    def __init__(self, processor: _CLIPProcessor) -> None:
+        self.processor = processor
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """Wrap the processor's __call__ method to convert tensors to PIL images if needed."""
+        # Check if 'images' is in kwargs and convert tensors to PIL images if needed
+        from torchvision.transforms.functional import to_pil_image
+
+        if "images" in kwargs:
+            kwargs["images"] = [
+                to_pil_image(img.float().cpu()) if isinstance(img, Tensor) else img for img in kwargs["images"]
+            ]
+        return self.processor(*args, **kwargs)
 
 
 def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) -> Literal["image", "text"]:
@@ -110,22 +128,22 @@ def _get_features(
 
     """
     if modality == "image":
-        # Add type checking for images
-        image_data = [i for i in data if isinstance(i, Tensor)]
+        image_data = [i for i in data if isinstance(i, Tensor)]  # Add type checking for images
         processed = processor(images=[i.cpu() for i in image_data], return_tensors="pt", padding=True)
         return model.get_image_features(processed["pixel_values"].to(device))
     if modality == "text":
         processed = processor(text=data, return_tensors="pt", padding=True)
-        max_position_embeddings = model.config.text_config.max_position_embeddings
-        if processed["attention_mask"].shape[-1] > max_position_embeddings:
-            rank_zero_warn(
-                f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this length."
-                "If longer captions are needed, initialize argument `model_name_or_path` with a model that supports"
-                "longer sequences",
-                UserWarning,
-            )
-            processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
-            processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
+        if hasattr(model.config, "text_config") and hasattr(model.config.text_config, "max_position_embeddings"):
+            max_position_embeddings = model.config.text_config.max_position_embeddings
+            if processed["attention_mask"].shape[-1] > max_position_embeddings:
+                rank_zero_warn(
+                    f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this"
+                    "length. If longer captions are needed, initialize argument `model_name_or_path` with a model that"
+                    "supports longer sequences.",
+                    UserWarning,
+                )
+                processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
+                processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
         return model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
     raise ValueError(f"invalid modality {modality}")
 
@@ -136,6 +154,7 @@ def _clip_score_update(
     model: _CLIPModel,
     processor: _CLIPProcessor,
 ) -> tuple[Tensor, int]:
+    """Update function for CLIP Score."""
     source_modality = _detect_modality(source)
     target_modality = _detect_modality(target)
 
@@ -181,19 +200,43 @@ def _clip_score_update(
 
 
 def _get_clip_model_and_processor(
-    model_name_or_path: Literal[
-        "openai/clip-vit-base-patch16",
-        "openai/clip-vit-base-patch32",
-        "openai/clip-vit-large-patch14-336",
-        "openai/clip-vit-large-patch14",
-    ] = "openai/clip-vit-large-patch14",
+    model_name_or_path: Union[
+        Literal[
+            "openai/clip-vit-base-patch16",
+            "openai/clip-vit-base-patch32",
+            "openai/clip-vit-large-patch14-336",
+            "openai/clip-vit-large-patch14",
+            "jinaai/jina-clip-v2",
+            "zer0int/LongCLIP-L-Diffusers",
+            "zer0int/LongCLIP-GmP-ViT-L-14",
+        ],
+        Callable[[], tuple[_CLIPModel, _CLIPProcessor]],
+    ],
 ) -> tuple[_CLIPModel, _CLIPProcessor]:
+    if callable(model_name_or_path):
+        return model_name_or_path()
+
     if _TRANSFORMERS_GREATER_EQUAL_4_10:
+        from transformers import AutoModel, AutoProcessor
+        from transformers import CLIPConfig as _CLIPConfig
         from transformers import CLIPModel as _CLIPModel
         from transformers import CLIPProcessor as _CLIPProcessor
 
-        model = _CLIPModel.from_pretrained(model_name_or_path)
-        processor = _CLIPProcessor.from_pretrained(model_name_or_path)
+        if "openai" in model_name_or_path:
+            model = _CLIPModel.from_pretrained(model_name_or_path)
+            processor = _CLIPProcessor.from_pretrained(model_name_or_path)
+        elif "jinaai" in model_name_or_path:
+            model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True)
+            processor = JinaProcessorWrapper(
+                processor=AutoProcessor.from_pretrained(model_name_or_path, trust_remote_code=True)
+            )
+        elif "zer0int" in model_name_or_path:
+            config = _CLIPConfig.from_pretrained(model_name_or_path)
+            config.text_config.max_position_embeddings = 248
+            model = _CLIPModel.from_pretrained(model_name_or_path, config=config)
+            processor = _CLIPProcessor.from_pretrained(model_name_or_path, padding="max_length", max_length=248)
+        else:
+            raise ValueError(f"Invalid model_name_or_path {model_name_or_path}. Not supported by `clip_score` metric.")
         return model, processor
 
     raise ModuleNotFoundError(
@@ -205,11 +248,17 @@ def _get_clip_model_and_processor(
 def clip_score(
     source: Union[Tensor, List[Tensor], List[str], str],
     target: Union[Tensor, List[Tensor], List[str], str],
-    model_name_or_path: Literal[
-        "openai/clip-vit-base-patch16",
-        "openai/clip-vit-base-patch32",
-        "openai/clip-vit-large-patch14-336",
-        "openai/clip-vit-large-patch14",
+    model_name_or_path: Union[
+        Literal[
+            "openai/clip-vit-base-patch16",
+            "openai/clip-vit-base-patch32",
+            "openai/clip-vit-large-patch14-336",
+            "openai/clip-vit-large-patch14",
+            "jinaai/jina-clip-v2",
+            "zer0int/LongCLIP-L-Diffusers",
+            "zer0int/LongCLIP-GmP-ViT-L-14",
+        ],
+        Callable[[], tuple[_CLIPModel, _CLIPProcessor]],
     ] = "openai/clip-vit-large-patch14",
 ) -> Tensor:
     r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
@@ -239,6 +288,11 @@ def clip_score(
 
     .. note:: Metric is not scriptable
 
+    .. note::
+        The default CLIP and processor used in this implementation has a maximum sequence length of 77 for text
+        inputs. If you need to process longer captions, you can use the `zer0int/LongCLIP-L-Diffusers` model which
+        has a maximum sequence length of 248.
+
     Args:
         source: Source input. This can be:
             - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.
@@ -251,7 +305,14 @@ def clip_score(
             - `"openai/clip-vit-base-patch32"`
             - `"openai/clip-vit-large-patch14-336"`
             - `"openai/clip-vit-large-patch14"`
+            - `"jinaai/jina-clip-v2"`
+            - `"zer0int/LongCLIP-L-Diffusers"`
+            - `"zer0int/LongCLIP-GmP-ViT-L-14"`
 
+            Alternatively, a callable function that returns a tuple of CLIP compatible model and processor instances
+            can be passed in. By compatible, we mean that the processors `__call__` method should accept a list of
+            strings and list of images and that the model should have a `get_image_features` and `get_text_features`
+            methods.
 
     Raises:
         ModuleNotFoundError:
