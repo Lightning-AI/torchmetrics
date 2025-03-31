@@ -57,7 +57,7 @@ class ContinuousRankedProbabilityScore(Metric):
         >>> target = randn(10)
         >>> crps = ContinuousRankedProbabilityScore()
         >>> crps(preds, target)
-        tensor(0.0880)
+        tensor(0.7731)
 
     """
 

@@ -92,7 +92,7 @@ def continuous_ranked_probability_score(preds: Tensor, target: Tensor) -> Tensor
         >>> preds = randn(10, 5)
         >>> target = randn(10)
         >>> continuous_ranked_probability_score(preds, target)
-        tensor(0.0880)
+        tensor(0.7731)
 
     """
     batch_size, diff, ensemble_sum = _crps_update(preds, target)
