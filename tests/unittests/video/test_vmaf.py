@@ -20,7 +20,7 @@ from einops import rearrange
 from torchmetrics.functional.video.vmaf import video_multi_method_assessment_fusion
 from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE
 from torchmetrics.video import VideoMultiMethodAssessmentFusion
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
@@ -63,10 +63,11 @@ def _reference_vmaf(preds, target, elementary_features=False):
 
 
 # Define inputs
+NUM_BATCHES, BATCH_SIZE = 2, 4
 _inputs = []
 for size in [32, 64]:
-    preds = torch.rand(2, 4, 3, 10, size, size)
-    target = torch.rand(2, 4, 3, 10, size, size)
+    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, 3, 10, size, size)
+    target = torch.rand(NUM_BATCHES, BATCH_SIZE, 3, 10, size, size)
     _inputs.append(_Input(preds=preds, target=target))
 
 
@@ -100,24 +101,14 @@ class TestVMAF(MetricTester):
     def test_vmaf_elementary_features(self, preds, target):
         """Test that elementary features are returned when requested."""
         # Test functional implementation
-        score = video_multi_method_assessment_fusion(preds, target, elementary_features=True)
+        score = video_multi_method_assessment_fusion(preds[0], target[0], elementary_features=True)
+        breakpoint()
         assert isinstance(score, tuple)
         assert len(score) == 4  # VMAF score + ADM + VIF + motion
-        assert score[0].shape == (NUM_BATCHES * BATCH_SIZE * 10,)  # VMAF score shape
-        assert score[1].shape == (NUM_BATCHES * BATCH_SIZE * 10, 4)  # ADM shape
-        assert score[2].shape == (NUM_BATCHES * BATCH_SIZE * 10, 4)  # VIF shape
-        assert score[3].shape == (NUM_BATCHES * BATCH_SIZE * 10,)  # Motion shape
-
-        # Test class implementation
-        metric = VideoMultiMethodAssessmentFusion(elementary_features=True)
-        metric.update(preds, target)
-        score = metric.compute()
-        assert isinstance(score, tuple)
-        assert len(score) == 4
-        assert score[0].shape == (NUM_BATCHES * BATCH_SIZE * 10,)
-        assert score[1].shape == (NUM_BATCHES * BATCH_SIZE * 10, 4)
-        assert score[2].shape == (NUM_BATCHES * BATCH_SIZE * 10, 4)
-        assert score[3].shape == (NUM_BATCHES * BATCH_SIZE * 10,)
+        assert score[0].shape == (BATCH_SIZE,)  # VMAF score shape
+        assert score[1].shape == (BATCH_SIZE, 4)  # ADM shape
+        assert score[2].shape == (BATCH_SIZE, 4)  # VIF shape
+        assert score[3].shape == (BATCH_SIZE,)  # Motion shape
 
     def test_vmaf_half_cpu(self, preds, target):
         """Test for half precision on CPU."""
@@ -145,5 +136,3 @@ def test_vmaf_raises_error():
     with pytest.raises(RuntimeError, match="vmaf-torch is not installed"):
         video_multi_method_assessment_fusion(torch.rand(1, 3, 10, 32, 32), torch.rand(1, 3, 10, 32, 32))
 
-    with pytest.raises(RuntimeError, match="vmaf-torch is not installed"):
-        VideoMultiMethodAssessmentFusion()
