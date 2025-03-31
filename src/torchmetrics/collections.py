@@ -198,7 +198,12 @@ class MetricCollection(ModuleDict):
 
     def __init__(
         self,
-        metrics: Union[Metric, Sequence[Metric], dict[str, Metric]],
+        metrics: Union[
+            Metric,
+            "MetricCollection",
+            Sequence[Union[Metric, "MetricCollection"]],
+            dict[str, Union[Metric, "MetricCollection"]],
+        ],
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
@@ -431,7 +436,12 @@ class MetricCollection(ModuleDict):
 
     def add_metrics(
         self,
-        metrics: Union[Metric, Sequence[Metric], dict[str, Metric], "MetricCollection"],
+        metrics: Union[
+            Metric,
+            "MetricCollection",
+            Sequence[Union[Metric, "MetricCollection"]],
+            dict[str, Union[Metric, "MetricCollection"]],
+        ],
         *additional_metrics: Metric,
     ) -> None:
         """Add new metrics to Metric Collection."""
