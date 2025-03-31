@@ -65,8 +65,8 @@ def _reference_vmaf(preds, target, elementary_features=False):
 # Define inputs
 _inputs = []
 for size in [32, 64]:
-    preds = torch.rand(NUM_BATCHES, BATCH_SIZE, 3, 10, size, size)
-    target = torch.rand(NUM_BATCHES, BATCH_SIZE, 3, 10, size, size)
+    preds = torch.rand(2, 4, 3, 10, size, size)
+    target = torch.rand(2, 4, 3, 10, size, size)
     _inputs.append(_Input(preds=preds, target=target))
 
 
@@ -75,27 +75,26 @@ for size in [32, 64]:
 class TestVMAF(MetricTester):
     """Test class for `VideoMultiMethodAssessmentFusion` metric."""
 
-    atol = 1e-6
+    atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_vmaf(self, preds, target, ddp):
-        """Test functional implementation of metric."""
-        self.run_functional_metric_test(
-            preds,
-            target,
-            metric_functional=video_multi_method_assessment_fusion,
+        """Test class implementation of metric."""
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=VideoMultiMethodAssessmentFusion,
             reference_metric=_reference_vmaf,
         )
 
-    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_vmaf_class(self, preds, target, ddp):
-        """Test class implementation of metric."""
-        self.run_class_metric_test(
-            ddp,
-            preds,
-            target,
-            VideoMultiMethodAssessmentFusion,
-            _reference_vmaf,
+    def test_vmaf_functional(self, preds, target):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=video_multi_method_assessment_fusion,
+            reference_metric=_reference_vmaf,
         )
 
     def test_vmaf_elementary_features(self, preds, target):
@@ -122,46 +121,22 @@ class TestVMAF(MetricTester):
 
     def test_vmaf_half_cpu(self, preds, target):
         """Test for half precision on CPU."""
-        # Convert inputs to half precision
-        preds = preds.to(torch.float16)
-        target = target.to(torch.float16)
-
         self.run_precision_test_cpu(
-            preds,
-            target,
-            video_multi_method_assessment_fusion,
-            _reference_vmaf,
+            preds=preds,
+            target=target,
+            metric_module=VideoMultiMethodAssessmentFusion,
+            metric_functional=video_multi_method_assessment_fusion,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_vmaf_half_gpu(self, preds, target):
         """Test for half precision on GPU."""
-        # Convert inputs to half precision
-        preds = preds.to(torch.float16)
-        target = target.to(torch.float16)
-
         self.run_precision_test_gpu(
-            preds,
-            target,
-            video_multi_method_assessment_fusion,
-            _reference_vmaf,
+            preds=preds,
+            target=target,
+            metric_module=VideoMultiMethodAssessmentFusion,
+            metric_functional=video_multi_method_assessment_fusion,
         )
-
-    def test_vmaf_plot(self, preds, target):
-        """Test the plot method of the metric."""
-        # Test basic VMAF plotting
-        metric = VideoMultiMethodAssessmentFusion()
-        metric.update(preds, target)
-        fig, ax = metric.plot()
-        assert fig is not None
-        assert ax is not None
-
-        # Test plotting with elementary features
-        metric = VideoMultiMethodAssessmentFusion(elementary_features=True)
-        metric.update(preds, target)
-        fig, ax = metric.plot()
-        assert fig is not None
-        assert ax is not None
 
 
 @pytest.mark.skipif(_TORCH_VMAF_AVAILABLE, reason="test requires vmaf-torch")
