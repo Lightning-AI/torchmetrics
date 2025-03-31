@@ -46,18 +46,19 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor]:
     # inflate observations:
     observation_inflated = target.unsqueeze(1).expand_as(preds)
 
-    diff = (1 / n_ensemble_members) * torch.sum(torch.abs(preds - observation_inflated), dim=1)
+    # Compute mean absolute difference between predictions and target
+    diff = torch.sum(torch.abs(preds - observation_inflated), dim=1) / n_ensemble_members
 
+    # Compute ensemble term using the reference implementation formula
     ensemble_diffs = torch.abs(preds.unsqueeze(2) - preds.unsqueeze(1))
-    ensemble_sum = torch.sum(ensemble_diffs, dim=(1, 2))  # Sum over both ensemble dimensions
-    ensemble_sum_scale_factor = 1 / (n_ensemble_members * (n_ensemble_members - 1))
-    ensemble_sum *= ensemble_sum_scale_factor
+    ensemble_sum = torch.sum(ensemble_diffs, dim=(1, 2)) / (2 * n_ensemble_members * n_ensemble_members)
+
     return batch_size, diff, ensemble_sum
 
 
 def _crps_compute(batch_size: int, diff: Tensor, ensemble_sum: Tensor) -> Tensor:
     """Final CRPS computation."""
-    return torch.sum(diff - ensemble_sum)  # / batch_size
+    return torch.mean(diff - ensemble_sum)  # Changed from sum to mean
 
 
 def continuous_ranked_probability_score(preds: Tensor, target: Tensor) -> Tensor:
