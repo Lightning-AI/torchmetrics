@@ -31,7 +31,7 @@ from torchmetrics.classification.confusion_matrix import (
     MulticlassConfusionMatrix,
     MultilabelConfusionMatrix,
 )
-from torchmetrics.classification.dice import Dice
+from torchmetrics.classification.eer import EER, BinaryEER, MulticlassEER, MultilabelEER
 from torchmetrics.classification.exact_match import ExactMatch, MulticlassExactMatch, MultilabelExactMatch
 from torchmetrics.classification.f_beta import (
     BinaryF1Score,
@@ -131,6 +131,7 @@ from torchmetrics.classification.stat_scores import (
 
 __all__ = [
     "AUROC",
+    "EER",
     "ROC",
     "Accuracy",
     "AveragePrecision",
@@ -140,6 +141,7 @@ __all__ = [
     "BinaryCalibrationError",
     "BinaryCohenKappa",
     "BinaryConfusionMatrix",
+    "BinaryEER",
     "BinaryF1Score",
     "BinaryFBetaScore",
     "BinaryFairness",
@@ -163,7 +165,6 @@ __all__ = [
     "CalibrationError",
     "CohenKappa",
     "ConfusionMatrix",
-    "Dice",
     "ExactMatch",
     "F1Score",
     "FBetaScore",
@@ -178,6 +179,7 @@ __all__ = [
     "MulticlassCalibrationError",
     "MulticlassCohenKappa",
     "MulticlassConfusionMatrix",
+    "MulticlassEER",
     "MulticlassExactMatch",
     "MulticlassF1Score",
     "MulticlassFBetaScore",
@@ -202,6 +204,7 @@ __all__ = [
     "MultilabelAveragePrecision",
     "MultilabelConfusionMatrix",
     "MultilabelCoverageError",
+    "MultilabelEER",
     "MultilabelExactMatch",
     "MultilabelF1Score",
     "MultilabelFBetaScore",

@@ -14,3 +14,8 @@ ________________
 
 .. autoclass:: torchmetrics.detection.mean_ap.MeanAveragePrecision
     :exclude-members: update, compute
+
+Functional Interface
+____________________
+
+.. autofunction:: torchmetrics.functional.detection.mean_average_precision

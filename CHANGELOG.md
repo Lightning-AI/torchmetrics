@@ -6,28 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
----
 
-## [UnReleased] - 2024-MM-DD
+## [Unreleased] - YYYY-MM-DD
 
 ### Added
 
-- Added `JensenShannonDivergence` metric to regression package ([#2992](https://github.com/Lightning-AI/torchmetrics/pull/2992))
-
-
-- Added `ClusterAccuracy` metric to cluster package ([#2777](https://github.com/Lightning-AI/torchmetrics/pull/2777))
-
-
-- Added `ARNIQA` metric to image domain ([#2953](https://github.com/PyTorchLightning/metrics/pull/2953))
-
-
-- Added support for more models and processors in `CLIPScore` ([#2978](https://github.com/PyTorchLightning/metrics/pull/2978))
-
-
-- Added `DeepImageStructureAndTextureSimilarity` to image package ([#2993](https://github.com/PyTorchLightning/metrics/pull/2993))
+-
 
 
 ### Changed
+
+-
+
+
+### Deprecated
 
 -
 
@@ -39,8 +31,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed absent class `MeanIOU` ([#2892](https://github.com/Lightning-AI/torchmetrics/pull/2892))
 
+
+- Fixed detection IoU ignores predictions without ground truth ([#3025](https://github.com/Lightning-AI/torchmetrics/pull/3025))
+
+---
+
+## [1.7.0] - 2025-03-20
+
+### Added
+
+- Additions to image domain:
+  - Added `ARNIQA` metric ([#2953](https://github.com/Lightning-AI/torchmetrics/pull/2953))
+  - Added `DeepImageStructureAndTextureSimilarity` ([#2993](https://github.com/Lightning-AI/torchmetrics/pull/2993))
+  - Added support for more models and processors in `CLIPScore` ([#2978](https://github.com/Lightning-AI/torchmetrics/pull/2978))
+- Added `JensenShannonDivergence` metric to regression package ([#2992](https://github.com/Lightning-AI/torchmetrics/pull/2992))
+- Added `ClusterAccuracy` metric to cluster package ([#2777](https://github.com/Lightning-AI/torchmetrics/pull/2777))
+- Added `Equal Error Rate (EER)` to classification package ([#3013](https://github.com/Lightning-AI/torchmetrics/pull/3013))
+- Added functional interface to `MeanAveragePrecision` metric ([#3011](https://github.com/Lightning-AI/torchmetrics/pull/3011))
+
+### Changed
+
+- Making `num_classes` optional for `one-hot` inputs in `MeanIoU` ([#3012](https://github.com/Lightning-AI/torchmetrics/pull/3012))
+
+### Removed
+
+- Removed `Dice` from classification ([#3017](https://github.com/Lightning-AI/torchmetrics/pull/3017))
+
+### Fixed
+
+- Fixed edge case in integration between class-wise wrapper and metric tracker ([#3008](https://github.com/Lightning-AI/torchmetrics/pull/3008))
+- Fixed `IndexError` in `MultiClassAccuracy` when using `top_k` with single sample  ([#3021](https://github.com/Lightning-AI/torchmetrics/pull/3021))
 
 ---
 
@@ -48,8 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed logic in how metric states referencing is handled in `MetricCollection` ([#2990](https://github.com/PyTorchLightning/metrics/pull/2990))
-- Fixed integration between class-wise wrapper and metric tracker ([#3004](https://github.com/PyTorchLightning/metrics/pull/3004))
+- Fixed logic in how metric states referencing is handled in `MetricCollection` ([#2990](https://github.com/Lightning-AI/torchmetrics/pull/2990))
+- Fixed integration between class-wise wrapper and metric tracker ([#3004](https://github.com/Lightning-AI/torchmetrics/pull/3004))
 
 
 ## [1.6.2] - 2024-02-28

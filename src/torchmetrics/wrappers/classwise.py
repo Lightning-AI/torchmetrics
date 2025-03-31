@@ -113,6 +113,9 @@ class ClasswiseWrapper(WrapperMetric):
 
     """
 
+    metric: Metric
+    labels: Optional[list[str]]
+
     def __init__(
         self,
         metric: Metric,
