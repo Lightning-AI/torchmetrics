@@ -60,7 +60,7 @@ class _LevenshteinEditDistance:
     where the most of this implementation is adapted and copied from.
 
     Args:
-        reference_tokens: list of reference tokens
+        reference_tokens: list of reference tokens or tensor values
         op_insert: cost of insertion operation
         op_delete: cost of deletion operation
         op_substitute: cost of substitution operation
@@ -68,7 +68,11 @@ class _LevenshteinEditDistance:
     """
 
     def __init__(
-        self, reference_tokens: list[str], op_insert: int = 1, op_delete: int = 1, op_substitute: int = 1
+        self,
+        reference_tokens: Union[list[str], list[int], list[float]],
+        op_insert: int = 1,
+        op_delete: int = 1,
+        op_substitute: int = 1,
     ) -> None:
         self.reference_tokens = reference_tokens
         self.reference_len = len(reference_tokens)
@@ -82,11 +86,13 @@ class _LevenshteinEditDistance:
         self.op_nothing = 0
         self.op_undefined = _INT_INFINITY
 
-    def __call__(self, prediction_tokens: list[str]) -> tuple[int, tuple[_EditOperations, ...]]:
+    def __call__(
+        self, prediction_tokens: Union[list[str], list[int], list[float]]
+    ) -> tuple[int, tuple[_EditOperations, ...]]:
         """Calculate edit distance between self._words_ref and the hypothesis. Uses cache to skip some computations.
 
         Args:
-            prediction_tokens: A tokenized predicted sentence.
+            prediction_tokens: A tokenized predicted sentence or tensor values.
 
         Return:
             A tuple of a calculated edit distance and a trace of executed operations.
@@ -105,14 +111,14 @@ class _LevenshteinEditDistance:
 
     def _levenshtein_edit_distance(
         self,
-        prediction_tokens: list[str],
+        prediction_tokens: Union[list[str], list[int], list[float]],
         prediction_start: int,
         cache: list[list[tuple[int, _EditOperations]]],
     ) -> tuple[int, list[list[tuple[int, _EditOperations]]], tuple[_EditOperations, ...]]:
         """Dynamic programming algorithm to compute the Levenhstein edit distance.
 
         Args:
-            prediction_tokens: A tokenized predicted sentence.
+            prediction_tokens: A tokenized predicted sentence or tensor values.
             prediction_start: An index where a predicted sentence to be considered from.
             cache: A cached Levenshtein edit distance.
 
@@ -146,7 +152,15 @@ class _LevenshteinEditDistance:
                         _EditOperations.OP_DELETE,
                     )
                 else:
-                    if prediction_tokens[i - 1] == self.reference_tokens[j - 1]:
+                    # Handle both string and numeric comparisons
+                    if isinstance(prediction_tokens[i - 1], (int, float)) and isinstance(
+                        self.reference_tokens[j - 1], (int, float)
+                    ):
+                        is_equal = abs(prediction_tokens[i - 1] - self.reference_tokens[j - 1]) < 1e-10
+                    else:
+                        is_equal = prediction_tokens[i - 1] == self.reference_tokens[j - 1]
+
+                    if is_equal:
                         cost_substitute = self.op_nothing
                         operation_substitute = _EditOperations.OP_NOTHING
                     else:
@@ -209,14 +223,18 @@ class _LevenshteinEditDistance:
 
         return trace
 
-    def _add_cache(self, prediction_tokens: list[str], edit_distance: list[list[tuple[int, _EditOperations]]]) -> None:
+    def _add_cache(
+        self,
+        prediction_tokens: Union[list[str], list[int], list[float]],
+        edit_distance: list[list[tuple[int, _EditOperations]]],
+    ) -> None:
         """Add newly computed rows to cache.
 
         Since edit distance is only calculated on the hypothesis suffix that was not in cache, the number of rows in
         `edit_distance` matrx may be shorter than hypothesis length. In that case we skip over these initial words.
 
         Args:
-            prediction_tokens: A tokenized predicted sentence.
+            prediction_tokens: A tokenized predicted sentence or tensor values.
             edit_distance:
                 A matrix of the Levenshtedin edit distance. The element part of the matrix is a tuple of an edit
                 operation cost and an edit operation itself.
@@ -232,21 +250,23 @@ class _LevenshteinEditDistance:
 
         # Jump through the cache to the current position
         for i in range(skip_num):
-            node = node[prediction_tokens[i]][0]  # type: ignore
+            node = node[str(prediction_tokens[i])][0]  # type: ignore
 
         # Update cache with newly computed rows
         for word, row in zip(prediction_tokens[skip_num:], edit_distance):
-            if word not in node:
-                node[word] = ({}, tuple(row))  # type: ignore
+            if str(word) not in node:
+                node[str(word)] = ({}, tuple(row))  # type: ignore
                 self.cache_size += 1
-            value = node[word]
+            value = node[str(word)]
             node = value[0]  # type: ignore
 
-    def _find_cache(self, prediction_tokens: list[str]) -> tuple[int, list[list[tuple[int, _EditOperations]]]]:
+    def _find_cache(
+        self, prediction_tokens: Union[list[str], list[int], list[float]]
+    ) -> tuple[int, list[list[tuple[int, _EditOperations]]]]:
         """Find the already calculated rows of the Levenshtein edit distance metric.
 
         Args:
-            prediction_tokens: A tokenized predicted sentence.
+            prediction_tokens: A tokenized predicted sentence or tensor values.
 
         Return:
             A tuple of a start hypothesis position and `edit_distance` matrix.
@@ -261,9 +281,9 @@ class _LevenshteinEditDistance:
         start_position = 0
         edit_distance: list[list[tuple[int, _EditOperations]]] = [self._get_initial_row(self.reference_len)]
         for word in prediction_tokens:
-            if word in node:
+            if str(word) in node:
                 start_position += 1
-                node, row = node[word]  # type: ignore
+                node, row = node[str(word)]  # type: ignore
                 edit_distance.append(row)  # type: ignore
             else:
                 break
@@ -327,12 +347,15 @@ def _validate_inputs(
     return ref_corpus, hypothesis_corpus
 
 
-def _edit_distance(prediction_tokens: list[str], reference_tokens: list[str]) -> int:
+def _edit_distance(
+    prediction_tokens: Union[list[str], list[int], list[float]],
+    reference_tokens: Union[list[str], list[int], list[float]],
+) -> int:
     """Dynamic programming algorithm to compute the edit distance.
 
     Args:
-        prediction_tokens: A tokenized predicted sentence
-        reference_tokens: A tokenized reference sentence
+        prediction_tokens: A tokenized predicted sentence or tensor values
+        reference_tokens: A tokenized reference sentence or tensor values
     Returns:
         Edit distance between the predicted sentence and the reference sentence
 
@@ -344,7 +367,13 @@ def _edit_distance(prediction_tokens: list[str], reference_tokens: list[str]) ->
         dp[0][j] = j
     for i in range(1, len(prediction_tokens) + 1):
         for j in range(1, len(reference_tokens) + 1):
-            if prediction_tokens[i - 1] == reference_tokens[j - 1]:
+            # Handle both string and numeric comparisons
+            if isinstance(prediction_tokens[i - 1], (int, float)) and isinstance(reference_tokens[j - 1], (int, float)):
+                is_equal = abs(prediction_tokens[i - 1] - reference_tokens[j - 1]) < 1e-10
+            else:
+                is_equal = prediction_tokens[i - 1] == reference_tokens[j - 1]
+
+            if is_equal:
                 dp[i][j] = dp[i - 1][j - 1]
             else:
                 dp[i][j] = min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1

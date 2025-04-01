@@ -21,22 +21,61 @@ from torchmetrics.functional.text.helper import _LevenshteinEditDistance as _LE_
 
 
 def _edit_distance_update(
-    preds: Union[str, Sequence[str]],
-    target: Union[str, Sequence[str]],
+    preds: Union[str, Sequence[str], Tensor, Sequence[Tensor]],
+    target: Union[str, Sequence[str], Tensor, Sequence[Tensor]],
     substitution_cost: int = 1,
 ) -> Tensor:
-    if isinstance(preds, str):
-        preds = [preds]
-    if isinstance(target, str):
-        target = [target]
-    if not all(isinstance(x, str) for x in preds):
-        raise ValueError(f"Expected all values in argument `preds` to be string type, but got {preds}")
-    if not all(isinstance(x, str) for x in target):
-        raise ValueError(f"Expected all values in argument `target` to be string type, but got {target}")
-    if len(preds) != len(target):
-        raise ValueError(
-            f"Expected argument `preds` and `target` to have same length, but got {len(preds)} and {len(target)}"
-        )
+    """Update the edit distance score with the current set of predictions and targets.
+
+    Args:
+        preds: An iterable of predicted texts (strings) or a tensor of categorical values or a list of tensors
+        target: An iterable of reference texts (strings) or a tensor of categorical values or a list of tensors
+        substitution_cost: The cost of substituting one character for another.
+
+    Returns:
+        A tensor containing the edit distance scores for each prediction-target pair.
+
+    """
+    # Handle tensor inputs
+    if isinstance(preds, Tensor) and isinstance(target, Tensor):
+        if preds.dim() == 1:
+            preds = preds.unsqueeze(0)
+        if target.dim() == 1:
+            target = target.unsqueeze(0)
+        if preds.size(0) != target.size(0):
+            raise ValueError(
+                f"Expected argument `preds` and `target` to have same batch size, but got {preds.size(0)} and {target.size(0)}"
+            )
+        # Convert tensors to lists of lists for the edit distance algorithm
+        preds = [p.tolist() for p in preds]
+        target = [t.tolist() for t in target]
+    # Handle lists of tensors
+    elif isinstance(preds, (list, tuple)) and isinstance(target, (list, tuple)):
+        if not all(isinstance(x, Tensor) for x in preds):
+            raise ValueError(f"Expected all values in argument `preds` to be tensor type, but got {preds}")
+        if not all(isinstance(x, Tensor) for x in target):
+            raise ValueError(f"Expected all values in argument `target` to be tensor type, but got {target}")
+        if len(preds) != len(target):
+            raise ValueError(
+                f"Expected argument `preds` and `target` to have same length, but got {len(preds)} and {len(target)}"
+            )
+        # Convert tensors to lists for the edit distance algorithm
+        preds = [p.tolist() for p in preds]
+        target = [t.tolist() for t in target]
+    else:
+        # Handle string inputs (existing behavior)
+        if isinstance(preds, str):
+            preds = [preds]
+        if isinstance(target, str):
+            target = [target]
+        if not all(isinstance(x, str) for x in preds):
+            raise ValueError(f"Expected all values in argument `preds` to be string type, but got {preds}")
+        if not all(isinstance(x, str) for x in target):
+            raise ValueError(f"Expected all values in argument `target` to be string type, but got {target}")
+        if len(preds) != len(target):
+            raise ValueError(
+                f"Expected argument `preds` and `target` to have same length, but got {len(preds)} and {len(target)}"
+            )
 
     distance = [
         _LE_distance(t, op_substitute=substitution_cost)(p)[0]  # type: ignore[arg-type]
@@ -63,8 +102,8 @@ def _edit_distance_compute(
 
 
 def edit_distance(
-    preds: Union[str, Sequence[str]],
-    target: Union[str, Sequence[str]],
+    preds: Union[str, Sequence[str], Tensor],
+    target: Union[str, Sequence[str], Tensor],
     substitution_cost: int = 1,
     reduction: Optional[Literal["mean", "sum", "none"]] = "mean",
 ) -> Tensor:
@@ -76,8 +115,8 @@ def edit_distance(
     Implementation is similar to `nltk.edit_distance <https://www.nltk.org/_modules/nltk/metrics/distance.html>`_.
 
     Args:
-        preds: An iterable of predicted texts (strings).
-        target: An iterable of reference texts (strings).
+        preds: An iterable of predicted texts (strings) or a tensor of categorical values
+        target: An iterable of reference texts (strings) or a tensor of categorical values
         substitution_cost: The cost of substituting one character for another.
         reduction: a method to reduce metric score over samples.
 
@@ -87,19 +126,19 @@ def edit_distance(
 
     Raises:
         ValueError:
-            If ``preds`` and ``target`` do not have the same length.
+            If ``preds`` and ``target`` do not have the same length/batch size.
         ValueError:
-            If ``preds`` or ``target`` contain non-string values.
+            If ``preds`` or ``target`` contain non-string values when using string inputs.
 
     Example::
-        Basic example with two strings. Going from “rain” -> “sain” -> “shin” -> “shine” takes 3 edits:
+        Basic example with two strings. Going from "rain" -> "sain" -> "shin" -> "shine" takes 3 edits:
 
         >>> from torchmetrics.functional.text import edit_distance
         >>> edit_distance(["rain"], ["shine"])
         tensor(3.)
 
     Example::
-        Basic example with two strings and substitution cost of 2. Going from “rain” -> “sain” -> “shin” -> “shine”
+        Basic example with two strings and substitution cost of 2. Going from "rain" -> "sain" -> "shin" -> "shine"
         takes 3 edits, where two of them are substitutions:
 
         >>> from torchmetrics.functional.text import edit_distance
@@ -114,6 +153,15 @@ def edit_distance(
         tensor([3, 4], dtype=torch.int32)
         >>> edit_distance(["rain", "lnaguaeg"], ["shine", "language"], reduction="mean")
         tensor(3.5000)
+
+    Example::
+        Using tensors of categorical values:
+
+        >>> from torchmetrics.functional.text import edit_distance
+        >>> preds = torch.tensor([[1, 2, 3], [4, 5, 6]])
+        >>> target = torch.tensor([[1, 2, 4], [4, 5, 7]])
+        >>> edit_distance(preds, target)
+        tensor(2.0000)
 
     """
     distance = _edit_distance_update(preds, target, substitution_cost)
