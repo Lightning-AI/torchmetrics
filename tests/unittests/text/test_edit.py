@@ -14,6 +14,7 @@
 from functools import partial
 
 import pytest
+import torch
 from nltk.metrics.distance import edit_distance as nltk_edit_distance
 
 from torchmetrics.functional.text.edit import edit_distance
@@ -130,6 +131,85 @@ class TestEditDistance(TextTester):
 def test_edit_empty_functional():
     """Test functional implementation of metric with empty inputs."""
     assert edit_distance([], []) == 0
+
+
+def test_edit_tensor_inputs():
+    """Test edit distance with tensor inputs."""
+    # Test 1D tensor inputs (single sequence)
+    preds = torch.tensor([1, 2, 3, 4])
+    target = torch.tensor([1, 2, 5, 4])
+    assert edit_distance(preds, target) == 1.0
+
+    # Test with different substitution cost
+    assert edit_distance(preds, target, substitution_cost=2) == 2.0
+
+    # Test 2D tensor inputs (batch of sequences)
+    preds = torch.tensor([[1, 2, 3, 4], [5, 6, 7, 8]])
+    target = torch.tensor([[1, 2, 5, 4], [5, 9, 7, 8]])
+    # Each sequence has 1 edit, so mean is 1.0
+    assert edit_distance(preds, target) == 1.0
+    # Sum of edits is 2.0
+    assert edit_distance(preds, target, reduction="sum") == 2.0
+    assert torch.all(edit_distance(preds, target, reduction="none") == torch.tensor([1, 1], dtype=torch.int32))
+
+    # Test with different length sequences using lists of tensors
+    preds = [torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6, 7])]
+    target = [torch.tensor([1, 2, 3, 4]), torch.tensor([4, 5, 7])]
+    # Each sequence has 1 edit, so mean is 1.0
+    assert edit_distance(preds, target) == 1.0
+    # Sum of edits is 2.0
+    assert edit_distance(preds, target, reduction="sum") == 2.0
+    assert torch.all(edit_distance(preds, target, reduction="none") == torch.tensor([1, 1], dtype=torch.int32))
+
+    # Test with the example from the PR description
+    preds = torch.tensor([[1, 2, 3], [4, 5, 6]])
+    target = torch.tensor([[1, 2, 4], [4, 5, 7]])
+    # Each sequence has 1 edit, so mean is 1.0
+    assert edit_distance(preds, target) == 1.0
+
+    # Test with the list example from the PR description
+    gold = ["this", "is", "fun"]
+    hypothesis = ["this", "isn't", "fun"]
+    # When treated as lists of strings, edit distance should be 1
+    assert edit_distance(gold, hypothesis) == 1.0
+
+
+def test_edit_distance_class_with_tensors():
+    """Test EditDistance class with tensor inputs."""
+    # Test with the example from the PR description
+    preds = torch.tensor([[1, 2, 3], [4, 5, 6]])
+    target = torch.tensor([[1, 2, 4], [4, 5, 7]])
+
+    # Test with default parameters
+    metric = EditDistance()
+    # Each sequence has 1 edit, so mean is 1.0
+    assert metric(preds, target) == 1.0
+
+    # Test with different reduction methods
+    metric = EditDistance(reduction="sum")
+    # Sum of edits is 2.0
+    assert metric(preds, target) == 2.0
+
+    metric = EditDistance(reduction="none")
+    result = metric(preds, target)
+    assert torch.all(result == torch.tensor([1, 1], dtype=torch.int32))
+
+    # Test with different substitution cost
+    metric = EditDistance(substitution_cost=2)
+    # Each sequence has 1 edit with cost 2, so mean is 2.0
+    assert metric(preds, target) == 2.0
+
+    # Test accumulation over multiple batches
+    metric = EditDistance()
+    metric.update(preds, target)
+
+    # Add another batch with different edit distances
+    preds2 = torch.tensor([[1, 2, 3, 4], [5, 6, 7, 8]])
+    target2 = torch.tensor([[1, 9, 3, 4], [5, 6, 9, 8]])
+    metric.update(preds2, target2)
+
+    # Should average all edit distances (1 + 1 + 1 + 1) / 4 = 1.0
+    assert metric.compute() == 1.0
 
 
 def test_edit_raise_errors():
