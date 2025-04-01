@@ -135,4 +135,3 @@ def test_vmaf_raises_error():
     """Test that appropriate error is raised when vmaf-torch is not installed."""
     with pytest.raises(RuntimeError, match="vmaf-torch is not installed"):
         video_multi_method_assessment_fusion(torch.rand(1, 3, 10, 32, 32), torch.rand(1, 3, 10, 32, 32))
-
