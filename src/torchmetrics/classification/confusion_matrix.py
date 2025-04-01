@@ -483,7 +483,7 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
     r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryConfusionMatrix`,
     :class:`~torchmetrics.classification.MulticlassConfusionMatrix` and
     :class:`~torchmetrics.classification.MultilabelConfusionMatrix` for the specific details of each argument influence

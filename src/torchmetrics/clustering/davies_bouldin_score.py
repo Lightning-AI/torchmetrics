@@ -119,7 +119,7 @@ class DaviesBouldinScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import DaviesBouldinScore
             >>> metric = DaviesBouldinScore()
-            >>> metric.update(torch.randn(10, 3), torch.randint(0, 2, (10,)))
+            >>> metric.update(torch.randn(20, 3), torch.randint(0, 2, (20,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
         .. plot::
@@ -129,9 +129,9 @@ class DaviesBouldinScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import DaviesBouldinScore
             >>> metric = DaviesBouldinScore()
-            >>> values = [ ]
+            >>> values = []
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            ...     values.append(metric(torch.randn(20, 3), torch.randint(0, 2, (20,))))
             >>> fig_, ax_ = metric.plot(values)
 
         """

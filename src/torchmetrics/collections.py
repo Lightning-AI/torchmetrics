@@ -198,7 +198,12 @@ class MetricCollection(ModuleDict):
 
     def __init__(
         self,
-        metrics: Union[Metric, Sequence[Metric], dict[str, Metric]],
+        metrics: Union[
+            Metric,
+            "MetricCollection",
+            Sequence[Union[Metric, "MetricCollection"]],
+            dict[str, Union[Metric, "MetricCollection"]],
+        ],
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
@@ -247,10 +252,8 @@ class MetricCollection(ModuleDict):
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
-            if self._state_is_copy:
-                # If we have deep copied state in between updates, reestablish link
-                self._compute_groups_create_state_ref()
-                self._state_is_copy = False
+            self._state_is_copy = False
+            self._compute_groups_create_state_ref()
         else:  # the first update always do per metric to form compute groups
             for m in self.values(copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
@@ -259,6 +262,7 @@ class MetricCollection(ModuleDict):
             if self._enable_compute_groups:
                 self._merge_compute_groups()
                 # create reference between states
+                self._state_is_copy = False
                 self._compute_groups_create_state_ref()
                 self._groups_checked = True
 
@@ -339,7 +343,7 @@ class MetricCollection(ModuleDict):
                 of just passed by reference
 
         """
-        if not self._state_is_copy and self._groups_checked:
+        if not self._state_is_copy:  # only create reference if not already copied
             for cg in self._groups.values():
                 m0 = getattr(self, cg[0])
                 for i in range(1, len(cg)):
@@ -431,7 +435,14 @@ class MetricCollection(ModuleDict):
             m.persistent(mode)
 
     def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], dict[str, Metric]], *additional_metrics: Metric
+        self,
+        metrics: Union[
+            Metric,
+            "MetricCollection",
+            Sequence[Union[Metric, "MetricCollection"]],
+            dict[str, Union[Metric, "MetricCollection"]],
+        ],
+        *additional_metrics: Metric,
     ) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
@@ -491,6 +502,11 @@ class MetricCollection(ModuleDict):
                         v.prefix = metric.prefix
                         v._from_collection = True
                         self[k] = v
+        elif isinstance(metrics, MetricCollection):
+            for name, metric in metrics.items(keep_base=False):
+                if name in self:
+                    raise ValueError(f"Metric with name '{name}' already exists in the collection.")
+                self[name] = metric
         else:
             raise ValueError(
                 "Unknown input to MetricCollection. Expected, `Metric`, `MetricCollection` or `dict`/`sequence` of the"
