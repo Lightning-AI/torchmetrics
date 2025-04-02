@@ -359,15 +359,9 @@ def _refine_preds_oh(preds: Tensor, preds_oh: Tensor, target: Tensor, top_k: int
         Refined one-hot encoded predictions tensor
 
     """
-    if preds.dim() == 1:
-        # Handle 1D tensor case (single sample)
+    if preds.dim() == 1:  # Handle 1D tensor case (single sample)
         preds = preds.unsqueeze(0)  # Add batch dimension
         target = target.unsqueeze(0) if target.dim() == 0 else target
-        # For multi-dimensional tensors, just ensure consistent dimensions
-        # preds = preds.movedim(1, -1) if preds.dim() > 2 else preds
-        # target = target.reshape(-1) if target.dim() > 1 else target
-        # preds = preds.reshape(preds.shape[0], -1) if preds.dim() > 2 else preds
-        # target = target.reshape(-1) if target.dim() > 1 else target
 
     top_k_indices = torch.topk(preds, k=top_k, dim=1).indices
     top_1_indices = top_k_indices[:, 0]
