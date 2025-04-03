@@ -13,22 +13,22 @@ concurrency:
 
 jobs:
   check-code:
-    uses: Lightning-AI/utilities/.github/workflows/check-typing.yml@v0.14.2
+    uses: Lightning-AI/utilities/.github/workflows/check-typing.yml@v0.14.3
     with:
-      actions-ref: v0.14.2
+      actions-ref: v0.14.3
       extra-typing: "typing"
 
   check-schema:
     uses: Lightning-AI/utilities/.github/workflows/check-schema.yml@v0.14.3
     with:
-      actions-ref: v0.14.2
+      actions-ref: v0.14.3
       azure-schema-version: "v1.208.0"
 
   check-package:
     if: github.event.pull_request.draft == false
-    uses: Lightning-AI/utilities/.github/workflows/check-package.yml@v0.14.2
+    uses: Lightning-AI/utilities/.github/workflows/check-package.yml@v0.14.3
     with:
-      actions-ref: v0.14.2
+      actions-ref: v0.14.3
       artifact-name: dist-packages-${{ github.sha }}
       import-name: "torchmetrics"
       testing-matrix: |
@@ -38,7 +38,7 @@ jobs:
         }
 
   check-md-links:
-    uses: Lightning-AI/utilities/.github/workflows/check-md-links.yml@v0.14.2
+    uses: Lightning-AI/utilities/.github/workflows/check-md-links.yml@v0.14.3
     with:
       base-branch: master
       config-file: ".github/markdown-links-config.json"
