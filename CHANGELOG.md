@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed bug in `PearsonCorrCoef` is updated on single samples at a time ([#2019](https://github.com/Lightning-AI/torchmetrics/pull/2019)
 - Fixed edge case in integration between class-wise wrapper and metric tracker ([#3008](https://github.com/Lightning-AI/torchmetrics/pull/3008))
 - Fixed `IndexError` in `MultiClassAccuracy` when using `top_k` with single sample  ([#3021](https://github.com/Lightning-AI/torchmetrics/pull/3021))
 
