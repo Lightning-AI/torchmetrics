@@ -19,10 +19,10 @@ jobs:
       extra-typing: "typing"
 
   check-schema:
-    uses: Lightning-AI/utilities/.github/workflows/check-schema.yml@fix/schema
+    uses: Lightning-AI/utilities/.github/workflows/check-schema.yml@v0.14.3
     with:
       actions-ref: v0.14.2
-      azure-schema-version: "main"
+      azure-schema-version: "v1.208.0"
 
   check-package:
     if: github.event.pull_request.draft == false
