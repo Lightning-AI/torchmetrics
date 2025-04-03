@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -27,7 +27,6 @@ def _dice_score_validate_args(
     include_background: bool,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     input_format: Literal["one-hot", "index"] = "one-hot",
-    zero_divide: Union[float, Literal["warn", "nan"]] = 1.0,
 ) -> None:
     """Validate the arguments of the metric."""
     if not isinstance(num_classes, int) or num_classes <= 0:
@@ -39,10 +38,6 @@ def _dice_score_validate_args(
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} or None, but got {average}.")
     if input_format not in ["one-hot", "index"]:
         raise ValueError(f"Expected argument `input_format` to be one of 'one-hot', 'index', but got {input_format}.")
-    if zero_divide not in [1.0, 0.0, "warn", "nan"]:
-        raise ValueError(
-            f"Expected argument `zero_divide` to be one of 1.0, 0.0, 'warn', 'nan', but got {zero_divide}."
-        )
 
 
 def _dice_score_update(
@@ -80,24 +75,34 @@ def _dice_score_compute(
     numerator: Tensor,
     denominator: Tensor,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
     support: Optional[Tensor] = None,
-    zero_division: Union[float, Literal["warn", "nan"]] = 1.0,
 ) -> Tensor:
     """Compute the Dice score from the numerator and denominator."""
-    # If both numerator and denominator are 0, the dice score is 0
-    if torch.all(numerator == 0) and torch.all(denominator == 0):
-        return torch.tensor(0.0, device=numerator.device, dtype=torch.float)
+    if aggregation_level == "global":
+        numerator = torch.sum(numerator, dim=0).unsqueeze(0)
+        denominator = torch.sum(denominator, dim=0).unsqueeze(0)
+        support = torch.sum(support, dim=0) if support is not None else None
 
     if average == "micro":
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
-    dice = _safe_divide(numerator, denominator, zero_division=zero_division)
+        return _safe_divide(numerator, denominator, zero_division="nan")
+
+    dice = _safe_divide(numerator, denominator, zero_division="nan")
     if average == "macro":
-        dice = torch.mean(dice, dim=-1)
-    elif average == "weighted" and support is not None:
-        weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division=zero_division)
-        dice = torch.sum(dice * weights, dim=-1)
-    return dice
+        return torch.nanmean(dice, dim=-1)
+    if average == "weighted":
+        if not isinstance(support, torch.Tensor):
+            raise ValueError(f"Expected argument `support` to be a tensor, got: {type(support)}.")
+        weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division="nan")
+        nan_mask = dice.isnan().all(dim=-1)
+        dice = torch.nansum(dice * weights, dim=-1)
+        dice[nan_mask] = torch.nan
+        return dice
+    if average in ("none", None):
+        return dice
+    raise ValueError(f"Invalid value for `average`: {average}.")
 
 
 def dice_score(
@@ -107,6 +112,8 @@ def dice_score(
     include_background: bool = True,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     input_format: Literal["one-hot", "index"] = "one-hot",
+    aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
+    reduce: bool = False,
 ) -> Tensor:
     """Compute the Dice score for semantic segmentation.
 
@@ -119,6 +126,10 @@ def dice_score(
           or ``None``. This determines how to average the dice score across different classes.
         input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
           or ``"index"`` for index tensors
+        aggregation_level: The level at which to aggregate the dice score. Options are ``"samplewise"`` or ``"global"``.
+            For ``"samplewise"`` the dice score is computed for each sample and then averaged. For ``"global"`` the dice
+            score is computed globally over all samples.
+        reduce: Whether to reduce the output to a single number. Default is ``False``.
 
     Returns:
         The Dice score.
@@ -156,4 +167,5 @@ def dice_score(
     """
     _dice_score_validate_args(num_classes, include_background, average, input_format)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
-    return _dice_score_compute(numerator, denominator, average, support=support)
+    dice = _dice_score_compute(numerator, denominator, average, aggregation_level=aggregation_level, support=support)
+    return torch.nanmean(dice, dim=0) if reduce else dice
