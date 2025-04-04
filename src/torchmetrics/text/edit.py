@@ -37,8 +37,8 @@ class EditDistance(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
-    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus or a tensor of categorical values
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus or a tensor of categorical values
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -56,7 +56,7 @@ class EditDistance(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example::
-        Basic example with two strings. Going from “rain” -> “sain” -> “shin” -> “shine” takes 3 edits:
+        Basic example with two strings. Going from "rain" -> "sain" -> "shin" -> "shine" takes 3 edits:
 
         >>> from torchmetrics.text import EditDistance
         >>> metric = EditDistance()
@@ -64,7 +64,7 @@ class EditDistance(Metric):
         tensor(3.)
 
     Example::
-        Basic example with two strings and substitution cost of 2. Going from “rain” -> “sain” -> “shin” -> “shine”
+        Basic example with two strings and substitution cost of 2. Going from "rain" -> "sain" -> "shin" -> "shine"
         takes 3 edits, where two of them are substitutions:
 
         >>> from torchmetrics.text import EditDistance
@@ -82,6 +82,16 @@ class EditDistance(Metric):
         >>> metric = EditDistance(reduction="mean")
         >>> metric(["rain", "lnaguaeg"], ["shine", "language"])
         tensor(3.5000)
+
+    Example::
+        Using tensors of categorical values:
+
+        >>> from torchmetrics.text import EditDistance
+        >>> metric = EditDistance()
+        >>> preds = torch.tensor([[1, 2, 3], [4, 5, 6]])
+        >>> target = torch.tensor([[1, 2, 4], [4, 5, 7]])
+        >>> metric(preds, target)
+        tensor(2.0000)
 
     """
 
@@ -115,7 +125,7 @@ class EditDistance(Metric):
             self.add_state("edit_scores", default=torch.tensor(0), dist_reduce_fx="sum")
             self.add_state("num_elements", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
+    def update(self, preds: Union[str, Sequence[str], Tensor], target: Union[str, Sequence[str], Tensor]) -> None:
         """Update state with predictions and targets."""
         distance = _edit_distance_update(preds, target, self.substitution_cost)
         if self.reduction == "none" or self.reduction is None:
