@@ -24,6 +24,7 @@ from torchmetrics.classification import (
     MulticlassRecall,
 )
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MultioutputWrapper
 from unittests._helpers import seed_all
 
@@ -248,3 +249,98 @@ def test_tracker_higher_is_better_integration(base_metric):
             else:
                 collection_higher_is_better.append(m.higher_is_better)
         assert tracker.maximize == collection_higher_is_better
+
+
+@pytest.mark.skipif(not _MATPLOTLIB_AVAILABLE, reason="matplotlib not available")
+def test_plot():
+    """Test the plot method of MetricTracker."""
+    import matplotlib.pyplot as plt
+
+    # Test with single metric
+    tracker = MetricTracker(MulticlassAccuracy(num_classes=10))
+    for _ in range(3):
+        tracker.increment()
+        for _ in range(5):
+            tracker.update(torch.randint(10, (50,)), torch.randint(10, (50,)))
+
+    # Test plotting with default value (compute_all)
+    fig, ax = tracker.plot()
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close()
+
+    # Test plotting with custom value
+    val = tracker.compute_all()
+    fig, ax = tracker.plot(val)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close()
+
+    # Test plotting with custom axis
+    fig, ax = plt.subplots()
+    _, ax = tracker.plot(val, ax=ax)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close()
+
+    # Test plotting with sequence of values
+    values = [tracker.compute() for _ in range(3)]
+    fig, ax = tracker.plot(values)
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Axes)
+    plt.close()
+
+
+def test_compute_all_edge_cases():
+    """Test edge cases for compute_all method."""
+    # Test with empty tracker
+    tracker = MetricTracker(MulticlassAccuracy(num_classes=10))
+    with pytest.raises(ValueError, match="`compute_all` cannot be called before"):
+        tracker.compute_all()
+
+    # Test with metric collection
+    tracker = MetricTracker(MetricCollection([MulticlassAccuracy(num_classes=10), MulticlassPrecision(num_classes=10)]))
+    for _ in range(3):
+        tracker.increment()
+        for _ in range(5):
+            tracker.update(torch.randint(10, (50,)), torch.randint(10, (50,)))
+
+    results = tracker.compute_all()
+    assert isinstance(results, dict)
+    assert len(results) == 2
+    for v in results.values():
+        assert v.numel() == 3
+
+
+def test_best_metric_edge_cases():
+    """Test edge cases for best_metric method."""
+    # Test with metric that doesn't have a well-defined best value
+    tracker = MetricTracker(MulticlassConfusionMatrix(num_classes=3), maximize=True)
+    for _ in range(3):
+        tracker.increment()
+        for _ in range(5):
+            tracker.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
+
+    with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric"):
+        best = tracker.best_metric()
+        assert best is None
+
+    # Test with metric collection containing both well-defined and ill-defined metrics
+    tracker = MetricTracker(
+        MetricCollection([
+            MulticlassConfusionMatrix(num_classes=3),
+            MulticlassAccuracy(num_classes=3),
+        ]),
+        maximize=True,
+    )
+    for _ in range(3):
+        tracker.increment()
+        for _ in range(5):
+            tracker.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
+
+    with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric"):
+        best, idx = tracker.best_metric(return_step=True)
+        assert best["MulticlassConfusionMatrix"] is None
+        assert best["MulticlassAccuracy"] is not None
+        assert idx["MulticlassConfusionMatrix"] is None
+        assert idx["MulticlassAccuracy"] is not None
