@@ -391,7 +391,7 @@ def test_refine_preds_oh(top_k, expected_result):
 
     preds_oh = torch.tensor([[[1, 0, 1]], [[1, 0, 1]], [[0, 1, 1]], [[1, 0, 1]]], dtype=torch.int32)
 
-    target = torch.tensor([0, 1, 1, 2])
+    target = torch.tensor([[0], [1], [1], [2]])
 
     result = _refine_preds_oh(preds, preds_oh, target, top_k)
     assert torch.equal(result, expected_result), (

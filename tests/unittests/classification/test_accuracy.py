@@ -420,6 +420,9 @@ _mc_k_preds3 = torch.rand(512, 10, generator=torch.Generator().manual_seed(42))
 _mc_k_targets4 = _mc_k_targets3[:1]
 _mc_k_preds4 = _mc_k_preds3[:1, :]
 
+_mc_k_targets5 = torch.randint(10, (2, 50))
+_mc_k_preds5 = torch.rand(2, 10, 50)
+
 
 @pytest.mark.parametrize(
     ("k", "preds", "target", "average", "num_classes", "expected"),
@@ -432,6 +435,7 @@ _mc_k_preds4 = _mc_k_preds3[:1, :]
         (5, _mc_k_preds3, _mc_k_targets3, "micro", 10, torch.tensor(0.5176)),
         (5, _mc_k_preds4, _mc_k_targets4, "macro", 10, torch.tensor(1.0)),
         (5, _mc_k_preds4, _mc_k_targets4, "micro", 10, torch.tensor(1.0)),
+        (5, _mc_k_preds5, _mc_k_targets5, "micro", 10, torch.tensor(0.02)),
     ],
 )
 def test_top_k(k, preds, target, average, num_classes, expected):
