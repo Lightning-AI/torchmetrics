@@ -467,7 +467,7 @@ class NegativePredictiveValue(_ClassificationTaskWrapper):
     therefore be affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryNegativePredictiveValue`,
     :class:`~torchmetrics.classification.MulticlassNegativePredictiveValue`
     and :class:`~torchmetrics.classification.MultilabelNegativePredictiveValue` for the specific details of each

@@ -88,7 +88,7 @@ class FeatureShare(MetricCollection):
         max_cache_size: Optional[int] = None,
     ) -> None:
         # disable compute groups because the feature sharing is more custom
-        super().__init__(metrics=metrics, compute_groups=False)
+        super().__init__(metrics=metrics, compute_groups=False)  # type: ignore
 
         if max_cache_size is None:
             max_cache_size = len(self)

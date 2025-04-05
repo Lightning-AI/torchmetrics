@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -26,6 +26,10 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPScore.plot"]
 
+if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_10:
+    from transformers import CLIPModel as _CLIPModel
+    from transformers import CLIPProcessor as _CLIPProcessor
+
 if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
@@ -38,6 +42,8 @@ if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
         __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
 else:
     __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
+    _CLIPModel = None
+    _CLIPProcessor = None
 
 
 class CLIPScore(Metric):
@@ -69,18 +75,40 @@ class CLIPScore(Metric):
     .. caution::
         Metric is not scriptable
 
+    .. note::
+        The default CLIP and processor used in this implementation has a maximum sequence length of 77 for text
+        inputs. If you need to process longer captions, you can use the `zer0int/LongCLIP-L-Diffusers` model which
+        has a maximum sequence length of 248.
+
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - source: Source input. This can be:
-        - Images: (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
-            a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
-            ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
-        - Text: (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
-    - target: Target input. This can be:
-        - Images: (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
-            a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
-            ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
-        - Text: (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
+    - source: Source input.
+
+        This can be:
+
+        - Images: ``Tensor`` or list of ``Tensor``
+
+            If a single tensor, it should have shape ``(N, C, H, W)``.
+            If a list of tensors, each tensor should have shape ``(C, H, W)``.
+            ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+
+        - Text: ``str`` or list of ``str``
+
+            Either a single caption or a list of captions.
+
+    - target: Target input.
+
+        This can be:
+
+        - Images: ``Tensor`` or list of ``Tensor``
+
+            If a single tensor, it should have shape ``(N, C, H, W)``.
+            If a list of tensors, each tensor should have shape ``(C, H, W)``.
+            ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+
+        - Text: ``str`` or list of ``str``
+
+            Either a single caption or a list of captions.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -93,6 +121,14 @@ class CLIPScore(Metric):
             - `"openai/clip-vit-base-patch32"`
             - `"openai/clip-vit-large-patch14-336"`
             - `"openai/clip-vit-large-patch14"`
+            - `"jinaai/jina-clip-v2"`
+            - `"zer0int/LongCLIP-L-Diffusers"`
+            - `"zer0int/LongCLIP-GmP-ViT-L-14"`
+
+            Alternatively, a callable function that returns a tuple of CLIP compatible model and processor instances
+            can be passed in. By compatible, we mean that the processors `__call__` method should accept a list of
+            strings and list of images and that the model should have a `get_image_features` and `get_text_features`
+            methods.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -139,11 +175,17 @@ class CLIPScore(Metric):
 
     def __init__(
         self,
-        model_name_or_path: Literal[
-            "openai/clip-vit-base-patch16",
-            "openai/clip-vit-base-patch32",
-            "openai/clip-vit-large-patch14-336",
-            "openai/clip-vit-large-patch14",
+        model_name_or_path: Union[
+            Literal[
+                "openai/clip-vit-base-patch16",
+                "openai/clip-vit-base-patch32",
+                "openai/clip-vit-large-patch14-336",
+                "openai/clip-vit-large-patch14",
+                "jinaai/jina-clip-v2",
+                "zer0int/LongCLIP-L-Diffusers",
+                "zer0int/LongCLIP-GmP-ViT-L-14",
+            ],
+            Callable[[], tuple[_CLIPModel, _CLIPProcessor]],
         ] = "openai/clip-vit-large-patch14",
         **kwargs: Any,
     ) -> None:

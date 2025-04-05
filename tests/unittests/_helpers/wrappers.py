@@ -49,7 +49,9 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
             try:
                 return function(*args, **kwargs)
             except HTTPError as ex:
-                if ex.code != 504:  # HTTP Error 504: Gateway Time-out
+                # HTTP Error 504: Gateway Time-out
+                # HTTP Error 403: rate limit exceeded
+                if ex.code not in (403, 504):
                     raise ex
                 pytest.skip(reason)
             except URLError as ex:
@@ -61,6 +63,28 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
                     all(msg_start not in str(ex) for msg_start in _ERROR_CONNECTION_MESSAGE_PATTERNS)
                     or not ALLOW_SKIP_IF_BAD_CONNECTION
                 ):
+                    raise ex
+                pytest.skip(reason)
+
+        return run_test
+
+    return test_decorator
+
+
+def skip_on_cuda_oom(reason: str = "Skipping test due to CUDA Out of Memory (OOM) error."):
+    """Skip tests that fail due to CUDA Out of Memory (OOM) errors.
+
+    The test runs normally if no OOM error arises, but is marked as skipped otherwise.
+
+    """
+
+    def test_decorator(function: Callable) -> Callable:
+        @wraps(function)
+        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
+            try:
+                return function(*args, **kwargs)
+            except RuntimeError as ex:
+                if "CUDA out of memory" not in str(ex):
                     raise ex
                 pytest.skip(reason)
 

@@ -459,7 +459,7 @@ class Specificity(_ClassificationTaskWrapper):
     therefore be affected in turn.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinarySpecificity`, :class:`~torchmetrics.classification.MulticlassSpecificity`
     and :class:`~torchmetrics.classification.MultilabelSpecificity` for the specific details of each argument influence
     and examples.

@@ -57,6 +57,7 @@ def _reference_scipy_pit(
     target: Tensor,
     metric_func: Callable,
     eval_func: str,
+    zero_mean: bool = False,
 ) -> tuple[Tensor, Tensor]:
     """Naive implementation of `Permutation Invariant Training` based on Scipy.
 
@@ -65,12 +66,17 @@ def _reference_scipy_pit(
         target: targets, shape[batch, spk, time]
         metric_func: which metric
         eval_func: min or max
+        zero_mean: whether to zero mean the input
 
     Returns:
         best_metric: shape [batch]
         best_perm: shape [batch, spk]
 
     """
+    if zero_mean:
+        target = target - torch.mean(target, dim=-1, keepdim=True)
+        preds = preds - torch.mean(preds, dim=-1, keepdim=True)
+
     batch_size, spk_num = target.shape[0:2]
     metric_mtx = torch.empty((batch_size, spk_num, spk_num), device=target.device)
     for t in range(spk_num):
@@ -87,21 +93,23 @@ def _reference_scipy_pit(
     return torch.from_numpy(np.stack(best_metrics)), torch.from_numpy(np.stack(best_perms))
 
 
-def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
+def _reference_scipy_pit_snr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> tuple[Tensor, Tensor]:
     return _reference_scipy_pit(
         preds=preds,
         target=target,
         metric_func=signal_noise_ratio,
         eval_func="max",
+        zero_mean=zero_mean,
     )
 
 
-def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
+def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = False) -> tuple[Tensor, Tensor]:
     return _reference_scipy_pit(
         preds=preds,
         target=target,
         metric_func=scale_invariant_signal_distortion_ratio,
         eval_func="max",
+        zero_mean=zero_mean,
     )
 
 
@@ -163,14 +171,15 @@ class TestPIT(MetricTester):
             metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
-    def test_pit_functional(self, preds, target, ref_metric, metric_func, mode, eval_func):
+    @pytest.mark.parametrize("zero_mean", [True, False])
+    def test_pit_functional(self, preds, target, ref_metric, metric_func, mode, eval_func, zero_mean):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=permutation_invariant_training,
-            reference_metric=ref_metric,
-            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
+            reference_metric=partial(ref_metric, zero_mean=zero_mean),
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func, "zero_mean": zero_mean},
         )
 
     def test_pit_differentiability(self, preds, target, ref_metric, metric_func, mode, eval_func):

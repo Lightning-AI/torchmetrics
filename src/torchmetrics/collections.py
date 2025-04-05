@@ -24,7 +24,7 @@ from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import _flatten_dict, allclose
+from torchmetrics.utilities.data import _flatten, _flatten_dict, allclose
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
@@ -90,7 +90,9 @@ class MetricCollection(ModuleDict):
         due to the internal logic of ``forward`` preventing this. Secondly, since we compute groups share metric
         states by reference, calling ``.items()``, ``.values()`` etc. on the metric collection will break this
         reference and a copy of states are instead returned in this case (reference will be reestablished on the next
-        call to ``update``).
+        call to ``update``). Do note that for the time being that if you are manually specifying compute groups in
+        nested collections, these are not compatible with the compute groups of the parent collection and will be
+        overridden.
 
     .. important::
         Metric collections can be nested at initialization (see last example) but the output of the collection will
@@ -192,12 +194,16 @@ class MetricCollection(ModuleDict):
     """
 
     _modules: dict[str, Metric]  # type: ignore[assignment]
-    _groups: Dict[int, List[str]]
     __jit_unused_properties__: ClassVar[list[str]] = ["metric_state"]
 
     def __init__(
         self,
-        metrics: Union[Metric, Sequence[Metric], dict[str, Metric]],
+        metrics: Union[
+            Metric,
+            "MetricCollection",
+            Sequence[Union[Metric, "MetricCollection"]],
+            dict[str, Union[Metric, "MetricCollection"]],
+        ],
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
@@ -210,7 +216,7 @@ class MetricCollection(ModuleDict):
         self._enable_compute_groups = compute_groups
         self._groups_checked: bool = False
         self._state_is_copy: bool = False
-
+        self._groups: Dict[int, list[str]] = {}
         self.add_metrics(metrics, *additional_metrics)
 
     @property
@@ -246,10 +252,8 @@ class MetricCollection(ModuleDict):
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
-            if self._state_is_copy:
-                # If we have deep copied state in between updates, reestablish link
-                self._compute_groups_create_state_ref()
-                self._state_is_copy = False
+            self._state_is_copy = False
+            self._compute_groups_create_state_ref()
         else:  # the first update always do per metric to form compute groups
             for m in self.values(copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
@@ -258,6 +262,7 @@ class MetricCollection(ModuleDict):
             if self._enable_compute_groups:
                 self._merge_compute_groups()
                 # create reference between states
+                self._state_is_copy = False
                 self._compute_groups_create_state_ref()
                 self._groups_checked = True
 
@@ -338,7 +343,7 @@ class MetricCollection(ModuleDict):
                 of just passed by reference
 
         """
-        if not self._state_is_copy:
+        if not self._state_is_copy:  # only create reference if not already copied
             for cg in self._groups.values():
                 m0 = getattr(self, cg[0])
                 for i in range(1, len(cg)):
@@ -430,7 +435,14 @@ class MetricCollection(ModuleDict):
             m.persistent(mode)
 
     def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], dict[str, Metric]], *additional_metrics: Metric
+        self,
+        metrics: Union[
+            Metric,
+            "MetricCollection",
+            Sequence[Union[Metric, "MetricCollection"]],
+            dict[str, Union[Metric, "MetricCollection"]],
+        ],
+        *additional_metrics: Metric,
     ) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
@@ -490,12 +502,16 @@ class MetricCollection(ModuleDict):
                         v.prefix = metric.prefix
                         v._from_collection = True
                         self[k] = v
+        elif isinstance(metrics, MetricCollection):
+            for name, metric in metrics.items(keep_base=False):
+                if name in self:
+                    raise ValueError(f"Metric with name '{name}' already exists in the collection.")
+                self[name] = metric
         else:
             raise ValueError(
                 "Unknown input to MetricCollection. Expected, `Metric`, `MetricCollection` or `dict`/`sequence` of the"
                 f" previous, but got {metrics}"
             )
-
         self._groups_checked = False
         if self._enable_compute_groups:
             self._init_compute_groups()
@@ -518,9 +534,15 @@ class MetricCollection(ModuleDict):
                             f"Input {metric} in `compute_groups` argument does not match a metric in the collection."
                             f" Please make sure that {self._enable_compute_groups} matches {self.keys(keep_base=True)}"
                         )
+            # add metrics not specified in compute groups as their own group
+            already_in_group = _flatten(self._groups.values())  # type: ignore
+            counter = len(self._groups)
+            for k in self.keys(keep_base=True):
+                if k not in already_in_group:
+                    self._groups[counter] = [k]  # type: ignore
+                    counter += 1
             self._groups_checked = True
         else:
-            # Initialize all metrics as their own compute group
             self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=True))}
 
     @property

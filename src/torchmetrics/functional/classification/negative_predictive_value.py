@@ -380,7 +380,7 @@ def negative_predictive_value(
     encountered a score of 0 is returned.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_negative_predictive_value`,
     :func:`~torchmetrics.functional.classification.multiclass_negative_predictive_value` and
     :func:`~torchmetrics.functional.classification.multilabel_negative_predictive_value` for the specific

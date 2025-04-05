@@ -11,16 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import Optional
 
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
+from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.data import _bincount, select_topk
-from torchmetrics.utilities.enums import AverageMethod, ClassificationTask, DataType, MDMCAverageMethod
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _binary_stat_scores_arg_validation(
@@ -359,8 +359,15 @@ def _refine_preds_oh(preds: Tensor, preds_oh: Tensor, target: Tensor, top_k: int
         Refined one-hot encoded predictions tensor
 
     """
-    preds = preds.squeeze()
-    target = target.squeeze()
+    if preds.dim() == 1:
+        # Handle 1D tensor case (single sample)
+        preds = preds.unsqueeze(0)  # Add batch dimension
+        target = target.unsqueeze(0) if target.dim() == 0 else target
+    else:
+        # For multi-dimensional tensors, just ensure consistent dimensions
+        preds = preds.reshape(preds.shape[0], -1) if preds.dim() > 2 else preds
+        target = target.reshape(-1) if target.dim() > 1 else target
+
     top_k_indices = torch.topk(preds, k=top_k, dim=1).indices
     top_1_indices = top_k_indices[:, 0]
     target_in_topk = torch.any(top_k_indices == target.unsqueeze(1), dim=1)
@@ -850,263 +857,6 @@ def multilabel_stat_scores(
     return _multilabel_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
 
-def _del_column(data: Tensor, idx: int) -> Tensor:
-    """Delete the column at index."""
-    return torch.cat([data[:, :idx], data[:, (idx + 1) :]], 1)
-
-
-def _drop_negative_ignored_indices(
-    preds: Tensor, target: Tensor, ignore_index: int, mode: DataType
-) -> tuple[Tensor, Tensor]:
-    """Remove negative ignored indices.
-
-    Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
-        ignore_index: Specify a class (label) to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and
-            ``reduce='macro'``, the class statistics for the ignored class will all be returned
-            as ``-1``.
-        mode: Mode of the input tensors
-
-    Return:
-        Tensors of preds and target without negative ignore target values.
-
-    """
-    if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
-        # In case or multi-dimensional multi-class with logits
-        num_dims = len(preds.shape)
-        num_classes = preds.shape[1]
-        # move class dim to last so that we can flatten the additional dimensions into N: [N, C, ...] -> [N, ..., C]
-        preds = preds.transpose(1, num_dims - 1)
-
-        # flatten: [N, ..., C] -> [N', C]
-        preds = preds.reshape(-1, num_classes)
-        target = target.reshape(-1)
-
-    if mode in [mode.MULTICLASS, mode.MULTIDIM_MULTICLASS]:
-        preds = preds[target != ignore_index]
-        target = target[target != ignore_index]
-
-    return preds, target
-
-
-def _stat_scores(
-    preds: Tensor,
-    target: Tensor,
-    reduce: Optional[str] = "micro",
-) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Calculate the number of tp, fp, tn, fn.
-
-    Args:
-        preds: An ``(N, C)`` or ``(N, C, X)`` tensor of predictions (0 or 1)
-        target: An ``(N, C)`` or ``(N, C, X)`` tensor of true labels (0 or 1)
-        reduce: One of ``'micro'``, ``'macro'``, ``'samples'``
-
-    Return:
-        Returns a list of 4 tensors; tp, fp, tn, fn.
-        The shape of the returned tensors depends on the shape of the inputs
-        and the ``reduce`` parameter:
-
-        If inputs are of the shape ``(N, C)``, then:
-
-        - If ``reduce='micro'``, the returned tensors are 1 element tensors
-        - If ``reduce='macro'``, the returned tensors are ``(C,)`` tensors
-        - If ``reduce='samples'``, the returned tensors are ``(N,)`` tensors
-
-        If inputs are of the shape ``(N, C, X)``, then:
-
-        - If ``reduce='micro'``, the returned tensors are ``(N,)`` tensors
-        - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
-        - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
-
-    """
-    dim: Union[int, list[int]] = 1  # for "samples"
-    if reduce == "micro":
-        dim = [0, 1] if preds.ndim == 2 else [1, 2]
-    elif reduce == "macro":
-        dim = 0 if preds.ndim == 2 else 2
-
-    true_pred, false_pred = target == preds, target != preds
-    pos_pred, neg_pred = preds == 1, preds == 0
-
-    tp = (true_pred * pos_pred).sum(dim=dim)
-    fp = (false_pred * pos_pred).sum(dim=dim)
-
-    tn = (true_pred * neg_pred).sum(dim=dim)
-    fn = (false_pred * neg_pred).sum(dim=dim)
-
-    return tp.long(), fp.long(), tn.long(), fn.long()
-
-
-def _stat_scores_update(
-    preds: Tensor,
-    target: Tensor,
-    reduce: Optional[str] = "micro",
-    mdmc_reduce: Optional[str] = None,
-    num_classes: Optional[int] = None,
-    top_k: Optional[int] = 1,
-    threshold: float = 0.5,
-    multiclass: Optional[bool] = None,
-    ignore_index: Optional[int] = None,
-    mode: Optional[DataType] = None,
-) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Calculate true positives, false positives, true negatives, false negatives.
-
-    Raises:
-        ValueError:
-            The `ignore_index` is not valid
-        ValueError:
-            When `ignore_index` is used with binary data
-        ValueError:
-            When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
-
-    Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
-        reduce: Defines the reduction that is applied
-        mdmc_reduce: Defines how the multi-dimensional multi-class inputs are handled
-        num_classes: Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
-        top_k: Number of the highest probability or logit score predictions considered finding the correct label,
-            relevant only for (multi-dimensional) multi-class inputs
-        threshold: Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities
-        multiclass: Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be
-        ignore_index: Specify a class (label) to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and
-            ``reduce='macro'``, the class statistics for the ignored class will all be returned
-            as ``-1``.
-        mode: Mode of the input tensors
-
-    """
-    _negative_index_dropped = False
-
-    if ignore_index is not None and ignore_index < 0 and mode is not None:
-        preds, target = _drop_negative_ignored_indices(preds, target, ignore_index, mode)
-        _negative_index_dropped = True
-
-    preds, target, _ = _input_format_classification(
-        preds,
-        target,
-        threshold=threshold,
-        num_classes=num_classes,
-        multiclass=multiclass,
-        top_k=top_k,
-        ignore_index=ignore_index,
-    )
-
-    if ignore_index is not None and ignore_index >= preds.shape[1]:
-        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {preds.shape[1]} classes")
-
-    if ignore_index is not None and preds.shape[1] == 1:
-        raise ValueError("You can not use `ignore_index` with binary data.")
-
-    if preds.ndim == 3:
-        if not mdmc_reduce:
-            raise ValueError(
-                "When your inputs are multi-dimensional multi-class, you have to set the `mdmc_reduce` parameter"
-            )
-        if mdmc_reduce == "global":
-            preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
-            target = torch.transpose(target, 1, 2).reshape(-1, target.shape[1])
-
-    # Delete what is in ignore_index, if applicable (and classes don't matter):
-    if ignore_index is not None and reduce != "macro" and not _negative_index_dropped:
-        preds = _del_column(preds, ignore_index)
-        target = _del_column(target, ignore_index)
-
-    tp, fp, tn, fn = _stat_scores(preds, target, reduce=reduce)
-
-    # Take care of ignore_index
-    if ignore_index is not None and reduce == "macro" and not _negative_index_dropped:
-        tp[..., ignore_index] = -1
-        fp[..., ignore_index] = -1
-        tn[..., ignore_index] = -1
-        fn[..., ignore_index] = -1
-
-    return tp, fp, tn, fn
-
-
-def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-    """Compute the number of true positives, false positives, true negatives, false negatives.
-
-    Concatenates the input tensors along with the support into one output.
-
-    Args:
-        tp: True positives
-        fp: False positives
-        tn: True negatives
-        fn: False negatives
-
-    """
-    stats = [
-        tp.unsqueeze(-1),
-        fp.unsqueeze(-1),
-        tn.unsqueeze(-1),
-        fn.unsqueeze(-1),
-        tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
-    ]
-    outputs: Tensor = torch.cat(stats, -1)
-    return torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
-
-
-def _reduce_stat_scores(
-    numerator: Tensor,
-    denominator: Tensor,
-    weights: Optional[Tensor],
-    average: Optional[str],
-    mdmc_average: Optional[str],
-    zero_division: int = 0,
-) -> Tensor:
-    """Reduces scores of type ``numerator/denominator`` or.
-
-    ``weights * (numerator/denominator)``, if ``average='weighted'``.
-
-    Args:
-        numerator: A tensor with numerator numbers.
-        denominator: A tensor with denominator numbers. If a denominator is
-            negative, the class will be ignored (if averaging), or its score
-            will be returned as ``nan`` (if ``average=None``).
-            If the denominator is zero, then ``zero_division`` score will be
-            used for those elements.
-        weights: A tensor of weights to be used if ``average='weighted'``.
-        average: The method to average the scores
-        mdmc_average: The method to average the scores if inputs were multi-dimensional multi-class (MDMC)
-        zero_division: The value to use for the score if denominator equals zero.
-
-    """
-    numerator, denominator = numerator.float(), denominator.float()
-    zero_div_mask = denominator == 0
-    ignore_mask = denominator < 0
-
-    weights = torch.ones_like(denominator) if weights is None else weights.float()
-
-    numerator = torch.where(
-        zero_div_mask, tensor(zero_division, dtype=numerator.dtype, device=numerator.device), numerator
-    )
-    denominator = torch.where(
-        zero_div_mask | ignore_mask, tensor(1.0, dtype=denominator.dtype, device=denominator.device), denominator
-    )
-    weights = torch.where(ignore_mask, tensor(0.0, dtype=weights.dtype, device=weights.device), weights)
-
-    if average not in (AverageMethod.MICRO, AverageMethod.NONE, None):
-        weights = weights / weights.sum(dim=-1, keepdim=True)
-
-    scores = weights * (numerator / denominator)
-
-    # This is in case where sum(weights) = 0, which happens if we ignore the only present class with average='weighted'
-    scores = torch.where(torch.isnan(scores), tensor(zero_division, dtype=scores.dtype, device=scores.device), scores)
-
-    if mdmc_average == MDMCAverageMethod.SAMPLEWISE:
-        scores = scores.mean(dim=0)
-        ignore_mask = ignore_mask.sum(dim=0).bool()
-
-    if average in (AverageMethod.NONE, None):
-        return torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
-    return scores.sum()
-
-
 def stat_scores(
     preds: Tensor,
     target: Tensor,
@@ -1123,7 +873,7 @@ def stat_scores(
     r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_stat_scores`,
     :func:`~torchmetrics.functional.classification.multiclass_stat_scores` and
     :func:`~torchmetrics.functional.classification.multilabel_stat_scores` for the specific
