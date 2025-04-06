@@ -110,7 +110,7 @@ class DiceScore(Metric):
         self,
         num_classes: int,
         include_background: bool = True,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         input_format: Literal["one-hot", "index"] = "one-hot",
         zero_division: Union[float, Literal["warn", "nan"]] = 0.0,
         **kwargs: Any,
