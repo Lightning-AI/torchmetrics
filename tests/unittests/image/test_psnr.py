@@ -77,7 +77,7 @@ def _reference_sklearn_psnr_log(preds, target, data_range, reduction, dim):
 
 
 @pytest.mark.parametrize(
-    "preds, target, data_range, reduction, dim",
+    ("preds", "target", "data_range", "reduction", "dim"),
     [
         (_inputs[0].preds, _inputs[0].target, 10, "elementwise_mean", None),
         (_inputs[1].preds, _inputs[1].target, 10, "elementwise_mean", None),
@@ -89,7 +89,7 @@ def _reference_sklearn_psnr_log(preds, target, data_range, reduction, dim):
     ],
 )
 @pytest.mark.parametrize(
-    "base, ref_metric",
+    ("base", "ref_metric"),
     [
         (10.0, _reference_skimage_psnr),
         (2.718281828459045, _reference_sklearn_psnr_log),

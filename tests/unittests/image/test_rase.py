@@ -70,7 +70,7 @@ def _reference_sewar_rase(preds, target, window_size):
     return torch.mean(rase_map[crop_slide:-crop_slide, crop_slide:-crop_slide])
 
 
-@pytest.mark.parametrize("preds, target, window_size", [(i.preds, i.target, i.window_size) for i in _inputs])
+@pytest.mark.parametrize(("preds", "target", "window_size"), [(i.preds, i.target, i.window_size) for i in _inputs])
 class TestRelativeAverageSpectralError(MetricTester):
     """Testing of Relative Average Spectral Error."""
 

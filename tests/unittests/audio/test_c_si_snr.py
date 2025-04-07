@@ -33,7 +33,7 @@ inputs = _Input(
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, zero_mean",
+    ("preds", "target", "ref_metric", "zero_mean"),
     [
         (inputs.preds, inputs.target, None, True),
         (inputs.preds, inputs.target, None, False),

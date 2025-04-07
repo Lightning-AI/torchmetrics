@@ -65,7 +65,7 @@ def _random_counts(high, size):
 
 
 @pytest.mark.parametrize(
-    "preds, target, mode",
+    ("preds", "target", "mode"),
     [  # target is not used in any of the functions
         (
             _random_counts(high=NUM_RATERS, size=(NUM_BATCHES, BATCH_SIZE, NUM_CATEGORIES)),

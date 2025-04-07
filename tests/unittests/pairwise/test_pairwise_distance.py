@@ -70,14 +70,14 @@ def _wrap_reduction(x, y, sk_fn, reduction):
 
 
 @pytest.mark.parametrize(
-    "x, y",
+    ("x", "y"),
     [
         (_inputs1.x, _inputs1.y),
         (_inputs2.x, _inputs2.y),
     ],
 )
 @pytest.mark.parametrize(
-    "metric_functional, sk_fn",
+    ("metric_functional", "sk_fn"),
     [
         pytest.param(pairwise_cosine_similarity, cosine_similarity, id="cosine"),
         pytest.param(pairwise_euclidean_distance, euclidean_distances, id="euclidean"),

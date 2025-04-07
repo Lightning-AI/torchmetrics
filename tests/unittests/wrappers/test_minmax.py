@@ -55,7 +55,7 @@ def _compare_fn(preds, target, base_fn):
 
 
 @pytest.mark.parametrize(
-    "preds, target, base_metric",
+    ("preds", "target", "base_metric"),
     [
         (
             torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES).softmax(dim=-1),

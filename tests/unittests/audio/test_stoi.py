@@ -52,7 +52,7 @@ def _reference_stoi_batch(preds: Tensor, target: Tensor, fs: int, extended: bool
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, fs, extended",
+    ("preds", "target", "ref_metric", "fs", "extended"),
     [
         (inputs_8k.preds, inputs_8k.target, partial(_reference_stoi_batch, fs=8000, extended=True), 8000, True),
         (inputs_16k.preds, inputs_16k.target, partial(_reference_stoi_batch, fs=16000, extended=True), 16000, True),

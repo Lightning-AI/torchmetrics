@@ -48,7 +48,7 @@ def _reference_log_cosh_error(preds, target):
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_single_target_inputs.preds, _single_target_inputs.target),
         (_multi_target_inputs.preds, _multi_target_inputs.target),

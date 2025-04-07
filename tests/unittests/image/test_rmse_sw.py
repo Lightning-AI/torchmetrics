@@ -56,7 +56,7 @@ def _reference_sewar_rmse_sw(preds, target, window_size):
     return rmse_mean
 
 
-@pytest.mark.parametrize("preds, target, window_size", [(i.preds, i.target, i.window_size) for i in _inputs])
+@pytest.mark.parametrize(("preds", "target", "window_size"), [(i.preds, i.target, i.window_size) for i in _inputs])
 class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
     """Testing of Root Mean Square Error With Sliding Window."""
 

@@ -70,7 +70,7 @@ def _reference_bert_score(
 
 
 @pytest.mark.parametrize(
-    ["num_layers", "all_layers", "idf", "rescale_with_baseline", "metric_key"],
+    ("num_layers", "all_layers", "idf", "rescale_with_baseline", "metric_key"),
     [
         (8, False, False, False, "precision"),
         (12, True, False, False, "recall"),
@@ -83,7 +83,7 @@ def _reference_bert_score(
     ],
 )
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")

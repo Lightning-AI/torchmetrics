@@ -51,7 +51,7 @@ def _reference_sklearn_precision_recall_curve_binary(preds, target, ignore_index
     return sk_precision_recall_curve(target, preds)
 
 
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryPrecisionRecallCurve(MetricTester):
     """Test class for `BinaryPrecisionRecallCurve` metric."""
 
@@ -174,7 +174,7 @@ def _reference_sklearn_precision_recall_curve_multiclass(preds, target, ignore_i
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassPrecisionRecallCurve(MetricTester):
     """Test class for `MulticlassPrecisionRecallCurve` metric."""
@@ -313,7 +313,7 @@ def _reference_sklearn_precision_recall_curve_multilabel(preds, target, ignore_i
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelPrecisionRecallCurve(MetricTester):
     """Test class for `MultilabelPrecisionRecallCurve` metric."""
