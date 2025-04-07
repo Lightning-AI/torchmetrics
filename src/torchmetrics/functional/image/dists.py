@@ -47,8 +47,9 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_
 
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["deep_image_structure_and_texture_similarity"]
-elif not _TORCHVISION_BELLOW_0_13:
-    from torchvision.models import VGG16_Weights
+else:
+
+    from torchvision.models import vgg16, VGG16_Weights
 
 _PATH_WEIGHT_DISTS = Path(__file__).resolve().parent / "dists_models" / "weights.pt"
 
@@ -86,15 +87,12 @@ class DISTSNetwork(torch.nn.Module):
     def __init__(self, load_weights: bool = True) -> None:
         super().__init__()
 
-        if _TORCHVISION_AVAILABLE:
-            from torchvision import models
-        else:
+        if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
                 "DISTS requires torchvision to be installed. Please install it with `pip install torchvision`."
             )
 
-        vgg16_kwargs = {"pretrained": True} if _TORCHVISION_BELLOW_0_13 else {"weights": VGG16_Weights.DEFAULT}
-        vgg_pretrained_features = models.vgg16(**vgg16_kwargs).features
+        vgg_pretrained_features = vgg16(weights=VGG16_Weights.DEFAULT).features
         self.stage1 = torch.nn.Sequential()
         self.stage2 = torch.nn.Sequential()
         self.stage3 = torch.nn.Sequential()
