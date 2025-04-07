@@ -18,6 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.segmentation.utils import _ignore_background
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_divide
 
@@ -154,6 +155,13 @@ def dice_score(
                 [0.1978, 0.2804, 0.1714, 0.1915, 0.2783]])
 
     """
+    if average == "micro":
+        rank_zero_warn(
+            "dice_score metric currently defaults to `average=micro`, but will change to"
+            "`average=macro` in the v1.9 release."
+            " If you've explicitly set this parameter, you can ignore this warning.",
+            UserWarning,
+        )
     _dice_score_validate_args(num_classes, include_background, average, input_format)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
     return _dice_score_compute(numerator, denominator, average, support=support)
