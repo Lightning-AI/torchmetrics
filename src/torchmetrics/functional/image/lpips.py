@@ -39,25 +39,31 @@ _weight_map = {
 }
 
 if not _TORCHVISION_AVAILABLE:
-    __doctest_skip__ = ["learned_perceptual_image_patch_similarity"]
+    __doctest_skip__ = ["learned_perceptual_image_patch_similarity", "_get_tv_model_features"]
 
 
-def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
+def _get_tv_model_features(net: str, pretrained: bool = False) -> nn.modules.container.Sequential:
     """Get torchvision network.
 
     Args:
         net: Name of network
         pretrained: If pretrained weights should be used
 
-    """
-    from torchvision import models as tv
+    >>> _ = _get_tv_model_features("alexnet", pretrained=True)
+    >>> _ = _get_tv_model_features("squeezenet1_1", pretrained=True)
+    >>> _ = _get_tv_model_features("vgg16", pretrained=True)
 
-    if _TORCHVISION_AVAILABLE:
-        if pretrained:
-            pretrained_features = getattr(tv, net)(weights=getattr(tv, _weight_map[net]).IMAGENET1K_V1).features
-        else:
-            pretrained_features = getattr(tv, net)(weights=None).features
-    return pretrained_features
+    """
+    if not _TORCHVISION_AVAILABLE:
+        raise ModuleNotFoundError("Torchvision is not installed. Please install torchvision to use this functionality.")
+    import torchvision
+
+    if pretrained:
+        model_weights = getattr(torchvision.models, _weight_map[net])
+        model = getattr(torchvision.models, net)(weights=model_weights.DEFAULT)
+    else:
+        model = getattr(torchvision.models, net)(weights=None)
+    return model.features
 
 
 class SqueezeNet(torch.nn.Module):
@@ -65,7 +71,7 @@ class SqueezeNet(torch.nn.Module):
 
     def __init__(self, requires_grad: bool = False, pretrained: bool = True) -> None:
         super().__init__()
-        pretrained_features = _get_net("squeezenet1_1", pretrained)
+        pretrained_features = _get_tv_model_features("squeezenet1_1", pretrained)
 
         self.N_slices = 7
         slices = []
@@ -105,7 +111,7 @@ class Alexnet(torch.nn.Module):
 
     def __init__(self, requires_grad: bool = False, pretrained: bool = True) -> None:
         super().__init__()
-        alexnet_pretrained_features = _get_net("alexnet", pretrained)
+        alexnet_pretrained_features = _get_tv_model_features("alexnet", pretrained)
 
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
@@ -155,7 +161,7 @@ class Vgg16(torch.nn.Module):
 
     def __init__(self, requires_grad: bool = False, pretrained: bool = True) -> None:
         super().__init__()
-        vgg_pretrained_features = _get_net("vgg16", pretrained)
+        vgg_pretrained_features = _get_tv_model_features("vgg16", pretrained)
 
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
