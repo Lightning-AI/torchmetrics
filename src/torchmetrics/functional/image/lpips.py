@@ -52,11 +52,10 @@ def _get_tv_model_features(net: str, pretrained: bool = False) -> nn.modules.con
     >>> _ = _get_tv_model_features("alexnet", pretrained=True)
     >>> _ = _get_tv_model_features("squeezenet1_1", pretrained=True)
     >>> _ = _get_tv_model_features("vgg16", pretrained=True)
+
     """
     if not _TORCHVISION_AVAILABLE:
-        raise ModuleNotFoundError(
-            "Torchvision is not installed. Please install torchvision to use this functionality."
-        )
+        raise ModuleNotFoundError("Torchvision is not installed. Please install torchvision to use this functionality.")
     import torchvision
 
     if pretrained:

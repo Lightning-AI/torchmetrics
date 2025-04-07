@@ -43,13 +43,12 @@ from torch import Tensor
 from torch.nn.functional import conv2d
 from typing_extensions import Literal
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_BELLOW_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["deep_image_structure_and_texture_similarity"]
 else:
-
-    from torchvision.models import vgg16, VGG16_Weights
+    from torchvision.models import VGG16_Weights, vgg16
 
 _PATH_WEIGHT_DISTS = Path(__file__).resolve().parent / "dists_models" / "weights.pt"
 
