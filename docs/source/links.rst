@@ -81,7 +81,7 @@
 .. _chrF++ score: https://aclanthology.org/W17-4770
 .. _TER: https://aclanthology.org/2006.amta-papers.25
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359
-.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim
+.. _MultiScaleSSIM: https://ieeexplore.ieee.org/abstract/document/1292216
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/abstract/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
 .. _SpatialDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
