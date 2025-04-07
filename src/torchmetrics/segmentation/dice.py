@@ -120,9 +120,9 @@ class DiceScore(Metric):
         if average == "micro":
             rank_zero_warn(
                 "DiceScore metric currently defaults to `average=micro`, but will change to"
-                "`average=macro` in the next release."
+                "`average=macro` in the v1.9 release."
                 " If you've explicitly set this parameter, you can ignore this warning.",
-                UserWarning,
+                DeprecationWarning,
             )
         _dice_score_validate_args(num_classes, include_background, average, input_format, zero_division)
         self.num_classes = num_classes
