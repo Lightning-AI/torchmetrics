@@ -160,7 +160,7 @@ def dice_score(
             "dice_score metric currently defaults to `average=micro`, but will change to"
             "`average=macro` in the v1.9 release."
             " If you've explicitly set this parameter, you can ignore this warning.",
-            DeprecationWarning,
+            UserWarning,
         )
     _dice_score_validate_args(num_classes, include_background, average, input_format)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
