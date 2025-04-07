@@ -43,10 +43,12 @@ from torch import Tensor
 from torch.nn.functional import conv2d
 from typing_extensions import Literal
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_BELLOW_0_13
 
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["deep_image_structure_and_texture_similarity"]
+elif not _TORCHVISION_BELLOW_0_13:
+    from torchvision.models import VGG16_Weights
 
 _PATH_WEIGHT_DISTS = Path(__file__).resolve().parent / "dists_models" / "weights.pt"
 
@@ -91,7 +93,8 @@ class DISTSNetwork(torch.nn.Module):
                 "DISTS requires torchvision to be installed. Please install it with `pip install torchvision`."
             )
 
-        vgg_pretrained_features = models.vgg16(pretrained=True).features
+        vgg16_kwargs = {"pretrained": True} if _TORCHVISION_BELLOW_0_13 else {"weights": VGG16_Weights.DEFAULT}
+        vgg_pretrained_features = models.vgg16(**vgg16_kwargs).features
         self.stage1 = torch.nn.Sequential()
         self.stage2 = torch.nn.Sequential()
         self.stage3 = torch.nn.Sequential()
