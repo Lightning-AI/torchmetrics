@@ -307,7 +307,7 @@ class BinaryFairness(_AbstractGroupStatScores):
             >>> # Example plotting a single value
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
-            >>> metric.update(rand(20), randint(2, (20,)), ones(20).long())
+            >>> metric.update(rand(50), randint(2, (50,)), ones(50).long())
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -319,7 +319,7 @@ class BinaryFairness(_AbstractGroupStatScores):
             >>> metric = BinaryFairness(2)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(rand(20), randint(2, (20,) ), ones(20).long()))
+            ...     values.append(metric(rand(50), randint(2, (50,) ), ones(50).long()))
             >>> fig_, ax_ = metric.plot(values)
 
         """

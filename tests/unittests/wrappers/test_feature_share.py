@@ -15,6 +15,7 @@ import time
 
 import pytest
 import torch
+import torch.nn as nn
 
 from torchmetrics import MetricCollection
 from torchmetrics.image import (
@@ -25,6 +26,7 @@ from torchmetrics.image import (
     StructuralSimilarityIndexMeasure,
 )
 from torchmetrics.wrappers import FeatureShare
+from torchmetrics.wrappers.feature_share import NetworkCache
 
 
 @pytest.mark.parametrize(
@@ -162,3 +164,60 @@ def test_same_result_as_individual():
     assert fs_res["InceptionScore"][1] == inception_res[1]
     assert fs_res["KernelInceptionDistance"][0] == kid_res[0]
     assert fs_res["KernelInceptionDistance"][1] == kid_res[1]
+
+
+def test_network_cache():
+    """Test the NetworkCache class."""
+
+    class TestNetwork(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.calls = 0
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            self.calls += 1
+            return x
+
+    # Test caching behavior
+    network = TestNetwork()
+    cached_net = NetworkCache(network, max_size=2)
+
+    # First call should increment counter
+    x1 = torch.randn(1, 3, 64, 64)
+    cached_net(x1)
+    assert network.calls == 1
+
+    # Same input should use cache
+    cached_net(x1)
+    assert network.calls == 1
+
+    # Different input should increment counter
+    x2 = torch.randn(1, 3, 64, 64)
+    cached_net(x2)
+    assert network.calls == 2
+
+    # Third unique input should increment counter (cache full)
+    x3 = torch.randn(1, 3, 64, 64)
+    cached_net(x3)
+    assert network.calls == 3
+
+
+def test_feature_share_initialization_edge_cases():
+    """Test edge cases for FeatureShare initialization."""
+    # Test with invalid max_cache_size
+    with pytest.raises(TypeError, match="max_cache_size should be an integer"):
+        FeatureShare([FrechetInceptionDistance(feature=64)], max_cache_size="invalid")
+
+    # Test with invalid feature_network type
+    class BadMetric(FrechetInceptionDistance):
+        def __init__(self) -> None:
+            super().__init__(feature=64)
+            self.feature_network = 123  # Should be a string
+
+    with pytest.raises(TypeError, match="The `feature_network` attribute must be a string"):
+        FeatureShare([BadMetric()])
+
+    # Test with single metric
+    fs = FeatureShare(FrechetInceptionDistance(feature=64))
+    assert len(fs) == 1
+    assert isinstance(fs["FrechetInceptionDistance"], FrechetInceptionDistance)

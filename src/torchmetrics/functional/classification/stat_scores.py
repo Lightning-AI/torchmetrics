@@ -359,13 +359,15 @@ def _refine_preds_oh(preds: Tensor, preds_oh: Tensor, target: Tensor, top_k: int
         Refined one-hot encoded predictions tensor
 
     """
-    preds = preds.squeeze()
-    target = target.squeeze()
+    if preds.dim() == 1:  # Handle 1D tensor case (single sample)
+        preds = preds.unsqueeze(0)  # Add batch dimension
+        target = target.unsqueeze(0) if target.dim() == 0 else target
+
     top_k_indices = torch.topk(preds, k=top_k, dim=1).indices
     top_1_indices = top_k_indices[:, 0]
     target_in_topk = torch.any(top_k_indices == target.unsqueeze(1), dim=1)
     result = torch.where(target_in_topk, target, top_1_indices)
-    return torch.zeros_like(preds_oh, dtype=torch.int32).scatter_(-1, result.unsqueeze(1).unsqueeze(1), 1)
+    return torch.zeros_like(preds_oh, dtype=torch.int32).scatter_(-1, result.unsqueeze(1), 1)
 
 
 def _multiclass_stat_scores_update(
