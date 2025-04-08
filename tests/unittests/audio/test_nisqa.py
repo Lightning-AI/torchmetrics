@@ -126,7 +126,7 @@ class _NISQACheat(NonIntrusiveSpeechQualityAssessment):
         super().update(preds=preds)
 
 
-@pytest.mark.parametrize("preds, fs, reference", [(i["preds"], i["fs"], i["reference"]) for i in inputs])
+@pytest.mark.parametrize(("preds", "fs", "reference"), [(i["preds"], i["fs"], i["reference"]) for i in inputs])
 class TestNISQA(MetricTester):
     """Test class for `NonIntrusiveSpeechQualityAssessment` metric."""
 

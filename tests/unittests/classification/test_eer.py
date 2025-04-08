@@ -47,7 +47,7 @@ def _reference_sklearn_eer_binary(preds, target, ignore_index=None):
     return (fpr[idx] + (1 - tpr[idx])) / 2
 
 
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryEER(MetricTester):
     """Test class for `BinaryEER` metric."""
 
@@ -156,7 +156,7 @@ def _reference_sklearn_eer_multiclass(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassEER(MetricTester):
     """Test class for `MulticlassEER` metric."""
@@ -247,7 +247,7 @@ def _reference_sklearn_eer_multilabel(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelEER(MetricTester):
     """Test class for `MultilabelEER` metric."""

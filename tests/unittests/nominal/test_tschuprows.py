@@ -73,7 +73,7 @@ def _reference_pd_tschuprows_t_matrix(matrix):
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_input_default.preds, _input_default.target),
         (_input_logits.preds, _input_logits.target),

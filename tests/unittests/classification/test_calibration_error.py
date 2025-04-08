@@ -49,7 +49,7 @@ def _reference_netcal_binary_calibration_error(preds, target, n_bins, norm, igno
     return metric(n_bins).measure(preds, target)
 
 
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryCalibrationError(MetricTester):
     """Test class for `BinaryCalibrationError` metric."""
 
@@ -156,7 +156,7 @@ def _reference_netcal_multiclass_calibration_error(preds, target, n_bins, norm, 
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassCalibrationError(MetricTester):
     """Test class for `MulticlassCalibrationError` metric."""

@@ -90,7 +90,7 @@ def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bo
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric",
+    ("preds", "target", "ref_metric"),
     [(inputs.preds, inputs.target, _reference_speechmetrics_si_sdr)],
 )
 class TestSISNR(MetricTester):

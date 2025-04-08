@@ -43,7 +43,7 @@ def _reference_ms_ssim(preds, target, data_range: float = 1.0, kernel_size: int 
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):

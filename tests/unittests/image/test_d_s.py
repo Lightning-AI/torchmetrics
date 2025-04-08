@@ -143,7 +143,7 @@ def _invoke_spatial_distortion_index(preds, target, ms, pan, pan_lr, norm_order,
 
 
 @pytest.mark.parametrize(
-    "preds, target, ms, pan, pan_lr, norm_order, window_size",
+    ("preds", "target", "ms", "pan", "pan_lr", "norm_order", "window_size"),
     [(i.preds, i.target, i.ms, i.pan, i.pan_lr, i.norm_order, i.window_size) for i in _inputs],
 )
 class TestSpatialDistortionIndex(MetricTester):
