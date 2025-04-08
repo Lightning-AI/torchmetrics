@@ -24,7 +24,7 @@ seed_all(42)
 
 
 @pytest.mark.parametrize(
-    "data, labels",
+    ("data", "labels"),
     [
         (_single_target_intrinsic1.data, _single_target_intrinsic1.labels),
         (_single_target_intrinsic2.data, _single_target_intrinsic2.labels),

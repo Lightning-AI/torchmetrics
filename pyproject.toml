@@ -97,7 +97,8 @@ ignore-words-list = """
   wil, \
   fpr, \
   raison, \
-  archiv
+  archiv, \
+  lins
 """
 
 [tool.docformatter]
@@ -171,6 +172,7 @@ warn_no_return = "False"
 extend-ignore-identifiers-re = [
   # *sigh* this just isn't worth the cost of fixing
   "AttributeID.*Supress.*",
+  "Levenhstein",
 ]
 
 [tool.typos.default.extend-identifiers]

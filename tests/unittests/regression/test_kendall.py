@@ -70,7 +70,7 @@ def _reference_scipy_kendall(preds, target, alternative, variant):
 
 
 @pytest.mark.parametrize(
-    "preds, target, alternative",
+    ("preds", "target", "alternative"),
     [
         (_single_inputs1.preds, _single_inputs1.target, None),
         (_single_inputs2.preds, _single_inputs2.target, "less"),

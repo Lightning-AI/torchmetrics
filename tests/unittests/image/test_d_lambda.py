@@ -83,7 +83,7 @@ def _reference_numpy_d_lambda(preds, target, p):
 
 
 @pytest.mark.parametrize(
-    "preds, target, p",
+    ("preds", "target", "p"),
     [(i.preds, i.target, i.p) for i in _inputs],
 )
 class TestSpectralDistortionIndex(MetricTester):

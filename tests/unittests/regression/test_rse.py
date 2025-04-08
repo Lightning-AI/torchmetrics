@@ -66,7 +66,7 @@ def _multi_target_ref_wrapper(preds, target, squared):
 
 @pytest.mark.parametrize("squared", [False, True])
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, num_outputs",
+    ("preds", "target", "ref_metric", "num_outputs"),
     [
         (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper, 1),
         (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper, NUM_TARGETS),

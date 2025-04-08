@@ -80,7 +80,7 @@ def _reference_sklearn_precision_recall_binary(
 
 @pytest.mark.parametrize("inputs", _binary_cases)
 @pytest.mark.parametrize(
-    "module, functional, compare",
+    ("module", "functional", "compare"),
     [
         (BinaryPrecision, binary_precision, sk_precision_score),
         (BinaryRecall, binary_recall, sk_recall_score),
@@ -248,7 +248,7 @@ def _reference_sklearn_precision_recall_multiclass(
 
 @pytest.mark.parametrize("inputs", _multiclass_cases)
 @pytest.mark.parametrize(
-    "module, functional, compare",
+    ("module", "functional", "compare"),
     [
         (MulticlassPrecision, multiclass_precision, sk_precision_score),
         (MulticlassRecall, multiclass_recall, sk_recall_score),
@@ -611,7 +611,7 @@ def _reference_sklearn_precision_recall_multilabel(
 
 @pytest.mark.parametrize("inputs", _multilabel_cases)
 @pytest.mark.parametrize(
-    "module, functional, compare",
+    ("module", "functional", "compare"),
     [
         (MultilabelPrecision, multilabel_precision, sk_precision_score),
         (MultilabelRecall, multilabel_recall, sk_recall_score),

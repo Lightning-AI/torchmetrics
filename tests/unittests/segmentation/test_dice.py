@@ -52,7 +52,7 @@ def _reference_dice_score(
 
 
 @pytest.mark.parametrize(
-    "preds, target, input_format",
+    ("preds", "target", "input_format"),
     [
         (_inputs1.preds, _inputs1.target, "one-hot"),
         (_inputs2.preds, _inputs2.target, "one-hot"),

@@ -59,7 +59,7 @@ def _reference_psnrb(preds, target):
     return psnr_b
 
 
-@pytest.mark.parametrize("preds, target", _input)
+@pytest.mark.parametrize(("preds", "target"), _input)
 class TestPSNR(MetricTester):
     """Test class for PSNRB metric."""
 

@@ -103,7 +103,7 @@ def _invoke_quality_with_no_reference(preds, target, ms, pan, pan_lr, alpha, bet
 
 
 @pytest.mark.parametrize(
-    "preds, target, ms, pan, pan_lr, alpha, beta, norm_order, window_size",
+    ("preds", "target", "ms", "pan", "pan_lr", "alpha", "beta", "norm_order", "window_size"),
     [(i.preds, i.target, i.ms, i.pan, i.pan_lr, i.alpha, i.beta, i.norm_order, i.window_size) for i in _inputs],
 )
 class TestQualityWithNoReference(MetricTester):
