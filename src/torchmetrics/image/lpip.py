@@ -95,8 +95,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    sum_scores: Tensor
-    total: Tensor
+    all_scores: list[Tensor]
     feature_network: str = "net"
 
     # due to the use of named tuple in the backbone the net variable cannot be scripted
@@ -132,18 +131,16 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         self.normalize = normalize
 
         self.add_state("all_scores", default=[], dist_reduce_fx=None)
-        self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, img1: Tensor, img2: Tensor) -> None:
         """Update internal states with lpips score."""
-        loss, total = _lpips_update(img1, img2, net=self.net, normalize=self.normalize)
+        loss = _lpips_update(img1, img2, net=self.net, normalize=self.normalize)
         self.all_scores.append(loss)
-        self.total += total
 
     def compute(self) -> Tensor:
         """Compute final perceptual similarity metric."""
         scores = torch.cat(self.all_scores, dim=0)
-        return _lpips_compute(scores, total=None, reduction=self.reduction)
+        return _lpips_compute(scores, reduction=self.reduction)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

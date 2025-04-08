@@ -118,7 +118,7 @@ def test_error_on_wrong_init():
         LearnedPerceptualImagePatchSimilarity(net_type="resnet")
 
     with pytest.raises(ValueError, match="Argument `reduction` must be one .*"):
-        LearnedPerceptualImagePatchSimilarity(net_type="squeeze", reduction=None)
+        LearnedPerceptualImagePatchSimilarity(net_type="squeeze", reduction="invalid_option")
 
 
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")

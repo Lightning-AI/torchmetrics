@@ -396,11 +396,11 @@ def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -
             f" expected to be in the {[0, 1] if normalize else [-1, 1]} range."
         )
     loss = net(img1, img2, normalize=normalize).squeeze()
-    return loss, img1.shape[0]
+    return loss
 
 
 def _lpips_compute(
-    scores: Tensor, total: Union[Tensor, int], reduction: Union[Literal["sum", "mean", "none"], None] = "mean"
+    scores: Tensor, reduction: Union[Literal["sum", "mean", "none"], None] = "mean"
 ) -> Tensor:
     if reduction == "mean":
         return scores.mean()
@@ -446,5 +446,5 @@ def learned_perceptual_image_patch_similarity(
 
     """
     net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)
-    loss, total = _lpips_update(img1, img2, net, normalize)
-    return _lpips_compute(loss, total, reduction)
+    loss = _lpips_update(img1, img2, net, normalize)
+    return _lpips_compute(loss, reduction)
