@@ -46,7 +46,7 @@ def _reference_sacrebleu_chrf(
 
 
 @pytest.mark.parametrize(
-    ["char_order", "word_order", "lowercase", "whitespace"],
+    ("char_order", "word_order", "lowercase", "whitespace"),
     [
         (6, 2, False, False),
         (6, 2, False, True),
@@ -57,7 +57,7 @@ def _reference_sacrebleu_chrf(
     ],
 )
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 class TestCHRFScore(TextTester):

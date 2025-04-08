@@ -114,7 +114,7 @@ def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool =
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, metric_func, mode, eval_func",
+    ("preds", "target", "ref_metric", "metric_func", "mode", "eval_func"),
     [
         (inputs1.preds, inputs1.target, _reference_scipy_pit_snr, signal_noise_ratio, "speaker-wise", "max"),
         (

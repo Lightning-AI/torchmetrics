@@ -339,7 +339,7 @@ _ml_target = torch.randint(2, (10, 3))
 
 
 @pytest.mark.parametrize(
-    "metrics, expected, preds, target",
+    ("metrics", "expected", "preds", "target"),
     [
         # single metric forms its own compute group
         pytest.param(
