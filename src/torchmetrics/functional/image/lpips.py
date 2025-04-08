@@ -441,6 +441,14 @@ def learned_perceptual_image_patch_similarity(
         >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze')
         tensor(0.1005)
 
+        >>> from torch import rand, Generator
+        >>> from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
+        >>> gen = Generator().manual_seed(42)
+        >>> img1 = (rand(2, 3, 100, 100, generator=gen) * 2) - 1
+        >>> img2 = (rand(2, 3, 100, 100, generator=gen) * 2) - 1
+        >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze', reduction='none')
+        tensor([0.1024, 0.0938])
+
     """
     net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)
     loss = _lpips_update(img1, img2, net, normalize)

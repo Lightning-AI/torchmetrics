@@ -54,7 +54,7 @@ def _reference_lpips(
         return res.mean()
     if reduction == "sum":
         return res.sum()
-    return res.flatten()
+    return res.flatten()  # for reduction == "none" or None
 
 
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
