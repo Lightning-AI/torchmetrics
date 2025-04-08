@@ -63,7 +63,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
-        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
+        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'`, `'mean'`,
+    `'none'` or `None`.
         normalize: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -104,7 +105,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     def __init__(
         self,
         net_type: Literal["vgg", "alex", "squeeze"] = "alex",
-        reduction: Literal["sum", "mean"] = "mean",
+        reduction: Union[Literal["sum", "mean", "none"], None] = "mean",
         normalize: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -121,7 +122,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             raise ValueError(f"Argument `net_type` must be one of {valid_net_type}, but got {net_type}.")
         self.net = _NoTrainLpips(net=net_type)
 
-        valid_reduction = ("mean", "sum")
+        valid_reduction = ("mean", "sum", "none", None)
         if reduction not in valid_reduction:
             raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
         self.reduction = reduction
@@ -130,18 +131,19 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             raise ValueError(f"Argument `normalize` should be an bool but got {normalize}")
         self.normalize = normalize
 
-        self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("all_scores", default=[], dist_reduce_fx=None)
         self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, img1: Tensor, img2: Tensor) -> None:
         """Update internal states with lpips score."""
         loss, total = _lpips_update(img1, img2, net=self.net, normalize=self.normalize)
-        self.sum_scores += loss.sum()
+        self.all_scores.append(loss)
         self.total += total
 
     def compute(self) -> Tensor:
         """Compute final perceptual similarity metric."""
-        return _lpips_compute(self.sum_scores, self.total, self.reduction)
+        scores = torch.cat(self.all_scores, dim=0)
+        return _lpips_compute(scores, total=None, reduction=self.reduction)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

@@ -399,15 +399,23 @@ def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -
     return loss, img1.shape[0]
 
 
-def _lpips_compute(sum_scores: Tensor, total: Union[Tensor, int], reduction: Literal["sum", "mean"] = "mean") -> Tensor:
-    return sum_scores / total if reduction == "mean" else sum_scores
+def _lpips_compute(
+    scores: Tensor, total: Union[Tensor, int], reduction: Union[Literal["sum", "mean", "none"], None] = "mean"
+) -> Tensor:
+    if reduction == "mean":
+        return scores.mean()
+    if reduction == "sum":
+        return scores.sum()
+    if reduction == "none" or reduction is None:
+        return scores
+    raise ValueError(f"Invalid reduction type: {reduction}")
 
 
 def learned_perceptual_image_patch_similarity(
     img1: Tensor,
     img2: Tensor,
     net_type: Literal["alex", "vgg", "squeeze"] = "alex",
-    reduction: Literal["sum", "mean"] = "mean",
+    reduction: Union[Literal["sum", "mean", "none"], None] = "mean",
     normalize: bool = False,
 ) -> Tensor:
     """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.
@@ -423,7 +431,8 @@ def learned_perceptual_image_patch_similarity(
         img1: first set of images
         img2: second set of images
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
-        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
+        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'`, `'mean'`,
+    `'none'` or `None`.
         normalize: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
 
@@ -438,4 +447,4 @@ def learned_perceptual_image_patch_similarity(
     """
     net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)
     loss, total = _lpips_update(img1, img2, net, normalize)
-    return _lpips_compute(loss.sum(), total, reduction)
+    return _lpips_compute(loss, total, reduction)
