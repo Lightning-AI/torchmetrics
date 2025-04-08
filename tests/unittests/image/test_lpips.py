@@ -49,9 +49,12 @@ def _reference_lpips(
 
     ref = LPIPS(net=net_type)
     res = ref(img1, img2, normalize=normalize).detach().cpu().numpy()
+
     if reduction == "mean":
         return res.mean()
-    return res.sum()
+    if reduction == "sum":
+        return res.sum()
+    return res.flatten()
 
 
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
@@ -61,28 +64,30 @@ class TestLPIPS(MetricTester):
     atol: float = 1e-4
 
     @pytest.mark.parametrize("net_type", ["alex", "squeeze"])
+    @pytest.mark.parametrize("reduction", ["mean", "sum", "none", None])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_lpips(self, net_type, ddp):
+    def test_lpips(self, net_type, reduction, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
             target=_inputs.img2,
             metric_class=LearnedPerceptualImagePatchSimilarity,
-            reference_metric=partial(_reference_lpips, net_type=net_type),
+            reference_metric=partial(_reference_lpips, net_type=net_type, reduction=reduction),
             check_scriptable=False,
             check_state_dict=False,
-            metric_args={"net_type": net_type},
+            metric_args={"net_type": net_type, "reduction": reduction},
         )
 
-    def test_lpips_functional(self):
+    @pytest.mark.parametrize("reduction", ["mean", "sum", "none", None])
+    def test_lpips_functional(self, reduction):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=_inputs.img1,
             target=_inputs.img2,
             metric_functional=learned_perceptual_image_patch_similarity,
-            reference_metric=partial(_reference_lpips, net_type="alex"),
-            metric_args={"net_type": "alex"},
+            reference_metric=partial(_reference_lpips, net_type="alex", reduction=reduction),
+            metric_args={"net_type": "alex", "reduction": reduction},
         )
 
     def test_lpips_differentiability(self):
