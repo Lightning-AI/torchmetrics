@@ -48,7 +48,7 @@ def _binary_compare_implementation(preds, target, fpr_range, ignore_index=None):
 
 
 @pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryLogAUC(MetricTester):
     """Test class for `BinaryLogAUC` metric."""
 
@@ -161,7 +161,7 @@ def _multiclass_compare_implementation(preds, target, fpr_range, average):
 
 @pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassLogAUC(MetricTester):
     """Test class for `MulticlassLogAUC` metric."""
@@ -280,7 +280,7 @@ def _multilabel_compare_implementation(preds, target, fpr_range, average):
 
 @pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelLogAUC(MetricTester):
     """Test class for `MultilabelLogAUC` metric."""

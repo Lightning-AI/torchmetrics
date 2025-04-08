@@ -42,10 +42,10 @@ def _reference_sacre_bleu(
 
 
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
-@pytest.mark.parametrize(["lowercase"], [(False,), (True,)])
+@pytest.mark.parametrize("lowercase", [False, True])
 @pytest.mark.parametrize("tokenize", AVAILABLE_TOKENIZERS)
 class TestSacreBLEUScore(TextTester):
     """Test class for `SacreBLEUScore` metric."""

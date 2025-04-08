@@ -55,7 +55,7 @@ def _reference_pesq_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, fs, mode",
+    ("preds", "target", "ref_metric", "fs", "mode"),
     [
         (inputs_8k.preds, inputs_8k.target, partial(_reference_pesq_batch, fs=8000, mode="nb"), 8000, "nb"),
         (inputs_16k.preds, inputs_16k.target, partial(_reference_pesq_batch, fs=16000, mode="nb"), 16000, "nb"),

@@ -43,7 +43,7 @@ def _reference_sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=No
     return sk_roc_auc_score(target, preds, max_fpr=max_fpr)
 
 
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryAUROC(MetricTester):
     """Test class for `BinaryAUROC` metric."""
 
@@ -150,7 +150,7 @@ def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_i
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassAUROC(MetricTester):
     """Test class for `MulticlassAUROC` metric."""
@@ -281,7 +281,7 @@ def _reference_sklearn_auroc_multilabel(preds, target, average="macro", ignore_i
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelAUROC(MetricTester):
     """Test class for `MultilabelAUROC` metric."""

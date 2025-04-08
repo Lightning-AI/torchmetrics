@@ -46,7 +46,7 @@ def _reference_sacrebleu_ter(
 
 
 @pytest.mark.parametrize(
-    ["normalize", "no_punctuation", "asian_support", "lowercase"],
+    ("normalize", "no_punctuation", "asian_support", "lowercase"),
     [
         (False, False, False, False),
         (True, False, False, False),
@@ -57,7 +57,7 @@ def _reference_sacrebleu_ter(
     ],
 )
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 class TestTER(TextTester):

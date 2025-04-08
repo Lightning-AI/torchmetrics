@@ -44,7 +44,7 @@ def _reference_sewar_vif(preds, target, sigma_nsq=2):
     return np.mean(vif)
 
 
-@pytest.mark.parametrize("preds, target", [(inputs.preds, inputs.target) for inputs in _inputs])
+@pytest.mark.parametrize(("preds", "target"), [(inputs.preds, inputs.target) for inputs in _inputs])
 class TestVIF(MetricTester):
     """Test class for `VisualInformationFidelity` metric."""
 

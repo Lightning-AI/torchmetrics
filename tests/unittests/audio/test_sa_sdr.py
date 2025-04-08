@@ -64,7 +64,7 @@ def _reference_local_sa_sdr(
 
 
 @pytest.mark.parametrize(
-    "preds, target, scale_invariant, zero_mean",
+    ("preds", "target", "scale_invariant", "zero_mean"),
     [
         (inputs.preds, inputs.target, True, False),
         (inputs.preds, inputs.target, True, True),

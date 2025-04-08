@@ -51,7 +51,7 @@ def _reference_sklearn_deviance(preds: Tensor, targets: Tensor, power: float):
 
 @pytest.mark.parametrize("power", [-0.5, 0, 1, 1.5, 2, 3])
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_single_target_inputs2.preds, _single_target_inputs2.target),
         (_single_target_inputs1.preds, _single_target_inputs1.target),

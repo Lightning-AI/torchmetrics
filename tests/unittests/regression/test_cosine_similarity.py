@@ -55,7 +55,7 @@ def _reference_sklearn_cosine(preds, target, reduction):
 
 @pytest.mark.parametrize("reduction", ["sum", "mean"])
 @pytest.mark.parametrize(
-    "preds, target, ref_metric",
+    ("preds", "target", "ref_metric"),
     [
         (_single_target_inputs.preds, _single_target_inputs.target, _reference_sklearn_cosine),
         (_multi_target_inputs.preds, _multi_target_inputs.target, _reference_sklearn_cosine),
