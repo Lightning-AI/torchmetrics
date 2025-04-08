@@ -399,9 +399,7 @@ def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -
     return loss
 
 
-def _lpips_compute(
-    scores: Tensor, reduction: Union[Literal["sum", "mean", "none"], None] = "mean"
-) -> Tensor:
+def _lpips_compute(scores: Tensor, reduction: Union[Literal["sum", "mean", "none"], None] = "mean") -> Tensor:
     if reduction == "mean":
         return scores.mean()
     if reduction == "sum":
