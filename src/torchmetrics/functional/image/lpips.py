@@ -395,8 +395,7 @@ def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -
             f" {[img1.min(), img1.max()]} and {[img2.min(), img2.max()]} when all values are"
             f" expected to be in the {[0, 1] if normalize else [-1, 1]} range."
         )
-    loss = net(img1, img2, normalize=normalize).squeeze()
-    return loss
+    return net(img1, img2, normalize=normalize).squeeze()
 
 
 def _lpips_compute(scores: Tensor, reduction: Union[Literal["sum", "mean", "none"], None] = "mean") -> Tensor:
