@@ -387,7 +387,7 @@ def _valid_img(img: Tensor, normalize: bool) -> bool:
     return img.ndim == 4 and img.shape[1] == 3 and value_check  # type: ignore[return-value]
 
 
-def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> tuple[Tensor, Union[int, Tensor]]:
+def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> Tensor:
     if not (_valid_img(img1, normalize) and _valid_img(img2, normalize)):
         raise ValueError(
             "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
