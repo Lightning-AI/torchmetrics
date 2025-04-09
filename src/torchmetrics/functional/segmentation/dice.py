@@ -141,6 +141,7 @@ def dice_score(
     Example (with one-hot encoded tensors):
         >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import dice_score
+        >>> _ = torch.manual_seed(42)
         >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> # dice score micro averaged over all classes
@@ -159,6 +160,7 @@ def dice_score(
     Example (with index tensors):
         >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import dice_score
+        >>> _ = torch.manual_seed(42)
         >>> preds = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> # dice score micro averaged over all classes
