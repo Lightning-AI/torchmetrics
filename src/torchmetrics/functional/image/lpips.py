@@ -412,7 +412,7 @@ def learned_perceptual_image_patch_similarity(
     img1: Tensor,
     img2: Tensor,
     net_type: Literal["alex", "vgg", "squeeze"] = "alex",
-    reduction: Union[Literal["sum", "mean", "none"], None] = "mean",
+    reduction: Optional[Literal["sum", "mean", "none"]] = "mean",
     normalize: bool = False,
 ) -> Tensor:
     """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.

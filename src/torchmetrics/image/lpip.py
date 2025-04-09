@@ -114,7 +114,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     def __init__(
         self,
         net_type: Literal["vgg", "alex", "squeeze"] = "alex",
-        reduction: Union[Literal["sum", "mean", "none"], None] = "mean",
+        reduction: Optional[Literal["sum", "mean", "none"]] = "mean",
         normalize: bool = False,
         **kwargs: Any,
     ) -> None:
