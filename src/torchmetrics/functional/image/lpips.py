@@ -398,12 +398,12 @@ def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -
     return net(img1, img2, normalize=normalize).squeeze()
 
 
-def _lpips_compute(scores: Tensor, reduction: Union[Literal["sum", "mean", "none"], None] = "mean") -> Tensor:
+def _lpips_compute(scores: Tensor, reduction: Optional[Literal["sum", "mean", "none"]] = "mean") -> Tensor:
     if reduction == "mean":
         return scores.mean()
     if reduction == "sum":
         return scores.sum()
-    if reduction == "none" or reduction is None:
+    if reduction == "none":
         return scores
     raise ValueError(f"Invalid reduction type: {reduction}")
 
@@ -428,8 +428,7 @@ def learned_perceptual_image_patch_similarity(
         img1: first set of images
         img2: second set of images
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
-        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'`, `'mean'`,
-    `'none'` or `None`.
+        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'`, `'mean'`, `'none'`.
         normalize: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
 
