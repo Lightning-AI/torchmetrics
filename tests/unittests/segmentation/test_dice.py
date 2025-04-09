@@ -35,6 +35,7 @@ def _reference_dice_score(
     include_background: bool = True,
     average: str = "micro",
     aggregation_level: str = "samplewise",
+    reduce: bool = True,
 ):
     """Calculate reference metric for dice score."""
     if input_format == "one-hot":
@@ -46,7 +47,7 @@ def _reference_dice_score(
     labels = list(range(1, NUM_CLASSES) if not include_background else range(NUM_CLASSES))
     if aggregation_level == "samplewise":
         val = [f1_score(t.flatten(), p.flatten(), average=average, labels=labels) for t, p in zip(target, preds)]
-        return torch.tensor(val).mean(dim=0)
+        val = torch.tensor(val).mean(0) if reduce else torch.tensor(val)
     if aggregation_level == "global":
         val = f1_score(target.flatten(), preds.flatten(), average=average, labels=labels)
         return torch.tensor(val)
@@ -82,6 +83,7 @@ class TestDiceScore(MetricTester):
                 include_background=include_background,
                 average=average,
                 aggregation_level=aggregation_level,
+                reduce=True,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -104,6 +106,7 @@ class TestDiceScore(MetricTester):
                 include_background=include_background,
                 average=average,
                 aggregation_level=aggregation_level,
+                reduce=False,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -111,7 +114,6 @@ class TestDiceScore(MetricTester):
                 "average": average,
                 "input_format": input_format,
                 "aggregation_level": aggregation_level,
-                "reduce": True,
             },
         )
 

@@ -141,6 +141,7 @@ def dice_score(
     Example (with one-hot encoded tensors):
         >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import dice_score
+        >>> torch.manual_seed(42)
         >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> # dice score micro averaged over all classes
@@ -152,21 +153,28 @@ def dice_score(
                 [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
                 [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
                 [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
+        >>> # global dice score over all samples with macro averaging
+        >>> dice_score(preds, target, num_classes=5, average="macro", aggregation_level="global")
+        tensor([0.4942])
 
     Example (with index tensors):
         >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import dice_score
+        >>> torch.manual_seed(42)
         >>> preds = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> # dice score micro averaged over all classes
         >>> dice_score(preds, target, num_classes=5, average="micro", input_format="index")
-        tensor([0.2031, 0.1914, 0.2500, 0.2266])
+        tensor([0.2031, 0.1914, 0.2266, 0.1641])
         >>> # dice score per sample and class
         >>> dice_score(preds, target, num_classes=5, average="none", input_format="index")
-        tensor([[0.1714, 0.2500, 0.1304, 0.2524, 0.2069],
-                [0.1837, 0.2162, 0.0962, 0.2692, 0.1895],
-                [0.3866, 0.1348, 0.2526, 0.2301, 0.2083],
-                [0.1978, 0.2804, 0.1714, 0.1915, 0.2783]])
+        tensor([[0.1731, 0.1667, 0.2400, 0.2424, 0.1947],
+                [0.2245, 0.2247, 0.2321, 0.1132, 0.1682],
+                [0.2500, 0.2476, 0.1887, 0.1818, 0.2718],
+                [0.1308, 0.1800, 0.1980, 0.1607, 0.1522]])
+        >>> # global dice score over all samples with macro averaging
+        >>> dice_score(preds, target, num_classes=5, average="macro", aggregation_level="global", input_format="index")
+        tensor([0.1965])
 
     """
     if average == "micro":
