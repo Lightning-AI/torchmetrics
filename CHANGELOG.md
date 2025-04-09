@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `aggregation_level` argument to `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
 
 
+- Added support for `reduction="none"` to `LearnedPerceptualImagePatchSimilarity` ([#3053](https://github.com/Lightning-AI/torchmetrics/pull/3053))
+
+
 ### Changed
 
 - Enhance Support Adding a `MetricCollection` to Another `MetricCollection` in `add_metrics` Function ([#3032](https://github.com/Lightning-AI/torchmetrics/pull/3032))
