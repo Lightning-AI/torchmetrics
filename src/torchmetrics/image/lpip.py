@@ -14,12 +14,12 @@
 from collections.abc import Sequence
 from typing import Any, ClassVar, Optional, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.lpips import _LPIPS, _lpips_compute, _lpips_update, _NoTrainLpips
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import dim_zero_cat
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -149,7 +149,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     def compute(self) -> Tensor:
         """Compute final perceptual similarity metric."""
-        scores = torch.cat(self.all_scores, dim=0)
+        scores = dim_zero_cat(self.all_scores)
         return _lpips_compute(scores, reduction=self.reduction)
 
     def plot(
