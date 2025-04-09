@@ -46,8 +46,10 @@ def _reference_dice_score(
 
     labels = list(range(1, NUM_CLASSES) if not include_background else range(NUM_CLASSES))
     if aggregation_level == "samplewise":
-        val = [f1_score(t.flatten(), p.flatten(), average=average, labels=labels) for t, p in zip(target, preds)]
-        val = torch.tensor(val).mean(0) if reduce else torch.tensor(val)
+        val = torch.tensor([
+            f1_score(t.flatten(), p.flatten(), average=average, labels=labels) for t, p in zip(target, preds)
+        ])
+        return val.mean(0) if reduce else val
     if aggregation_level == "global":
         val = f1_score(target.flatten(), preds.flatten(), average=average, labels=labels)
         return torch.tensor(val)
