@@ -387,7 +387,7 @@ def _valid_img(img: Tensor, normalize: bool) -> bool:
     return img.ndim == 4 and img.shape[1] == 3 and value_check  # type: ignore[return-value]
 
 
-def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> tuple[Tensor, Union[int, Tensor]]:
+def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> Tensor:
     if not (_valid_img(img1, normalize) and _valid_img(img2, normalize)):
         raise ValueError(
             "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
@@ -395,19 +395,24 @@ def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -
             f" {[img1.min(), img1.max()]} and {[img2.min(), img2.max()]} when all values are"
             f" expected to be in the {[0, 1] if normalize else [-1, 1]} range."
         )
-    loss = net(img1, img2, normalize=normalize).squeeze()
-    return loss, img1.shape[0]
+    return net(img1, img2, normalize=normalize).squeeze()
 
 
-def _lpips_compute(sum_scores: Tensor, total: Union[Tensor, int], reduction: Literal["sum", "mean"] = "mean") -> Tensor:
-    return sum_scores / total if reduction == "mean" else sum_scores
+def _lpips_compute(scores: Tensor, reduction: Optional[Literal["sum", "mean", "none"]] = "mean") -> Tensor:
+    if reduction == "mean":
+        return scores.mean()
+    if reduction == "sum":
+        return scores.sum()
+    if reduction == "none" or reduction is None:
+        return scores
+    raise ValueError(f"Invalid reduction type: {reduction}")
 
 
 def learned_perceptual_image_patch_similarity(
     img1: Tensor,
     img2: Tensor,
     net_type: Literal["alex", "vgg", "squeeze"] = "alex",
-    reduction: Literal["sum", "mean"] = "mean",
+    reduction: Optional[Literal["sum", "mean", "none"]] = "mean",
     normalize: bool = False,
 ) -> Tensor:
     """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.
@@ -423,7 +428,8 @@ def learned_perceptual_image_patch_similarity(
         img1: first set of images
         img2: second set of images
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
-        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'` or `'mean'`.
+        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'`, `'mean'`, `'none'`
+            or `None`.
         normalize: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
 
@@ -435,7 +441,15 @@ def learned_perceptual_image_patch_similarity(
         >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze')
         tensor(0.1005)
 
+        >>> from torch import rand, Generator
+        >>> from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
+        >>> gen = Generator().manual_seed(42)
+        >>> img1 = (rand(2, 3, 100, 100, generator=gen) * 2) - 1
+        >>> img2 = (rand(2, 3, 100, 100, generator=gen) * 2) - 1
+        >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze', reduction='none')
+        tensor([0.1024, 0.0938])
+
     """
     net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)
-    loss, total = _lpips_update(img1, img2, net, normalize)
-    return _lpips_compute(loss.sum(), total, reduction)
+    loss = _lpips_update(img1, img2, net, normalize)
+    return _lpips_compute(loss, reduction)
