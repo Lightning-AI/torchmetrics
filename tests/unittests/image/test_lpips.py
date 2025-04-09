@@ -64,10 +64,12 @@ class TestLPIPS(MetricTester):
     atol: float = 1e-4
 
     @pytest.mark.parametrize("net_type", ["alex", "squeeze"])
-    @pytest.mark.parametrize("reduction", ["mean", "sum", "none", None])
+    @pytest.mark.parametrize("reduction", ["mean", "sum", "none"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_lpips(self, net_type, reduction, ddp):
         """Test class implementation of metric."""
+        if ddp and reduction == "none":
+            pytest.skip("DDP does not support reduction='none'")  # order of gathered tensors is not deterministic
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
@@ -79,7 +81,7 @@ class TestLPIPS(MetricTester):
             metric_args={"net_type": net_type, "reduction": reduction},
         )
 
-    @pytest.mark.parametrize("reduction", ["mean", "sum", "none", None])
+    @pytest.mark.parametrize("reduction", ["mean", "sum", "none"])
     def test_lpips_functional(self, reduction):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
