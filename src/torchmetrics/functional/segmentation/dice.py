@@ -28,6 +28,7 @@ def _dice_score_validate_args(
     include_background: bool,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     input_format: Literal["one-hot", "index"] = "one-hot",
+    aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise"
 ) -> None:
     """Validate the arguments of the metric."""
     if not isinstance(num_classes, int) or num_classes <= 0:
