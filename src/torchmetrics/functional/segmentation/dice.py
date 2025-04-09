@@ -176,7 +176,7 @@ def dice_score(
             " If you've explicitly set this parameter, you can ignore this warning.",
             UserWarning,
         )
-    _dice_score_validate_args(num_classes, include_background, average, input_format)
+    _dice_score_validate_args(num_classes, include_background, average, input_format, aggregation_level)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
     dice = _dice_score_compute(numerator, denominator, average, aggregation_level=aggregation_level, support=support)
     return torch.nanmean(dice, dim=0) if reduce else dice
