@@ -119,7 +119,6 @@ def dice_score(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     input_format: Literal["one-hot", "index"] = "one-hot",
     aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
-    reduce: bool = False,
 ) -> Tensor:
     """Compute the Dice score for semantic segmentation.
 
