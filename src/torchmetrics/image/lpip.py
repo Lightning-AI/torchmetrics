@@ -63,7 +63,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     Args:
         net_type: str indicating backbone network type to use. Choose between `'alex'`, `'vgg'` or `'squeeze'`
-        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'`, `'mean'`,`'none'`.
+        reduction: str indicating how to reduce over the batch dimension. Choose between `'sum'`, `'mean'`,`'none'`
+            or `None`.
         normalize: by default this is ``False`` meaning that the input is expected to be in the [-1,1] range. If set
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -130,7 +131,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             raise ValueError(f"Argument `net_type` must be one of {valid_net_type}, but got {net_type}.")
         self.net = _NoTrainLpips(net=net_type)
 
-        valid_reduction = ("mean", "sum", "none")
+        valid_reduction = ("mean", "sum", "none", None)
         if reduction not in valid_reduction:
             raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
         self.reduction = reduction
