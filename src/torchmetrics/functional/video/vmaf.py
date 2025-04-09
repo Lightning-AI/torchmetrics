@@ -54,9 +54,9 @@ def video_multi_method_assessment_fusion(
 
     Args:
         preds: Video tensor of shape (batch, channels, frames, height, width). Expected to be in RGB format
-            with values in range [-1, 1] or [0, 1].
+            with values in range [0, 1].
         target: Video tensor of shape (batch, channels, frames, height, width). Expected to be in RGB format
-            with values in range [-1, 1] or [0, 1].
+            with values in range [0, 1].
         elementary_features: If True, returns the elementary features used by VMAF.
 
     Returns:
@@ -77,48 +77,43 @@ def video_multi_method_assessment_fusion(
     Example:
         >>> import torch
         >>> from torchmetrics.functional.video import video_multi_method_assessment_fusion
-        >>> preds = torch.rand(2, 3, 10, 32, 32)
-        >>> target = torch.rand(2, 3, 10, 32, 32)
+        >>> preds = torch.rand(2, 3, 10, 32, 32)  # 2 videos, 3 channels, 10 frames, 32x32 resolution
+        >>> target = torch.rand(2, 3, 10, 32, 32)  # 2 videos, 3 channels, 10 frames, 32x32 resolution
         >>> video_multi_method_assessment_fusion(preds, target)
-        tensor([12.6859, 15.1940, 14.6993, 14.9718, 19.1301, 17.1650])
+        tensor([ 3.9553, 15.2808, 15.0131, 13.7132, 14.0283, 16.9560])
         >>> vmaf_score, adm_score, vif_score, motion_score = video_multi_method_assessment_fusion(
         ...     preds, target, elementary_features=True
         ... )
         >>> vmaf_score
-        tensor([12.6859, 15.1940, 14.6993, 14.9718, 19.1301, 17.1650])
+        tensor([ 3.9553, 15.2808, 15.0131, 13.7132, 14.0283, 16.9560])
         >>> adm_score
-        tensor([[0.6258, 0.4526, 0.4360, 0.5100],
-                [0.6117, 0.4558, 0.4478, 0.5543],
-                [0.6253, 0.4867, 0.4116, 0.4412],
-                [0.6011, 0.4773, 0.4527, 0.5263],
-                [0.5830, 0.5209, 0.4050, 0.6781],
-                [0.6576, 0.5081, 0.4600, 0.6017]])
+        tensor([[0.5128, 0.3583, 0.3275, 0.3798],
+                [0.5034, 0.3581, 0.3421, 0.4753],
+                [0.5161, 0.3987, 0.3176, 0.2830],
+                [0.4823, 0.3802, 0.3569, 0.4263],
+                [0.4627, 0.4267, 0.2862, 0.5625],
+                [0.5576, 0.4112, 0.3703, 0.5333]])
         >>> vif_score
-        tensor([[6.8940e-04, 3.5287e-02, 1.2094e-01, 6.7600e-01],
-                [7.8453e-04, 3.1258e-02, 6.3257e-02, 3.4321e-01],
-                [1.3337e-03, 2.8432e-02, 6.3114e-02, 4.6726e-01],
-                [1.8480e-04, 2.3861e-02, 1.5634e-01, 5.5803e-01],
-                [2.7257e-04, 3.4004e-02, 1.6240e-01, 6.9619e-01],
-                [1.2596e-03, 2.1799e-02, 1.0870e-01, 2.2582e-01]])
+        tensor([[5.5589e-04, 2.3668e-02, 5.9746e-02, 1.8287e-01],
+                [6.3305e-04, 2.1592e-02, 3.8126e-02, 1.1630e-01],
+                [1.0766e-03, 1.9478e-02, 3.5908e-02, 5.0494e-02],
+                [1.4880e-04, 1.6239e-02, 2.6883e-02, 1.5944e-01],
+                [2.1966e-04, 2.2355e-02, 6.6175e-02, 5.8169e-02],
+                [1.0138e-03, 1.5265e-02, 5.5632e-02, 1.2230e-01]])
         >>> motion_score
-        tensor([0.0000, 8.8821, 9.0885, 8.7898, 7.8289, 8.0279])
+        tensor([ 0.0000, 17.7642, 18.1769, 17.5795, 15.6578, 16.0557])
 
     """
     if not _TORCH_VMAF_AVAILABLE:
         raise RuntimeError("vmaf-torch is not installed. Please install with `pip install torchmetrics[video]`.")
 
-    orig_dtype = preds.dtype
-    device = preds.device
-
-    preds = (preds.clamp(-1, 1).to(torch.float32) + 1) / 2  # [-1, 1] -> [0, 1]
-    target = (target.clamp(-1, 1).to(torch.float32) + 1) / 2  # [-1, 1] -> [0, 1]
-
+    orig_dtype, device = preds.dtype, preds.device
     preds_luma = calculate_luma(preds)
     target_luma = calculate_luma(target)
 
     vmaf = vmaf_torch.VMAF().to(device)
 
-    score = vmaf(
+    score: Tensor = vmaf(
         rearrange(target_luma, "b c t h w -> (b t) c h w"), rearrange(preds_luma, "b c t h w -> (b t) c h w")
     ).to(orig_dtype)
 

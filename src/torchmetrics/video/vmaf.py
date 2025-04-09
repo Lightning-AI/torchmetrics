@@ -44,17 +44,15 @@ class VideoMultiMethodAssessmentFusion(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): Video tensor of shape ``(batch, channels, frames, height, width)``.
-      Expected to be in RGB format with values in range [-1, 1] or [0, 1].
+      Expected to be in RGB format with values in range [0, 1].
     - ``target`` (:class:`~torch.Tensor`): Video tensor of shape ``(batch, channels, frames, height, width)``.
-      Expected to be in RGB format with values in range [-1, 1] or [0, 1].
+      Expected to be in RGB format with values in range [0, 1].
 
     As output of `forward` and `compute` the metric returns the following output
 
-    If `elementary_features` is False:
-        - ``vmaf`` (:class:`~torch.Tensor`): A tensor with the VMAF score for each video in the batch.
-          Higher scores indicate better quality, with typical values ranging from 0 to 100.
-
-    If `elementary_features` is True:
+    - ``vmaf`` (:class:`~torch.Tensor`): If `elementary_features` is set to False, a single tensor with the VMAF score 
+      for each video in the batch. If `elementary_features` is True, a tuple of tensors is returned:
+        
         - ``vmaf_score`` (:class:`~torch.Tensor`): The main VMAF score tensor
         - ``adm_score`` (:class:`~torch.Tensor`): The Additive Detail Measure (ADM) score tensor, which measures
           the preservation of details in the video. Shape is (batch * frames, 4) where the 4 values represent
@@ -76,8 +74,8 @@ class VideoMultiMethodAssessmentFusion(Metric):
     Example:
         >>> from torch import rand
         >>> from torchmetrics.video import VideoMultiMethodAssessmentFusion
-        >>> preds = rand(2, 3, 10, 32, 32)
-        >>> target = rand(2, 3, 10, 32, 32)
+        >>> preds = rand(2, 3, 10, 32, 32)  # 2 videos, 3 channels, 10 frames, 32x32 resolution
+        >>> target = rand(2, 3, 10, 32, 32)  # 2 videos, 3 channels, 10 frames, 32x32 resolution
         >>> vmaf = VideoMultiMethodAssessmentFusion()
         >>> vmaf(preds, target)
         tensor([12.6859, 15.1940, 14.6993, 14.9718, 19.1301, 17.1650])
