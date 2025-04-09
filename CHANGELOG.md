@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CRPS in regression domain ([#3024](https://github.com/Lightning-AI/torchmetrics/pull/3024))
 
 
+- Added `aggregation_level` argument to `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
+
+
 ### Changed
 
 - Enhance Support Adding a `MetricCollection` to Another `MetricCollection` in `add_metrics` Function ([#3032](https://github.com/Lightning-AI/torchmetrics/pull/3032))
