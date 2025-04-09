@@ -40,6 +40,8 @@ def _dice_score_validate_args(
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} or None, but got {average}.")
     if input_format not in ["one-hot", "index"]:
         raise ValueError(f"Expected argument `input_format` to be one of 'one-hot', 'index', but got {input_format}.")
+    if aggregation_level not in ("samplewise", "global"):
+        raise ValueError(f"Expected argument `aggregation_level` to be one of `samplewise`, `global`, but got {aggregation_level}")
 
 
 def _dice_score_update(
