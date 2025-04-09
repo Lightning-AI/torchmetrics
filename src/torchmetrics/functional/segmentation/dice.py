@@ -134,7 +134,6 @@ def dice_score(
         aggregation_level: The level at which to aggregate the dice score. Options are ``"samplewise"`` or ``"global"``.
             For ``"samplewise"`` the dice score is computed for each sample and then averaged. For ``"global"`` the dice
             score is computed globally over all samples.
-        reduce: Whether to reduce the output to a single number. Default is ``False``.
 
     Returns:
         The Dice score.
