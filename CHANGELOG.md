@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Enhance Support Adding a `MetricCollection` to Another `MetricCollection` in `add_metrics` Function ([#3032](https://github.com/Lightning-AI/torchmetrics/pull/3032))
+-
 
 
 ### Deprecated
@@ -33,15 +33,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed absent class `MeanIOU` ([#2892](https://github.com/Lightning-AI/torchmetrics/pull/2892))
-
-
-- Fixed detection IoU ignores predictions without ground truth ([#3025](https://github.com/Lightning-AI/torchmetrics/pull/3025))
-
-
-- Fixed error raised in `MulticlassAccuracy` when top_k>1 ([#3039](https://github.com/Lightning-AI/torchmetrics/pull/3039))
+-
 
 ---
+
+## [1.7.1] - 2025-04-06
+
+### Changed
+
+- Enhance Support Adding a `MetricCollection` to Another `MetricCollection` in `add_metrics` Function ([#3032](https://github.com/Lightning-AI/torchmetrics/pull/3032))
+
+### Fixed
+
+- Fixed absent class `MeanIOU` ([#2892](https://github.com/Lightning-AI/torchmetrics/pull/2892))
+- Fixed detection IoU ignores predictions without ground truth ([#3025](https://github.com/Lightning-AI/torchmetrics/pull/3025))
+- Fixed error raised in `MulticlassAccuracy` when top_k>1 ([#3039](https://github.com/Lightning-AI/torchmetrics/pull/3039))
 
 ## [1.7.0] - 2025-03-20
 
