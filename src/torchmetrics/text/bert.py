@@ -205,6 +205,10 @@ class BERTScore(Metric):
         It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
 
         """
+        if isinstance(preds, str):
+            preds = [preds]
+        if isinstance(target, str):
+            target = [target]
         if not isinstance(preds, list):
             preds = list(preds)
         if not isinstance(target, list):

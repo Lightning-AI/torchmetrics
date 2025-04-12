@@ -353,6 +353,10 @@ def bert_score(
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
     """
+    if isinstance(preds, str):
+        preds = [preds]
+    if isinstance(target, str):
+        target = [target]
     if not isinstance(preds, (list, dict)):  # dict for BERTScore class compute call
         preds = list(preds)
     if not isinstance(target, (list, dict)):  # dict for BERTScore class compute call
