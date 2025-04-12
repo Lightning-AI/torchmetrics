@@ -72,8 +72,8 @@ class BERTScore(Metric):
       corresponding values
 
     Args:
-        preds: An iterable of predicted sentences.
-        target: An iterable of target sentences.
+        preds: Either a single predicted sentence (`str`) or an iterable of predicted sentences.
+        target: Either a single target sentence (`str`) or an iterable of target sentences.
         model_type: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:

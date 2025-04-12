@@ -289,8 +289,10 @@ def bert_score(
     This implementation follows the original implementation from `BERT_score`_.
 
     Args:
-        preds: Either a single predicted sentence (`str`), an iterable of predicted sentences, or a ``Dict[input_ids, attention_mask]``.
-        target: Either a single target sentence (`str`), an iterable of target sentences, or a ``Dict[input_ids, attention_mask]``.
+        preds: Either a single predicted sentence (str), an iterable of predicted sentences,
+               or a ``Dict[input_ids, attention_mask]``.
+        target: Either a single target sentence (str), an iterable of target sentences,
+                or a ``Dict[input_ids, attention_mask]``.
         model_name_or_path: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:
