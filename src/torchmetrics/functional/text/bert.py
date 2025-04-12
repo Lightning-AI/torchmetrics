@@ -351,18 +351,17 @@ def bert_score(
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
     """
-
     if not isinstance(preds, (list, dict)):  # dict for BERTScore class compute call
         preds = list(preds)
     if not isinstance(target, (list, dict)):  # dict for BERTScore class compute call
         target = list(target)
-        
+
     if len(preds) != len(target):
         raise ValueError(
             "Expected number of predicted and reference sententes to be the same, but got"
             f"{len(preds)} and {len(target)}"
         )
-    
+
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
 

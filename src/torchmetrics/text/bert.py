@@ -209,11 +209,11 @@ class BERTScore(Metric):
             preds = list(preds)
         if not isinstance(target, list):
             target = list(target)
-            
+
         if len(preds) != len(target):
             raise ValueError(
-            "Expected number of predicted and reference sententes to be the same, but got"
-            f"{len(preds)} and {len(target)}"
+                "Expected number of predicted and reference sententes to be the same, but got"
+                f"{len(preds)} and {len(target)}"
             )
 
         preds_dict, _ = _preprocess_text(
