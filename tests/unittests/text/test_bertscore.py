@@ -206,10 +206,11 @@ def test_bertscore_truncation(truncation: bool):
         with pytest.raises(RuntimeError, match="The expanded size of the tensor.*must match.*"):
             bert_score(pred, gt)
 
+
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
 def test_bertscore_single_str_input():
-    """Test if BERTScore works with single string preds and target"""
+    """Test if BERTScore works with single string preds and target."""
     preds = "hello there"
     target = "hello there"
 
