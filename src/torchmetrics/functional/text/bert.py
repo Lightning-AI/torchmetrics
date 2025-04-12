@@ -289,8 +289,8 @@ def bert_score(
     This implementation follows the original implementation from `BERT_score`_.
 
     Args:
-        preds: Either an iterable of predicted sentences or a ``Dict[input_ids, attention_mask]``.
-        target: Either an iterable of target sentences or a  ``Dict[input_ids, attention_mask]``.
+        preds: Either a single predicted sentence (`str`), an iterable of predicted sentences, or a ``Dict[input_ids, attention_mask]``.
+        target: Either a single target sentence (`str`), an iterable of target sentences, or a ``Dict[input_ids, attention_mask]``.
         model_name_or_path: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:
@@ -351,15 +351,18 @@ def bert_score(
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
     """
+
+    if not isinstance(preds, (list, dict)):  # dict for BERTScore class compute call
+        preds = list(preds)
+    if not isinstance(target, (list, dict)):  # dict for BERTScore class compute call
+        target = list(target)
+        
     if len(preds) != len(target):
         raise ValueError(
             "Expected number of predicted and reference sententes to be the same, but got"
             f"{len(preds)} and {len(target)}"
         )
-    if not isinstance(preds, (str, list, dict)):  # dict for BERTScore class compute call
-        preds = list(preds)
-    if not isinstance(target, (str, list, dict)):  # dict for BERTScore class compute call
-        target = list(target)
+    
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
 
