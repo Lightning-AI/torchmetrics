@@ -72,6 +72,8 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
             a, b = tn, fp
         elif tp == 0 and fp == 0:
             a, b = tn, fn
+        else:
+            return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
         eps = torch.tensor(torch.finfo(torch.float32).eps, dtype=torch.float32, device=confmat.device)
         numerator = torch.sqrt(eps) * (a - b)
         denom = (tp + fp + eps) * (tp + fn + eps) * (tn + fp + eps) * (tn + fn + eps)
