@@ -9,6 +9,8 @@ The benefit of CLIPScore is that it does not require reference captions for eval
 
 # %%
 # Here's a hypothetical Python example demonstrating the usage of the CLIPScore metric to evaluate image captions:
+import warnings
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,7 +19,6 @@ from matplotlib.table import Table
 from skimage.data import astronaut, cat, coffee
 
 from torchmetrics.multimodal import CLIPScore
-import warnings
 
 # %%
 # Get sample images
