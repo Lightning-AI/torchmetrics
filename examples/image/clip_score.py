@@ -48,6 +48,8 @@ models = [
 # Collect scores for each image-caption pair
 
 score_results = []
+
+
 def process_model(model):
     """Process a CLIP model by evaluating image-caption pairs and recording scores.
 
@@ -67,6 +69,7 @@ def process_model(model):
     except Exception as e:
         print(f"Error loading model {model} - skipping this test")
         print(f"Error details: {e}")
+
 
 for model in models:
     process_model(model)
