@@ -69,7 +69,7 @@ def process_model(model):
             caption_scores = {caption: clip_score(img_tensor, caption) for caption in captions}
             score_results.append({"scores": caption_scores, "image": key, "model": model})
     except Exception as e:
-        warnings.warn(f"Error loading model {model} - skipping this test. Error details: {e}")
+        warnings.warn(f"Error loading model {model} - skipping this test. Error details: {e}", stacklevel=2)
 
 
 for model in models:
