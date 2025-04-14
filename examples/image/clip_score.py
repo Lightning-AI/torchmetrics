@@ -17,6 +17,7 @@ from matplotlib.table import Table
 from skimage.data import astronaut, cat, coffee
 
 from torchmetrics.multimodal import CLIPScore
+import warnings
 
 # %%
 # Get sample images
@@ -67,8 +68,7 @@ def process_model(model):
             caption_scores = {caption: clip_score(img_tensor, caption) for caption in captions}
             score_results.append({"scores": caption_scores, "image": key, "model": model})
     except Exception as e:
-        print(f"Error loading model {model} - skipping this test")
-        print(f"Error details: {e}")
+        warnings.warn(f"Error loading model {model} - skipping this test. Error details: {e}")
 
 
 for model in models:
