@@ -211,17 +211,14 @@ def test_mifid_custom_encoder_with_normalize():
     # Create test input as float tensor
     input_tensor = torch.randn(2, 1, 32, 32)
 
-    # Initialize MIFID with custom encoder and normalize=True
     mifid = MemorizationInformedFrechetInceptionDistance(feature=custom_encoder, normalize=True)
 
     # This should not raise an error if the fix is working properly
     mifid.update(input_tensor, real=True)
     mifid.update(input_tensor, real=False)
 
-    # Verify that features have been stored
     assert len(mifid.real_features) == 1
     assert len(mifid.fake_features) == 1
 
-    # Compute the metric to ensure the full pipeline works
     result = mifid.compute()
     assert isinstance(result, torch.Tensor)
