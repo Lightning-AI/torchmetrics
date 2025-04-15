@@ -26,10 +26,10 @@ from torchmetrics.classification.matthews_corrcoef import (
     MultilabelMatthewsCorrCoef,
 )
 from torchmetrics.functional.classification.matthews_corrcoef import (
+    _matthews_corrcoef_reduce,
     binary_matthews_corrcoef,
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
-    _matthews_corrcoef_reduce
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
@@ -392,6 +392,7 @@ def test_wrapper_class(metric, kwargs, base_metric=MatthewsCorrCoef):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
 
 def test_matthews_corrcoef_reduce():
     confmat = torch.tensor([[19392673, 1], [76216, 0]])
