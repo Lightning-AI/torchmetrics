@@ -164,9 +164,9 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        
+
         self.used_custom_model = False
-        
+
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
