@@ -164,6 +164,9 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        
+        self.used_custom_model = False
+        
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
@@ -180,6 +183,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
         elif isinstance(feature, Module):
             self.inception = feature
+            self.used_custom_model = True
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
