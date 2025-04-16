@@ -65,7 +65,7 @@ for size, channel, dtype in [
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])

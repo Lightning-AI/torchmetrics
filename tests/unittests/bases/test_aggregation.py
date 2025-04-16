@@ -64,7 +64,7 @@ class WrappedCatMetric(CatMetric):
 
 
 @pytest.mark.parametrize(
-    "values, weights",
+    ("values", "weights"),
     [
         (torch.rand(NUM_BATCHES, BATCH_SIZE), torch.ones(NUM_BATCHES, BATCH_SIZE)),
         (torch.rand(NUM_BATCHES, BATCH_SIZE), torch.rand(NUM_BATCHES, BATCH_SIZE) > 0.5),
@@ -72,7 +72,7 @@ class WrappedCatMetric(CatMetric):
     ],
 )
 @pytest.mark.parametrize(
-    "metric_class, compare_fn",
+    ("metric_class", "compare_fn"),
     [
         (WrappedMinMetric, compare_min),
         (WrappedMaxMetric, compare_max),

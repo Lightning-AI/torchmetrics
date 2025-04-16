@@ -50,7 +50,7 @@ def _reference_procrustes(point_cloud1, point_cloud2, reduction=None):
     return disparity
 
 
-@pytest.mark.parametrize("point_cloud1, point_cloud2", [(_inputs.preds, _inputs.target)])
+@pytest.mark.parametrize(("point_cloud1", "point_cloud2"), [(_inputs.preds, _inputs.target)])
 class TestProcrustesDisparity(MetricTester):
     """Test class for `ProcrustesDisparity` metric."""
 

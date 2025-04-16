@@ -46,7 +46,7 @@ def _reference_np_dunn_index(data, labels, p):
 
 
 @pytest.mark.parametrize(
-    "data, labels",
+    ("data", "labels"),
     [
         (_single_target_intrinsic1.data, _single_target_intrinsic1.labels),
         (_single_target_intrinsic2.data, _single_target_intrinsic2.labels),

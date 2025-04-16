@@ -57,7 +57,7 @@ for batch_size in (8, 4049):
         _examples.append(_Input(x=tensor(x), y=tensor(y)))
 
 
-@pytest.mark.parametrize("x, y", _examples)
+@pytest.mark.parametrize(("x", "y"), _examples)
 class TestAUC(MetricTester):
     """Test class for `AUC`."""
 

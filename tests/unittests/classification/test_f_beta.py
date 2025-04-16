@@ -78,7 +78,7 @@ def _reference_sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, mu
 
 @pytest.mark.parametrize("inputs", _binary_cases)
 @pytest.mark.parametrize(
-    "module, functional, compare",
+    ("module", "functional", "compare"),
     [
         (BinaryF1Score, binary_f1_score, sk_f1_score),
         (partial(BinaryFBetaScore, beta=2.0), partial(binary_fbeta_score, beta=2.0), partial(sk_fbeta_score, beta=2.0)),
@@ -246,7 +246,7 @@ def _reference_sklearn_fbeta_score_multiclass(
 
 @pytest.mark.parametrize("inputs", _multiclass_cases)
 @pytest.mark.parametrize(
-    "module, functional, compare",
+    ("module", "functional", "compare"),
     [
         (MulticlassF1Score, multiclass_f1_score, sk_f1_score),
         (
@@ -600,7 +600,7 @@ def _reference_sklearn_fbeta_score_multilabel(
 
 @pytest.mark.parametrize("inputs", _multilabel_cases)
 @pytest.mark.parametrize(
-    "module, functional, compare",
+    ("module", "functional", "compare"),
     [
         (MultilabelF1Score, multilabel_f1_score, sk_f1_score),
         (

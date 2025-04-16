@@ -48,7 +48,7 @@ def _reference_mean_iou(
 
 
 @pytest.mark.parametrize(
-    "preds, target, input_format, num_classes",
+    ("preds", "target", "input_format", "num_classes"),
     [
         (_inputs1.preds, _inputs1.target, "one-hot", NUM_CLASSES),
         (_inputs2.preds, _inputs2.target, "one-hot", NUM_CLASSES),

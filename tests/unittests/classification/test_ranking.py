@@ -54,7 +54,7 @@ def _reference_sklearn_ranking(preds, target, fn, ignore_index):
 
 
 @pytest.mark.parametrize(
-    "metric, functional_metric, ref_metric",
+    ("metric", "functional_metric", "ref_metric"),
     [
         (MultilabelCoverageError, multilabel_coverage_error, sk_coverage_error),
         (MultilabelRankingAveragePrecision, multilabel_ranking_average_precision, sk_label_ranking),
@@ -62,7 +62,7 @@ def _reference_sklearn_ranking(preds, target, fn, ignore_index):
     ],
 )
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelRanking(MetricTester):
     """Test class for `MultilabelRanking` metric."""

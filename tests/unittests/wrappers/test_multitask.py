@@ -20,7 +20,7 @@ import torch
 from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryAccuracy, BinaryF1Score
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_5
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_GREATER_EQUAL_2_5
 from torchmetrics.wrappers import MultitaskWrapper
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
@@ -274,3 +274,56 @@ def test_clone_with_prefix_and_postfix():
         {"Classification": _classification_target, "Regression": _regression_target},
     )
     assert set(output.keys()) == {"new_prefix_Classification_new_postfix", "new_prefix_Regression_new_postfix"}
+
+
+def test_check_arg():
+    """Test the _check_arg static method."""
+    # Test valid cases
+    assert MultitaskWrapper._check_arg(None, "test") is None
+    assert MultitaskWrapper._check_arg("test", "test") == "test"
+
+    # Test invalid case
+    with pytest.raises(ValueError, match="Expected input `test` to be a string"):
+        MultitaskWrapper._check_arg(123, "test")
+
+
+def test_clone_edge_cases():
+    """Test edge cases for the clone method."""
+    metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+        "Regression": MeanSquaredError(),
+    })
+
+    # Test with invalid prefix type
+    with pytest.raises(ValueError, match="Expected input `prefix` to be a string"):
+        metrics.clone(prefix=123)
+
+    # Test with invalid postfix type
+    with pytest.raises(ValueError, match="Expected input `prefix` to be a string"):
+        metrics.clone(postfix=123)
+
+    # Test with None values
+    cloned = metrics.clone(prefix=None, postfix=None)
+    assert cloned._prefix == ""
+    assert cloned._postfix == ""
+
+
+@pytest.mark.skipif(not _MATPLOTLIB_AVAILABLE, reason="matplotlib not available")
+def test_plot():
+    """Test the plot method of MultitaskWrapper."""
+    import matplotlib.pyplot as plt
+
+    metrics = MultitaskWrapper({"Classification": BinaryAccuracy(), "Regression": MeanSquaredError()})
+
+    # Test plotting with single value
+    metrics.update(_multitask_preds, _multitask_targets)
+    value = metrics.compute()
+    fig_axs = metrics.plot(value)
+    assert len(fig_axs) == 2  # One for each task
+    plt.close()
+
+    # Test plotting with multiple values
+    values = [metrics(_multitask_preds, _multitask_targets) for _ in range(3)]
+    fig_axs = metrics.plot(values)
+    assert len(fig_axs) == 2  # One for each task
+    plt.close()
