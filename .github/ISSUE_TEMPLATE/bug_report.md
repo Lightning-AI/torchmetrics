@@ -14,7 +14,7 @@ assignees: ''
 
 Sample code and steps to reproduce the behavior with expected result...
 
-<!-- 
+<!--
 Create a new Lightning Studio with code that reproduces the issue and share the link.
 Also include all the relevant files and data required to reproduce shared issue.
 In case the code does not crash, please add assert statements to show what is the real and expected output.
@@ -30,7 +30,6 @@ Simple guide on how to create such studio can be found here: https://www.loom.co
 ```
 
 </details>
-
 
 <details>
   <summary>Environment</summary>
