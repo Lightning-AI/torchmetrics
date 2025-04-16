@@ -396,6 +396,18 @@ def test_wrapper_class(metric, kwargs, base_metric=MatthewsCorrCoef):
 
 def test_matthews_corrcoef_reduce():
     """Test the corner cases of extremely rare events."""
-    confmat = torch.tensor([[19392673, 1], [76216, 0]])
-    out = _matthews_corrcoef_reduce(confmat)
-    assert out == 0
+    confmat_tp_zero = torch.tensor([[19392673, 1], [76216, 0]])
+    out_tp_zero = _matthews_corrcoef_reduce(confmat_tp_zero)
+    assert out_tp_zero != 0 and not torch.isnan(out_tp_zero)
+
+    confmat_tn_zero = torch.tensor([[0, 1], [29690, 278]])
+    out_tn_zero = _matthews_corrcoef_reduce(confmat_tn_zero)
+    assert out_tn_zero != 0 and not torch.isnan(out_tn_zero)
+
+    confmat_fp_zero = torch.tensor([[6931024, 0], [29690, 278]])
+    out_fp_zero = _matthews_corrcoef_reduce(confmat_fp_zero)
+    assert out_fp_zero != 0 and not torch.isnan(out_fp_zero)
+
+    confmat_fn_zero = torch.tensor([[6931024, 29690], [0, 278]])
+    out_fn_zero = _matthews_corrcoef_reduce(confmat_fn_zero)
+    assert out_fn_zero != 0 and not torch.isnan(out_fn_zero)

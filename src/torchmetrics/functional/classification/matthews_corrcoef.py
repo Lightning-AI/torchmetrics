@@ -64,18 +64,23 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     denom = cov_ypyp * cov_ytyt
 
     if denom == 0 and confmat.numel() == 4:
+        eps = torch.tensor(torch.finfo(torch.float32).eps, dtype=torch.float32, device=confmat.device)
         if fn == 0 and tn == 0:
-            a, b = tp, fp
+            numerator = torch.sqrt(eps) * (tp - fp)
         elif fp == 0 and tn == 0:
-            a, b = tp, fn
+            numerator = torch.sqrt(eps) * (tp - fn)
         elif tp == 0 and fn == 0:
-            a, b = tn, fp
+            numerator = torch.sqrt(eps) * (tn - fp)
         elif tp == 0 and fp == 0:
-            a, b = tn, fn
+            numerator = torch.sqrt(eps) * (tn - fn)
+        elif tp == 0:
+            numerator = tn - fp * fn
+        elif tn == 0:
+            numerator = tp - fp * fn
+        elif fp == 0 or fn == 0:
+            numerator = tp * tn
         else:
             return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-        eps = torch.tensor(torch.finfo(torch.float32).eps, dtype=torch.float32, device=confmat.device)
-        numerator = torch.sqrt(eps) * (a - b)
         denom = (tp + fp + eps) * (tp + fn + eps) * (tn + fp + eps) * (tn + fn + eps)
     elif denom == 0:
         return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
