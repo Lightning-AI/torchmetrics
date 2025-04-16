@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Tuple, Union
 
-import torch
 import vmaf_torch
 from einops import rearrange
 from torch import Tensor

@@ -50,9 +50,9 @@ class VideoMultiMethodAssessmentFusion(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``vmaf`` (:class:`~torch.Tensor`): If `elementary_features` is set to False, a single tensor with the VMAF score 
+    - ``vmaf`` (:class:`~torch.Tensor`): If `elementary_features` is set to False, a single tensor with the VMAF score
       for each video in the batch. If `elementary_features` is True, a tuple of tensors is returned:
-        
+
         - ``vmaf_score`` (:class:`~torch.Tensor`): The main VMAF score tensor
         - ``adm_score`` (:class:`~torch.Tensor`): The Additive Detail Measure (ADM) score tensor, which measures
           the preservation of details in the video. Shape is (batch * frames, 4) where the 4 values represent
