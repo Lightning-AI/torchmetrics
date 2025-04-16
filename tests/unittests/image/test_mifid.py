@@ -201,3 +201,24 @@ def test_normalize_arg(normalize):
 
     with context():
         metric.update(img, real=True)
+
+
+def test_mifid_custom_encoder_with_normalize():
+    """Test that MIFID works with custom encoder and normalize=True without converting inputs to byte."""
+    # Create a custom encoder that expects float inputs
+    custom_encoder = torch.nn.Sequential(torch.nn.Flatten(), torch.nn.Linear(32 * 32, 512))
+
+    # Create test input as float tensor
+    input_tensor = torch.randn(2, 1, 32, 32)
+
+    mifid = MemorizationInformedFrechetInceptionDistance(feature=custom_encoder, normalize=True)
+
+    # This should not raise an error if the fix is working properly
+    mifid.update(input_tensor, real=True)
+    mifid.update(input_tensor, real=False)
+
+    assert len(mifid.real_features) == 1
+    assert len(mifid.fake_features) == 1
+
+    result = mifid.compute()
+    assert isinstance(result, torch.Tensor)

@@ -164,6 +164,9 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+
+        self.used_custom_model = False
+
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
@@ -180,6 +183,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
         elif isinstance(feature, Module):
             self.inception = feature
+            self.used_custom_model = True
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
@@ -201,7 +205,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
     def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features."""
-        imgs = (imgs * 255).byte() if self.normalize else imgs
+        imgs = (imgs * 255).byte() if self.normalize and (not self.used_custom_model) else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype
         features = features.double()
