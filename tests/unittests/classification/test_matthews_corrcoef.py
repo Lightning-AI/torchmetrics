@@ -395,6 +395,7 @@ def test_wrapper_class(metric, kwargs, base_metric=MatthewsCorrCoef):
 
 
 def test_matthews_corrcoef_reduce():
+    """Test the corner cases of extremely rare events"""
     confmat = torch.tensor([[19392673, 1], [76216, 0]])
     out = _matthews_corrcoef_reduce(confmat)
     assert out == 0
