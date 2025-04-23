@@ -372,13 +372,13 @@ def bert_score(
     if isinstance(target, list) and len(target) > 0:
         # Check if any element is a list or tuple
         has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
-        
+
         if has_nested_sequences:
             ref_group_boundaries = []
             orig_preds, orig_target = preds, target
             preds, target = [], []
             count = 0
-            
+
             for pred, ref_group in zip(orig_preds, orig_target):
                 # If ref_group is a list or tuple, treat it as a group
                 if isinstance(ref_group, (list, tuple)):
@@ -392,7 +392,7 @@ def bert_score(
                     target.append(ref_group)
                     ref_group_boundaries.append((count, count + 1))
                     count += 1
-    
+
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
 
@@ -493,7 +493,7 @@ def bert_score(
     precision, recall, f1_score = _get_precision_recall_f1(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
-    
+
     # After calculating metrics, process for multiple references
     if ref_group_boundaries is not None:
         max_precision, max_recall, max_f1 = [], [], []
@@ -507,7 +507,7 @@ def bert_score(
                 max_precision.append(precision[start:end].max())
                 max_recall.append(recall[start:end].max())
                 max_f1.append(f1_score[start:end].max())
-        
+
         # Stack results
         if precision.dim() > 1:
             precision = torch.stack(max_precision, dim=1)
