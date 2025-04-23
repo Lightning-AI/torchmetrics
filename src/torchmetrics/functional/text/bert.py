@@ -259,7 +259,7 @@ def _rescale_metrics_with_baseline(
 
 def bert_score(
     preds: Union[str, Sequence[str], dict[str, Tensor]],
-    target: Union[str, Sequence[str], dict[str, Tensor]],
+    target: Union[str, Sequence[str], Sequence[Sequence[str]], dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -368,6 +368,31 @@ def bert_score(
             f"{len(preds)} and {len(target)}"
         )
 
+    ref_group_boundaries = None
+    if isinstance(target, list) and len(target) > 0:
+        # Check if any element is a list or tuple
+        has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
+        
+        if has_nested_sequences:
+            ref_group_boundaries = []
+            orig_preds, orig_target = preds, target
+            preds, target = [], []
+            count = 0
+            
+            for pred, ref_group in zip(orig_preds, orig_target):
+                # If ref_group is a list or tuple, treat it as a group
+                if isinstance(ref_group, (list, tuple)):
+                    preds.extend([pred] * len(ref_group))
+                    target.extend(ref_group)
+                    ref_group_boundaries.append((count, count + len(ref_group)))
+                    count += len(ref_group)
+                else:
+                    # Handle single items (not nested lists/tuples)
+                    preds.append(pred)
+                    target.append(ref_group)
+                    ref_group_boundaries.append((count, count + 1))
+                    count += 1
+    
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
 
@@ -468,6 +493,30 @@ def bert_score(
     precision, recall, f1_score = _get_precision_recall_f1(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
+    
+    # After calculating metrics, process for multiple references
+    if ref_group_boundaries is not None:
+        max_precision, max_recall, max_f1 = [], [], []
+        for start, end in ref_group_boundaries:
+            # Handle different tensor dimensions
+            if precision.dim() > 1:  # all_layers=True case
+                max_precision.append(precision[:, start:end].max(dim=1)[0])
+                max_recall.append(recall[:, start:end].max(dim=1)[0])
+                max_f1.append(f1_score[:, start:end].max(dim=1)[0])
+            else:  # standard case
+                max_precision.append(precision[start:end].max())
+                max_recall.append(recall[start:end].max())
+                max_f1.append(f1_score[start:end].max())
+        
+        # Stack results
+        if precision.dim() > 1:
+            precision = torch.stack(max_precision, dim=1)
+            recall = torch.stack(max_recall, dim=1)
+            f1_score = torch.stack(max_f1, dim=1)
+        else:
+            precision = torch.stack(max_precision)
+            recall = torch.stack(max_recall)
+            f1_score = torch.stack(max_f1)
 
     if baseline is not None:
         precision, recall, f1_score = _rescale_metrics_with_baseline(
