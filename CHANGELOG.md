@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [Unreleased] - YYYY-MM-DD
+
+### Added
+
+-
+
+
+### Changed
+
+-
+
+
+### Deprecated
+
+-
+
+
+### Removed
+
+-
+
+
+### Fixed
+
+- Fix: MIFID incorrectly converts inputs to `byte` dtype with custom encoders ([#3064](https://github.com/Lightning-AI/torchmetrics/pull/3064))
+
+
 ---
 
 ## [1.7.1] - 2025-04-06
