@@ -205,7 +205,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
     def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features."""
-        imgs = (imgs * 255).byte() if self.normalize and (not self.used_custom_model) else imgs
+        imgs = (imgs * 255).byte() if self.normalize and not self.used_custom_model else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype
         features = features.double()
