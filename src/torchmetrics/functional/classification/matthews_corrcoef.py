@@ -51,10 +51,11 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
         if tp + tn == 0 and fp + fn != 0:
             return torch.tensor(-1.0, dtype=confmat.dtype, device=confmat.device)
 
-    tk = confmat.sum(dim=-1).float()
-    pk = confmat.sum(dim=-2).float()
-    c = torch.trace(confmat).float()
-    s = confmat.sum().float()
+    confmat = confmat.float()
+    tk = confmat.sum(dim=-1)
+    pk = confmat.sum(dim=-2)
+    c = torch.trace(confmat)
+    s = confmat.sum()
 
     cov_ytyp = c * s - sum(tk * pk)
     cov_ypyp = s**2 - sum(pk * pk)
