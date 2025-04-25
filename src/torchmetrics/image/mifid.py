@@ -115,6 +115,9 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
+        normalize: Whether to normalize the input images. If ``True`` the input is expected to be in the range [0, 1]
+            and converted to ``uint8``. If ``False`` the input is expected to already be in the range [0, 255] and of
+            type ``uint8``. If a custom feature extractor is used, this argument is ignored.
         cosine_distance_eps: Epsilon value for the cosine distance. If the cosine distance is larger than this value
             it is set to 1 and thus ignored in the MIFID calculation.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -164,6 +167,9 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+
+        self.used_custom_model = False
+
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
@@ -180,6 +186,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
         elif isinstance(feature, Module):
             self.inception = feature
+            self.used_custom_model = True
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
@@ -201,7 +208,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
     def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features."""
-        imgs = (imgs * 255).byte() if self.normalize else imgs
+        imgs = (imgs * 255).byte() if self.normalize and not self.used_custom_model else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype
         features = features.double()
