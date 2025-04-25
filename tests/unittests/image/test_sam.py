@@ -57,7 +57,7 @@ def _reference_sam(preds: Tensor, target: Tensor, reduction: str = "elementwise_
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 class TestSpectralAngleMapper(MetricTester):

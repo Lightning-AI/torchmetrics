@@ -63,7 +63,7 @@ def _reference_sklearn_precision_at_fixed_recall_binary(preds, target, min_recal
     return _precision_at_recall_x_multilabel(preds, target, min_recall)
 
 
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryPrecisionAtFixedRecall(MetricTester):
     """Test class for `BinaryPrecisionAtFixedRecall` metric."""
 
@@ -183,7 +183,7 @@ def _reference_sklearn_precision_at_fixed_recall_multiclass(preds, target, min_r
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassPrecisionAtFixedRecall(MetricTester):
     """Test class for `MulticlassPrecisionAtFixedRecall` metric."""
@@ -305,7 +305,7 @@ def _reference_sklearn_precision_at_fixed_recall_multilabel(preds, target, min_r
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelPrecisionAtFixedRecall(MetricTester):
     """Test class for `MultilabelPrecisionAtFixedRecall` metric."""

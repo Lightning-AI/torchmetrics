@@ -61,7 +61,7 @@ def _reference_sdr_batch(
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(inputs_1spk.preds, inputs_1spk.target), (inputs_2spk.preds, inputs_2spk.target)],
 )
 class TestSDR(MetricTester):

@@ -47,7 +47,7 @@ def reference_metric(preds, target, input_format, reduce, **kwargs: Any):
     return score.mean() if reduce else score
 
 
-@pytest.mark.parametrize("inputs, input_format", [(_inputs1, "one-hot"), (_inputs2, "index")])
+@pytest.mark.parametrize(("inputs", "input_format"), [(_inputs1, "one-hot"), (_inputs2, "index")])
 @pytest.mark.parametrize("distance_metric", ["euclidean", "chessboard", "taxicab"])
 @pytest.mark.parametrize("directed", [True, False])
 @pytest.mark.parametrize("spacing", [None, [2, 2]])

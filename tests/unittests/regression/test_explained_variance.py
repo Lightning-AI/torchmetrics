@@ -53,7 +53,7 @@ def _multi_target_ref_metric(preds, target, sk_fn=explained_variance_score):
 
 @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
 @pytest.mark.parametrize(
-    "preds, target, ref_metric",
+    ("preds", "target", "ref_metric"),
     [
         (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_metric),
         (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_metric),

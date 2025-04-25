@@ -23,6 +23,7 @@ from torchmetrics.functional.segmentation.dice import (
     _dice_score_validate_args,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -116,6 +117,13 @@ class DiceScore(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        if average == "micro":
+            rank_zero_warn(
+                "DiceScore metric currently defaults to `average=micro`, but will change to"
+                "`average=macro` in the v1.9 release."
+                " If you've explicitly set this parameter, you can ignore this warning.",
+                UserWarning,
+            )
         _dice_score_validate_args(num_classes, include_background, average, input_format, zero_division)
         self.num_classes = num_classes
         self.include_background = include_background

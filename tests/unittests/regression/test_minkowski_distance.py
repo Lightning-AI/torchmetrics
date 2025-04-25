@@ -40,7 +40,7 @@ def _reference_scipy_metric_multi_target(preds, target, p):
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric",
+    ("preds", "target", "ref_metric"),
     [
         (_single_target_inputs.preds, _single_target_inputs.target, _reference_scipy_metric_single_target),
         (_multi_target_inputs.preds, _multi_target_inputs.target, _reference_scipy_metric_multi_target),

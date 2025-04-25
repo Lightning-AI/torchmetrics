@@ -58,7 +58,7 @@ def _reference_sewar_scc_simple(preds, target):
     return _reference_sewar_scc(preds, target, hp_filter, window_size=8, reduction="mean")
 
 
-@pytest.mark.parametrize("preds, target", [(i.preds, i.target) for i in _inputs])
+@pytest.mark.parametrize(("preds", "target"), [(i.preds, i.target) for i in _inputs])
 class TestSpatialCorrelationCoefficient(MetricTester):
     """Tests for SpatialCorrelationCoefficient metric."""
 

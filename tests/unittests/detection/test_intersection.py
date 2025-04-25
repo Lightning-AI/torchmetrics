@@ -199,7 +199,7 @@ def _add_noise(x, scale=10):
 
 
 @pytest.mark.parametrize(
-    "class_metric, functional_metric, reference_metric",
+    ("class_metric", "functional_metric", "reference_metric"),
     [
         (IntersectionOverUnion, intersection_over_union, tv_iou),
         (CompleteIntersectionOverUnion, complete_intersection_over_union, tv_ciou),
