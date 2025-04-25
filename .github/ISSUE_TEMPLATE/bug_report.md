@@ -18,7 +18,7 @@ Sample code and steps to reproduce the behavior with expected result...
 Create a new Lightning Studio with code that reproduces the issue and share the link.
 Also include all the relevant files and data required to reproduce shared issue.
 In case the code does not crash, please add assert statements to show what is the real and expected output.
-A simple guide on how to create such a studio can be found here: https://www.loom.com/share/4150ea7650ba4df191894cfe30ff9b3c
+A simple guide on how to create such a studio can be found here: https://www.loom.com/share/fc4761c2fcd04cff896ea3d630fcb419
 -->
 
 <details>
