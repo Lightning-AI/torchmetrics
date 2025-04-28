@@ -173,6 +173,7 @@ class BERTScore(Metric):
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
         self.truncation = truncation
+        self.ref_group_boundaries = None
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -199,7 +200,9 @@ class BERTScore(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
+    def update(
+        self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
+    ) -> None:
         """Store predictions/references for computing BERT scores.
 
         It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
@@ -219,6 +222,30 @@ class BERTScore(Metric):
                 "Expected number of predicted and reference sententes to be the same, but got"
                 f"{len(preds)} and {len(target)}"
             )
+
+        if isinstance(target, list) and len(target) > 0:
+            # Check if any element is a list or tuple
+            has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
+
+            if has_nested_sequences:
+                self.ref_group_boundaries = []
+                orig_preds, orig_target = preds, target
+                preds, target = [], []
+                count = 0
+
+                for pred, ref_group in zip(orig_preds, orig_target):
+                    # If ref_group is a list or tuple, treat it as a group
+                    if isinstance(ref_group, (list, tuple)):
+                        preds.extend([pred] * len(ref_group))
+                        target.extend(ref_group)
+                        self.ref_group_boundaries.append((count, count + len(ref_group)))
+                        count += len(ref_group)
+                    else:
+                        # Handle single items (not nested lists/tuples)
+                        preds.append(pred)
+                        target.append(ref_group)
+                        self.ref_group_boundaries.append((count, count + 1))
+                        count += 1
 
         preds_dict, _ = _preprocess_text(
             preds,
@@ -252,7 +279,8 @@ class BERTScore(Metric):
             "input_ids": dim_zero_cat(self.target_input_ids),
             "attention_mask": dim_zero_cat(self.target_attention_mask),
         }
-        return bert_score(
+
+        output_dict = bert_score(
             preds=preds,
             target=target,
             model_name_or_path=self.model_name_or_path,
@@ -273,6 +301,34 @@ class BERTScore(Metric):
             baseline_path=self.baseline_path,
             baseline_url=self.baseline_url,
         )
+
+        precision, recall, f1_score = output_dict["precision"], output_dict["recall"], output_dict["f1"]
+
+        if self.ref_group_boundaries is not None:
+            max_precision, max_recall, max_f1 = [], [], []
+            for start, end in self.ref_group_boundaries:
+                # Handle different tensor dimensions
+                if precision.dim() > 1:  # all_layers=True case
+                    max_precision.append(precision[:, start:end].max(dim=1)[0])
+                    max_recall.append(recall[:, start:end].max(dim=1)[0])
+                    max_f1.append(f1_score[:, start:end].max(dim=1)[0])
+                else:  # standard case
+                    max_precision.append(precision[start:end].max())
+                    max_recall.append(recall[start:end].max())
+                    max_f1.append(f1_score[start:end].max())
+
+            # Stack results
+            if precision.dim() > 1:
+                precision = torch.stack(max_precision, dim=1)
+                recall = torch.stack(max_recall, dim=1)
+                f1_score = torch.stack(max_f1, dim=1)
+            else:
+                precision = torch.stack(max_precision)
+                recall = torch.stack(max_recall)
+                f1_score = torch.stack(max_f1)
+
+        output_dict["precision"], output_dict["recall"], output_dict["f1"] = precision, recall, f1_score
+        return output_dict
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
