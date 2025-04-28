@@ -351,19 +351,23 @@ def bert_score(
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
     """
-    
     # Handle multiple references
     ref_group_boundaries = None
-    if isinstance(target, Sequence) and len(target) > 0 and isinstance(target[0], Sequence) and not isinstance(target[0], (str, bytes)):
+    if (
+        isinstance(target, Sequence)
+        and len(target) > 0
+        and isinstance(target[0], Sequence)
+        and not isinstance(target[0], (str, bytes))
+    ):
         if isinstance(preds, dict) or isinstance(target, dict):
             raise TypeError("Multiple references not supported with pre-tokenized inputs (dict)")
-        
+
         if len(preds) != len(target):
             raise ValueError(
                 "Expected number of predictions and reference groups to be the same, but got"
                 f" {len(preds)} and {len(target)}"
             )
-            
+
         # Flatten inputs for processing
         ref_group_boundaries = []
         orig_preds, orig_target = preds, target
@@ -374,7 +378,7 @@ def bert_score(
             target.extend(ref_group)
             ref_group_boundaries.append((count, count + len(ref_group)))
             count += len(ref_group)
-    
+
     if len(preds) != len(target):
         raise ValueError(
             "Expected number of predicted and reference sententes to be the same, but got"
@@ -384,7 +388,7 @@ def bert_score(
         preds = list(preds)
     if not isinstance(target, (str, list, dict)):  # dict for BERTScore class compute call
         target = list(target)
-        
+
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
 
@@ -485,7 +489,7 @@ def bert_score(
     precision, recall, f1_score = _get_precision_recall_f1(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
-    
+
     # After calculating metrics, process for multiple references
     if ref_group_boundaries is not None:
         max_precision, max_recall, max_f1 = [], [], []
@@ -499,7 +503,7 @@ def bert_score(
                 max_precision.append(precision[start:end].max())
                 max_recall.append(recall[start:end].max())
                 max_f1.append(f1_score[start:end].max())
-        
+
         # Stack results
         if precision.dim() > 1:
             precision = torch.stack(max_precision, dim=1)
@@ -514,7 +518,7 @@ def bert_score(
         precision, recall, f1_score = _rescale_metrics_with_baseline(
             precision, recall, f1_score, baseline, num_layers, all_layers
         )
-        
+
     output_dict = {
         "precision": precision,
         "recall": recall,
