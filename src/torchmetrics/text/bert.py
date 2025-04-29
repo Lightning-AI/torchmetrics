@@ -72,8 +72,8 @@ class BERTScore(Metric):
       corresponding values
 
     Args:
-        preds: An iterable of predicted sentences.
-        target: An iterable of target sentences.
+        preds: Either a single predicted sentence (`str`) or an iterable of predicted sentences.
+        target: Either a single target sentence (`str`) or an iterable of target sentences.
         model_type: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:
@@ -205,10 +205,20 @@ class BERTScore(Metric):
         It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
 
         """
+        if isinstance(preds, str):
+            preds = [preds]
+        if isinstance(target, str):
+            target = [target]
         if not isinstance(preds, list):
             preds = list(preds)
         if not isinstance(target, list):
             target = list(target)
+
+        if len(preds) != len(target):
+            raise ValueError(
+                "Expected number of predicted and reference sententes to be the same, but got"
+                f"{len(preds)} and {len(target)}"
+            )
 
         preds_dict, _ = _preprocess_text(
             preds,
