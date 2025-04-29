@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
--
+- Removed `zero_division` argument from `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
 
 
 ### Fixed
