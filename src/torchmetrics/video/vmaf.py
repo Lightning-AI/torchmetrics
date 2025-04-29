@@ -143,43 +143,75 @@ class VideoMultiMethodAssessmentFusion(Metric):
     plot_upper_bound: float = 100.0
 
     vmaf_score: List[Tensor]
-    adm_features: List[Tensor]
-    vif_features: List[Tensor]
-    motion: List[Tensor]
+    integer_motion2: List[Tensor]
+    integer_motion: List[Tensor]
+    integer_adm2: List[Tensor]
+    integer_adm_scale0: List[Tensor]
+    integer_adm_scale1: List[Tensor]
+    integer_adm_scale2: List[Tensor]
+    integer_adm_scale3: List[Tensor]
+    integer_vif_scale0: List[Tensor]
+    integer_vif_scale1: List[Tensor]
+    integer_vif_scale2: List[Tensor]
+    integer_vif_scale3: List[Tensor]
 
-    def __init__(self, elementary_features: bool = False, **kwargs: Any) -> None:
+    def __init__(self, features: bool = False, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if not _TORCH_VMAF_AVAILABLE:
             raise RuntimeError("vmaf-torch is not installed. Please install with `pip install torchmetrics[video]`.")
 
-        if not isinstance(elementary_features, bool):
-            raise ValueError("Argument `elementary_features` should be a boolean, but got {elementary_features}.")
-        self.elementary_features = elementary_features
+        if not isinstance(features, bool):
+            raise ValueError("Argument `elementary_features` should be a boolean, but got {features}.")
+        self.features = features
 
         self.add_state("vmaf_score", default=[], dist_reduce_fx="cat")
-        if self.elementary_features:
-            self.add_state("adm_features", default=[], dist_reduce_fx="cat")
-            self.add_state("vif_features", default=[], dist_reduce_fx="cat")
-            self.add_state("motion", default=[], dist_reduce_fx="cat")
+        if self.features:
+            self.add_state("integer_motion2", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_motion", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_adm2", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_adm_scale0", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_adm_scale1", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_adm_scale2", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_adm_scale3", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_vif_scale0", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_vif_scale1", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_vif_scale2", default=[], dist_reduce_fx="cat")
+            self.add_state("integer_vif_scale3", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        score = video_multi_method_assessment_fusion(preds, target, self.elementary_features)
-        if self.elementary_features:
-            self.vmaf_score.append(score[0])
-            self.adm_features.append(score[1])
-            self.vif_features.append(score[2])
-            self.motion.append(score[3])
+        score = video_multi_method_assessment_fusion(preds, target, self.features)
+        if self.features:
+            self.vmaf_score.append(score["vmaf"])
+            self.integer_motion2.append(score["integer_motion2"])
+            self.integer_motion.append(score["integer_motion"])
+            self.integer_adm2.append(score["integer_adm2"])
+            self.integer_adm_scale0.append(score["integer_adm_scale0"])
+            self.integer_adm_scale1.append(score["integer_adm_scale1"])
+            self.integer_adm_scale2.append(score["integer_adm_scale2"])
+            self.integer_adm_scale3.append(score["integer_adm_scale3"])
+            self.integer_vif_scale0.append(score["integer_vif_scale0"])
+            self.integer_vif_scale1.append(score["integer_vif_scale1"])
+            self.integer_vif_scale2.append(score["integer_vif_scale2"])
+            self.integer_vif_scale3.append(score["integer_vif_scale3"])
         else:
             self.vmaf_score.append(score)
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor, Tensor]]:
         """Compute final VMAF score."""
-        if self.elementary_features:
-            return (
-                dim_zero_cat(self.vmaf_score),
-                dim_zero_cat(self.adm_features),
-                dim_zero_cat(self.vif_features),
-                dim_zero_cat(self.motion),
-            )
+        if self.features:
+            return {
+                "vmaf": dim_zero_cat(self.vmaf_score),
+                "integer_motion2": dim_zero_cat(self.integer_motion2),
+                "integer_motion": dim_zero_cat(self.integer_motion),
+                "integer_adm2": dim_zero_cat(self.integer_adm2),
+                "integer_adm_scale0": dim_zero_cat(self.integer_adm_scale0),
+                "integer_adm_scale1": dim_zero_cat(self.integer_adm_scale1),
+                "integer_adm_scale2": dim_zero_cat(self.integer_adm_scale2),
+                "integer_adm_scale3": dim_zero_cat(self.integer_adm_scale3),
+                "integer_vif_scale0": dim_zero_cat(self.integer_vif_scale0),
+                "integer_vif_scale1": dim_zero_cat(self.integer_vif_scale1),
+                "integer_vif_scale2": dim_zero_cat(self.integer_vif_scale2),
+                "integer_vif_scale3": dim_zero_cat(self.integer_vif_scale3),
+            }
         return dim_zero_cat(self.vmaf_score)
