@@ -154,7 +154,9 @@ class DISTSNetwork(torch.nn.Module):
             with torch.inference_mode():
                 feats0 = self.forward_once(x)
                 feats1 = self.forward_once(y)
-        dist1, dist2, c1, c2 = 0, 0, 1e-6, 1e-6
+        dist1: Tensor = torch.tensor(0.0, device=x.device)
+        dist2: Tensor = torch.tensor(0.0, device=x.device)
+        c1, c2 = 1e-6, 1e-6
         w_sum = self.alpha.sum() + self.beta.sum()
         alpha = torch.split(self.alpha / w_sum, self.chns, dim=1)
         beta = torch.split(self.beta / w_sum, self.chns, dim=1)
