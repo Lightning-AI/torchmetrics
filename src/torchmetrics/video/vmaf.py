@@ -148,7 +148,7 @@ class VideoMultiMethodAssessmentFusion(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         score = video_multi_method_assessment_fusion(preds, target, self.features)
-        if self.features:
+        if self.features and isinstance(score, dict):
             self.vmaf_score.append(score["vmaf"])
             self.integer_motion2.append(score["integer_motion2"])
             self.integer_motion.append(score["integer_motion"])
@@ -161,7 +161,7 @@ class VideoMultiMethodAssessmentFusion(Metric):
             self.integer_vif_scale1.append(score["integer_vif_scale1"])
             self.integer_vif_scale2.append(score["integer_vif_scale2"])
             self.integer_vif_scale3.append(score["integer_vif_scale3"])
-        else:
+        elif isinstance(score, Tensor):
             self.vmaf_score.append(score)
 
     def compute(self) -> Union[Tensor, Dict[str, Tensor]]:
