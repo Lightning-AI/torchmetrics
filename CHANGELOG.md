@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CRPS in regression domain ([#3024](https://github.com/Lightning-AI/torchmetrics/pull/3024))
 
 
+- Added `aggregation_level` argument to `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
+
+
 - Added support for `reduction="none"` to `LearnedPerceptualImagePatchSimilarity` ([#3053](https://github.com/Lightning-AI/torchmetrics/pull/3053))
 
 
@@ -35,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
--
+- Removed `zero_division` argument from `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
 
 
 ### Fixed
