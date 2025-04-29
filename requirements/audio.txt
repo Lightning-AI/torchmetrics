@@ -4,7 +4,7 @@
 # this need to be the same as used inside speechmetrics
 pesq >=0.0.4, <0.0.5
 pystoi >=0.4.0, <0.5.0
-torchaudio >=2.0.1, <2.7.0
+torchaudio >=2.0.1, <2.8.0
 gammatone >=1.0.0, <1.1.0
 librosa >=0.10.0, <0.11.0
 onnxruntime >=1.12.0, <1.22 # installing onnxruntime_gpu-gpu failed on macos
