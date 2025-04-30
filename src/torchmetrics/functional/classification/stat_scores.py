@@ -381,15 +381,24 @@ def _multiclass_stat_scores_update(
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Compute the statistics.
 
-    - If ``multidim_average`` is equal to samplewise or ``top_k`` is not 1, we transform both preds and
-    target into one hot format.
+    - If ``multidim_average`` is equal to samplewise or ``top_k`` is greater than 1, we transform both preds and
+    target into one hot format to properly handle top-k predictions.
     - Else we calculate statistics by first calculating the confusion matrix and afterwards deriving the
     statistics from that
     - Remove all datapoints that should be ignored. Depending on if ``ignore_index`` is in the set of labels
     or outside we have do use different augmentation strategies when one hot encoding.
 
+    Notes:
+        - For top_k > 1, we always use the one-hot encoding path regardless of the averaging method 
+        to ensure top-k logic is properly applied in all cases, including micro averaging.
+
     """
-    if multidim_average == "samplewise" or top_k != 1:
+    # Modified condition to always use one-hot path when top_k > 1, regardless of average method
+    if multidim_average == "samplewise" or top_k > 1 or (preds.ndim == target.ndim + 1 and average == "micro"):
+        # Always use one-hot encoding for:
+        # 1. samplewise averaging
+        # 2. top_k > 1
+        # 3. when inputs have different dimensions (probably logits vs. class indices) and micro averaging
         ignore_in = 0 <= ignore_index <= num_classes - 1 if ignore_index is not None else None
         if ignore_index is not None and not ignore_in:
             preds = preds.clone()
@@ -400,9 +409,11 @@ def _multiclass_stat_scores_update(
             preds[idx] = num_classes
 
         if top_k > 1:
+            # For top_k > 1, we need to get the top-k predictions in one-hot format
             preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
             preds_oh = _refine_preds_oh(preds, preds_oh, target, top_k)
         else:
+            # Otherwise just one-hot encode the class indices
             preds_oh = torch.nn.functional.one_hot(
                 preds.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
             )

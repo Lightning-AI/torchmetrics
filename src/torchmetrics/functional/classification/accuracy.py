@@ -15,6 +15,7 @@ from typing import Optional
 
 from torch import Tensor
 from typing_extensions import Literal
+import torch
 
 from torchmetrics.functional.classification.stat_scores import (
     _binary_stat_scores_arg_validation,
@@ -75,16 +76,26 @@ def _accuracy_reduce(
     """
     if average == "binary":
         return _safe_divide(tp + tn, tp + tn + fp + fn)
-    if average == "micro":
-        tp = tp.sum(dim=0 if multidim_average == "global" else 1)
-        fn = fn.sum(dim=0 if multidim_average == "global" else 1)
-        if multilabel:
-            fp = fp.sum(dim=0 if multidim_average == "global" else 1)
-            tn = tn.sum(dim=0 if multidim_average == "global" else 1)
-            return _safe_divide(tp + tn, tp + tn + fp + fn)
-        return _safe_divide(tp, tp + fn)
-
+    
+    # Calculate base score
     score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
+    
+    # For top_k > 1, always use the adjust_weights function which properly handles top_k
+    if top_k > 1:
+        return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn, top_k)
+    
+    # For top_k=1, continue with the original logic
+    if average == "micro":
+        # Apply sum before returning for micro averaging
+        tp_sum = tp.sum(dim=0 if multidim_average == "global" else 1)
+        fn_sum = fn.sum(dim=0 if multidim_average == "global" else 1)
+        if multilabel:
+            fp_sum = fp.sum(dim=0 if multidim_average == "global" else 1)
+            tn_sum = tn.sum(dim=0 if multidim_average == "global" else 1)
+            return _safe_divide(tp_sum + tn_sum, tp_sum + tn_sum + fp_sum + fn_sum)
+        return _safe_divide(tp_sum, tp_sum + fn_sum)
+    
+    # For other averaging methods, apply the adjustment
     return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn, top_k)
 
 
@@ -264,6 +275,45 @@ def multiclass_accuracy(
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
+    
+    if top_k > 1 and average == "micro" and preds.ndim == target.ndim + 1:
+        if preds.ndim == target.ndim:
+            num_classes = num_classes or (target.max().int().item() + 1)
+            preds = torch.nn.functional.one_hot(preds, num_classes).to(preds.dtype)
+            preds = preds.transpose(1, -1)
+        
+        if multidim_average == "global":
+            flat_shape = preds.shape[:2] + (-1,)
+            flat_preds = preds.reshape(flat_shape)
+            flat_target = target.reshape(target.shape[0], -1)
+        else:
+            flat_shape = preds.shape[:2] + (-1,)
+            flat_preds = preds.reshape(flat_shape)
+            flat_target = target.reshape(target.shape[0], -1)
+        
+        batch_size = flat_target.shape[0]
+        num_samples = flat_target.shape[1]
+        
+        if ignore_index is not None:
+            valid_mask = flat_target != ignore_index
+        else:
+            valid_mask = torch.ones_like(flat_target, dtype=torch.bool)
+            
+        correct_list = []
+        for i in range(batch_size):
+            for j in range(num_samples):
+                if not valid_mask[i, j]:
+                    continue
+                sample_preds = flat_preds[i, :, j]
+                sample_target = flat_target[i, j]
+                _, top_indices = torch.topk(sample_preds, min(top_k, sample_preds.size(0)), dim=0)
+                correct_list.append(torch.any(top_indices == sample_target).int())
+        
+        if correct_list:
+            return torch.stack(correct_list).float().mean()
+        else:
+            return torch.tensor(0.0, device=preds.device)
+    
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes or 1, top_k, average, multidim_average, ignore_index
