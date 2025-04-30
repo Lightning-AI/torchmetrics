@@ -389,7 +389,7 @@ def _multiclass_stat_scores_update(
     or outside we have do use different augmentation strategies when one hot encoding.
 
     Notes:
-        - For top_k > 1, we always use the one-hot encoding path regardless of the averaging method 
+        - For top_k > 1, we always use the one-hot encoding path regardless of the averaging method
         to ensure top-k logic is properly applied in all cases, including micro averaging.
 
     """
