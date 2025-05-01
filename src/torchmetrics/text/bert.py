@@ -18,7 +18,11 @@ import torch
 from torch import Tensor
 from torch.nn import Module
 
-from torchmetrics.functional.text.bert import bert_score
+from torchmetrics.functional.text.bert import (
+    bert_score,
+    postprocess_multiple_references,
+    preprocess_multiple_references,
+)
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -224,28 +228,7 @@ class BERTScore(Metric):
             )
 
         if isinstance(target, list) and len(target) > 0:
-            # Check if any element is a list or tuple
-            has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
-
-            if has_nested_sequences:
-                self.ref_group_boundaries = []
-                orig_preds, orig_target = preds, target
-                preds, target = [], []
-                count = 0
-
-                for pred, ref_group in zip(orig_preds, orig_target):
-                    # If ref_group is a list or tuple, treat it as a group
-                    if isinstance(ref_group, (list, tuple)):
-                        preds.extend([pred] * len(ref_group))
-                        target.extend(ref_group)
-                        self.ref_group_boundaries.append((count, count + len(ref_group)))
-                        count += len(ref_group)
-                    else:
-                        # Handle single items (not nested lists/tuples)
-                        preds.append(pred)
-                        target.append(ref_group)
-                        self.ref_group_boundaries.append((count, count + 1))
-                        count += 1
+            preds, target, self.ref_group_boundaries = preprocess_multiple_references(preds, target)
 
         preds_dict, _ = _preprocess_text(
             preds,
@@ -302,32 +285,11 @@ class BERTScore(Metric):
             baseline_url=self.baseline_url,
         )
 
-        precision, recall, f1_score = output_dict["precision"], output_dict["recall"], output_dict["f1"]
-
         if self.ref_group_boundaries is not None:
-            max_precision, max_recall, max_f1 = [], [], []
-            for start, end in self.ref_group_boundaries:
-                # Handle different tensor dimensions
-                if precision.dim() > 1:  # all_layers=True case
-                    max_precision.append(precision[:, start:end].max(dim=1)[0])
-                    max_recall.append(recall[:, start:end].max(dim=1)[0])
-                    max_f1.append(f1_score[:, start:end].max(dim=1)[0])
-                else:  # standard case
-                    max_precision.append(precision[start:end].max())
-                    max_recall.append(recall[start:end].max())
-                    max_f1.append(f1_score[start:end].max())
+            output_dict["precision"], output_dict["recall"], output_dict["f1"] = postprocess_multiple_references(
+                output_dict["precision"], output_dict["recall"], output_dict["f1"], self.ref_group_boundaries
+            )
 
-            # Stack results
-            if precision.dim() > 1:
-                precision = torch.stack(max_precision, dim=1)
-                recall = torch.stack(max_recall, dim=1)
-                f1_score = torch.stack(max_f1, dim=1)
-            else:
-                precision = torch.stack(max_precision)
-                recall = torch.stack(max_recall)
-                f1_score = torch.stack(max_f1)
-
-        output_dict["precision"], output_dict["recall"], output_dict["f1"] = precision, recall, f1_score
         return output_dict
 
     def plot(

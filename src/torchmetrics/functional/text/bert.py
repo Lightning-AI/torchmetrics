@@ -257,6 +257,99 @@ def _rescale_metrics_with_baseline(
     return all_metrics[..., 0], all_metrics[..., 1], all_metrics[..., 2]
 
 
+def preprocess_multiple_references(
+    preds: List[str], target: Union[List[str], List[Sequence[str]]]
+) -> tuple[List[str], List[str], Optional[List[tuple[int, int]]]]:
+    """Preprocesses predictions and targets when dealing with multiple references.
+
+    This function handles the case where a single prediction might have multiple
+    reference targets (represented as a list/tuple of strings).
+
+    Args:
+        preds: A list of predictions
+        target: A list of targets, where each item could be a string or a list/tuple of strings
+
+    Returns:
+        tuple: (new_preds, new_target, ref_group_boundaries)
+            - new_preds: Flattened list of `str`
+            - new_target: Flattened list of `str`
+            - ref_group_boundaries: List of tuples (start, end) indicating the boundaries
+              of reference groups in the flattened lists or `None`
+
+    """
+    ref_group_boundaries = None
+
+    # Check if any element is a list or tuple
+    has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
+
+    if has_nested_sequences:
+        ref_group_boundaries = []
+        orig_preds, orig_target = preds, target
+        preds, target = [], []
+        count = 0
+
+        for pred, ref_group in zip(orig_preds, orig_target):
+            # If ref_group is a list or tuple, treat it as a group
+            if isinstance(ref_group, (list, tuple)):
+                preds.extend([pred] * len(ref_group))
+                target.extend(ref_group)
+                ref_group_boundaries.append((count, count + len(ref_group)))
+                count += len(ref_group)
+            else:
+                # Handle single items (not nested lists/tuples)
+                preds.append(pred)
+                target.append(ref_group)
+                ref_group_boundaries.append((count, count + 1))
+                count += 1
+
+    return preds, target, ref_group_boundaries
+
+
+def postprocess_multiple_references(
+    precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: Optional[List[tuple[int, int]]]
+) -> tuple[Tensor, Tensor, Tensor]:
+    """Postprocesses metrics when dealing with multiple references.
+
+    For each group of references that correspond to a single prediction,
+    this function takes the maximum score among all references.
+
+    Args:
+        precision: Tensor of precision scores
+        recall: Tensor of recall scores
+        f1_score: Tensor of F1 scores
+        ref_group_boundaries: List of tuples (start, end) indicating the boundaries
+                              of reference groups
+
+    Returns:
+        tuple: (precision, recall, f1_score) with updated metrics
+
+    """
+    max_precision, max_recall, max_f1 = [], [], []
+
+    for start, end in ref_group_boundaries:
+        # Handle different tensor dimensions
+        if precision.dim() > 1:  # all_layers=True case
+            max_precision.append(precision[:, start:end].max(dim=1)[0])
+            max_recall.append(recall[:, start:end].max(dim=1)[0])
+            max_f1.append(f1_score[:, start:end].max(dim=1)[0])
+        else:  # standard case
+            max_precision.append(precision[start:end].max())
+            max_recall.append(recall[start:end].max())
+            max_f1.append(f1_score[start:end].max())
+
+    # Stack results
+    if precision.dim() > 1:
+        precision = torch.stack(max_precision, dim=1)
+        recall = torch.stack(max_recall, dim=1)
+        f1_score = torch.stack(max_f1, dim=1)
+    else:
+        precision = torch.stack(max_precision)
+        recall = torch.stack(max_recall)
+        f1_score = torch.stack(max_f1)
+
+    return precision, recall, f1_score
+
+
 def bert_score(
     preds: Union[str, Sequence[str], dict[str, Tensor]],
     target: Union[str, Sequence[str], Sequence[Sequence[str]], dict[str, Tensor]],
@@ -368,30 +461,8 @@ def bert_score(
             f"{len(preds)} and {len(target)}"
         )
 
-    ref_group_boundaries = None
     if isinstance(target, list) and len(target) > 0:
-        # Check if any element is a list or tuple
-        has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
-
-        if has_nested_sequences:
-            ref_group_boundaries = []
-            orig_preds, orig_target = preds, target
-            preds, target = [], []
-            count = 0
-
-            for pred, ref_group in zip(orig_preds, orig_target):
-                # If ref_group is a list or tuple, treat it as a group
-                if isinstance(ref_group, (list, tuple)):
-                    preds.extend([pred] * len(ref_group))
-                    target.extend(ref_group)
-                    ref_group_boundaries.append((count, count + len(ref_group)))
-                    count += len(ref_group)
-                else:
-                    # Handle single items (not nested lists/tuples)
-                    preds.append(pred)
-                    target.append(ref_group)
-                    ref_group_boundaries.append((count, count + 1))
-                    count += 1
+        preds, target, ref_group_boundaries = preprocess_multiple_references(preds, target)
 
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
@@ -499,29 +570,8 @@ def bert_score(
             precision, recall, f1_score, baseline, num_layers, all_layers
         )
 
-    # After calculating metrics, process for multiple references
     if ref_group_boundaries is not None:
-        max_precision, max_recall, max_f1 = [], [], []
-        for start, end in ref_group_boundaries:
-            # Handle different tensor dimensions
-            if precision.dim() > 1:  # all_layers=True case
-                max_precision.append(precision[:, start:end].max(dim=1)[0])
-                max_recall.append(recall[:, start:end].max(dim=1)[0])
-                max_f1.append(f1_score[:, start:end].max(dim=1)[0])
-            else:  # standard case
-                max_precision.append(precision[start:end].max())
-                max_recall.append(recall[start:end].max())
-                max_f1.append(f1_score[start:end].max())
-
-        # Stack results
-        if precision.dim() > 1:
-            precision = torch.stack(max_precision, dim=1)
-            recall = torch.stack(max_recall, dim=1)
-            f1_score = torch.stack(max_f1, dim=1)
-        else:
-            precision = torch.stack(max_precision)
-            recall = torch.stack(max_recall)
-            f1_score = torch.stack(max_f1)
+        precision, recall, f1_score = postprocess_multiple_references(precision, recall, f1_score, ref_group_boundaries)
 
     output_dict = {
         "precision": precision,
