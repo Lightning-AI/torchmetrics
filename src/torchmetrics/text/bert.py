@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, cast
 
 import torch
 from torch import Tensor
@@ -241,7 +241,7 @@ class BERTScore(Metric):
             own_tokenizer=self.user_tokenizer,
         )
         target_dict, _ = _preprocess_text(
-            target,
+            cast(list[str], target),
             self.tokenizer,
             self.max_length,
             truncation=self.truncation,
