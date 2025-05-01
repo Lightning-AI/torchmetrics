@@ -177,7 +177,7 @@ class BERTScore(Metric):
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
         self.truncation = truncation
-        self.ref_group_boundaries = None
+        self.ref_group_boundaries: Optional[list[tuple[int, int]]] = None
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -228,7 +228,9 @@ class BERTScore(Metric):
             )
 
         if isinstance(target, list) and len(target) > 0:
-            preds, target, self.ref_group_boundaries = _preprocess_multiple_references(preds, target)
+            preds, target, self.ref_group_boundaries = _preprocess_multiple_references(
+                preds, target, self.ref_group_boundaries
+            )
 
         preds_dict, _ = _preprocess_text(
             preds,
