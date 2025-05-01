@@ -19,9 +19,9 @@ from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.functional.text.bert import (
-    bert_score,
+    _postprocess_multiple_references,
     _preprocess_multiple_references,
-    _postprocess_multiple_references
+    bert_score,
 )
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric

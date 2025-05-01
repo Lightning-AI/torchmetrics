@@ -572,7 +572,9 @@ def bert_score(
         )
 
     if ref_group_boundaries is not None:
-        precision, recall, f1_score = _postprocess_multiple_references(precision, recall, f1_score, ref_group_boundaries)
+        precision, recall, f1_score = _postprocess_multiple_references(
+            precision, recall, f1_score, ref_group_boundaries
+        )
 
     output_dict = {
         "precision": precision,
