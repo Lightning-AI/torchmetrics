@@ -257,8 +257,8 @@ def _rescale_metrics_with_baseline(
     return all_metrics[..., 0], all_metrics[..., 1], all_metrics[..., 2]
 
 
-def preprocess_multiple_references(
-    preds: List[str], target: List[Union[str, Sequence[str]]]
+def _preprocess_multiple_references(
+    orig_preds: List[str], orig_target: List[Union[str, Sequence[str]]]
 ) -> tuple[List[str], List[str], Optional[List[tuple[int, int]]]]:
     """Preprocesses predictions and targets when dealing with multiple references.
 
@@ -266,8 +266,8 @@ def preprocess_multiple_references(
     reference targets (represented as a list/tuple of strings).
 
     Args:
-        preds: A list of predictions
-        target: A list of targets, where each item could be a string or a list/tuple of strings
+        orig_preds: A list of predictions
+        orig_target: A list of targets, where each item could be a string or a list/tuple of strings
 
     Returns:
         tuple: (new_preds, new_target, ref_group_boundaries)
@@ -284,7 +284,6 @@ def preprocess_multiple_references(
 
     if has_nested_sequences:
         ref_group_boundaries = []
-        orig_preds, orig_target = preds, target
         preds: List[str] = []
         target: List[str] = []
         count = 0
@@ -306,7 +305,7 @@ def preprocess_multiple_references(
     return preds, target, ref_group_boundaries
 
 
-def postprocess_multiple_references(
+def _postprocess_multiple_references(
     precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: List[tuple[int, int]]
 ) -> tuple[Tensor, Tensor, Tensor]:
     """Postprocesses metrics when dealing with multiple references.
@@ -464,7 +463,7 @@ def bert_score(
 
     ref_group_boundaries = None
     if isinstance(target, list) and len(target) > 0:
-        preds, target, ref_group_boundaries = preprocess_multiple_references(preds, target)
+        preds, target, ref_group_boundaries = _preprocess_multiple_references(preds, target)
 
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
@@ -573,7 +572,7 @@ def bert_score(
         )
 
     if ref_group_boundaries is not None:
-        precision, recall, f1_score = postprocess_multiple_references(precision, recall, f1_score, ref_group_boundaries)
+        precision, recall, f1_score = _postprocess_multiple_references(precision, recall, f1_score, ref_group_boundaries)
 
     output_dict = {
         "precision": precision,

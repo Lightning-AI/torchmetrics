@@ -20,8 +20,8 @@ from torch.nn import Module
 
 from torchmetrics.functional.text.bert import (
     bert_score,
-    postprocess_multiple_references,
-    preprocess_multiple_references,
+    _preprocess_multiple_references,
+    _postprocess_multiple_references
 )
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
@@ -228,7 +228,7 @@ class BERTScore(Metric):
             )
 
         if isinstance(target, list) and len(target) > 0:
-            preds, target, self.ref_group_boundaries = preprocess_multiple_references(preds, target)
+            preds, target, self.ref_group_boundaries = _preprocess_multiple_references(preds, target)
 
         preds_dict, _ = _preprocess_text(
             preds,
@@ -286,7 +286,7 @@ class BERTScore(Metric):
         )
 
         if self.ref_group_boundaries is not None:
-            output_dict["precision"], output_dict["recall"], output_dict["f1"] = postprocess_multiple_references(
+            output_dict["precision"], output_dict["recall"], output_dict["f1"] = _postprocess_multiple_references(
                 output_dict["precision"], output_dict["recall"], output_dict["f1"], self.ref_group_boundaries
             )
 
