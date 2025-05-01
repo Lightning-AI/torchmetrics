@@ -260,7 +260,7 @@ def _rescale_metrics_with_baseline(
 def _preprocess_multiple_references(
     orig_preds: List[str],
     orig_target: List[Union[str, Sequence[str]]],
-    ref_group_boundaries: Optional[list[tuple[int, int]]],
+    orig_ref_group_boundaries: Optional[list[tuple[int, int]]],
 ) -> tuple[List[str], List[str], Optional[List[tuple[int, int]]]]:
     """Preprocesses predictions and targets when dealing with multiple references.
 
@@ -270,7 +270,7 @@ def _preprocess_multiple_references(
     Args:
         orig_preds: A list of predictions
         orig_target: A list of targets, where each item could be a string or a list/tuple of strings
-        ref_group_boundaries: `None`
+        orig_ref_group_boundaries: `None`
 
     Returns:
         tuple: (new_preds, new_target, ref_group_boundaries)
@@ -284,7 +284,7 @@ def _preprocess_multiple_references(
     has_nested_sequences = any(isinstance(item, (list, tuple)) for item in orig_target)
 
     if has_nested_sequences:
-        ref_group_boundaries: Optional[list[tuple[int, int]]] = []
+        ref_group_boundaries: list[tuple[int, int]] = []
         preds: List[str] = []
         target: List[str] = []
         count = 0
@@ -303,8 +303,7 @@ def _preprocess_multiple_references(
                 ref_group_boundaries.append((count, count + 1))
                 count += 1
         return preds, target, ref_group_boundaries
-    return orig_preds, orig_target, ref_group_boundaries
-
+    return orig_preds, orig_target, orig_ref_group_boundaries  
 
 def _postprocess_multiple_references(
     precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: List[tuple[int, int]]

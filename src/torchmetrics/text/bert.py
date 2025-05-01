@@ -227,7 +227,7 @@ class BERTScore(Metric):
                 f"{len(preds)} and {len(target)}"
             )
 
-        if isinstance(target, list) and len(target) > 0:
+        if isinstance(preds, list) and len(preds) > 0 and isinstance(target, list) and len(target) > 0:
             preds, target, self.ref_group_boundaries = _preprocess_multiple_references(
                 preds, target, self.ref_group_boundaries
             )
@@ -287,7 +287,12 @@ class BERTScore(Metric):
             baseline_url=self.baseline_url,
         )
 
-        if self.ref_group_boundaries is not None:
+        if (
+            self.ref_group_boundaries is not None
+            and isinstance(output_dict["precision"], Tensor)
+            and isinstance(output_dict["recall"], Tensor)
+            and isinstance(output_dict["f1"], Tensor)
+        ):
             output_dict["precision"], output_dict["recall"], output_dict["f1"] = _postprocess_multiple_references(
                 output_dict["precision"], output_dict["recall"], output_dict["f1"], self.ref_group_boundaries
             )
