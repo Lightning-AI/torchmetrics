@@ -280,7 +280,7 @@ def _preprocess_multiple_references(
     ref_group_boundaries = None
 
     # Check if any element is a list or tuple
-    has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
+    has_nested_sequences = any(isinstance(item, (list, tuple)) for item in orig_target)
 
     if has_nested_sequences:
         ref_group_boundaries = []
