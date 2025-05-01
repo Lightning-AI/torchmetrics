@@ -284,7 +284,7 @@ def preprocess_multiple_references(
 
     if has_nested_sequences:
         ref_group_boundaries = []
-        orig_preds, orig_target = preds, target 
+        orig_preds, orig_target = preds, target
         preds: List[str] = []
         target: List[str] = []
         count = 0
