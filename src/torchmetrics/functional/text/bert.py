@@ -16,7 +16,7 @@ import logging
 import urllib
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, cast
 
 import torch
 from torch import Tensor
@@ -258,7 +258,7 @@ def _rescale_metrics_with_baseline(
 
 
 def preprocess_multiple_references(
-    preds: List[str], target: Union[List[str], List[Sequence[str]]]
+    preds: List[str], target: List[Union[str, Sequence[str]]]
 ) -> tuple[List[str], List[str], Optional[List[tuple[int, int]]]]:
     """Preprocesses predictions and targets when dealing with multiple references.
 
@@ -284,21 +284,22 @@ def preprocess_multiple_references(
 
     if has_nested_sequences:
         ref_group_boundaries = []
-        orig_preds, orig_target = preds, target
-        preds, target = [], []
+        orig_preds, orig_target = preds, target 
+        preds: List[str] = []
+        target: List[str] = []
         count = 0
 
         for pred, ref_group in zip(orig_preds, orig_target):
             # If ref_group is a list or tuple, treat it as a group
             if isinstance(ref_group, (list, tuple)):
                 preds.extend([pred] * len(ref_group))
-                target.extend(ref_group)
+                target.extend(cast(List[str], ref_group))
                 ref_group_boundaries.append((count, count + len(ref_group)))
                 count += len(ref_group)
             else:
                 # Handle single items (not nested lists/tuples)
                 preds.append(pred)
-                target.append(ref_group)
+                target.append(cast(str, ref_group))
                 ref_group_boundaries.append((count, count + 1))
                 count += 1
 
@@ -306,7 +307,7 @@ def preprocess_multiple_references(
 
 
 def postprocess_multiple_references(
-    precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: Optional[List[tuple[int, int]]]
+    precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: List[tuple[int, int]]
 ) -> tuple[Tensor, Tensor, Tensor]:
     """Postprocesses metrics when dealing with multiple references.
 
