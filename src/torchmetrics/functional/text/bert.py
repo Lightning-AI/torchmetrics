@@ -461,6 +461,7 @@ def bert_score(
             f"{len(preds)} and {len(target)}"
         )
 
+    ref_group_boundaries = None
     if isinstance(target, list) and len(target) > 0:
         preds, target, ref_group_boundaries = preprocess_multiple_references(preds, target)
 
