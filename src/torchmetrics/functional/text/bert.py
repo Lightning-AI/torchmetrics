@@ -280,7 +280,6 @@ def _preprocess_multiple_references(
               of reference groups in the flattened lists or `None`
 
     """
-    # Check if any element is a list or tuple
     has_nested_sequences = any(isinstance(item, (list, tuple)) for item in orig_target)
 
     if has_nested_sequences:
@@ -290,14 +289,12 @@ def _preprocess_multiple_references(
         count = 0
 
         for pred, ref_group in zip(orig_preds, orig_target):
-            # If ref_group is a list or tuple, treat it as a group
             if isinstance(ref_group, (list, tuple)):
                 preds.extend([pred] * len(ref_group))
                 target.extend(cast(List[str], ref_group))
                 ref_group_boundaries.append((count, count + len(ref_group)))
                 count += len(ref_group)
             else:
-                # Handle single items (not nested lists/tuples)
                 preds.append(pred)
                 target.append(cast(str, ref_group))
                 ref_group_boundaries.append((count, count + 1))
@@ -328,7 +325,6 @@ def _postprocess_multiple_references(
     max_precision, max_recall, max_f1 = [], [], []
 
     for start, end in ref_group_boundaries:
-        # Handle different tensor dimensions
         if precision.dim() > 1:  # all_layers=True case
             max_precision.append(precision[:, start:end].max(dim=1)[0])
             max_recall.append(recall[:, start:end].max(dim=1)[0])
@@ -338,7 +334,6 @@ def _postprocess_multiple_references(
             max_recall.append(recall[start:end].max())
             max_f1.append(f1_score[start:end].max())
 
-    # Stack results
     if precision.dim() > 1:
         precision = torch.stack(max_precision, dim=1)
         recall = torch.stack(max_recall, dim=1)
