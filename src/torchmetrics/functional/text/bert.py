@@ -258,9 +258,9 @@ def _rescale_metrics_with_baseline(
 
 
 def _preprocess_multiple_references(
-    orig_preds: List[str],
-    orig_target: List[Union[str, Sequence[str]]],
-    orig_ref_group_boundaries: Optional[list[tuple[int, int]]],
+    preds: List[str],
+    target: List[Union[str, Sequence[str]]],
+    ref_group_boundaries: Optional[list[tuple[int, int]]],
 ) -> tuple[List[str], List[str], Optional[List[tuple[int, int]]]]:
     """Preprocesses predictions and targets when dealing with multiple references.
 
@@ -268,39 +268,39 @@ def _preprocess_multiple_references(
     reference targets (represented as a list/tuple of strings).
 
     Args:
-        orig_preds: A list of predictions
-        orig_target: A list of targets, where each item could be a string or a list/tuple of strings
-        orig_ref_group_boundaries: `None`
+        preds: A list of predictions
+        target: A list of targets, where each item could be a string or a list/tuple of strings
+        ref_group_boundaries: `None`
 
     Returns:
-        tuple: (new_preds, new_target, ref_group_boundaries)
-            - new_preds: Flattened list of `str`
-            - new_target: Flattened list of `str`
+        tuple: (preds, target, ref_group_boundaries)
+            - preds: Flattened list of `str`
+            - target: Flattened list of `str`
             - ref_group_boundaries: List of tuples (start, end) indicating the boundaries
               of reference groups in the flattened lists or `None`
 
     """
-    has_nested_sequences = any(isinstance(item, (list, tuple)) for item in orig_target)
+    has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
 
     if has_nested_sequences:
-        ref_group_boundaries: list[tuple[int, int]] = []
-        preds: List[str] = []
-        target: List[str] = []
+        new_ref_group_boundaries: list[tuple[int, int]] = []
+        new_preds: List[str] = []
+        new_target: List[str] = []
         count = 0
 
-        for pred, ref_group in zip(orig_preds, orig_target):
+        for pred, ref_group in zip(preds, target):
             if isinstance(ref_group, (list, tuple)):
-                preds.extend([pred] * len(ref_group))
-                target.extend(cast(List[str], ref_group))
-                ref_group_boundaries.append((count, count + len(ref_group)))
+                new_preds.extend([pred] * len(ref_group))
+                new_target.extend(cast(List[str], ref_group))
+                new_ref_group_boundaries.append((count, count + len(ref_group)))
                 count += len(ref_group)
             else:
-                preds.append(pred)
-                target.append(cast(str, ref_group))
-                ref_group_boundaries.append((count, count + 1))
+                new_preds.append(pred)
+                new_target.append(cast(str, ref_group))
+                new_ref_group_boundaries.append((count, count + 1))
                 count += 1
-        return preds, target, ref_group_boundaries
-    return orig_preds, cast(list[str], orig_target), orig_ref_group_boundaries
+        return new_preds, new_target, new_ref_group_boundaries
+    return preds, cast(list[str], target), ref_group_boundaries
 
 
 def _postprocess_multiple_references(
@@ -380,8 +380,10 @@ def bert_score(
     Args:
         preds: Either a single predicted sentence (`str`), an iterable of predicted sentences,
                or a ``Dict[input_ids, attention_mask]``.
-        target: Either a single target sentence (`str`), an iterable of target sentences,
-                or a ``Dict[input_ids, attention_mask]``.
+        target: Either a single target sentence (`str`), an iterable of target sentences for one reference per
+                prediction (`Sequence[str]`), an iterable of iterables of target sentences for multiple references
+                per prediction (`Sequence[Sequence[str]]`),or a dictionary with keys `"input_ids"`
+                and `"attention_mask"` for pre-tokenized input (`dict[str, Tensor]`).
         model_name_or_path: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:

@@ -67,8 +67,9 @@ class BERTScore(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~List`): An iterable of predicted sentences
-    - ``target`` (:class:`~List`): An iterable of reference sentences
+    - ``preds``: Either a single predicted sentence (`str`) or an iterable of predicted sentences (`Sequence[str]`)
+    - ``target``: Either a single target sentence (`str`), an iterable of target sentences (`Sequence[str]`) or an
+        iterable of iterables of target sentences for multiple references per prediction (`Sequence[Sequence[str]]`).
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -76,8 +77,9 @@ class BERTScore(Metric):
       corresponding values
 
     Args:
-        preds: Either a single predicted sentence (`str`) or an iterable of predicted sentences.
-        target: Either a single target sentence (`str`) or an iterable of target sentences.
+        preds: Either a single predicted sentence (`str`) or an iterable of predicted sentences (`Sequence[str]`).
+        target: Either a single target sentence (`str`), an iterable of target sentences (`Sequence[str]`) or an
+        iterable of iterables of target sentences for multiple references per prediction (`Sequence[Sequence[str]]`).
         model_type: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:
