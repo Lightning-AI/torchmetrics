@@ -126,6 +126,15 @@ class BERTScore(Metric):
         >>> pprint(bertscore(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
+    Example:
+        >>> from pprint import pprint
+        >>> from torchmetrics.text.bert import BERTScore
+        >>> preds = ["hello there", "general kenobi"]
+        >>> target = [["hello there", "master kenobi"], ["hello there", "master kenobi"]]
+        >>> bertscore = BERTScore()
+        >>> pprint(bertscore(preds, target))
+        {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
     """
 
     is_differentiable: bool = False

@@ -443,6 +443,14 @@ def bert_score(
         >>> pprint(bert_score(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
+    Example:
+        >>> from pprint import pprint
+        >>> from torchmetrics.functional.text.bert import bert_score
+        >>> preds = ["hello there", "general kenobi"]
+        >>> target = [["hello there", "master kenobi"], ["hello there", "master kenobi"]]
+        >>> pprint(bert_score(preds, target))
+        {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
     """
     ref_group_boundaries: Optional[list[tuple[int, int]]] = None
 
