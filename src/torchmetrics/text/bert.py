@@ -67,9 +67,16 @@ class BERTScore(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds``: Either a single predicted sentence (`str`) or an iterable of predicted sentences (`Sequence[str]`)
-    - ``target``: Either a single target sentence (`str`), an iterable of target sentences (`Sequence[str]`) or an
-        iterable of iterables of target sentences for multiple references per prediction (`Sequence[Sequence[str]]`).
+    - ``preds``: Predicted sentence(s). Can be one of:
+
+        * A single predicted sentence as a string (``str``)
+        * A sequence of predicted sentences (``Sequence[str]``)
+
+    - ``target``: Target/reference sentence(s). Can be one of:
+
+        * A single reference sentence as a string (``str``)
+        * A sequence of reference sentences (``Sequence[str]``)
+        * A sequence of sequences of reference sentences for multi-reference evaluation (``Sequence[Sequence[str]]``)
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -77,9 +84,9 @@ class BERTScore(Metric):
       corresponding values
 
     Args:
-        preds: Either a single predicted sentence (`str`) or an iterable of predicted sentences (`Sequence[str]`).
-        target: Either a single target sentence (`str`), an iterable of target sentences (`Sequence[str]`) or an
-        iterable of iterables of target sentences for multiple references per prediction (`Sequence[Sequence[str]]`).
+        preds (Union[str, Sequence[str]]): A single predicted sentence or a sequence of predicted sentences.
+        target (Union[str, Sequence[str], Sequence[Sequence[str]]]): A single target sentence, a sequence of target
+            sentences, or a sequence of sequences of target sentences for multiple references per prediction.
         model_type: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:

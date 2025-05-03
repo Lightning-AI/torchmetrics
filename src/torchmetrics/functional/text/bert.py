@@ -378,12 +378,9 @@ def bert_score(
     This implementation follows the original implementation from `BERT_score`_.
 
     Args:
-        preds: Either a single predicted sentence (`str`), an iterable of predicted sentences,
-               or a ``Dict[input_ids, attention_mask]``.
-        target: Either a single target sentence (`str`), an iterable of target sentences for one reference per
-                prediction (`Sequence[str]`), an iterable of iterables of target sentences for multiple references
-                per prediction (`Sequence[Sequence[str]]`),or a dictionary with keys `"input_ids"`
-                and `"attention_mask"` for pre-tokenized input (`dict[str, Tensor]`).
+        preds (Union[str, Sequence[str]]): A single predicted sentence or a sequence of predicted sentences.
+        target (Union[str, Sequence[str], Sequence[Sequence[str]]]): A single target sentence, a sequence of target
+            sentences, or a sequence of sequences of target sentences for multiple references per prediction.
         model_name_or_path: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:
