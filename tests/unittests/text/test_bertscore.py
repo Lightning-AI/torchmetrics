@@ -29,7 +29,6 @@ from unittests.text._inputs import (
     _inputs_multiple_references,
     _inputs_single_reference,
     _inputs_single_sentence_multiple_references,
-    _inputs_single_sentence_single_reference,
 )
 
 _METRIC_KEY_TO_IDX = {
@@ -90,10 +89,7 @@ def _reference_bert_score(
 )
 @pytest.mark.parametrize(
     ("preds", "targets"),
-    [
-        (_inputs_single_reference.preds, _inputs_single_reference.target),
-        (_inputs_single_sentence_single_reference.preds, _inputs_single_sentence_single_reference.target),
-    ],
+    [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
 class TestBERTScore(TextTester):
@@ -215,6 +211,27 @@ def test_bertscore_truncation(truncation: bool):
     else:
         with pytest.raises(RuntimeError, match="The expanded size of the tensor.*must match.*"):
             bert_score(pred, gt)
+
+
+@skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+def test_bertscore_single_str_input():
+    """Test if BERTScore works with single string preds and target."""
+    preds = "hello there"
+    target = "hello there"
+
+    metric = BERTScore()
+    score_class = metric(preds, target)
+
+    assert score_class["f1"].item() == pytest.approx(1.0, abs=1e-4)
+    assert score_class["precision"].item() == pytest.approx(1.0, abs=1e-4)
+    assert score_class["recall"].item() == pytest.approx(1.0, abs=1e-4)
+
+    score_functional = bert_score(preds, target)
+
+    assert score_functional["f1"].item() == pytest.approx(1.0, abs=1e-4)
+    assert score_functional["precision"].item() == pytest.approx(1.0, abs=1e-4)
+    assert score_functional["recall"].item() == pytest.approx(1.0, abs=1e-4)
 
 
 @pytest.mark.parametrize(
