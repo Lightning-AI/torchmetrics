@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support single `str` input for functional interface of `bert_score` ([#3056](https://github.com/Lightning-AI/torchmetrics/pull/3056))
 
+- Enhance: `BERTScore` to evaluate hypotheses against multiple references ([#3069](https://github.com/Lightning-AI/torchmetrics/pull/3069))
+
 
 ### Changed
 
