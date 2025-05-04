@@ -280,6 +280,9 @@ def _preprocess_multiple_references(
               of reference groups in the flattened lists or `None`
 
     """
+    if not all(isinstance(item, str) for item in preds):
+        raise ValueError("Invalid input provided.")
+
     has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
 
     if has_nested_sequences:

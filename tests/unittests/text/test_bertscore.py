@@ -16,6 +16,7 @@ from collections.abc import Sequence
 from functools import partial
 
 import pytest
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -24,7 +25,12 @@ from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 from unittests._helpers import skip_on_connection_issues
 from unittests.text._helpers import TextTester
-from unittests.text._inputs import _inputs_single_reference
+from unittests.text._inputs import (
+    _inputs_multiple_references,
+    _inputs_single_reference,
+    _inputs_single_sentence_multiple_references,
+    _inputs_single_sentence_single_reference,
+)
 
 _METRIC_KEY_TO_IDX = {
     "precision": 0,
@@ -84,7 +90,10 @@ def _reference_bert_score(
 )
 @pytest.mark.parametrize(
     ("preds", "targets"),
-    [(_inputs_single_reference.preds, _inputs_single_reference.target)],
+    [
+        (_inputs_single_reference.preds, _inputs_single_reference.target),
+        (_inputs_single_sentence_single_reference.preds, _inputs_single_sentence_single_reference.target),
+    ],
 )
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
 class TestBERTScore(TextTester):
@@ -150,6 +159,7 @@ class TestBERTScore(TextTester):
             key=metric_key,
         )
 
+    @skip_on_connection_issues()
     def test_bertscore_differentiability(
         self, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key
     ):
@@ -207,22 +217,55 @@ def test_bertscore_truncation(truncation: bool):
             bert_score(pred, gt)
 
 
+@pytest.mark.parametrize(
+    ("preds", "target", "expected"),
+    [
+        (
+            _inputs_single_sentence_multiple_references.preds,
+            _inputs_single_sentence_multiple_references.target,
+            {
+                "precision": torch.tensor([0.9970]),
+                "recall": torch.tensor([0.9970]),
+                "f1": torch.tensor([0.9970]),
+            },
+        ),
+        (
+            ["hello there", "I'm in the middle", "general kenobi"],
+            (["hello there", "master kenobi"], "I'm here", ("hello there", "master kenobi")),
+            {
+                "precision": torch.tensor([1.0000, 0.9810, 0.9961]),
+                "recall": torch.tensor([1.0000, 0.9811, 0.9961]),
+                "f1": torch.tensor([1.0000, 0.9811, 0.9961]),
+            },
+        ),
+        (
+            _inputs_multiple_references.preds,
+            _inputs_multiple_references.target,
+            "ValueError",
+        ),
+    ],
+)
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
-def test_bertscore_single_str_input():
-    """Test if BERTScore works with single string preds and target."""
-    preds = "hello there"
-    target = "hello there"
+def test_bertscore_multiple_references(preds, target, expected):
+    """Test both functional and class APIs with multiple references."""
+    if expected == "ValueError":
+        import pytest
 
-    metric = BERTScore()
-    score_class = metric(preds, target)
-
-    assert score_class["f1"].item() == pytest.approx(1.0, abs=1e-4)
-    assert score_class["precision"].item() == pytest.approx(1.0, abs=1e-4)
-    assert score_class["recall"].item() == pytest.approx(1.0, abs=1e-4)
-
-    score_functional = bert_score(preds, target)
-
-    assert score_functional["f1"].item() == pytest.approx(1.0, abs=1e-4)
-    assert score_functional["precision"].item() == pytest.approx(1.0, abs=1e-4)
-    assert score_functional["recall"].item() == pytest.approx(1.0, abs=1e-4)
+        with pytest.raises(ValueError, match="Invalid input provided."):
+            bert_score(preds, target)
+        metric = BERTScore()
+        with pytest.raises(ValueError, match="Invalid input provided."):
+            metric(preds, target)
+    else:
+        result_func = bert_score(preds, target)
+        for k in expected:
+            assert torch.allclose(result_func[k], expected[k], atol=1e-4), (
+                f"Functional {k} mismatch: {result_func[k]} vs {expected[k]}"
+            )
+        metric = BERTScore()
+        result_class = metric(preds, target)
+        for k in expected:
+            assert torch.allclose(result_class[k], expected[k], atol=1e-4), (
+                f"Class {k} mismatch: {result_class[k]} vs {expected[k]}"
+            )
