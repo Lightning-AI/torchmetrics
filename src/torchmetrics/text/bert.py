@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Callable, List, Optional, Union, cast
+from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
 import torch
 from torch import Tensor
@@ -195,7 +195,7 @@ class BERTScore(Metric):
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
         self.truncation = truncation
-        self.ref_group_boundaries: Optional[list[tuple[int, int]]] = None
+        self.ref_group_boundaries: Optional[list[Tuple[int, int]]] = None
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
