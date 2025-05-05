@@ -303,7 +303,7 @@ def _preprocess_multiple_references(
                 new_ref_group_boundaries.append((count, count + 1))
                 count += 1
         return new_preds, new_target, new_ref_group_boundaries
-    return preds, cast(list[str], target), ref_group_boundaries
+    return preds, cast(List[str], target), ref_group_boundaries
 
 
 def _postprocess_multiple_references(
