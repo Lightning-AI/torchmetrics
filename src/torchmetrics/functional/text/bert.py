@@ -77,7 +77,7 @@ def _get_embeddings_and_idf_scale(
     idf: bool = False,
     verbose: bool = False,
     user_forward_fn: Optional[Callable[[Module, dict[str, Tensor]], Tensor]] = None,
-) -> tuple[Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
 
     Args:
@@ -159,7 +159,7 @@ def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Ten
 
 def _get_precision_recall_f1(
     preds_embeddings: Tensor, target_embeddings: Tensor, preds_idf_scale: Tensor, target_idf_scale: Tensor
-) -> tuple[Tensor, Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
     Args:
@@ -246,7 +246,7 @@ def _rescale_metrics_with_baseline(
     baseline: Tensor,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
-) -> tuple[Tensor, Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Rescale the computed metrics with the pre-computed baseline."""
     if num_layers is None and all_layers is False:
         num_layers = -1
@@ -260,8 +260,8 @@ def _rescale_metrics_with_baseline(
 def _preprocess_multiple_references(
     preds: List[str],
     target: List[Union[str, Sequence[str]]],
-    ref_group_boundaries: Optional[list[tuple[int, int]]],
-) -> tuple[List[str], List[str], Optional[List[tuple[int, int]]]]:
+    ref_group_boundaries: Optional[list[Tuple[int, int]]],
+) -> Tuple[List[str], List[str], Optional[List[Tuple[int, int]]]]:
     """Preprocesses predictions and targets when dealing with multiple references.
 
     This function handles the case where a single prediction might have multiple
@@ -283,7 +283,7 @@ def _preprocess_multiple_references(
     if not all(isinstance(item, str) for item in preds):
         raise ValueError("Invalid input provided.")
 
-    has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
+    has_nested_sequences = any(isinstance(item, (list, Tuple)) for item in target)
 
     if has_nested_sequences:
         new_ref_group_boundaries: List[Tuple[int, int]] = []
@@ -292,7 +292,7 @@ def _preprocess_multiple_references(
         count = 0
 
         for pred, ref_group in zip(preds, target):
-            if isinstance(ref_group, (list, tuple)):
+            if isinstance(ref_group, (list, Tuple)):
                 new_preds.extend([pred] * len(ref_group))
                 new_target.extend(cast(List[str], ref_group))
                 new_ref_group_boundaries.append((count, count + len(ref_group)))
@@ -307,8 +307,8 @@ def _preprocess_multiple_references(
 
 
 def _postprocess_multiple_references(
-    precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: List[tuple[int, int]]
-) -> tuple[Tensor, Tensor, Tensor]:
+    precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: List[Tuple[int, int]]
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Postprocesses metrics when dealing with multiple references.
 
     For each group of references that correspond to a single prediction,
@@ -452,7 +452,7 @@ def bert_score(
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
     """
-    ref_group_boundaries: Optional[list[tuple[int, int]]] = None
+    ref_group_boundaries: Optional[list[Tuple[int, int]]] = None
 
     if isinstance(preds, str):
         preds = [preds]
