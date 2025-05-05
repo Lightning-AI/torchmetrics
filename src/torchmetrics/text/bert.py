@@ -234,10 +234,10 @@ class BERTScore(Metric):
             preds = [preds]
         if isinstance(target, str):
             target = [target]
-        if not isinstance(preds, List):
-            preds = List(preds)
-        if not isinstance(target, List):
-            target = List(target)
+        if not isinstance(preds, list):
+            preds = list(preds)
+        if not isinstance(target, list):
+            target = list(target)
 
         if len(preds) != len(target):
             raise ValueError(
@@ -245,7 +245,7 @@ class BERTScore(Metric):
                 f"{len(preds)} and {len(target)}"
             )
 
-        if isinstance(preds, List) and len(preds) > 0 and isinstance(target, List) and len(target) > 0:
+        if isinstance(preds, list) and len(preds) > 0 and isinstance(target, list) and len(target) > 0:
             preds, target, self.ref_group_boundaries = _preprocess_multiple_references(preds, target)
 
         preds_dict, _ = _preprocess_text(
