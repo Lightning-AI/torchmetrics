@@ -286,7 +286,7 @@ def _preprocess_multiple_references(
     has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
 
     if has_nested_sequences:
-        new_ref_group_boundaries: list[tuple[int, int]] = []
+        new_ref_group_boundaries: List[Tuple[int, int]] = []
         new_preds: List[str] = []
         new_target: List[str] = []
         count = 0
