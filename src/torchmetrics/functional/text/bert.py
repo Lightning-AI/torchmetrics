@@ -16,7 +16,7 @@ import logging
 import urllib
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from typing import Any, Callable, List, Tuple, Optional, Union, cast
+from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
 import torch
 from torch import Tensor
