@@ -466,7 +466,7 @@ def bert_score(
             f"{len(preds)} and {len(target)}"
         )
 
-    if isinstance(preds, List) and len(preds) > 0 and isinstance(target, List) and len(target) > 0:
+    if isinstance(preds, list) and len(preds) > 0 and isinstance(target, list) and len(target) > 0:
         preds, target, ref_group_boundaries = _preprocess_multiple_references(preds, target)
 
     if not isinstance(idf, bool):
@@ -512,9 +512,9 @@ def bert_score(
     except AttributeError:
         rank_zero_warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
 
-    _are_empty_lists = all(isinstance(text, List) and len(text) == 0 for text in (preds, target))
+    _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (preds, target))
     _are_valid_lists = all(
-        isinstance(text, List) and len(text) > 0 and isinstance(text[0], str) for text in (preds, target)
+        isinstance(text, list) and len(text) > 0 and isinstance(text[0], str) for text in (preds, target)
     )
     _are_valid_tensors = all(
         isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (preds, target)
