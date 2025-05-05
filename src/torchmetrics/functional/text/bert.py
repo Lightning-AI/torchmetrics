@@ -280,7 +280,7 @@ def _preprocess_multiple_references(
     if not all(isinstance(item, str) for item in preds):
         raise ValueError("Invalid input provided.")
 
-    has_nested_sequences = any(isinstance(item, (list, Tuple)) for item in target)
+    has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
 
     if has_nested_sequences:
         ref_group_boundaries: List[Tuple[int, int]] = []
@@ -289,7 +289,7 @@ def _preprocess_multiple_references(
         count = 0
 
         for pred, ref_group in zip(preds, target):
-            if isinstance(ref_group, (list, Tuple)):
+            if isinstance(ref_group, (list, tuple)):
                 new_preds.extend([pred] * len(ref_group))
                 new_target.extend(cast(List[str], ref_group))
                 ref_group_boundaries.append((count, count + len(ref_group)))
