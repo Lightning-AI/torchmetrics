@@ -260,7 +260,7 @@ def _rescale_metrics_with_baseline(
 def _preprocess_multiple_references(
     preds: List[str],
     target: List[Union[str, Sequence[str]]],
-    ref_group_boundaries: Optional[list[Tuple[int, int]]],
+    ref_group_boundaries: Optional[List[Tuple[int, int]]],
 ) -> Tuple[List[str], List[str], Optional[List[Tuple[int, int]]]]:
     """Preprocesses predictions and targets when dealing with multiple references.
 
@@ -283,7 +283,7 @@ def _preprocess_multiple_references(
     if not all(isinstance(item, str) for item in preds):
         raise ValueError("Invalid input provided.")
 
-    has_nested_sequences = any(isinstance(item, (list, Tuple)) for item in target)
+    has_nested_sequences = any(isinstance(item, (List, Tuple)) for item in target)
 
     if has_nested_sequences:
         new_ref_group_boundaries: List[Tuple[int, int]] = []
@@ -292,7 +292,7 @@ def _preprocess_multiple_references(
         count = 0
 
         for pred, ref_group in zip(preds, target):
-            if isinstance(ref_group, (list, Tuple)):
+            if isinstance(ref_group, (List, Tuple)):
                 new_preds.extend([pred] * len(ref_group))
                 new_target.extend(cast(List[str], ref_group))
                 new_ref_group_boundaries.append((count, count + len(ref_group)))
@@ -370,7 +370,7 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
     truncation: bool = False,
-) -> dict[str, Union[Tensor, list[float], str]]:
+) -> dict[str, Union[Tensor, List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
     This metric leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
@@ -469,7 +469,7 @@ def bert_score(
             f"{len(preds)} and {len(target)}"
         )
 
-    if isinstance(preds, list) and len(preds) > 0 and isinstance(target, list) and len(target) > 0:
+    if isinstance(preds, List) and len(preds) > 0 and isinstance(target, List) and len(target) > 0:
         preds, target, ref_group_boundaries = _preprocess_multiple_references(preds, target, ref_group_boundaries)
 
     if not isinstance(idf, bool):
@@ -515,16 +515,16 @@ def bert_score(
     except AttributeError:
         rank_zero_warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
 
-    _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (preds, target))
+    _are_empty_lists = all(isinstance(text, List) and len(text) == 0 for text in (preds, target))
     _are_valid_lists = all(
-        isinstance(text, list) and len(text) > 0 and isinstance(text[0], str) for text in (preds, target)
+        isinstance(text, List) and len(text) > 0 and isinstance(text[0], str) for text in (preds, target)
     )
     _are_valid_tensors = all(
         isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (preds, target)
     )
     if _are_empty_lists:
         rank_zero_warn("Predictions and references are empty.")
-        output_dict: dict[str, Union[Tensor, list[float], str]] = {
+        output_dict: dict[str, Union[Tensor, List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],
             "f1": [0.0],
