@@ -241,14 +241,12 @@ class BERTScore(Metric):
 
         if len(preds) != len(target):
             raise ValueError(
-                "Expected number of predicted and reference sententes to be the same, but got"
+                "Expected number of predicted and reference sentences to be the same, but got"
                 f"{len(preds)} and {len(target)}"
             )
 
         if isinstance(preds, List) and len(preds) > 0 and isinstance(target, List) and len(target) > 0:
-            preds, target, self.ref_group_boundaries = _preprocess_multiple_references(
-                preds, target, self.ref_group_boundaries
-            )
+            preds, target, self.ref_group_boundaries = _preprocess_multiple_references(preds, target)
 
         preds_dict, _ = _preprocess_text(
             preds,

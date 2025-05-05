@@ -258,9 +258,7 @@ def _rescale_metrics_with_baseline(
 
 
 def _preprocess_multiple_references(
-    preds: List[str],
-    target: List[Union[str, Sequence[str]]],
-    ref_group_boundaries: Optional[List[Tuple[int, int]]],
+    preds: List[str], target: List[Union[str, Sequence[str]]]
 ) -> Tuple[List[str], List[str], Optional[List[Tuple[int, int]]]]:
     """Preprocesses predictions and targets when dealing with multiple references.
 
@@ -270,7 +268,6 @@ def _preprocess_multiple_references(
     Args:
         preds: A list of predictions
         target: A list of targets, where each item could be a string or a list/tuple of strings
-        ref_group_boundaries: `None`
 
     Returns:
         tuple: (preds, target, ref_group_boundaries)
@@ -286,7 +283,7 @@ def _preprocess_multiple_references(
     has_nested_sequences = any(isinstance(item, (List, Tuple)) for item in target)
 
     if has_nested_sequences:
-        new_ref_group_boundaries: List[Tuple[int, int]] = []
+        ref_group_boundaries: List[Tuple[int, int]] = []
         new_preds: List[str] = []
         new_target: List[str] = []
         count = 0
@@ -295,15 +292,15 @@ def _preprocess_multiple_references(
             if isinstance(ref_group, (List, Tuple)):
                 new_preds.extend([pred] * len(ref_group))
                 new_target.extend(cast(List[str], ref_group))
-                new_ref_group_boundaries.append((count, count + len(ref_group)))
+                ref_group_boundaries.append((count, count + len(ref_group)))
                 count += len(ref_group)
             else:
                 new_preds.append(pred)
                 new_target.append(cast(str, ref_group))
-                new_ref_group_boundaries.append((count, count + 1))
+                ref_group_boundaries.append((count, count + 1))
                 count += 1
-        return new_preds, new_target, new_ref_group_boundaries
-    return preds, cast(List[str], target), ref_group_boundaries
+        return new_preds, new_target, ref_group_boundaries
+    return preds, cast(List[str], target), None
 
 
 def _postprocess_multiple_references(
@@ -465,12 +462,12 @@ def bert_score(
 
     if len(preds) != len(target):
         raise ValueError(
-            "Expected number of predicted and reference sententes to be the same, but got"
+            "Expected number of predicted and reference sentences to be the same, but got"
             f"{len(preds)} and {len(target)}"
         )
 
     if isinstance(preds, List) and len(preds) > 0 and isinstance(target, List) and len(target) > 0:
-        preds, target, ref_group_boundaries = _preprocess_multiple_references(preds, target, ref_group_boundaries)
+        preds, target, ref_group_boundaries = _preprocess_multiple_references(preds, target)
 
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
