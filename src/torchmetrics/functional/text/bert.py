@@ -270,7 +270,7 @@ def _preprocess_multiple_references(
         target: A list of targets, where each item could be a string or a list/tuple of strings
 
     Returns:
-        tuple: (preds, target, ref_group_boundaries)
+        Tuple: (preds, target, ref_group_boundaries)
             - preds: Flattened list of `str`
             - target: Flattened list of `str`
             - ref_group_boundaries: List of tuples (start, end) indicating the boundaries
@@ -449,7 +449,7 @@ def bert_score(
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
     """
-    ref_group_boundaries: Optional[list[Tuple[int, int]]] = None
+    ref_group_boundaries: Optional[List[Tuple[int, int]]] = None
 
     if isinstance(preds, str):
         preds = [preds]
