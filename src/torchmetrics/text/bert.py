@@ -195,7 +195,7 @@ class BERTScore(Metric):
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
         self.truncation = truncation
-        self.ref_group_boundaries: Optional[list[Tuple[int, int]]] = None
+        self.ref_group_boundaries: Optional[List[Tuple[int, int]]] = None
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -234,10 +234,10 @@ class BERTScore(Metric):
             preds = [preds]
         if isinstance(target, str):
             target = [target]
-        if not isinstance(preds, list):
-            preds = list(preds)
-        if not isinstance(target, list):
-            target = list(target)
+        if not isinstance(preds, List):
+            preds = List(preds)
+        if not isinstance(target, List):
+            target = List(target)
 
         if len(preds) != len(target):
             raise ValueError(
@@ -245,7 +245,7 @@ class BERTScore(Metric):
                 f"{len(preds)} and {len(target)}"
             )
 
-        if isinstance(preds, list) and len(preds) > 0 and isinstance(target, list) and len(target) > 0:
+        if isinstance(preds, List) and len(preds) > 0 and isinstance(target, List) and len(target) > 0:
             preds, target, self.ref_group_boundaries = _preprocess_multiple_references(
                 preds, target, self.ref_group_boundaries
             )
@@ -259,7 +259,7 @@ class BERTScore(Metric):
             own_tokenizer=self.user_tokenizer,
         )
         target_dict, _ = _preprocess_text(
-            cast(list[str], target),
+            cast(List[str], target),
             self.tokenizer,
             self.max_length,
             truncation=self.truncation,
@@ -272,7 +272,7 @@ class BERTScore(Metric):
         self.target_input_ids.append(target_dict["input_ids"])
         self.target_attention_mask.append(target_dict["attention_mask"])
 
-    def compute(self) -> dict[str, Union[Tensor, list[float], str]]:
+    def compute(self) -> dict[str, Union[Tensor, List[float], str]]:
         """Calculate BERT scores."""
         preds = {
             "input_ids": dim_zero_cat(self.preds_input_ids),
