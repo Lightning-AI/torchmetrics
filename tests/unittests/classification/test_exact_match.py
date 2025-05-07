@@ -161,7 +161,7 @@ def _reference_exact_match_multilabel(preds, target, ignore_index, multidim_aver
     if ignore_index is not None:
         target = np.copy(target)
         mask = target == ignore_index
-        target = torch.where(mask, preds.long(), target)
+        target = torch.where(mask, preds, target)
 
     if multidim_average == "global":
         preds = np.moveaxis(preds, 1, -1).reshape(-1, NUM_CLASSES)
