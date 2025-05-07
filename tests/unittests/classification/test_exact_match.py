@@ -158,10 +158,6 @@ def _reference_exact_match_multilabel(preds, target, ignore_index, multidim_aver
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
 
-    if ignore_index is not None:
-        target = np.copy(target)
-        target[target == ignore_index] = -1
-
     if multidim_average == "global":
         preds = np.moveaxis(preds, 1, -1).reshape(-1, NUM_CLASSES)
         target = np.moveaxis(target, 1, -1).reshape(-1, NUM_CLASSES)

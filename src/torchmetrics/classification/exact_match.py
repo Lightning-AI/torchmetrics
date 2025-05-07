@@ -327,7 +327,9 @@ class MultilabelExactMatch(Metric):
         preds, target = _multilabel_stat_scores_format(
             preds, target, self.num_labels, self.threshold, self.ignore_index
         )
-        correct, total = _multilabel_exact_match_update(preds, target, self.num_labels, self.multidim_average)
+        correct, total = _multilabel_exact_match_update(
+            preds, target, self.num_labels, self.multidim_average, self.ignore_index
+        )
         if self.multidim_average == "samplewise":
             if not isinstance(self.correct, list):
                 raise TypeError("Expected `self.correct` to be a list in samplewise mode.")
