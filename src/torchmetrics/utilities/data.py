@@ -178,11 +178,11 @@ def _squeeze_if_scalar(data: Any) -> Any:
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """Implement custom bincount.
 
-    As of PyTorch v2.1, ``torch.bincount`` is supported in deterministic mode on CUDA 
-    when no ``weights`` are provided and gradients are not required. However, this 
-    operation remains unsupported or limited on some backends, such as MPS and XLA. 
-    In those cases, we fall back to a manual implementation using `torch.arange` and `torch.eq`. 
-    A small performance hit can expected and higher memory consumption as `[batch_size, mincount]` 
+    As of PyTorch v2.1, ``torch.bincount`` is supported in deterministic mode on CUDA
+    when no ``weights`` are provided and gradients are not required. However, this
+    operation remains unsupported or limited on some backends, such as MPS and XLA.
+    In those cases, we fall back to a manual implementation using `torch.arange` and `torch.eq`.
+    A small performance hit can expected and higher memory consumption as `[batch_size, mincount]`
     tensor needs to be initialized compared to native ``torch.bincount``.
 
     Args:
