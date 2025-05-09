@@ -40,7 +40,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-
 - Fixed `UnboundLocalError` in `MatthewsCorrCoef` ([#3059](https://github.com/Lightning-AI/torchmetrics/pull/3059))
 
 
@@ -48,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed `_bincount` being less restrictive ([#3087](https://github.com/Lightning-AI/torchmetrics/pull/3087))
+
+
+- Fixed `ignore_index` in `MultilabelExactMatch` ([#3085](https://github.com/Lightning-AI/torchmetrics/pull/3085))
+
 
 ---
 
