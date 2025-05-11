@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional
+from typing import List
 
 import torch
 from torch import Tensor
@@ -67,10 +67,10 @@ def lip_vertex_error(
 
     # Calculate squared L2 distance for mouth vertices
     diff = vertices_gt[:, mouth_map, :] - vertices_pred[:, mouth_map, :]  # Shape: (T, M, 3)
-    sq_dist = torch.sum(diff ** 2, dim=-1)  # Shape: (T, M)
-    
+    sq_dist = torch.sum(diff**2, dim=-1)  # Shape: (T, M)
+
     # Get maximum distance per frame
     max_per_frame = torch.max(sq_dist, dim=1).values  # Shape: (T,)
-    
+
     # Return mean across all frames
     return torch.mean(max_per_frame)
