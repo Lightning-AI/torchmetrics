@@ -13,8 +13,12 @@
 # limitations under the License.
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
+from torchmetrics.multimodal.lve import LipVertexError
+
+__all__ = ["LipVertexError"]
+
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment
     from torchmetrics.multimodal.clip_score import CLIPScore
 
-    __all__ = ["CLIPImageQualityAssessment", "CLIPScore"]
+    __all__ += ["CLIPImageQualityAssessment", "CLIPScore"]

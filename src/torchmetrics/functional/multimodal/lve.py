@@ -1,0 +1,76 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from typing import List, Optional
+
+import torch
+from torch import Tensor
+
+
+def lip_vertex_error(
+    vertices_pred: Tensor,
+    vertices_gt: Tensor,
+    mouth_map: List[int],
+    validate_args: bool = True,
+) -> Tensor:
+    """Compute Lip Vertex Error (LVE) for 3D talking head evaluation.
+
+    The Lip Vertex Error (LVE) metric evaluates the quality of lip synchronization in 3D facial animations by measuring
+    the maximum Euclidean distance (L2 error) between corresponding lip vertices of the generated and ground truth meshes
+    for each frame.
+
+    Args:
+        vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
+            V is number of vertices, and 3 represents XYZ coordinates
+        vertices_gt: Ground truth vertices tensor of shape (T, V, 3)
+        mouth_map: List of vertex indices corresponding to the mouth region
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        Scalar tensor containing the mean LVE value across all frames
+
+    Raises:
+        ValueError:
+            If shapes of ``vertices_pred`` and ``vertices_gt`` don't match or are invalid
+            If ``mouth_map`` is empty or contains invalid indices
+
+    """
+    if validate_args:
+        if vertices_pred.ndim != 3 or vertices_gt.ndim != 3:
+            raise ValueError(
+                f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
+                f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
+            )
+        if vertices_pred.shape != vertices_gt.shape:
+            raise ValueError(
+                f"Expected vertices_pred and vertices_gt to have same shape but got "
+                f"{vertices_pred.shape} and {vertices_gt.shape}."
+            )
+        if not mouth_map:
+            raise ValueError("mouth_map cannot be empty.")
+        if max(mouth_map) >= vertices_pred.shape[1]:
+            raise ValueError(
+                f"mouth_map contains invalid vertex indices. Max index {max(mouth_map)} is larger than "
+                f"number of vertices {vertices_pred.shape[1]}."
+            )
+
+    # Calculate squared L2 distance for mouth vertices
+    diff = vertices_gt[:, mouth_map, :] - vertices_pred[:, mouth_map, :]  # Shape: (T, M, 3)
+    sq_dist = torch.sum(diff ** 2, dim=-1)  # Shape: (T, M)
+    
+    # Get maximum distance per frame
+    max_per_frame = torch.max(sq_dist, dim=1).values  # Shape: (T,)
+    
+    # Return mean across all frames
+    return torch.mean(max_per_frame)
