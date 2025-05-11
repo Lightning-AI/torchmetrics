@@ -15,12 +15,11 @@ from typing import Any, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
 
+from torchmetrics.functional.multimodal.lve import lip_vertex_error
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
-from torchmetrics.functional.multimodal.lve import lip_vertex_error
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["LipVertexError.plot"]
@@ -67,6 +66,7 @@ class LipVertexError(Metric):
             vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
                 V is number of vertices, and 3 represents XYZ coordinates
             vertices_gt: Ground truth vertices tensor of shape (T, V, 3)
+
         """
         self.vertices_pred.append(vertices_pred)
         self.vertices_gt.append(vertices_gt)
@@ -76,6 +76,7 @@ class LipVertexError(Metric):
 
         Returns:
             Tensor: A scalar tensor with the mean LVE value
+
         """
         vertices_pred = torch.cat(self.vertices_pred, dim=0)
         vertices_gt = torch.cat(self.vertices_gt, dim=0)
