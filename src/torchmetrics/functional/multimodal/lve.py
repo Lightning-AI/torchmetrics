@@ -26,8 +26,8 @@ def lip_vertex_error(
     """Compute Lip Vertex Error (LVE) for 3D talking head evaluation.
 
     The Lip Vertex Error (LVE) metric evaluates the quality of lip synchronization in 3D facial animations by measuring
-    the maximum Euclidean distance (L2 error) between corresponding lip vertices of the generated and ground truth meshes
-    for each frame.
+    the maximum Euclidean distance (L2 error) between corresponding lip vertices of the generated and ground truth
+    meshes for each frame.
 
     Args:
         vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,

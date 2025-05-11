@@ -29,8 +29,8 @@ class LipVertexError(Metric):
     """Implements Lip Vertex Error (LVE) metric for 3D talking head evaluation.
 
     The Lip Vertex Error (LVE) metric evaluates the quality of lip synchronization in 3D facial animations by measuring
-    the maximum Euclidean distance (L2 error) between corresponding lip vertices of the generated and ground truth meshes
-    for each frame.
+    the maximum Euclidean distance (L2 error) between corresponding lip vertices of the generated and ground truth
+    meshes for each frame.
 
     Args:
         mouth_map: List of vertex indices corresponding to the mouth region
