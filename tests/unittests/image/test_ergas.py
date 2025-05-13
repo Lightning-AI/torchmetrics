@@ -76,7 +76,7 @@ def _reference_ergas(
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
 @pytest.mark.parametrize(
-    "preds, target, ratio",
+    ("preds", "target", "ratio"),
     [(i.preds, i.target, i.ratio) for i in _inputs],
 )
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):

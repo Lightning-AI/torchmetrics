@@ -85,7 +85,7 @@ def _get_characters(sentence: str, whitespace: bool) -> list[str]:
 
 
 def _separate_word_and_punctuation(word: str) -> list[str]:
-    """Separates out punctuations from beginning and end of words for chrF.
+    """Separates out punctuation from beginning and end of words for chrF.
 
     Adapted from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
@@ -108,13 +108,13 @@ def _separate_word_and_punctuation(word: str) -> list[str]:
 
 
 def _get_words_and_punctuation(sentence: str) -> list[str]:
-    """Separates out punctuations from beginning and end of words for chrF for all words in the sentence.
+    """Separates out punctuation from beginning and end of words for chrF for all words in the sentence.
 
     Args:
         sentence: An input sentence to split
 
     Return:
-        An aggregated list of separated words and punctuations.
+        An aggregated list of separated words and punctuation.
 
     """
     return list(chain.from_iterable(_separate_word_and_punctuation(word) for word in sentence.strip().split()))

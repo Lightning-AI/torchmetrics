@@ -78,7 +78,7 @@ def _reference_skimage_uqi(preds, target, multichannel, kernel_size):
 
 
 @pytest.mark.parametrize(
-    "preds, target, multichannel",
+    ("preds", "target", "multichannel"),
     [(i.preds, i.target, i.multichannel) for i in _inputs],
 )
 @pytest.mark.parametrize("kernel_size", [5, 11])

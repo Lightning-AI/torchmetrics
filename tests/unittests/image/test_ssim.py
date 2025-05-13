@@ -130,7 +130,7 @@ def _reference_msssim_ssim(
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 @pytest.mark.parametrize("sigma", [1.5, 0.5])

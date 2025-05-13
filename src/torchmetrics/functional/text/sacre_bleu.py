@@ -121,9 +121,9 @@ class _SacreBLEUTokenizer:
         import regex
 
         _INT_REGEX = (
-            # Separate out punctuations preceded by a non-digit
+            # Separate out punctuation preceded by a non-digit
             (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
-            # Separate out punctuations followed by a non-digit
+            # Separate out punctuation followed by a non-digit
             (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
             # Separate out symbols
             (regex.compile(r"(\p{S})"), r" \1 "),
@@ -271,7 +271,7 @@ class _SacreBLEUTokenizer:
         We just tokenize on punctuation and symbols,
         except when a punctuation is preceded and followed by a digit
         (e.g. a comma/dot as a thousand/decimal separator).
-        We do not recover escaped forms of punctuations such as &apos; or &gt;
+        We do not recover escaped forms of punctuation such as &apos; or &gt;
         as these should never appear in MT system outputs (see issue #138)
 
         Note that a number (e.g., a year) followed by a dot at the end of

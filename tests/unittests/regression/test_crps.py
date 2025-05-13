@@ -41,7 +41,7 @@ def _reference_implementation(preds, target):
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_input2_5ensemble.preds, _input2_5ensemble.target),
         (_input_10ensemble.preds, _input_10ensemble.target),

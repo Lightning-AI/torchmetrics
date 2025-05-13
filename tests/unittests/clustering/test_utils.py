@@ -102,7 +102,7 @@ def test_generalized_mean(labels, p):
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(_sklearn_inputs.preds, _sklearn_inputs.target), (_single_dim_inputs.preds, _single_dim_inputs.target)],
 )
 class TestPairClusterConfusionMatrix:

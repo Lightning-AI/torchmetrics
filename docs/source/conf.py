@@ -221,7 +221,6 @@ html_logo = "_static/images/logo.svg"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
-html_js_files = ["runllm.js"]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -451,6 +450,8 @@ linkcheck_ignore = [
     # Improved normalization of time-lapse seismic data using normalized root mean square repeatability data ...
     # ... to improve automatic production and seismic history matching in the Nelson field
     "https://onlinelibrary.wiley.com/doi/abs/10.1111/1365-2478.12109",
+    # Multiscale structural similarity for image quality assessment
+    "https://ieeexplore.ieee.org/document/1292216",
     # todo: these links seems to be unstable, referring to .devcontainer
     "https://code.visualstudio.com",
     "https://code.visualstudio.com/.*",

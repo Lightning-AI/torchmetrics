@@ -61,7 +61,8 @@ def _wrap_reduction(p: Tensor, q: Tensor, log_prob: bool, reduction: Optional[st
 
 @pytest.mark.parametrize("reduction", ["mean", "sum"])
 @pytest.mark.parametrize(
-    "p, q, log_prob", [(_probs_inputs.p, _probs_inputs.q, False), (_log_probs_inputs.p, _log_probs_inputs.q, True)]
+    ("p", "q", "log_prob"),
+    [(_probs_inputs.p, _probs_inputs.q, False), (_log_probs_inputs.p, _log_probs_inputs.q, True)],
 )
 class TestJensenShannonDivergence(MetricTester):
     """Test class for `JensenShannonDivergence` metric."""

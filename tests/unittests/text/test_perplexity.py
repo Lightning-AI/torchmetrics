@@ -39,7 +39,7 @@ def _reference_local_perplexity(preds, target, ignore_index):
 
 
 @pytest.mark.parametrize(
-    "preds, target, ignore_index",
+    ("preds", "target", "ignore_index"),
     [
         (_logits_inputs_fp32.preds, _logits_inputs_fp32.target, None),
         (_logits_inputs_fp64.preds, _logits_inputs_fp64.target, None),

@@ -14,9 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CRPS in regression domain ([#3024](https://github.com/Lightning-AI/torchmetrics/pull/3024))
 
 
+- Added `aggregation_level` argument to `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
+
+
+- Added support for `reduction="none"` to `LearnedPerceptualImagePatchSimilarity` ([#3053](https://github.com/Lightning-AI/torchmetrics/pull/3053))
+
+
+- Added support single `str` input for functional interface of `bert_score` ([#3056](https://github.com/Lightning-AI/torchmetrics/pull/3056))
+
+- Enhance: `BERTScore` to evaluate hypotheses against multiple references ([#3069](https://github.com/Lightning-AI/torchmetrics/pull/3069))
+
+
 ### Changed
 
-- Enhance Support Adding a `MetricCollection` to Another `MetricCollection` in `add_metrics` Function ([#3032](https://github.com/Lightning-AI/torchmetrics/pull/3032))
+-
 
 
 ### Deprecated
@@ -26,17 +37,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
--
+- Removed `zero_division` argument from `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
 
 
 ### Fixed
 
-- Fixed absent class `MeanIOU` ([#2892](https://github.com/Lightning-AI/torchmetrics/pull/2892))
+- Fixed `UnboundLocalError` in `MatthewsCorrCoef` ([#3059](https://github.com/Lightning-AI/torchmetrics/pull/3059))
 
 
-- Fixed detection IoU ignores predictions without ground truth ([#3025](https://github.com/Lightning-AI/torchmetrics/pull/3025))
+- Fixed  MIFID incorrectly converts inputs to `byte` dtype with custom encoders ([#3064](https://github.com/Lightning-AI/torchmetrics/pull/3064))
+
+
+- Fixed `ignore_index` in `MultilabelExactMatch` ([#3085](https://github.com/Lightning-AI/torchmetrics/pull/3085))
+
 
 ---
+
+## [1.7.1] - 2025-04-06
+
+### Changed
+
+- Enhance Support Adding a `MetricCollection` to Another `MetricCollection` in `add_metrics` Function ([#3032](https://github.com/Lightning-AI/torchmetrics/pull/3032))
+
+### Fixed
+
+- Fixed absent class `MeanIOU` ([#2892](https://github.com/Lightning-AI/torchmetrics/pull/2892))
+- Fixed detection IoU ignores predictions without ground truth ([#3025](https://github.com/Lightning-AI/torchmetrics/pull/3025))
+- Fixed error raised in `MulticlassAccuracy` when top_k>1 ([#3039](https://github.com/Lightning-AI/torchmetrics/pull/3039))
 
 ## [1.7.0] - 2025-03-20
 
