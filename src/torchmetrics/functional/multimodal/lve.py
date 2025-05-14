@@ -32,7 +32,7 @@ def lip_vertex_error(
     Args:
         vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
             V is number of vertices, and 3 represents XYZ coordinates
-        vertices_gt: Ground truth vertices tensor of shape (T, V, 3)
+        vertices_gt: Ground truth vertices tensor of shape (T', V, 3) where T' can be different from T
         mouth_map: List of vertex indices corresponding to the mouth region
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
@@ -42,7 +42,7 @@ def lip_vertex_error(
 
     Raises:
         ValueError:
-            If shapes of ``vertices_pred`` and ``vertices_gt`` don't match or are invalid
+            If vertex dimensions (V) or coordinate dimensions (3) don't match
             If ``mouth_map`` is empty or contains invalid indices
 
     """
@@ -52,10 +52,10 @@ def lip_vertex_error(
                 f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
                 f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
             )
-        if vertices_pred.shape != vertices_gt.shape:
+        if vertices_pred.shape[1:] != vertices_gt.shape[1:]:
             raise ValueError(
-                f"Expected vertices_pred and vertices_gt to have same shape but got "
-                f"{vertices_pred.shape} and {vertices_gt.shape}."
+                f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
+                f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
             )
         if not mouth_map:
             raise ValueError("mouth_map cannot be empty.")
@@ -65,12 +65,11 @@ def lip_vertex_error(
                 f"number of vertices {vertices_pred.shape[1]}."
             )
 
-    # Calculate squared L2 distance for mouth vertices
+    min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
+    vertices_pred = vertices_pred[:min_frames]
+    vertices_gt = vertices_gt[:min_frames]
+
     diff = vertices_gt[:, mouth_map, :] - vertices_pred[:, mouth_map, :]  # Shape: (T, M, 3)
     sq_dist = torch.sum(diff**2, dim=-1)  # Shape: (T, M)
-
-    # Get maximum distance per frame
     max_per_frame = torch.max(sq_dist, dim=1).values  # Shape: (T,)
-
-    # Return mean across all frames
     return torch.mean(max_per_frame)

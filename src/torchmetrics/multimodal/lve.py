@@ -13,11 +13,11 @@
 # limitations under the License.
 from typing import Any, List, Optional, Sequence, Union
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.multimodal.lve import lip_vertex_error
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -65,9 +65,25 @@ class LipVertexError(Metric):
         Args:
             vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
                 V is number of vertices, and 3 represents XYZ coordinates
-            vertices_gt: Ground truth vertices tensor of shape (T, V, 3)
+            vertices_gt: Ground truth vertices tensor of shape (T', V, 3) where T' can be different from T
 
         """
+        if self.validate_args:
+            if vertices_pred.ndim != 3 or vertices_gt.ndim != 3:
+                raise ValueError(
+                    f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
+                    f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
+                )
+            if vertices_pred.shape[1:] != vertices_gt.shape[1:]:
+                raise ValueError(
+                    f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
+                    f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
+                )
+
+        min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
+        vertices_pred = vertices_pred[:min_frames]
+        vertices_gt = vertices_gt[:min_frames]
+
         self.vertices_pred.append(vertices_pred)
         self.vertices_gt.append(vertices_gt)
 
@@ -78,8 +94,8 @@ class LipVertexError(Metric):
             Tensor: A scalar tensor with the mean LVE value
 
         """
-        vertices_pred = torch.cat(self.vertices_pred, dim=0)
-        vertices_gt = torch.cat(self.vertices_gt, dim=0)
+        vertices_pred = dim_zero_cat(self.vertices_pred)
+        vertices_gt = dim_zero_cat(self.vertices_gt)
         return lip_vertex_error(vertices_pred, vertices_gt, self.mouth_map, self.validate_args)
 
     def plot(
