@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union, cast
 
 from torch import Tensor
 
@@ -93,9 +93,8 @@ class LipVertexError(Metric):
         if not self.mouth_map:
             raise ValueError("mouth_map cannot be empty.")
 
-        # Initialize states for accumulation
-        self.add_state("vertices_pred", default=[], dist_reduce_fx=None)
-        self.add_state("vertices_gt", default=[], dist_reduce_fx=None)
+        self.add_state("vertices_pred", default=[], dist_reduce_fx="cat")
+        self.add_state("vertices_gt", default=[], dist_reduce_fx="cat")
 
     def update(self, vertices_pred: Tensor, vertices_gt: Tensor) -> None:
         """Update metric states with predictions and targets.
@@ -127,8 +126,8 @@ class LipVertexError(Metric):
         vertices_pred = vertices_pred[:min_frames]
         vertices_gt = vertices_gt[:min_frames]
 
-        self.vertices_pred.append(vertices_pred)
-        self.vertices_gt.append(vertices_gt)
+        self.vertices_pred.append(vertices_pred.detach())  # type: ignore[attr-defined]
+        self.vertices_gt.append(vertices_gt.detach())  # type: ignore[attr-defined]
 
     def compute(self) -> Tensor:
         """Compute the Lip Vertex Error over all accumulated states.
@@ -137,9 +136,12 @@ class LipVertexError(Metric):
             Tensor: A scalar tensor with the mean LVE value
 
         """
-        vertices_pred = dim_zero_cat(self.vertices_pred)
-        vertices_gt = dim_zero_cat(self.vertices_gt)
-        return lip_vertex_error(vertices_pred, vertices_gt, self.mouth_map, self.validate_args)
+        vertices_pred = cast(List[Tensor], self.vertices_pred)
+        vertices_gt = cast(List[Tensor], self.vertices_gt)
+
+        vertices_pred_cat = dim_zero_cat(vertices_pred)
+        vertices_gt_cat = dim_zero_cat(vertices_gt)
+        return lip_vertex_error(vertices_pred_cat, vertices_gt_cat, self.mouth_map, self.validate_args)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
