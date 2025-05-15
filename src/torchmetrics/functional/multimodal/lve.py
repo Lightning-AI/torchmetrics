@@ -32,10 +32,10 @@ def lip_vertex_error(
     .. math::
         \text{LVE} = \frac{1}{N} \sum_{i=1}^{N} \max_{v \in \text{lip}} \|x_{i,v} - \hat{x}_{i,v}\|_2^2
 
-    where :math:`N` is the number of frames, :math:`x_{i,v}` represents the 3D coordinates of vertex :math:`v` in the lip
-    region of the ground truth frame :math:`i`, and :math:`\hat{x}_{i,v}` represents the corresponding vertex in the
-    predicted frame. The metric computes the maximum squared L2 distance between corresponding lip vertices for each frame
-    and averages across all frames. A lower LVE value indicates better lip synchronization quality.
+    where :math:`N` is the number of frames, :math:`x_{i,v}` represents the 3D coordinates of vertex :math:`v` in the
+    lip region of the ground truth frame :math:`i`, and :math:`\hat{x}_{i,v}` represents the corresponding vertex in
+    the predicted frame. The metric computes the maximum squared L2 distance between corresponding lip vertices for each
+    frame and averages across all frames. A lower LVE value indicates better lip synchronization quality.
 
     Args:
         vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
