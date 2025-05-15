@@ -23,11 +23,19 @@ def lip_vertex_error(
     mouth_map: List[int],
     validate_args: bool = True,
 ) -> Tensor:
-    """Compute Lip Vertex Error (LVE) for 3D talking head evaluation.
+    r"""Compute Lip Vertex Error (LVE) for 3D talking head evaluation.
 
     The Lip Vertex Error (LVE) metric evaluates the quality of lip synchronization in 3D facial animations by measuring
     the maximum Euclidean distance (L2 error) between corresponding lip vertices of the generated and ground truth
-    meshes for each frame.
+    meshes for each frame. The metric is defined as:
+    
+    .. math::
+        \text{LVE} = \frac{1}{N} \sum_{i=1}^{N} \max_{v \in \text{lip}} \|x_{i,v} - \hat{x}_{i,v}\|_2^2
+
+    where :math:`N` is the number of frames, :math:`x_{i,v}` represents the 3D coordinates of vertex :math:`v` in the lip 
+    region of the ground truth frame :math:`i`, and :math:`\hat{x}_{i,v}` represents the corresponding vertex in the 
+    predicted frame. The metric computes the maximum squared L2 distance between corresponding lip vertices for each frame 
+    and averages across all frames. A lower LVE value indicates better lip synchronization quality.
 
     Args:
         vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
@@ -42,9 +50,19 @@ def lip_vertex_error(
 
     Raises:
         ValueError:
+            If the number of dimensions of `vertices_pred` or `vertices_gt` is not 3.
             If vertex dimensions (V) or coordinate dimensions (3) don't match
             If ``mouth_map`` is empty or contains invalid indices
 
+    Example:
+        >>> import torch
+        >>> from torchmetrics.functional.multimodal import lip_vertex_error
+        >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42))  
+        >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
+        >>> mouth_map = [0, 1, 2, 3, 4]  
+        >>> lip_vertex_error(vertices_pred, vertices_gt, mouth_map)
+        tensor(12.7688)
+        
     """
     if validate_args:
         if vertices_pred.ndim != 3 or vertices_gt.ndim != 3:
