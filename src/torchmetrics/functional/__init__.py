@@ -74,13 +74,15 @@ from torchmetrics.functional.image._deprecated import (
 )
 from torchmetrics.functional.image._deprecated import _total_variation as total_variation
 from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
-from torchmetrics.functional.nominal import (
+from torchmetrics.functional.multimodal import (
     clip_image_quality_assessment,
     clip_score,
+    lip_vertex_error,
+)
+from torchmetrics.functional.nominal import (
     cramers_v,
     cramers_v_matrix,
     fleiss_kappa,
-    lip_vertex_error,
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
     theils_u,
