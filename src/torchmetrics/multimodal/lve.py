@@ -126,10 +126,10 @@ class LipVertexError(Metric):
         vertices_pred = vertices_pred[:min_frames]
         vertices_gt = vertices_gt[:min_frames]
 
-        vertices_pred_list = cast(List[Tensor], self.vertices_pred_list)
-        vertices_gt_list = cast(List[Tensor], self.vertices_gt_list)
-        vertices_pred_list.append(vertices_pred)
-        vertices_gt_list.append(vertices_gt)
+        self.vertices_pred_list = cast(List[Tensor], self.vertices_pred_list)
+        self.vertices_gt_list = cast(List[Tensor], self.vertices_gt_list)
+        self.vertices_pred_list.append(vertices_pred)
+        self.vertices_gt_list.append(vertices_gt)
 
     def compute(self) -> Tensor:
         """Compute the Lip Vertex Error over all accumulated states.
@@ -137,12 +137,9 @@ class LipVertexError(Metric):
         Returns:
             Tensor: A scalar tensor with the mean LVE value
 
-        """
-        vertices_pred_list = cast(List[Tensor], self.vertices_pred_list)
-        vertices_gt_list = cast(List[Tensor], self.vertices_gt_list)
-
-        vertices_pred = dim_zero_cat(vertices_pred_list)
-        vertices_gt = dim_zero_cat(vertices_gt_list)
+        """ 
+        vertices_pred = dim_zero_cat(self.vertices_pred_list)
+        vertices_gt = dim_zero_cat(self.vertices_gt_list)
         return lip_vertex_error(vertices_pred, vertices_gt, self.mouth_map, self.validate_args)
 
     def plot(
