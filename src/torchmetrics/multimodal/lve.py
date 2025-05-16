@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union, cast
 
 from torch import Tensor
 
@@ -126,8 +126,8 @@ class LipVertexError(Metric):
         vertices_pred = vertices_pred[:min_frames]
         vertices_gt = vertices_gt[:min_frames]
 
-        vertices_pred_list: List[Tensor] = self.vertices_pred_list
-        vertices_gt_list: List[Tensor] = self.vertices_gt_list
+        vertices_pred_list = cast(List[Tensor], self.vertices_pred_list)
+        vertices_gt_list = cast(List[Tensor], self.vertices_gt_list)
         vertices_pred_list.append(vertices_pred)
         vertices_gt_list.append(vertices_gt)
 
@@ -138,8 +138,8 @@ class LipVertexError(Metric):
             Tensor: A scalar tensor with the mean LVE value
 
         """
-        vertices_pred_list: List[Tensor] = self.vertices_pred_list
-        vertices_gt_list: List[Tensor] = self.vertices_gt_list
+        vertices_pred_list = cast(List[Tensor], self.vertices_pred_list)
+        vertices_gt_list = cast(List[Tensor], self.vertices_gt_list)
 
         vertices_pred = dim_zero_cat(vertices_pred_list)
         vertices_gt = dim_zero_cat(vertices_gt_list)
