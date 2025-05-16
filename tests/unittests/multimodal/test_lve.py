@@ -50,11 +50,11 @@ def _reference_lip_vertex_error(vertices_pred, vertices_gt, mouth_map):
     vertices_pred = vertices_pred[:min_frames].numpy()
     vertices_gt = vertices_gt[:min_frames].numpy()
 
-    L2_dis_mouth_max = np.array([np.square(vertices_gt[:, v, :] - vertices_pred[:, v, :]) for v in mouth_map])
-    L2_dis_mouth_max = np.transpose(L2_dis_mouth_max, (1, 0, 2))
-    L2_dis_mouth_max = np.sum(L2_dis_mouth_max, axis=2)
-    L2_dis_mouth_max = np.max(L2_dis_mouth_max, axis=1)
-    lve = np.mean(L2_dis_mouth_max)
+    l2_dis_mouth_max = np.array([np.square(vertices_gt[:, v, :] - vertices_pred[:, v, :]) for v in mouth_map])
+    l2_dis_mouth_max = np.transpose(l2_dis_mouth_max, (1, 0, 2))
+    l2_dis_mouth_max = np.sum(l2_dis_mouth_max, axis=2)
+    l2_dis_mouth_max = np.max(l2_dis_mouth_max, axis=1)
+    lve = np.mean(l2_dis_mouth_max)
     return torch.tensor(lve)
 
 
