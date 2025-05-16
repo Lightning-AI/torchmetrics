@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union, cast
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 
@@ -92,7 +92,7 @@ class LipVertexError(Metric):
         super().__init__(**kwargs)
         self.mouth_map = mouth_map
         self.validate_args = validate_args
-        
+
         if not self.mouth_map:
             raise ValueError("mouth_map cannot be empty.")
 
