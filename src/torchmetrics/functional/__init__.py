@@ -153,6 +153,7 @@ __all__ = [
     "average_precision",
     "binary_eer",
     "bleu_score",
+    "chrf_score",
     "calibration_error",
     "char_error_rate",
     "cohen_kappa",
