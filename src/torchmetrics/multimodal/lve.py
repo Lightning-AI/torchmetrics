@@ -80,6 +80,9 @@ class LipVertexError(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
+    vertices_pred_list: List[Tensor]
+    vertices_gt_list: List[Tensor]
+
     def __init__(
         self,
         mouth_map: List[int],
@@ -126,8 +129,6 @@ class LipVertexError(Metric):
         vertices_pred = vertices_pred[:min_frames]
         vertices_gt = vertices_gt[:min_frames]
 
-        self.vertices_pred_list = cast(List[Tensor], self.vertices_pred_list)
-        self.vertices_gt_list = cast(List[Tensor], self.vertices_gt_list)
         self.vertices_pred_list.append(vertices_pred)
         self.vertices_gt_list.append(vertices_gt)
 
