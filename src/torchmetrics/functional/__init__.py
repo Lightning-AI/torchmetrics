@@ -75,9 +75,12 @@ from torchmetrics.functional.image._deprecated import (
 from torchmetrics.functional.image._deprecated import _total_variation as total_variation
 from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
 from torchmetrics.functional.nominal import (
+    clip_image_quality_assessment,
+    clip_score,
     cramers_v,
     cramers_v_matrix,
     fleiss_kappa,
+    lip_vertex_error,
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
     theils_u,
@@ -153,6 +156,8 @@ __all__ = [
     "calibration_error",
     "char_error_rate",
     "chrf_score",
+    "clip_image_quality_assessment",
+    "clip_score",
     "cohen_kappa",
     "concordance_corrcoef",
     "confusion_matrix",
@@ -174,6 +179,7 @@ __all__ = [
     "jaccard_index",
     "kendall_rank_corrcoef",
     "kl_divergence",
+    "lip_vertex_error",
     "log_cosh_error",
     "logauc",
     "match_error_rate",
