@@ -92,7 +92,7 @@ class LipVertexError(Metric):
         super().__init__(**kwargs)
         self.mouth_map = mouth_map
         self.validate_args = validate_args
-
+        
         if not self.mouth_map:
             raise ValueError("mouth_map cannot be empty.")
 
