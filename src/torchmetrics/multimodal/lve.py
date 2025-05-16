@@ -137,7 +137,7 @@ class LipVertexError(Metric):
         Returns:
             Tensor: A scalar tensor with the mean LVE value
 
-        """ 
+        """
         vertices_pred = dim_zero_cat(self.vertices_pred_list)
         vertices_gt = dim_zero_cat(self.vertices_gt_list)
         return lip_vertex_error(vertices_pred, vertices_gt, self.mouth_map, self.validate_args)
