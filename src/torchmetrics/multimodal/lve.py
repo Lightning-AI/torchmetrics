@@ -75,7 +75,7 @@ class LipVertexError(Metric):
 
     """
 
-    is_differentiable: bool = False
+    is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
