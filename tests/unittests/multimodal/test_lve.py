@@ -35,8 +35,8 @@ class _InputVertices(NamedTuple):
 
 
 _random_input = _InputVertices(
-    vertices_pred=torch.randn(10, 100, 3),  
-    vertices_gt=torch.randn(10, 100, 3),  
+    vertices_pred=torch.randn(10, 100, 3),
+    vertices_gt=torch.randn(10, 100, 3),
 )
 
 
@@ -44,13 +44,14 @@ def _reference_lip_vertex_error(vertices_pred, vertices_gt, mouth_map):
     """Reference implementation for Lip Vertex Error.
 
     This uses a numpy implementation for validation.
+
     """
     min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
     vertices_pred = vertices_pred[:min_frames].numpy()
     vertices_gt = vertices_gt[:min_frames].numpy()
 
-    L2_dis_mouth_max = np.array([np.square(vertices_gt[:,v,:] - vertices_pred[:,v,:]) for v in mouth_map])
-    L2_dis_mouth_max = np.transpose(L2_dis_mouth_max, (1,0,2))
+    L2_dis_mouth_max = np.array([np.square(vertices_gt[:, v, :] - vertices_pred[:, v, :]) for v in mouth_map])
+    L2_dis_mouth_max = np.transpose(L2_dis_mouth_max, (1, 0, 2))
     L2_dis_mouth_max = np.sum(L2_dis_mouth_max, axis=2)
     L2_dis_mouth_max = np.max(L2_dis_mouth_max, axis=1)
     lve = np.mean(L2_dis_mouth_max)
