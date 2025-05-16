@@ -186,6 +186,7 @@ from torchmetrics.wrappers import (
     MultioutputWrapper,
     Running,
 )
+from torchmetrics.multimodal import LipVertexError
 
 _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
@@ -665,6 +666,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             lambda: torch.randn(1, 100, 3),
             lambda: torch.randn(1, 100, 3),
             id="procrustes disparity",
+        ),
+        pytest.param(
+            partial(LipVertexError, mouth_map=[0, 1, 2, 3, 4]),
+            lambda: torch.randn(10, 100, 3), 
+            lambda: torch.randn(10, 100, 3),  
+            id="lip vertex error",
         ),
     ],
 )
