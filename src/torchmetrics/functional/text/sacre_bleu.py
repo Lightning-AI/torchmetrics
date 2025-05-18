@@ -485,11 +485,11 @@ def sacre_bleu_score(
                 ['The dog had bit the man.', 'No one was surprised.', 'The man had bitten the dog.'],  # Second set
             ]
             ```
-    
+
             TorchMetrics SacreBLEU:
             ```python
             # Three predictions, each with two references
-            
+
             target = [
                 ['The dog bit the man.', 'The dog had bit the man.'],  # References for first prediction
                 ['It was not unexpected.', 'No one was surprised.'],  # References for second prediction
