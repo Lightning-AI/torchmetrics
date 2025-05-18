@@ -136,7 +136,7 @@ class LipVertexError(Metric):
         """Compute the Lip Vertex Error over all accumulated states.
 
         Returns:
-            Tensor: A scalar tensor with the mean LVE value
+            torch.Tensor: A scalar tensor with the mean LVE value
 
         """
         vertices_pred = dim_zero_cat(self.vertices_pred_list)
