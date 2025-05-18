@@ -47,7 +47,7 @@ class SacreBLEUScore(BLEUScore):
 
     - ``sacre_bleu`` (:class:`~torch.Tensor`): A tensor with the SacreBLEU Score
 
-    .. Note::
+    .. note::
         - In the original SacreBLEU, references are passed as a list of reference sets (grouped by reference index)
         - In TorchMetrics, references are passed grouped per prediction (each prediction has its own list of references)
 
