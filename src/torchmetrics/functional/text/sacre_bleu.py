@@ -465,7 +465,7 @@ def sacre_bleu_score(
     lowercase: bool = False,
     weights: Optional[Sequence[float]] = None,
 ) -> Tensor:
-    """Calculate BLEU score of machine translated text with one or more references.
+    """Calculate `BLEU score`_ [1] of machine translated text with one or more references.
 
     This implementation follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
@@ -480,34 +480,35 @@ def sacre_bleu_score(
 
             # Original SacreBLEU:
             refs = [
-                ['The dog bit the man.', 'It was not unexpected.', 'The man bit him first.'],
-                ['The dog had bit the man.', 'No one was surprised.', 'The man had bitten the dog.'],
+                ['The dog bit the man.', 'It was not unexpected.', 'The man bit him first.'], # First set
+                ['The dog had bit the man.', 'No one was surprised.', 'The man had bitten the dog.'], # Second set
             ]
 
             # TorchMetrics SacreBLEU:
             target = [
-                ['The dog bit the man.', 'The dog had bit the man.'],
-                ['It was not unexpected.', 'No one was surprised.'],
-                ['The man bit him first.', 'The man had bitten the dog.'],
+                ['The dog bit the man.', 'The dog had bit the man.'], # References for first prediction
+                ['It was not unexpected.', 'No one was surprised.'], # References for second prediction
+                ['The man bit him first.', 'The man had bitten the dog.'], # References for third prediction
             ]
 
     Args:
-        preds: An iterable of machine translated corpus.
-        target: An iterable of iterables of reference corpus.
-        n_gram: Gram value ranged from 1 to 4.
-        smooth: Whether to apply smoothing – see [2].
+        preds: An iterable of machine translated corpus
+        target: An iterable of iterables of reference corpus
+        n_gram: Gram value ranged from 1 to 4
+        smooth: Whether to apply smoothing - see [2]
         tokenize: Tokenization technique to be used. Choose between ``'none'``, ``'13a'``, ``'zh'``, ``'intl'``,
-            ``'char'``, ``'ja-mecab'``, ``'ko-mecab'``, ``'flores101'``, and ``'flores200'``.
+            ``'char'``, ``'ja-mecab'``, ``'ko-mecab'``, ``'flores101'`` and ``'flores200'``.
         lowercase: If ``True``, BLEU score over lowercased text is calculated.
-        weights: Weights used for unigrams, bigrams, etc. to calculate BLEU score.
+        weights:
+            Weights used for unigrams, bigrams, etc. to calculate BLEU score.
             If not provided, uniform weights are used.
 
-    Returns:
-        Tensor with BLEU Score.
+    Return:
+        Tensor with BLEU Score
 
     Raises:
         ValueError: If ``preds`` and ``target`` corpus have different lengths.
-        ValueError: If a list of weights is not ``None`` and not equal to ``n_gram``.
+        ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
         >>> from torchmetrics.functional.text import sacre_bleu_score
@@ -518,12 +519,12 @@ def sacre_bleu_score(
 
     References:
         [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu. https://aclanthology.org/P02-1040
+        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
 
-        [2] A Call for Clarity in Reporting BLEU Scores by Matt Post. https://aclanthology.org/W18-6319
+        [2] A Call for Clarity in Reporting BLEU Scores by Matt Post.
 
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och.
+        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
 
     """
     if len(preds) != len(target):
