@@ -1,5 +1,3 @@
-.. autofunction:: torchmetrics.functional.multimodal.clip_score.clip_score
-
 .. customcarditem::
    :header: Lip Vertex Error
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/image_classification.svg
