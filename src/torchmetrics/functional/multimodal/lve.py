@@ -46,7 +46,7 @@ def lip_vertex_error(
             Set to ``False`` for faster computations.
 
     Returns:
-        Scalar tensor containing the mean LVE value across all frames
+        torch.Tensor: Scalar tensor containing the mean LVE value across all frames
 
     Raises:
         ValueError:
