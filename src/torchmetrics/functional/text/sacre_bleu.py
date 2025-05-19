@@ -469,6 +469,28 @@ def sacre_bleu_score(
 
     This implementation follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
+    .. note::
+        In the original SacreBLEU, references are passed as a list of reference sets (grouped by reference index).
+        In TorchMetrics, references are passed grouped per prediction (each prediction has its own list of references).
+
+        For example::
+
+            # Predictions
+            preds = ['The dog bit the man.', "It wasn't surprising.", 'The man had just bitten him.']
+
+            # Original SacreBLEU:
+            refs = [
+                ['The dog bit the man.', 'It was not unexpected.', 'The man bit him first.'], # First set
+                ['The dog had bit the man.', 'No one was surprised.', 'The man had bitten the dog.'], # Second set
+            ]
+
+            # TorchMetrics SacreBLEU:
+            target = [
+                ['The dog bit the man.', 'The dog had bit the man.'], # References for first prediction
+                ['It was not unexpected.', 'No one was surprised.'], # References for second prediction
+                ['The man bit him first.', 'The man had bitten the dog.'], # References for third prediction
+            ]
+
     Args:
         preds: An iterable of machine translated corpus
         target: An iterable of iterables of reference corpus
