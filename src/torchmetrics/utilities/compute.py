@@ -74,7 +74,10 @@ def _safe_divide(
         if zero_division == "warn" and torch.any(denom == 0):
             rank_zero_warn("Detected zero division in _safe_divide. Setting 0/0 to 0.0")
         zero_division = 0.0 if zero_division == "warn" else zero_division
-        zero_division_tensor = torch.tensor(zero_division, dtype=num.dtype).to(num.device, non_blocking=True)
+        # MPS does not support non blocking
+        zero_division_tensor = torch.tensor(zero_division, dtype=num.dtype).to(
+            num.device, non_blocking=num.device.type != "mps"
+        )
         return torch.where(denom != 0, num / denom, zero_division_tensor)
     return torch.true_divide(num, denom)
 
