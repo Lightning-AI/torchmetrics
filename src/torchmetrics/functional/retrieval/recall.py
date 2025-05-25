@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
@@ -48,7 +47,6 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
         tensor(0.5000)
 
     """
-    
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
     if top_k is None:
@@ -60,8 +58,7 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
-    top_k_values, top_k_indices = preds.topk(
-        min(top_k, preds.shape[-1]), sorted=True, dim=-1)
+    top_k_values, top_k_indices = preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)
 
     mask = top_k_values > 0
 

@@ -50,15 +50,13 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor, top_k: Optional[int
 
     top_k = top_k or preds.shape[-1]
     if not isinstance(top_k, int) and top_k <= 0:
-        raise ValueError(
-            f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
+        raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
 
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
     # Get top-k predictions and their indices
-    top_k_values, top_k_indices = preds.topk(
-        min(top_k, preds.shape[-1]), sorted=True, dim=-1)
+    top_k_values, top_k_indices = preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)
 
     # Only consider documents with positive prediction scores
     mask = top_k_values > 0
