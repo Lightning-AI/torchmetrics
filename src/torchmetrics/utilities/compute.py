@@ -238,3 +238,36 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Literal["sigmoid",
         torch.sigmoid(tensor) if normalization == "sigmoid" else torch.softmax(tensor, dim=1),
         tensor,
     )
+    
+def build_positive_top_k_mask(preds: Tensor, top_k: int) -> Tensor:
+    """
+    Create a boolean mask for top-k predictions that are also positive values.
+    
+    This function identifies the top-k highest values in the prediction tensor and
+    creates a mask that is True only for positions that are both:
+    1. Among the top-k highest values, AND
+    2. Have positive prediction values (> 0)
+    
+    Args:
+        preds (Tensor): Input prediction tensor of any shape. The top-k selection
+            is performed along the last dimension (-1).
+        top_k (int): Number of top elements to consider. Must be non-negative.
+    
+    Returns:
+        Tensor: Boolean tensor with the same shape as `preds`. True values indicate
+            positions that are both among the top-k highest values AND have 
+            positive prediction values.
+    
+    Example:
+        >>> preds = torch.tensor([-0.1, 0.0, 0.2, 0.8, -0.3, 0.5])
+        >>> mask = build_positive_top_k_mask(preds, top_k=3)
+        >>> print(mask)  # Top-3 are [0.8, 0.5, 0.2], all positive
+        tensor([False, False,  True,  True, False,  True])
+    """
+    _, top_k_indices = preds.topk(
+        min(top_k, preds.shape[-1]), sorted=True, dim=-1)
+    positive_predictions = preds > 0
+    mask = torch.zeros_like(positive_predictions, dtype=torch.bool)
+    mask.scatter_(-1, top_k_indices, True)
+    mask[~positive_predictions] = False
+    return mask

@@ -16,6 +16,7 @@ from typing import Optional
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
+from torchmetrics.utilities.compute import build_positive_top_k_mask
 
 
 def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
@@ -54,16 +55,12 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
 
     if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`top_k` has to be a positive integer or None")
-
+    mask = build_positive_top_k_mask(preds,top_k)    
     if not target.sum():
         return tensor(0.0, device=preds.device)
-
-    top_k_values, top_k_indices = preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)
-
-    mask = top_k_values > 0
-
+    
     if not mask.sum():
         return tensor(0.0, device=preds.device)
-
-    relevant_retrieved = target[top_k_indices][mask].sum().float()
+    
+    relevant_retrieved = target[mask].sum().float()
     return relevant_retrieved / target.sum()
