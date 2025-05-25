@@ -52,17 +52,17 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor, top_k: Optional[int
     top_k = top_k or preds.shape[-1]
     if not isinstance(top_k, int) and top_k <= 0:
         raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
-    
+
     mask = build_positive_top_k_mask(preds, top_k)
-    
+
     if not mask.sum():
         return tensor(0.0, device=preds.device)
-    
+
     # Filter target to only include positive top-k predictions
     target_filtered = target[mask]
-    
+
     if not target_filtered.sum():
         return tensor(0.0, device=preds.device)
-     
+
     position = torch.nonzero(target_filtered).view(-1)
     return 1.0 / (position[0] + 1.0)

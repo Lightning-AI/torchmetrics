@@ -55,12 +55,12 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
 
     if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`top_k` has to be a positive integer or None")
-    mask = build_positive_top_k_mask(preds,top_k)    
+    mask = build_positive_top_k_mask(preds, top_k)
     if not target.sum():
         return tensor(0.0, device=preds.device)
-    
+
     if not mask.sum():
         return tensor(0.0, device=preds.device)
-    
+
     relevant_retrieved = target[mask].sum().float()
     return relevant_retrieved / target.sum()
