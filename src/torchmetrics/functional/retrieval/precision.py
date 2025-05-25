@@ -64,5 +64,8 @@ def retrieval_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = No
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
-    relevant = target[preds.topk(min(top_k, preds.shape[-1]), dim=-1)[1]].sum().float()
+    top_k_values, top_k_indices = preds.topk(
+        min(top_k, preds.shape[-1]), dim=-1)
+    mask = top_k_values > 0
+    relevant = target[top_k_indices][mask].sum().float()
     return relevant / top_k
