@@ -48,8 +48,6 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
         tensor(0.5000)
 
     """
-    preds, target = _check_retrieval_functional_inputs(preds, target)
-
     if top_k is None:
         top_k = preds.shape[-1]
 
@@ -61,10 +59,11 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
 
     top_k_values, top_k_indices = preds.topk(
         min(top_k, preds.shape[-1]), sorted=True, dim=-1)
+
     mask = top_k_values > 0
 
     if not mask.sum():
         return tensor(0.0, device=preds.device)
 
     relevant_retrieved = target[top_k_indices][mask].sum().float()
-    return relevant / target.sum()
+    return relevant_retrieved / target.sum()
