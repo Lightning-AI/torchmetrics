@@ -102,16 +102,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
     if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`top_k` has to be a positive integer or None")
 
-    mask = preds > 0
-
-    if not mask.any():
-        return torch.tensor(0.0, device=preds.device)
-
-    masked_preds = preds.clone()
-    # Set irrelevant predictions to -inf for sorting
-    masked_preds[~mask] = float("-inf")
-
-    gain = _dcg_sample_scores(target, masked_preds, top_k, ignore_ties=False)
+    gain = _dcg_sample_scores(target, preds, top_k, ignore_ties=False)
     normalized_gain = _dcg_sample_scores(target, target, top_k, ignore_ties=True)
 
     # filter undefined scores
