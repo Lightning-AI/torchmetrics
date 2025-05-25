@@ -50,11 +50,9 @@ def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[i
 
     top_k = top_k or preds.shape[-1]
     if not isinstance(top_k, int) and top_k <= 0:
-        raise ValueError(
-            f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
-        
-    top_k_values, top_k_indices = preds.topk(
-        min(top_k, preds.shape[-1]), sorted=True, dim=-1)
+        raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
+
+    top_k_values, top_k_indices = preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)
 
     mask = top_k_values > 0
     if not mask.sum():
