@@ -31,8 +31,7 @@ def _tie_average_dcg(target: Tensor, preds: Tensor, discount_cumsum: Tensor) -> 
         The cumulative gain of the tied elements.
 
     """
-    _, inv, counts = torch.unique(-preds,
-                                  return_inverse=True, return_counts=True)
+    _, inv, counts = torch.unique(-preds, return_inverse=True, return_counts=True)
     ranked = torch.zeros_like(counts, dtype=torch.float32)
     ranked.scatter_add_(0, inv, target.to(dtype=ranked.dtype))
     ranked = ranked / counts
@@ -56,9 +55,7 @@ def _dcg_sample_scores(target: Tensor, preds: Tensor, top_k: int, ignore_ties: b
         The cumulative gain
 
     """
-    discount = 1.0 / \
-        (torch.log2(torch.arange(
-            target.shape[-1], device=target.device) + 2.0))
+    discount = 1.0 / (torch.log2(torch.arange(target.shape[-1], device=target.device) + 2.0))
     discount[top_k:] = 0.0
 
     if ignore_ties:
@@ -98,8 +95,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
         tensor(0.6957)
 
     """
-    preds, target = _check_retrieval_functional_inputs(
-        preds, target, allow_non_binary_target=True)
+    preds, target = _check_retrieval_functional_inputs(preds, target, allow_non_binary_target=True)
 
     top_k = preds.shape[-1] if top_k is None else top_k
 
@@ -113,11 +109,10 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
 
     masked_preds = preds.clone()
     # Set irrelevant predictions to -inf for sorting
-    masked_preds[~mask] = float('-inf')
+    masked_preds[~mask] = float("-inf")
 
     gain = _dcg_sample_scores(target, masked_preds, top_k, ignore_ties=False)
-    normalized_gain = _dcg_sample_scores(
-        target, target, top_k, ignore_ties=True)
+    normalized_gain = _dcg_sample_scores(target, target, top_k, ignore_ties=True)
 
     # filter undefined scores
     all_irrelevant = normalized_gain == 0
