@@ -59,5 +59,12 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
-    relevant = target[torch.argsort(preds, dim=-1, descending=True)][:top_k].sum().float()
+    top_k_values, top_k_indices = preds.topk(
+        min(top_k, preds.shape[-1]), sorted=True, dim=-1)
+    mask = top_k_values > 0
+
+    if not mask.sum():
+        return tensor(0.0, device=preds.device)
+
+    relevant_retrieved = target[top_k_indices][mask].sum().float()
     return relevant / target.sum()
