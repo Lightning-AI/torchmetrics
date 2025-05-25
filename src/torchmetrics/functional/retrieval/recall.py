@@ -48,6 +48,9 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
         tensor(0.5000)
 
     """
+    
+    preds, target = _check_retrieval_functional_inputs(preds, target)
+
     if top_k is None:
         top_k = preds.shape[-1]
 
