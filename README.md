@@ -285,7 +285,7 @@ covers the following domains:
 - Detection
 - Information Retrieval
 - Image
-- Multimodal (Image-Text)
+- Multimodal (Image-Text-3D Talking Heads)
 - Nominal
 - Regression
 - Segmentation
