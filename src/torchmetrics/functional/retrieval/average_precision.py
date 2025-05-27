@@ -17,6 +17,7 @@ import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
+from torchmetrics.utilities.compute import build_positive_top_k_mask
 
 
 def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
@@ -52,9 +53,17 @@ def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[i
     if not isinstance(top_k, int) and top_k <= 0:
         raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
 
-    target = target[preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)[1]]
-    if not target.sum():
+    mask = build_positive_top_k_mask(preds, top_k)
+
+    if not mask.sum():
         return tensor(0.0, device=preds.device)
 
-    positions = torch.arange(1, len(target) + 1, device=target.device, dtype=torch.float32)[target > 0]
+    target_filtered = target[mask]
+
+    if not target_filtered.sum():
+        return tensor(0.0, device=preds.device)
+
+    positions = torch.arange(1, len(target_filtered) + 1, device=target_filtered.device, dtype=torch.float32)[
+        target_filtered > 0
+    ]
     return torch.div((torch.arange(len(positions), device=positions.device, dtype=torch.float32) + 1), positions).mean()
