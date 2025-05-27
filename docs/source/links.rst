@@ -149,6 +149,7 @@
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
 .. _CLIP-IQA: https://arxiv.org/abs/2207.12396
 .. _CLIP: https://arxiv.org/abs/2103.00020
+.. _LVE: https://openaccess.thecvf.com/content/ICCV2021/papers/Richard_MeshTalk_3D_Face_Animation_From_Speech_Using_Cross-Modality_Disentanglement_ICCV_2021_paper.pdf
 .. _PPL : https://arxiv.org/abs/1812.04948
 .. _CIOU: https://arxiv.org/abs/2005.03572
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
