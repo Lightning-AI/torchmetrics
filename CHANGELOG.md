@@ -7,41 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [Unreleased] - YYYY-MM-DD
-
-### Added
-
--
-
+## [1.7.2] - 2025-05-27
 
 ### Changed
 
 - Enhance: improve performance of `_rank_data` ([#3103](https://github.com/Lightning-AI/torchmetrics/pull/3103))
 
-
-### Deprecated
-
--
-
-
-### Removed
-
--
-
-
 ### Fixed
 
 - Fixed `UnboundLocalError` in `MatthewsCorrCoef` ([#3059](https://github.com/Lightning-AI/torchmetrics/pull/3059))
-
-
 - Fixed  MIFID incorrectly converts inputs to `byte` dtype with custom encoders ([#3064](https://github.com/Lightning-AI/torchmetrics/pull/3064))
-
-
 - Fixed `ignore_index` in `MultilabelExactMatch` ([#3085](https://github.com/Lightning-AI/torchmetrics/pull/3085))
-
-
 - Fixed: disable non-blocking on MPS ([#3101](https://github.com/Lightning-AI/torchmetrics/pull/3101))
-
 
 ---
 
