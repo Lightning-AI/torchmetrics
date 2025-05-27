@@ -51,6 +51,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `ignore_index` in `MultilabelExactMatch` ([#3085](https://github.com/Lightning-AI/torchmetrics/pull/3085))
 
 
+- Fixed: disable non-blocking on MPS ([#3101](https://github.com/Lightning-AI/torchmetrics/pull/3101))
+
+
 ---
 
 ## [1.7.1] - 2025-04-06
