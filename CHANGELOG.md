@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Enhance: improve performance of `_rank_data` ([#3103](https://github.com/Lightning-AI/torchmetrics/pull/3103))
 
 
 ### Deprecated
