@@ -425,9 +425,9 @@ _mc_k_preds5 = torch.rand(2, 10, 50, generator=torch.Generator().manual_seed(42)
 
 _mc_k_targets6 = torch.tensor([[3, 2], [1, 0]])
 _mc_k_preds6 = torch.tensor([
-                [[0.0000, 0.1000, 0.5000, 0.4000], [0.0000, 0.2000, 0.7000, 0.1000]],
-                [[0.0000, 0.4000, 0.3000, 0.3000], [1.0000, 0.0000, 0.0000, 0.0000]],
-            ]).transpose(2, 1)
+    [[0.0000, 0.1000, 0.5000, 0.4000], [0.0000, 0.2000, 0.7000, 0.1000]],
+    [[0.0000, 0.4000, 0.3000, 0.3000], [1.0000, 0.0000, 0.0000, 0.0000]],
+]).transpose(2, 1)
 
 
 @pytest.mark.parametrize(
@@ -457,7 +457,7 @@ def test_top_k(k, preds, target, average, num_classes, expected):
             num_classes=num_classes,
             multidim_average="global",
             average=average,
-            top_k=k
+            top_k=k,
         )
         class_metric.update(preds, target)
         assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
