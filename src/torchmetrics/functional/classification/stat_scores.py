@@ -367,7 +367,7 @@ def _refine_preds_oh(preds: Tensor, preds_oh: Tensor, target: Tensor, top_k: int
     top_1_indices = top_k_indices[:, 0]
     target_in_topk = torch.any(top_k_indices == target.unsqueeze(1), dim=1)
     result = torch.where(target_in_topk, target, top_1_indices)
-    return torch.zeros_like(preds_oh, dtype=torch.int32).scatter_(-1, result.unsqueeze(1), 1)
+    return torch.zeros_like(preds_oh, dtype=torch.int32).scatter_(-1, result.unsqueeze(-1), 1)
 
 
 def _multiclass_stat_scores_update(
