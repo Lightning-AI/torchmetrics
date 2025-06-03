@@ -128,6 +128,7 @@ from torchmetrics.classification.stat_scores import (
     MultilabelStatScores,
     StatScores,
 )
+from torchmetrics.classification.classification_report import ClassificationReport
 
 __all__ = [
     "AUROC",
@@ -235,4 +236,5 @@ __all__ = [
     "Specificity",
     "SpecificityAtSensitivity",
     "StatScores",
+    "ClassificationReport"
 ]
