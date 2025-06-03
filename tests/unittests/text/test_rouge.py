@@ -96,7 +96,7 @@ def _reference_rouge_score(
 
 @pytest.mark.skipif(not _NLTK_AVAILABLE, reason="metric requires nltk")
 @pytest.mark.parametrize(
-    ["pl_rouge_metric_key", "use_stemmer"],
+    ("pl_rouge_metric_key", "use_stemmer"),
     [
         ("rouge1_precision", True),
         ("rouge1_recall", True),
@@ -113,7 +113,7 @@ def _reference_rouge_score(
     ],
 )
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [
         (_inputs_multiple_references.preds, _inputs_multiple_references.target),
     ],

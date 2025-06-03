@@ -22,7 +22,7 @@ from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_single_target_extrinsic1.preds, _single_target_extrinsic1.target),
         (_single_target_extrinsic2.preds, _single_target_extrinsic2.target),

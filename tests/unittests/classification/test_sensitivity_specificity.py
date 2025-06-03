@@ -84,7 +84,7 @@ def _reference_sklearn_sensitivity_at_specificity_binary(preds, target, min_spec
 
 
 @pytest.mark.skipif(not _SKLEARN_GREATER_EQUAL_1_3, reason="metric does not support scikit-learn versions below 1.3")
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinarySensitivityAtSpecificity(MetricTester):
     """Test class for `BinarySensitivityAtSpecificity` metric."""
 
@@ -211,7 +211,7 @@ def _reference_sklearn_sensitivity_at_specificity_multiclass(preds, target, min_
 
 @pytest.mark.skipif(not _SKLEARN_GREATER_EQUAL_1_3, reason="metric does not support scikit-learn versions below 1.3")
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassSensitivityAtSpecificity(MetricTester):
     """Test class for `MulticlassSensitivityAtSpecificity` metric."""
@@ -342,7 +342,7 @@ def _reference_sklearn_sensitivity_at_specificity_multilabel(preds, target, min_
 
 @pytest.mark.skipif(not _SKLEARN_GREATER_EQUAL_1_3, reason="metric does not support scikit-learn versions below 1.3")
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelSensitivityAtSpecificity(MetricTester):
     """Test class for `MultilabelSensitivityAtSpecificity` metric."""

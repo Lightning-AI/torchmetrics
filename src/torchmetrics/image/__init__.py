@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
 from torchmetrics.image.d_s import SpatialDistortionIndex
+from torchmetrics.image.dists import DeepImageStructureAndTextureSimilarity
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
 from torchmetrics.image.psnr import PeakSignalNoiseRatio
@@ -32,6 +33,7 @@ from torchmetrics.utilities.imports import (
 )
 
 __all__ = [
+    "DeepImageStructureAndTextureSimilarity",
     "ErrorRelativeGlobalDimensionlessSynthesis",
     "MemorizationInformedFrechetInceptionDistance",
     "MultiScaleStructuralSimilarityIndexMeasure",

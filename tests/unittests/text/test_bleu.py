@@ -36,7 +36,7 @@ def _reference_bleu_metric_nltk(preds, targets, weights, smoothing_function, **k
 
 
 @pytest.mark.parametrize(
-    ["weights", "n_gram", "smooth_func", "smooth"],
+    ("weights", "n_gram", "smooth_func", "smooth"),
     [
         ([1], 1, None, False),
         ([0.5, 0.5], 2, smooth_func, True),
@@ -45,7 +45,7 @@ def _reference_bleu_metric_nltk(preds, targets, weights, smoothing_function, **k
     ],
 )
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 class TestBLEUScore(TextTester):

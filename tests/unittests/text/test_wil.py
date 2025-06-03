@@ -31,7 +31,7 @@ def _reference_jiwer_wil(preds: Union[str, list[str]], target: Union[str, list[s
 
 
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [
         (_inputs_error_rate_batch_size_1.preds, _inputs_error_rate_batch_size_1.target),
         (_inputs_error_rate_batch_size_2.preds, _inputs_error_rate_batch_size_2.target),

@@ -107,7 +107,7 @@ def _load_requirements(
     """
     path = Path(path_dir) / file_name
     if not path.exists():
-        raise ValueError("Path {path} not found for input dir {path_dir} and filename {file_name}.")
+        raise ValueError(f"Path {path} not found for input dir {path_dir} and filename {file_name}.")
     text = path.read_text()
     return [req.adjust(unfreeze) for req in _parse_requirements(text)]
 

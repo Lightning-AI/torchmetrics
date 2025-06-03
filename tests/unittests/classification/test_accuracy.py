@@ -414,22 +414,41 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
 _mc_k_targets2 = torch.tensor([0, 0, 2])
 _mc_k_preds2 = torch.tensor([[0.9, 0.1, 0.0], [0.9, 0.1, 0.0], [0.9, 0.1, 0.0]])
 
+_mc_k_targets3 = torch.arange(0, 512) % 10
+_mc_k_preds3 = torch.rand(512, 10, generator=torch.Generator().manual_seed(42))
+
+_mc_k_targets4 = _mc_k_targets3[:1]
+_mc_k_preds4 = _mc_k_preds3[:1, :]
+
+_mc_k_targets5 = torch.randint(10, (2, 50))
+_mc_k_preds5 = torch.rand(2, 10, 50)
+
 
 @pytest.mark.parametrize(
-    ("k", "preds", "target", "average", "expected"),
+    ("k", "preds", "target", "average", "num_classes", "expected"),
     [
-        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3)),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(3 / 3)),
-        (1, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 2)),
-        (2, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 2)),
+        (1, _mc_k_preds, _mc_k_target, "micro", 3, torch.tensor(2 / 3)),
+        (2, _mc_k_preds, _mc_k_target, "micro", 3, torch.tensor(3 / 3)),
+        (1, _mc_k_preds2, _mc_k_targets2, "macro", 3, torch.tensor(1 / 2)),
+        (2, _mc_k_preds2, _mc_k_targets2, "macro", 3, torch.tensor(1 / 2)),
+        (5, _mc_k_preds3, _mc_k_targets3, "macro", 10, torch.tensor(0.5175)),
+        (5, _mc_k_preds3, _mc_k_targets3, "micro", 10, torch.tensor(0.5176)),
+        (5, _mc_k_preds4, _mc_k_targets4, "macro", 10, torch.tensor(1.0)),
+        (5, _mc_k_preds4, _mc_k_targets4, "micro", 10, torch.tensor(1.0)),
+        (5, _mc_k_preds5, _mc_k_targets5, "micro", 10, torch.tensor(0.02)),
     ],
 )
-def test_top_k(k, preds, target, average, expected):
+def test_top_k(k, preds, target, average, num_classes, expected):
     """A simple test to check that top_k works as expected."""
-    class_metric = MulticlassAccuracy(top_k=k, average=average, num_classes=3)
+    class_metric = MulticlassAccuracy(top_k=k, average=average, num_classes=num_classes)
     class_metric.update(preds, target)
-    assert torch.isclose(class_metric.compute(), expected)
-    assert torch.isclose(multiclass_accuracy(preds, target, top_k=k, average=average, num_classes=3), expected)
+    assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
+    assert torch.isclose(
+        multiclass_accuracy(preds, target, top_k=k, average=average, num_classes=num_classes),
+        expected,
+        rtol=1e-4,
+        atol=1e-4,
+    )
 
 
 def _reference_sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, average):

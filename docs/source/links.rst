@@ -81,7 +81,7 @@
 .. _chrF++ score: https://aclanthology.org/W17-4770
 .. _TER: https://aclanthology.org/2006.amta-papers.25
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359
-.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim
+.. _MultiScaleSSIM: https://ieeexplore.ieee.org/document/1292216
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/abstract/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
 .. _SpatialDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
@@ -149,6 +149,7 @@
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
 .. _CLIP-IQA: https://arxiv.org/abs/2207.12396
 .. _CLIP: https://arxiv.org/abs/2103.00020
+.. _LVE: https://openaccess.thecvf.com/content/ICCV2021/papers/Richard_MeshTalk_3D_Face_Animation_From_Speech_Using_Cross-Modality_Disentanglement_ICCV_2021_paper.pdf
 .. _PPL : https://arxiv.org/abs/1812.04948
 .. _CIOU: https://arxiv.org/abs/2005.03572
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
@@ -180,5 +181,6 @@
 .. _Log AUC: https://pubmed.ncbi.nlm.nih.gov/20735049/
 .. _Negative Predictive Value: https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
 .. _ARNIQA: https://arxiv.org/abs/2310.14918
+.. _Deep Image Structure and Texture Similarity: https://arxiv.org/abs/2004.07728
 .. _KonIQ-10k: https://database.mmsp-kn.de/koniq-10k-database.html
 .. _KADID-10k: https://database.mmsp-kn.de/kadid-10k-database.html

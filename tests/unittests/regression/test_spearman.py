@@ -77,7 +77,7 @@ def _reference_scipy_spearman(preds, target):
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),

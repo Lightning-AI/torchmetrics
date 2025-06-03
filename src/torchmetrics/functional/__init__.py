@@ -25,10 +25,11 @@ from torchmetrics.functional.classification import (
     accuracy,
     auroc,
     average_precision,
+    binary_eer,
     calibration_error,
     cohen_kappa,
     confusion_matrix,
-    dice,
+    eer,
     exact_match,
     f1_score,
     fbeta_score,
@@ -37,6 +38,8 @@ from torchmetrics.functional.classification import (
     jaccard_index,
     logauc,
     matthews_corrcoef,
+    multiclass_eer,
+    multilabel_eer,
     negative_predictive_value,
     precision,
     precision_at_fixed_recall,
@@ -71,6 +74,7 @@ from torchmetrics.functional.image._deprecated import (
 )
 from torchmetrics.functional.image._deprecated import _total_variation as total_variation
 from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
+from torchmetrics.functional.multimodal import lip_vertex_error
 from torchmetrics.functional.nominal import (
     cramers_v,
     cramers_v_matrix,
@@ -145,6 +149,7 @@ __all__ = [
     "accuracy",
     "auroc",
     "average_precision",
+    "binary_eer",
     "bleu_score",
     "calibration_error",
     "char_error_rate",
@@ -156,7 +161,7 @@ __all__ = [
     "cramers_v",
     "cramers_v_matrix",
     "critical_success_index",
-    "dice",
+    "eer",
     "error_relative_global_dimensionless_synthesis",
     "exact_match",
     "explained_variance",
@@ -170,6 +175,7 @@ __all__ = [
     "jaccard_index",
     "kendall_rank_corrcoef",
     "kl_divergence",
+    "lip_vertex_error",
     "log_cosh_error",
     "logauc",
     "match_error_rate",
@@ -179,6 +185,8 @@ __all__ = [
     "mean_squared_error",
     "mean_squared_log_error",
     "minkowski_distance",
+    "multiclass_eer",
+    "multilabel_eer",
     "multiscale_structural_similarity_index_measure",
     "negative_predictive_value",
     "normalized_root_mean_squared_error",

@@ -79,7 +79,7 @@ def _reference_infolm_score(preds, target, model_name, information_measure, idf,
 
 
 @pytest.mark.parametrize(
-    ["information_measure", "idf", "alpha", "beta"],
+    ("information_measure", "idf", "alpha", "beta"),
     [
         ("kl_divergence", False, 0.25, 0.25),
         ("alpha_divergence", True, 0.4, 0.3),
@@ -93,7 +93,7 @@ def _reference_infolm_score(preds, target, model_name, information_measure, idf,
     ],
 )
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>=4.4")

@@ -49,7 +49,9 @@ def _tv_wrapper(preds, target, base_fn, aggregate=True, iou_threshold=None):
 
 def _tv_wrapper_class(preds, target, base_fn, respect_labels, iou_threshold, class_metrics):
     iou = []
-    classes = []
+    target_labels = []
+    pred_labels = []
+
     for p, t in zip(preds, target):
         out = base_fn(p["boxes"], t["boxes"])
         if iou_threshold is not None:
@@ -58,21 +60,41 @@ def _tv_wrapper_class(preds, target, base_fn, respect_labels, iou_threshold, cla
             labels_eq = p["labels"].unsqueeze(1) == t["labels"].unsqueeze(0)
             out[~labels_eq] = -1
         iou.append(out)
-        classes.append(t["labels"])
-    score = torch.cat([i[i != -1] for i in iou]).mean()
+        target_labels.append(t["labels"])
+        pred_labels.append(p["labels"])
+
+    valid_scores = [mat[mat != -1] for mat in iou if mat[mat != -1].numel() > 0]
+    if valid_scores:
+        all_valid = torch.cat(valid_scores)
+        score = all_valid.mean()
+    else:
+        score = torch.tensor(0.0)
+
     base_name = {tv_ciou: "ciou", tv_diou: "diou", tv_giou: "giou", tv_iou: "iou"}[base_fn]
 
     result = {f"{base_name}": score.cpu()}
     if torch.isnan(score):
-        result.update({f"{base_name}": torch.tensor(0.0)})
+        result[f"{base_name}"] = torch.tensor(0.0)
+
     if class_metrics:
-        for cl in torch.cat(classes).unique().tolist():
-            class_score, numel = 0, 0
-            for s, c in zip(iou, classes):
-                masked_s = s[:, c == cl]
-                class_score += masked_s[masked_s != -1].sum()
-                numel += masked_s[masked_s != -1].numel()
-            result.update({f"{base_name}/cl_{cl}": class_score.cpu() / numel})
+        union_cls = set()
+        for labs in target_labels:
+            union_cls.update(labs.tolist())
+        for labs in pred_labels:
+            union_cls.update(labs.tolist())
+
+        for cl in sorted(union_cls):
+            class_score = 0.0
+            numel = 0
+            for mat, t in zip(iou, target_labels):
+                mask = t == cl
+                if mask.sum() > 0:
+                    valid = mat[:, mask]
+                    valid = valid[valid != -1]
+                    class_score += valid.sum().item()
+                    numel += valid.numel()
+            cl_value = torch.tensor(0.0) if numel == 0 else torch.tensor(class_score) / numel
+            result[f"{base_name}/cl_{cl}"] = cl_value.cpu()
     return result
 
 
@@ -177,7 +199,7 @@ def _add_noise(x, scale=10):
 
 
 @pytest.mark.parametrize(
-    "class_metric, functional_metric, reference_metric",
+    ("class_metric", "functional_metric", "reference_metric"),
     [
         (IntersectionOverUnion, intersection_over_union, tv_iou),
         (CompleteIntersectionOverUnion, complete_intersection_over_union, tv_ciou),
@@ -413,3 +435,27 @@ def test_corner_case():
     iou = metric(preds, target)
     for val in iou.values():
         assert val == torch.tensor(1.0)
+
+    # See issue: https://github.com/Lightning-AI/torchmetrics/issues/2905
+    preds = [
+        {
+            "boxes": torch.tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
+            "labels": torch.tensor([4, 6]),
+        }
+    ]
+    target = [
+        {
+            "boxes": torch.tensor([[300.00, 100.00, 315.00, 150.00], [300.00, 100.00, 315.00, 150.00]]),
+            "labels": torch.tensor([4, 5]),
+        }
+    ]
+    expected_out = {
+        "iou": 0.6897670030593872,
+        "iou/cl_4": 0.6897670030593872,
+        "iou/cl_5": 0.0,
+        "iou/cl_6": 0.0,
+    }
+    metric = IntersectionOverUnion(class_metrics=True)
+    iou = metric(preds, target)
+    for key, val in expected_out.items():
+        assert iou[key].item() == val

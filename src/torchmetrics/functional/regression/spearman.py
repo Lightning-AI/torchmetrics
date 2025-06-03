@@ -19,19 +19,6 @@ from torchmetrics.functional.regression.utils import _check_data_shape_to_num_ou
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _find_repeats(data: Tensor) -> Tensor:
-    """Find and return values which have repeats i.e. the same value are more than once in the tensor."""
-    temp = data.detach().clone()
-    temp = temp.sort()[0]
-
-    change = torch.cat([torch.tensor([True], device=temp.device), temp[1:] != temp[:-1]])
-    unique = temp[change]
-    change_idx = torch.cat([torch.nonzero(change), torch.tensor([[temp.numel()]], device=temp.device)]).flatten()
-    freq = change_idx[1:] - change_idx[:-1]
-    atleast2 = freq > 1
-    return unique[atleast2]
-
-
 def _rank_data(data: Tensor) -> Tensor:
     """Calculate the rank for each element of a tensor.
 
@@ -42,15 +29,14 @@ def _rank_data(data: Tensor) -> Tensor:
 
     """
     n = data.numel()
-    rank = torch.empty_like(data)
+    rank = torch.empty_like(data, dtype=torch.int32)
     idx = data.argsort()
-    rank[idx[:n]] = torch.arange(1, n + 1, dtype=data.dtype, device=data.device)
-
-    repeats = _find_repeats(data)
-    for r in repeats:
-        condition = data == r
-        rank[condition] = rank[condition].mean()
-    return rank
+    rank[idx[:n]] = torch.arange(1, n + 1, dtype=torch.int32, device=data.device)
+    uniq, inv, counts = torch.unique(data, sorted=True, return_inverse=True, return_counts=True)
+    sum_ranks = torch.zeros_like(uniq, dtype=torch.int32)
+    sum_ranks.scatter_add_(0, inv, rank.to(torch.int32))
+    mean_ranks = sum_ranks / counts
+    return mean_ranks[inv]
 
 
 def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -> tuple[Tensor, Tensor]:

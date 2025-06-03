@@ -84,7 +84,7 @@ def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bo
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, zero_mean",
+    ("preds", "target", "ref_metric", "zero_mean"),
     [
         (inputs.preds, inputs.target, partial(_reference_speechmetrics_si_sdr, zero_mean=True), True),
         (inputs.preds, inputs.target, partial(_reference_speechmetrics_si_sdr, zero_mean=False), False),

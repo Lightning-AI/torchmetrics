@@ -45,7 +45,7 @@ def _reference_rwth_manual(preds, targets) -> Tensor:
 
 
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 class TestExtendedEditDistance(TextTester):
