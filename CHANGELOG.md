@@ -23,9 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support single `str` input for functional interface of `bert_score` ([#3056](https://github.com/Lightning-AI/torchmetrics/pull/3056))
 
 
+- Enhance: `BERTScore` to evaluate hypotheses against multiple references ([#3069](https://github.com/Lightning-AI/torchmetrics/pull/3069))
+
+- Added `Lip Vertex Error (LVE)` in multimodal domain ([3090](https://github.com/Lightning-AI/torchmetrics/pull/3090))
+
+
 ### Changed
 
--
+- Enhance: improve performance of `_rank_data` ([#3103](https://github.com/Lightning-AI/torchmetrics/pull/3103))
 
 
 ### Deprecated
@@ -40,11 +45,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-
 - Fixed `UnboundLocalError` in `MatthewsCorrCoef` ([#3059](https://github.com/Lightning-AI/torchmetrics/pull/3059))
 
 
 - Fixed  MIFID incorrectly converts inputs to `byte` dtype with custom encoders ([#3064](https://github.com/Lightning-AI/torchmetrics/pull/3064))
+
+
+- Fixed `ignore_index` in `MultilabelExactMatch` ([#3085](https://github.com/Lightning-AI/torchmetrics/pull/3085))
+
+
+- Fixed: disable non-blocking on MPS ([#3101](https://github.com/Lightning-AI/torchmetrics/pull/3101))
 
 
 ---

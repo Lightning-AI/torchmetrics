@@ -47,6 +47,28 @@ class SacreBLEUScore(BLEUScore):
 
     - ``sacre_bleu`` (:class:`~torch.Tensor`): A tensor with the SacreBLEU Score
 
+    .. note::
+        In the original SacreBLEU, references are passed as a list of reference sets (grouped by reference index).
+        In TorchMetrics, references are passed grouped per prediction (each prediction has its own list of references).
+
+        For example::
+
+            # Predictions
+            preds = ['The dog bit the man.', "It wasn't surprising.", 'The man had just bitten him.']
+
+            # Original SacreBLEU:
+            refs = [
+                ['The dog bit the man.', 'It was not unexpected.', 'The man bit him first.'], # First set
+                ['The dog had bit the man.', 'No one was surprised.', 'The man had bitten the dog.'], # Second set
+            ]
+
+            # TorchMetrics SacreBLEU:
+            target = [
+                ['The dog bit the man.', 'The dog had bit the man.'], # References for first prediction
+                ['It was not unexpected.', 'No one was surprised.'], # References for second prediction
+                ['The man bit him first.', 'The man had bitten the dog.'], # References for third prediction
+            ]
+
     Args:
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing, see `SacreBLEU`_
