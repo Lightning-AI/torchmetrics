@@ -470,8 +470,8 @@ def test_top_k_with_ignore_index(k, expected):
     """Issue: https://github.com/Lightning-AI/torchmetrics/issues/3068."""
     num_classes = 4
     average = "micro"
-    ignore_index=0
-    
+    ignore_index = 0
+
     class_metric = Accuracy(
         task="multiclass",
         ignore_index=ignore_index,
@@ -483,7 +483,9 @@ def test_top_k_with_ignore_index(k, expected):
     class_metric.update(preds, target)
     assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
     assert torch.isclose(
-        multiclass_accuracy(preds, target, num_classes=num_classes, average=average, top_k=k, ignore_index=ignore_index),
+        multiclass_accuracy(
+            preds, target, num_classes=num_classes, average=average, top_k=k, ignore_index=ignore_index
+        ),
         expected,
         rtol=1e-4,
         atol=1e-4,
