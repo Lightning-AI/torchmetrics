@@ -466,7 +466,7 @@ def test_top_k(k, preds, target, average, num_classes, expected):
         (_mc_k_preds6, _mc_k_targets6, 4, torch.tensor(1.0)),
     ],
 )
-def test_top_k_with_ignore_index(k, expected):
+def test_top_k_with_ignore_index(preds, target, k, expected):
     """Issue: https://github.com/Lightning-AI/torchmetrics/issues/3068."""
     num_classes = 4
     average = "micro"
