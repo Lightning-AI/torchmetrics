@@ -442,41 +442,52 @@ _mc_k_preds6 = torch.tensor([
         (5, _mc_k_preds4, _mc_k_targets4, "macro", 10, torch.tensor(1.0)),
         (5, _mc_k_preds4, _mc_k_targets4, "micro", 10, torch.tensor(1.0)),
         (5, _mc_k_preds5, _mc_k_targets5, "micro", 10, torch.tensor(0.42)),
-        (1, _mc_k_preds6, _mc_k_targets6, "micro", 4, torch.tensor(0.6667)),
-        (2, _mc_k_preds6, _mc_k_targets6, "micro", 4, torch.tensor(1.0)),
-        (3, _mc_k_preds6, _mc_k_targets6, "micro", 4, torch.tensor(1.0)),
-        (4, _mc_k_preds6, _mc_k_targets6, "micro", 4, torch.tensor(1.0)),
     ],
 )
 def test_top_k(k, preds, target, average, num_classes, expected):
     """A simple test to check that top_k works as expected."""
-    if torch.equal(preds, _mc_k_preds6) and torch.equal(target, _mc_k_targets6):
-        class_metric = Accuracy(
-            task="multiclass",
-            ignore_index=0,
-            num_classes=num_classes,
-            multidim_average="global",
-            average=average,
-            top_k=k,
-        )
-        class_metric.update(preds, target)
-        assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
-        assert torch.isclose(
-            multiclass_accuracy(preds, target, num_classes=num_classes, average=average, top_k=k, ignore_index=0),
-            expected,
-            rtol=1e-4,
-            atol=1e-4,
-        )
-    else:
-        class_metric = MulticlassAccuracy(top_k=k, average=average, num_classes=num_classes)
-        class_metric.update(preds, target)
-        assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
-        assert torch.isclose(
-            multiclass_accuracy(preds, target, top_k=k, average=average, num_classes=num_classes),
-            expected,
-            rtol=1e-4,
-            atol=1e-4,
-        )
+    class_metric = MulticlassAccuracy(top_k=k, average=average, num_classes=num_classes)
+    class_metric.update(preds, target)
+    assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
+    assert torch.isclose(
+        multiclass_accuracy(preds, target, top_k=k, average=average, num_classes=num_classes),
+        expected,
+        rtol=1e-4,
+        atol=1e-4,
+    )
+
+
+@pytest.mark.parametrize(
+    ("preds", "target", "k", "expected"),
+    [
+        (_mc_k_preds6, _mc_k_targets6, 1, torch.tensor(0.6667)),
+        (_mc_k_preds6, _mc_k_targets6, 2, torch.tensor(1.0)),
+        (_mc_k_preds6, _mc_k_targets6, 3, torch.tensor(1.0)),
+        (_mc_k_preds6, _mc_k_targets6, 4, torch.tensor(1.0)),
+    ],
+)
+def test_top_k_with_ignore_index(k, expected):
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/3068."""
+    num_classes = 4
+    average = "micro"
+    ignore_index=0
+    
+    class_metric = Accuracy(
+        task="multiclass",
+        ignore_index=ignore_index,
+        num_classes=num_classes,
+        multidim_average="global",
+        average=average,
+        top_k=k,
+    )
+    class_metric.update(preds, target)
+    assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
+    assert torch.isclose(
+        multiclass_accuracy(preds, target, num_classes=num_classes, average=average, top_k=k, ignore_index=ignore_index),
+        expected,
+        rtol=1e-4,
+        atol=1e-4,
+    )
 
 
 @pytest.mark.parametrize("num_classes", [5])
