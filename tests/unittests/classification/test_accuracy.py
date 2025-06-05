@@ -420,8 +420,14 @@ _mc_k_preds3 = torch.rand(512, 10, generator=torch.Generator().manual_seed(42))
 _mc_k_targets4 = _mc_k_targets3[:1]
 _mc_k_preds4 = _mc_k_preds3[:1, :]
 
-_mc_k_targets5 = torch.randint(10, (2, 50))
-_mc_k_preds5 = torch.rand(2, 10, 50)
+_mc_k_targets5 = torch.randint(10, (2, 50), generator=torch.Generator().manual_seed(42))
+_mc_k_preds5 = torch.rand(2, 10, 50, generator=torch.Generator().manual_seed(42))
+
+_mc_k_targets6 = torch.tensor([[3, 2], [1, 0]])
+_mc_k_preds6 = torch.tensor([
+    [[0.0000, 0.1000, 0.5000, 0.4000], [0.0000, 0.2000, 0.7000, 0.1000]],
+    [[0.0000, 0.4000, 0.3000, 0.3000], [1.0000, 0.0000, 0.0000, 0.0000]],
+]).transpose(2, 1)
 
 
 @pytest.mark.parametrize(
@@ -435,7 +441,7 @@ _mc_k_preds5 = torch.rand(2, 10, 50)
         (5, _mc_k_preds3, _mc_k_targets3, "micro", 10, torch.tensor(0.5176)),
         (5, _mc_k_preds4, _mc_k_targets4, "macro", 10, torch.tensor(1.0)),
         (5, _mc_k_preds4, _mc_k_targets4, "micro", 10, torch.tensor(1.0)),
-        (5, _mc_k_preds5, _mc_k_targets5, "micro", 10, torch.tensor(0.02)),
+        (5, _mc_k_preds5, _mc_k_targets5, "micro", 10, torch.tensor(0.42)),
     ],
 )
 def test_top_k(k, preds, target, average, num_classes, expected):
@@ -448,6 +454,103 @@ def test_top_k(k, preds, target, average, num_classes, expected):
         expected,
         rtol=1e-4,
         atol=1e-4,
+    )
+
+
+@pytest.mark.parametrize(
+    ("preds", "target", "k", "expected"),
+    [
+        (_mc_k_preds6, _mc_k_targets6, 1, torch.tensor(0.6667)),
+        (_mc_k_preds6, _mc_k_targets6, 2, torch.tensor(1.0)),
+        (_mc_k_preds6, _mc_k_targets6, 3, torch.tensor(1.0)),
+        (_mc_k_preds6, _mc_k_targets6, 4, torch.tensor(1.0)),
+    ],
+)
+def test_top_k_with_ignore_index(preds, target, k, expected):
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/3068."""
+    num_classes = 4
+    average = "micro"
+    ignore_index = 0
+
+    class_metric = Accuracy(
+        task="multiclass",
+        ignore_index=ignore_index,
+        num_classes=num_classes,
+        multidim_average="global",
+        average=average,
+        top_k=k,
+    )
+    class_metric.update(preds, target)
+    assert torch.isclose(class_metric.compute(), expected, rtol=1e-4, atol=1e-4)
+    assert torch.isclose(
+        multiclass_accuracy(
+            preds, target, num_classes=num_classes, average=average, top_k=k, ignore_index=ignore_index
+        ),
+        expected,
+        rtol=1e-4,
+        atol=1e-4,
+    )
+
+
+@pytest.mark.parametrize("num_classes", [5])
+@pytest.mark.parametrize("average", ["macro", "micro", "weighted"])
+def test_multiclass_accuracy_with_top_k(num_classes, average):
+    """Test that Accuracy increases monotonically with top_k and equals 1 when top_k equals num_classes.
+
+    Args:
+        num_classes: Number of classes in the classification task.
+        average: The averaging method to use (macro, micro, weighted).
+
+    The test verifies two properties:
+    1. Accuracy increases or stays the same as top_k increases
+    2. Accuracy equals 1 when top_k equals num_classes
+
+    """
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    previous_accuracy = 0.0
+    for k in range(1, num_classes + 1):
+        accuracy_score = MulticlassAccuracy(num_classes=num_classes, top_k=k, average=average)
+        accuracy = accuracy_score(preds, target)
+
+        assert accuracy >= previous_accuracy, f"Accuracy did not increase for top_k={k}"
+        previous_accuracy = accuracy
+
+        if k == num_classes:
+            assert torch.isclose(accuracy, torch.tensor(1.0)), (
+                f"Accuracy is not 1 for top_k={k} when num_classes={num_classes}"
+            )
+
+
+@pytest.mark.parametrize(("num_classes", "k"), [(5, 3), (10, 5)])
+@pytest.mark.parametrize("average", ["macro", "micro", "weighted"])
+def test_multiclass_accuracy_top_k_equivalence(num_classes, k, average):
+    """Test that top-k Accuracy scores are equivalent to corrected top-1 scores.
+
+    Args:
+        num_classes: Number of classes in the classification task.
+        k: The top-k value to test.
+        average: The averaging method to use (macro, micro, weighted).
+
+    """
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    accuracy_top_k = MulticlassAccuracy(num_classes=num_classes, top_k=k, average=average)
+    accuracy_top_1 = MulticlassAccuracy(num_classes=num_classes, top_k=1, average=average)
+
+    pred_top_k = torch.argsort(preds, dim=1, descending=True)[:, :k]
+    pred_top_1 = pred_top_k[:, 0]
+    target_in_top_k = (target.unsqueeze(1) == pred_top_k).any(dim=1)
+    pred_corrected_top_k = torch.where(target_in_top_k, target, pred_top_1)
+
+    accuracy_score_top_k = accuracy_top_k(preds, target)
+    accuracy_score_corrected = accuracy_top_1(pred_corrected_top_k, target)
+
+    assert torch.isclose(accuracy_score_top_k, accuracy_score_corrected), (
+        f"Top-{k} Accuracy ({accuracy_score_top_k}) does not match "
+        f"corrected top-1 Accuracy ({accuracy_score_corrected})"
     )
 
 
