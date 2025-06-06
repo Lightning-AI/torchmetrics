@@ -89,11 +89,19 @@ class _BaseClassificationReport(Metric):
         return self._format_report(precision, recall, f1, support, accuracy, preds, target)
 
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Extract and format metrics from the metrics dictionary. To be implemented by subclasses."""
+        """Extract and format metrics from the metrics dictionary.
+
+        To be implemented by subclasses.
+
+        """
         raise NotImplementedError
 
     def _compute_support(self, target: Tensor) -> Tensor:
-        """Compute support values. To be implemented by subclasses."""
+        """Compute support values.
+
+        To be implemented by subclasses.
+
+        """
         raise NotImplementedError
 
     def _format_report(
@@ -254,6 +262,7 @@ class _BaseClassificationReport(Metric):
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
+
         """
         if not self.output_dict:
             raise ValueError("Plotting is only supported when output_dict=True")
@@ -320,6 +329,7 @@ class BinaryClassificationReport(_BaseClassificationReport):
                 accuracy                             0.50         6
                macro avg         0.50      0.50      0.50         6
             weighted avg         0.50      0.50      0.50         6
+
     """
 
     def __init__(
@@ -451,6 +461,7 @@ class MulticlassClassificationReport(_BaseClassificationReport):
                 accuracy                           0.67         6
                macro avg       0.72      0.72      0.72         6
             weighted avg       0.67      0.67      0.67         6
+
     """
 
     plot_legend_name: str = "Class"
@@ -587,6 +598,7 @@ class MultilabelClassificationReport(_BaseClassificationReport):
                 accuracy                           0.78         6
                macro avg       0.83      0.83      0.83         6
             weighted avg       0.83      0.83      0.83         6
+
     """
 
     plot_legend_name: str = "Label"
@@ -766,6 +778,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
                 accuracy                           0.78         6
                macro avg       0.83      0.83      0.83         6
             weighted avg       0.83      0.83      0.83         6
+
     """
 
     def __new__(  # type: ignore[misc]
