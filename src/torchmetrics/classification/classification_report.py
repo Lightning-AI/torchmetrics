@@ -18,32 +18,39 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-# Import only what's needed at module level to avoid circular imports
 from torchmetrics.classification.base import _ClassificationTaskWrapper
-from torchmetrics.metric import Metric
 from torchmetrics.collections import MetricCollection
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["BinaryClassificationReport.plot", "MulticlassClassificationReport.plot",
-                       "MultilabelClassificationReport.plot", "ClassificationReport.plot"]
+    __doctest_skip__ = [
+        "BinaryClassificationReport.plot",
+        "MulticlassClassificationReport.plot",
+        "MultilabelClassificationReport.plot",
+        "ClassificationReport.plot",
+    ]
 
-__all__ = ["ClassificationReport", "BinaryClassificationReport", "MulticlassClassificationReport", 
-           "MultilabelClassificationReport"]
+__all__ = [
+    "BinaryClassificationReport",
+    "ClassificationReport",
+    "MulticlassClassificationReport",
+    "MultilabelClassificationReport",
+]
 
 
 class _BaseClassificationReport(Metric):
     """Base class for classification reports with shared functionality."""
-    
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
-    
+
     def __init__(
         self,
         target_names: Optional[Sequence[str]] = None,
@@ -59,36 +66,36 @@ class _BaseClassificationReport(Metric):
         self.digits = digits
         self.output_dict = output_dict
         self.zero_division = zero_division
-        
+
         # Add states for tracking data
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
-    
+
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric with predictions and targets."""
         self.metrics.update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
-    
+
     def compute(self) -> Union[Dict[str, Any], str]:
         """Compute the classification report."""
         metrics_dict = self.metrics.compute()
         precision, recall, f1, accuracy = self._extract_metrics(metrics_dict)
-        
+
         target = dim_zero_cat(self.target)
         support = self._compute_support(target)
         preds = dim_zero_cat(self.preds)
-        
+
         return self._format_report(precision, recall, f1, support, accuracy, preds, target)
-    
+
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Extract and format metrics from the metrics dictionary. To be implemented by subclasses."""
         raise NotImplementedError
-    
+
     def _compute_support(self, target: Tensor) -> Tensor:
         """Compute support values. To be implemented by subclasses."""
         raise NotImplementedError
-    
+
     def _format_report(
         self,
         precision: Tensor,
@@ -102,9 +109,8 @@ class _BaseClassificationReport(Metric):
         """Format the classification report as either a dictionary or string."""
         if self.output_dict:
             return self._format_dict_report(precision, recall, f1, support, accuracy, preds, target)
-        else:
-            return self._format_string_report(precision, recall, f1, support, accuracy)
-    
+        return self._format_string_report(precision, recall, f1, support, accuracy)
+
     def _format_dict_report(
         self,
         precision: Tensor,
@@ -123,40 +129,40 @@ class _BaseClassificationReport(Metric):
             "support": support,
             "accuracy": accuracy,
             "preds": preds,
-            "target": target
+            "target": target,
         }
-        
+
         # Add class-specific entries
         for i, name in enumerate(self.target_names):
             report_dict[name] = {
                 "precision": precision[i].item(),
                 "recall": recall[i].item(),
                 "f1-score": f1[i].item(),
-                "support": support[i].item()
+                "support": support[i].item(),
             }
-                
+
         # Add aggregate metrics
         report_dict["macro avg"] = {
             "precision": precision.mean().item(),
             "recall": recall.mean().item(),
             "f1-score": f1.mean().item(),
-            "support": support.sum().item()
+            "support": support.sum().item(),
         }
-        
+
         # Add weighted average
         weighted_precision = (precision * support).sum() / support.sum()
         weighted_recall = (recall * support).sum() / support.sum()
         weighted_f1 = (f1 * support).sum() / support.sum()
-        
+
         report_dict["weighted avg"] = {
             "precision": weighted_precision.item(),
             "recall": weighted_recall.item(),
             "f1-score": weighted_f1.item(),
-            "support": support.sum().item()
+            "support": support.sum().item(),
         }
-        
+
         return report_dict
-    
+
     def _format_string_report(
         self,
         precision: Tensor,
@@ -167,20 +173,20 @@ class _BaseClassificationReport(Metric):
     ) -> str:
         """Format the classification report as a string."""
         headers = ["precision", "recall", "f1-score", "support"]
-        
+
         # Set up string formatting
         name_width = max(len(cn) for cn in self.target_names)
         longest_last_line_heading = "weighted avg"
         width = max(name_width, len(longest_last_line_heading))
-        
+
         # Create the header line with proper spacing
         head_fmt = "{:>{width}s} " + " {:>9}" * len(headers)
         report = head_fmt.format("", *headers, width=width)
         report += "\n\n"
-        
+
         # Format for rows
         row_fmt = "{:>{width}s} " + " {:>9.{digits}f}" * 3 + " {:>9}\n"
-        
+
         # Add result rows
         for i, name in enumerate(self.target_names):
             report += row_fmt.format(
@@ -190,18 +196,17 @@ class _BaseClassificationReport(Metric):
                 f1[i].item(),
                 int(support[i].item()),
                 width=width,
-                digits=self.digits
+                digits=self.digits,
             )
-        
+
         # Add blank line
         report += "\n"
-        
+
         # Add accuracy row - with exact spacing matching sklearn
         report += "{:>{width}s} {:>18} {:>11.{digits}f} {:>9}\n".format(
-            "accuracy", "", accuracy.item(), int(support.sum().item()),
-            width=width, digits=self.digits
+            "accuracy", "", accuracy.item(), int(support.sum().item()), width=width, digits=self.digits
         )
-        
+
         # Add macro avg
         macro_precision = precision.mean().item()
         macro_recall = recall.mean().item()
@@ -213,14 +218,14 @@ class _BaseClassificationReport(Metric):
             macro_f1,
             int(support.sum().item()),
             width=width,
-            digits=self.digits
+            digits=self.digits,
         )
-        
+
         # Add weighted avg
         weighted_precision = (precision * support).sum() / support.sum()
         weighted_recall = (recall * support).sum() / support.sum()
         weighted_f1 = (f1 * support).sum() / support.sum()
-        
+
         report += row_fmt.format(
             "weighted avg",
             weighted_precision.item(),
@@ -228,12 +233,14 @@ class _BaseClassificationReport(Metric):
             weighted_f1.item(),
             int(support.sum().item()),
             width=width,
-            digits=self.digits
+            digits=self.digits,
         )
-        
+
         return report
-    
-    def plot(self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
@@ -314,6 +321,7 @@ class BinaryClassificationReport(_BaseClassificationReport):
                macro avg         0.50      0.50      0.50         6
             weighted avg         0.50      0.50      0.50         6
     """
+
     def __init__(
         self,
         threshold: float = 0.5,
@@ -330,44 +338,55 @@ class BinaryClassificationReport(_BaseClassificationReport):
             digits=digits,
             output_dict=output_dict,
             zero_division=zero_division,
-            **kwargs
+            **kwargs,
         )
         self.threshold = threshold
         self.task = "binary"
         self.num_classes = 2
-        
+
         # Set target names if they were provided
         if target_names is not None:
             self.target_names = list(target_names)
         else:
             self.target_names = ["0", "1"]
-        
+
         # Initialize metrics lazily to avoid circular imports
         self._metrics = None
-        
+
     @property
-    def metrics(self):
+    def metrics(self) -> MetricCollection:
+        """Get the metrics collection.
+
+        Returns:
+            MetricCollection: Collection of binary classification metrics including precision, recall, f1, and accuracy.
+        """
         if self._metrics is None:
             from torchmetrics.classification import (
-                BinaryPrecision, BinaryRecall, BinaryF1Score, BinaryAccuracy
+                BinaryAccuracy,
+                BinaryF1Score,
+                BinaryPrecision,
+                BinaryRecall,
             )
-            self._metrics = MetricCollection({
-                'precision': BinaryPrecision(threshold=self.threshold),
-                'recall': BinaryRecall(threshold=self.threshold),
-                'f1': BinaryF1Score(threshold=self.threshold),
-                'accuracy': BinaryAccuracy(threshold=self.threshold)
-            })
+
+            self._metrics = MetricCollection(
+                {
+                    "precision": BinaryPrecision(threshold=self.threshold),
+                    "recall": BinaryRecall(threshold=self.threshold),
+                    "f1": BinaryF1Score(threshold=self.threshold),
+                    "accuracy": BinaryAccuracy(threshold=self.threshold),
+                }
+            )
         return self._metrics
-    
+
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Extract and format metrics from the metrics dictionary for binary classification."""
         # For binary classification, we need to create per-class metrics
-        precision = torch.tensor([1 - metrics_dict['precision'], metrics_dict['precision']])
-        recall = torch.tensor([1 - metrics_dict['recall'], metrics_dict['recall']])
-        f1 = torch.tensor([1 - metrics_dict['f1'], metrics_dict['f1']])
-        accuracy = metrics_dict['accuracy']
+        precision = torch.tensor([1 - metrics_dict["precision"], metrics_dict["precision"]])
+        recall = torch.tensor([1 - metrics_dict["recall"], metrics_dict["recall"]])
+        f1 = torch.tensor([1 - metrics_dict["f1"], metrics_dict["f1"]])
+        accuracy = metrics_dict["accuracy"]
         return precision, recall, f1, accuracy
-    
+
     def _compute_support(self, target: Tensor) -> Tensor:
         """Compute support values for binary classification."""
         return torch.bincount(target.int(), minlength=self.num_classes).float()
@@ -416,7 +435,7 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         >>> from torchmetrics.classification import ClassificationReport
         >>> target = tensor([2, 1, 0, 1, 0, 1])
         >>> preds = tensor([2, 0, 1, 1, 0, 1])
-        >>> metric = ClassificationReport(    
+        >>> metric = ClassificationReport(
         ...     task="multiclass",
         ...     num_classes=3,
         ...     output_dict=False,
@@ -433,9 +452,9 @@ class MulticlassClassificationReport(_BaseClassificationReport):
                macro avg       0.72      0.72      0.72         6
             weighted avg       0.67      0.67      0.67         6
     """
-    
+
     plot_legend_name: str = "Class"
-    
+
     def __init__(
         self,
         num_classes: int,
@@ -452,42 +471,52 @@ class MulticlassClassificationReport(_BaseClassificationReport):
             digits=digits,
             output_dict=output_dict,
             zero_division=zero_division,
-            **kwargs
+            **kwargs,
         )
         self.task = "multiclass"
         self.num_classes = num_classes
-        
+
         # Set target names if they were provided
         if target_names is not None:
             self.target_names = list(target_names)
         else:
             self.target_names = [str(i) for i in range(num_classes)]
-        
+
         # Initialize metrics lazily to avoid circular imports
         self._metrics = None
-        
+
     @property
-    def metrics(self):
+    def metrics(self) -> MetricCollection:
+        """Get the metrics collection.
+
+        Returns:
+            MetricCollection: Collection of multiclass classification metrics
+                including precision, recall, f1, and accuracy.
+        """
         if self._metrics is None:
             from torchmetrics.classification import (
-                MulticlassPrecision, MulticlassRecall, MulticlassF1Score, MulticlassAccuracy
+                MulticlassAccuracy,
+                MulticlassF1Score,
+                MulticlassPrecision,
+                MulticlassRecall,
             )
+
             self._metrics = MetricCollection({
-                'precision': MulticlassPrecision(num_classes=self.num_classes, average=None),
-                'recall': MulticlassRecall(num_classes=self.num_classes, average=None),
-                'f1': MulticlassF1Score(num_classes=self.num_classes, average=None),
-                'accuracy': MulticlassAccuracy(num_classes=self.num_classes, average="micro")
+                "precision": MulticlassPrecision(num_classes=self.num_classes, average=None),
+                "recall": MulticlassRecall(num_classes=self.num_classes, average=None),
+                "f1": MulticlassF1Score(num_classes=self.num_classes, average=None),
+                "accuracy": MulticlassAccuracy(num_classes=self.num_classes, average="micro"),
             })
         return self._metrics
-    
+
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Extract and format metrics from the metrics dictionary for multiclass classification."""
-        precision = metrics_dict['precision']
-        recall = metrics_dict['recall']
-        f1 = metrics_dict['f1']
-        accuracy = metrics_dict['accuracy']
+        precision = metrics_dict["precision"]
+        recall = metrics_dict["recall"]
+        f1 = metrics_dict["f1"]
+        accuracy = metrics_dict["accuracy"]
         return precision, recall, f1, accuracy
-    
+
     def _compute_support(self, target: Tensor) -> Tensor:
         """Compute support values for multiclass classification."""
         return torch.bincount(target.int(), minlength=self.num_classes).float()
@@ -513,12 +542,12 @@ class MultilabelClassificationReport(_BaseClassificationReport):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-        - ``preds`` (:class:`~torch.Tensor`): A tensor of predictions of shape ``(N, C)`` where ``N`` is the batch size and ``C`` is
-          the number of labels. If preds is a floating point tensor with values outside [0,1] range we consider
-          the input to be logits and will auto apply sigmoid per element. Additionally, we convert to int
-          tensor with thresholding using the value in ``threshold``.
-        - ``target`` (:class:`~torch.Tensor`): A tensor of targets of shape ``(N, C)`` where ``N`` is the batch size and ``C`` is
-          the number of labels.
+        - ``preds`` (:class:`~torch.Tensor`): A tensor of predictions of shape ``(N, C)`` where ``N`` is the
+          batch size and ``C`` is the number of labels. If preds is a floating point tensor with values
+          outside [0,1] range we consider the input to be logits and will auto apply sigmoid per element.
+          Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
+        - ``target`` (:class:`~torch.Tensor`): A tensor of targets of shape ``(N, C)`` where ``N`` is the
+          batch size and ``C`` is the number of labels.
 
     As output to ``forward`` and ``compute`` the metric returns either:
 
@@ -559,9 +588,9 @@ class MultilabelClassificationReport(_BaseClassificationReport):
                macro avg       0.83      0.83      0.83         6
             weighted avg       0.83      0.83      0.83         6
     """
-    
+
     plot_legend_name: str = "Label"
-    
+
     def __init__(
         self,
         num_labels: int,
@@ -579,43 +608,63 @@ class MultilabelClassificationReport(_BaseClassificationReport):
             digits=digits,
             output_dict=output_dict,
             zero_division=zero_division,
-            **kwargs
+            **kwargs,
         )
         self.threshold = threshold
         self.task = "multilabel"
         self.num_labels = num_labels
-        
+
         # Set target names if they were provided
         if target_names is not None:
             self.target_names = list(target_names)
         else:
             self.target_names = [str(i) for i in range(num_labels)]
-        
+
         # Initialize metrics lazily to avoid circular imports
         self._metrics = None
-        
+
     @property
-    def metrics(self):
+    def metrics(self) -> MetricCollection:
+        """Get the metrics collection.
+
+        Returns:
+            MetricCollection: Collection of multilabel classification metrics
+                including precision, recall, f1, and accuracy.
+        """
         if self._metrics is None:
             from torchmetrics.classification import (
-                MultilabelPrecision, MultilabelRecall, MultilabelF1Score, MultilabelAccuracy
+                MultilabelAccuracy,
+                MultilabelF1Score,
+                MultilabelPrecision,
+                MultilabelRecall,
             )
-            self._metrics = MetricCollection({
-                'precision': MultilabelPrecision(num_labels=self.num_labels, average=None, threshold=self.threshold),
-                'recall': MultilabelRecall(num_labels=self.num_labels, average=None, threshold=self.threshold),
-                'f1': MultilabelF1Score(num_labels=self.num_labels, average=None, threshold=self.threshold),
-                'accuracy': MultilabelAccuracy(num_labels=self.num_labels, average="micro", threshold=self.threshold)
-            })
+
+            self._metrics = MetricCollection(
+                {
+                    "precision": MultilabelPrecision(
+                        num_labels=self.num_labels, average=None, threshold=self.threshold
+                    ),
+                    "recall": MultilabelRecall(
+                        num_labels=self.num_labels, average=None, threshold=self.threshold
+                    ),
+                    "f1": MultilabelF1Score(
+                        num_labels=self.num_labels, average=None, threshold=self.threshold
+                    ),
+                    "accuracy": MultilabelAccuracy(
+                        num_labels=self.num_labels, average="micro", threshold=self.threshold
+                    ),
+                }
+            )
         return self._metrics
-    
+
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Extract and format metrics from the metrics dictionary for multilabel classification."""
-        precision = metrics_dict['precision']
-        recall = metrics_dict['recall']
-        f1 = metrics_dict['f1']
-        accuracy = metrics_dict['accuracy']
+        precision = metrics_dict["precision"]
+        recall = metrics_dict["recall"]
+        f1 = metrics_dict["f1"]
+        accuracy = metrics_dict["accuracy"]
         return precision, recall, f1, accuracy
-    
+
     def _compute_support(self, target: Tensor) -> Tensor:
         """Compute support values for multilabel classification."""
         return torch.sum(target, dim=0)
@@ -676,7 +725,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
         >>> from torchmetrics.classification import ClassificationReport
         >>> target = tensor([2, 1, 0, 1, 0, 1])
         >>> preds = tensor([2, 0, 1, 1, 0, 1])
-        >>> metric = ClassificationReport(    
+        >>> metric = ClassificationReport(
         ...     task="multiclass",
         ...     num_classes=3,
         ...     output_dict=False,
@@ -734,23 +783,23 @@ class ClassificationReport(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        
+
         common_kwargs = {
             "target_names": target_names,
             "sample_weight": sample_weight,
             "digits": digits,
             "output_dict": output_dict,
             "zero_division": zero_division,
-            **kwargs
+            **kwargs,
         }
-        
+
         if task == ClassificationTask.BINARY:
             return BinaryClassificationReport(threshold=threshold, **common_kwargs)
-            
+
         if task == ClassificationTask.MULTICLASS:
             return MulticlassClassificationReport(num_classes=num_classes, **common_kwargs)
-            
+
         if task == ClassificationTask.MULTILABEL:
             return MultilabelClassificationReport(num_labels=num_labels, threshold=threshold, **common_kwargs)
-            
+
         raise ValueError(f"Not handled value: {task}")
