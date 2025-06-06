@@ -18,18 +18,14 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification import (
-    MulticlassPrecision, MulticlassRecall, MulticlassF1Score, MulticlassAccuracy,
-    BinaryPrecision, BinaryRecall, BinaryF1Score, BinaryAccuracy,
-    MultilabelPrecision, MultilabelRecall, MultilabelF1Score, MultilabelAccuracy
-)
+# Import only what's needed at module level to avoid circular imports
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.metric import Metric
 from torchmetrics.collections import MetricCollection
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
-from torchmetrics.classification.base import _ClassificationTaskWrapper
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["BinaryClassificationReport.plot", "MulticlassClassificationReport.plot",
@@ -346,13 +342,22 @@ class BinaryClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = ["0", "1"]
         
-        # Initialize metrics
-        self.metrics = MetricCollection({
-            'precision': BinaryPrecision(threshold=self.threshold),
-            'recall': BinaryRecall(threshold=self.threshold),
-            'f1': BinaryF1Score(threshold=self.threshold),
-            'accuracy': BinaryAccuracy(threshold=self.threshold)
-        })
+        # Initialize metrics lazily to avoid circular imports
+        self._metrics = None
+        
+    @property
+    def metrics(self):
+        if self._metrics is None:
+            from torchmetrics.classification import (
+                BinaryPrecision, BinaryRecall, BinaryF1Score, BinaryAccuracy
+            )
+            self._metrics = MetricCollection({
+                'precision': BinaryPrecision(threshold=self.threshold),
+                'recall': BinaryRecall(threshold=self.threshold),
+                'f1': BinaryF1Score(threshold=self.threshold),
+                'accuracy': BinaryAccuracy(threshold=self.threshold)
+            })
+        return self._metrics
     
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Extract and format metrics from the metrics dictionary for binary classification."""
@@ -458,13 +463,22 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = [str(i) for i in range(num_classes)]
         
-        # Initialize metrics
-        self.metrics = MetricCollection({
-            'precision': MulticlassPrecision(num_classes=num_classes, average=None),
-            'recall': MulticlassRecall(num_classes=num_classes, average=None),
-            'f1': MulticlassF1Score(num_classes=num_classes, average=None),
-            'accuracy': MulticlassAccuracy(num_classes=num_classes, average="micro")
-        })
+        # Initialize metrics lazily to avoid circular imports
+        self._metrics = None
+        
+    @property
+    def metrics(self):
+        if self._metrics is None:
+            from torchmetrics.classification import (
+                MulticlassPrecision, MulticlassRecall, MulticlassF1Score, MulticlassAccuracy
+            )
+            self._metrics = MetricCollection({
+                'precision': MulticlassPrecision(num_classes=self.num_classes, average=None),
+                'recall': MulticlassRecall(num_classes=self.num_classes, average=None),
+                'f1': MulticlassF1Score(num_classes=self.num_classes, average=None),
+                'accuracy': MulticlassAccuracy(num_classes=self.num_classes, average="micro")
+            })
+        return self._metrics
     
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Extract and format metrics from the metrics dictionary for multiclass classification."""
@@ -577,13 +591,22 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = [str(i) for i in range(num_labels)]
         
-        # Initialize metrics
-        self.metrics = MetricCollection({
-            'precision': MultilabelPrecision(num_labels=num_labels, average=None, threshold=self.threshold),
-            'recall': MultilabelRecall(num_labels=num_labels, average=None, threshold=self.threshold),
-            'f1': MultilabelF1Score(num_labels=num_labels, average=None, threshold=self.threshold),
-            'accuracy': MultilabelAccuracy(num_labels=num_labels, average="micro", threshold=self.threshold)
-        })
+        # Initialize metrics lazily to avoid circular imports
+        self._metrics = None
+        
+    @property
+    def metrics(self):
+        if self._metrics is None:
+            from torchmetrics.classification import (
+                MultilabelPrecision, MultilabelRecall, MultilabelF1Score, MultilabelAccuracy
+            )
+            self._metrics = MetricCollection({
+                'precision': MultilabelPrecision(num_labels=self.num_labels, average=None, threshold=self.threshold),
+                'recall': MultilabelRecall(num_labels=self.num_labels, average=None, threshold=self.threshold),
+                'f1': MultilabelF1Score(num_labels=self.num_labels, average=None, threshold=self.threshold),
+                'accuracy': MultilabelAccuracy(num_labels=self.num_labels, average="micro", threshold=self.threshold)
+            })
+        return self._metrics
     
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Extract and format metrics from the metrics dictionary for multilabel classification."""
