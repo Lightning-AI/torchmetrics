@@ -186,7 +186,7 @@ def _compute_binary_metrics(
     for class_idx in [0, 1]:
         if class_idx == 0:
             # Invert for class 0 (negative class)
-            inv_preds = 1 - preds if torch.is_floating_point(preds) else 1 - preds
+            inv_preds = 1 - preds 
             inv_target = 1 - target
 
             precision_val = binary_precision(inv_preds, inv_target, threshold, validate_args=validate_args).item()
