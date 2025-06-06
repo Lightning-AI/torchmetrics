@@ -29,7 +29,7 @@ from torchmetrics.functional.classification.classification_report import (
     classification_report as functional_classification_report,
 )
 
-from .._helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(42)
 
@@ -46,34 +46,34 @@ def make_prediction(dataset=None, binary=False):
         # import some data to play with
         dataset = datasets.load_iris()
 
-    X = dataset.data
+    x = dataset.data
     y = dataset.target
 
     if binary:
         # restrict to a binary classification task
-        X, y = X[y < 2], y[y < 2]
+        x, y = x[y < 2], y[y < 2]
 
-    n_samples, n_features = X.shape
+    n_samples, n_features = x.shape
     p = np.arange(n_samples)
 
     rng = check_random_state(37)
     rng.shuffle(p)
-    X, y = X[p], y[p]
+    x, y = x[p], y[p]
     half = int(n_samples / 2)
 
     # add noisy features to make the problem harder and avoid perfect results
     rng = np.random.RandomState(0)
-    X = np.c_[X, rng.randn(n_samples, 200 * n_features)]
+    x = np.c_[x, rng.randn(n_samples, 200 * n_features)]
 
     # run classifier, get class probabilities and label predictions
     clf = SVC(kernel="linear", probability=True, random_state=0)
-    y_pred_proba = clf.fit(X[:half], y[:half]).predict_proba(X[half:])
+    y_pred_proba = clf.fit(x[:half], y[:half]).predict_proba(x[half:])
 
     if binary:
         # only interested in probabilities of the positive case
         y_pred_proba = y_pred_proba[:, 1]
 
-    y_pred = clf.predict(X[half:])
+    y_pred = clf.predict(x[half:])
     y_true = y[half:]
     return y_true, y_pred, y_pred_proba
 
@@ -368,7 +368,7 @@ class TestMultilabelClassificationReport(_BaseTestClassificationReport):
 
             # Check for any aggregate metrics that might be present
             possible_avg_keys = ["micro avg", "macro avg", "weighted avg", "samples avg", "accuracy"]
-            found_aggregates = [key for key in result.keys() if key in possible_avg_keys]
+            found_aggregates = [key for key in result if key in possible_avg_keys]
             assert len(found_aggregates) > 0, f"No aggregate metrics found. Available keys: {list(result.keys())}"
 
         else:
@@ -498,7 +498,7 @@ def test_multilabel_classification_report(use_probabilities):
             # Check for any aggregate metrics that might be present
             # (don't require specific ones as implementations may differ)
             possible_avg_keys = ["micro avg", "macro avg", "weighted avg", "samples avg", "accuracy"]
-            found_aggregates = [key for key in result.keys() if key in possible_avg_keys]
+            found_aggregates = [key for key in result if key in possible_avg_keys]
             assert len(found_aggregates) > 0, f"No aggregate metrics found. Available keys: {list(result.keys())}"
 
         else:
