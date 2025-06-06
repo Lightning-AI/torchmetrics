@@ -369,6 +369,7 @@ class BinaryClassificationReport(_BaseClassificationReport):
 
         Returns:
             MetricCollection: Collection of binary classification metrics including precision, recall, f1, and accuracy.
+
         """
         if self._metrics is None:
             from torchmetrics.classification import (
@@ -378,14 +379,12 @@ class BinaryClassificationReport(_BaseClassificationReport):
                 BinaryRecall,
             )
 
-            self._metrics = MetricCollection(
-                {
-                    "precision": BinaryPrecision(threshold=self.threshold),
-                    "recall": BinaryRecall(threshold=self.threshold),
-                    "f1": BinaryF1Score(threshold=self.threshold),
-                    "accuracy": BinaryAccuracy(threshold=self.threshold),
-                }
-            )
+            self._metrics = MetricCollection({
+                "precision": BinaryPrecision(threshold=self.threshold),
+                "recall": BinaryRecall(threshold=self.threshold),
+                "f1": BinaryF1Score(threshold=self.threshold),
+                "accuracy": BinaryAccuracy(threshold=self.threshold),
+            })
         return self._metrics
 
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
@@ -503,6 +502,7 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         Returns:
             MetricCollection: Collection of multiclass classification metrics
                 including precision, recall, f1, and accuracy.
+
         """
         if self._metrics is None:
             from torchmetrics.classification import (
@@ -642,6 +642,7 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         Returns:
             MetricCollection: Collection of multilabel classification metrics
                 including precision, recall, f1, and accuracy.
+
         """
         if self._metrics is None:
             from torchmetrics.classification import (
@@ -651,22 +652,12 @@ class MultilabelClassificationReport(_BaseClassificationReport):
                 MultilabelRecall,
             )
 
-            self._metrics = MetricCollection(
-                {
-                    "precision": MultilabelPrecision(
-                        num_labels=self.num_labels, average=None, threshold=self.threshold
-                    ),
-                    "recall": MultilabelRecall(
-                        num_labels=self.num_labels, average=None, threshold=self.threshold
-                    ),
-                    "f1": MultilabelF1Score(
-                        num_labels=self.num_labels, average=None, threshold=self.threshold
-                    ),
-                    "accuracy": MultilabelAccuracy(
-                        num_labels=self.num_labels, average="micro", threshold=self.threshold
-                    ),
-                }
-            )
+            self._metrics = MetricCollection({
+                "precision": MultilabelPrecision(num_labels=self.num_labels, average=None, threshold=self.threshold),
+                "recall": MultilabelRecall(num_labels=self.num_labels, average=None, threshold=self.threshold),
+                "f1": MultilabelF1Score(num_labels=self.num_labels, average=None, threshold=self.threshold),
+                "accuracy": MultilabelAccuracy(num_labels=self.num_labels, average="micro", threshold=self.threshold),
+            })
         return self._metrics
 
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
