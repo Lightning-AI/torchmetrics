@@ -28,7 +28,6 @@ from torchmetrics.functional.classification.classification_report import (
 from torchmetrics.functional.classification.classification_report import (
     classification_report as functional_classification_report,
 )
-
 from unittests._helpers import seed_all
 
 seed_all(42)
