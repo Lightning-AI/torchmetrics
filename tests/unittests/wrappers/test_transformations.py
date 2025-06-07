@@ -14,8 +14,10 @@
 from typing import ClassVar
 
 import pytest
+import torch
 from torch import Tensor
-
+        
+from torchmetrics import MeanSquaredError
 from torchmetrics.aggregation import MeanMetric
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.retrieval import RetrievalMAP
@@ -143,11 +145,6 @@ class TestLambdaInputTransformer:
         Issue: https://github.com/Lightning-AI/torchmetrics/issues/3122.
 
         """
-        import torch
-
-        from torchmetrics import MeanSquaredError
-        from torchmetrics.wrappers import LambdaInputTransformer
-
         preds_1 = torch.tensor([1.0, 2.0, 3.0])
         preds_2 = 2 * preds_1
         target = torch.tensor([2.0, 4.0, 6.0])
