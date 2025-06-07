@@ -139,10 +139,12 @@ class TestLambdaInputTransformer:
 
     def test_reset_forwards_to_wrapped_metric(self):
         """Test that reset() on LambdaInputTransformer also resets the wrapped metric.
+
         Issue: https://github.com/Lightning-AI/torchmetrics/issues/3122.
-        
+
         """
         import torch
+
         from torchmetrics import MeanSquaredError
         from torchmetrics.wrappers import LambdaInputTransformer
 
