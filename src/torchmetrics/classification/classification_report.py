@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pprint as pprint
 from collections.abc import Sequence
 from typing import Any, Dict, Optional, Union
 
@@ -322,10 +321,10 @@ class BinaryClassificationReport(_BaseClassificationReport):
         >>> metric.update(preds, target)
         >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
                       precision    recall  f1-score   support
-
+        <BLANKLINE>
                    0       0.50      0.33      0.43         3
                    1       0.50      0.67      0.57         3
-
+        <BLANKLINE>
             accuracy                           0.50         6
            macro avg       0.50      0.50      0.50         6
         weighted avg       0.50      0.50      0.50         6
@@ -452,11 +451,11 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         >>> metric.update(preds, target)
         >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
                       precision    recall  f1-score   support
-
+        <BLANKLINE>
                    0       0.50      0.50      0.50         2
                    1       0.67      0.67      0.67         3
                    2       1.00      1.00      1.00         1
-
+        <BLANKLINE>
             accuracy                           0.67         6
            macro avg       0.72      0.72      0.72         6
         weighted avg       0.67      0.67      0.67         6
@@ -589,11 +588,11 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         >>> metric.update(preds, target)
         >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
                       precision    recall  f1-score   support
-
+        <BLANKLINE>
                    A       1.00      1.00      1.00         2
                    B       1.00      1.00      1.00         2
                    C       0.50      0.50      0.50         2
-
+        <BLANKLINE>
             accuracy                           0.78         6
            macro avg       0.83      0.83      0.83         6
         weighted avg       0.83      0.83      0.83         6
@@ -713,10 +712,10 @@ class ClassificationReport(_ClassificationTaskWrapper):
         >>> metric.update(preds, target)
         >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
                       precision    recall  f1-score   support
-
+        <BLANKLINE>
                    0       0.50      0.33      0.43         3
                    1       0.50      0.67      0.57         3
-
+        <BLANKLINE>
             accuracy                           0.50         6
            macro avg       0.50      0.50      0.50         6
         weighted avg       0.50      0.50      0.50         6
@@ -734,11 +733,11 @@ class ClassificationReport(_ClassificationTaskWrapper):
         >>> metric.update(preds, target)
         >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
                       precision    recall  f1-score   support
-
+        <BLANKLINE>
                    0       0.50      0.50      0.50         2
                    1       0.67      0.67      0.67         3
                    2       1.00      1.00      1.00         1
-
+        <BLANKLINE>
             accuracy                           0.67         6
            macro avg       0.72      0.72      0.72         6
         weighted avg       0.67      0.67      0.67         6
@@ -758,11 +757,11 @@ class ClassificationReport(_ClassificationTaskWrapper):
         >>> metric.update(preds, target)
         >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
                       precision    recall  f1-score   support
-
+        <BLANKLINE>
                    A       1.00      1.00      1.00         2
                    B       1.00      1.00      1.00         2
                    C       0.50      0.50      0.50         2
-
+        <BLANKLINE>
             accuracy                           0.78         6
            macro avg       0.83      0.83      0.83         6
         weighted avg       0.83      0.83      0.83         6
