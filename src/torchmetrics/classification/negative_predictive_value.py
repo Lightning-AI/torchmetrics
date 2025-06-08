@@ -36,10 +36,10 @@ if not _MATPLOTLIB_AVAILABLE:
 class BinaryNegativePredictiveValue(BinaryStatScores):
     r"""Compute `Negative Predictive Value`_ for binary tasks.
 
-    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
-    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and false negatives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FN} \neq 0`. If this case is
     encountered a score of 0 is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -156,10 +156,10 @@ class BinaryNegativePredictiveValue(BinaryStatScores):
 class MulticlassNegativePredictiveValue(MulticlassStatScores):
     r"""Compute `Negative Predictive Value`_ for multiclass tasks.
 
-    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
-    respectively.  The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and false negatives
+    respectively.  The metric is only proper defined when :math:`\text{TN} + \text{FN} \neq 0`. If this case is
     encountered for any class, the metric for that class will be set to 0 and the overall metric may therefore be
     affected in turn.
 
@@ -310,10 +310,10 @@ class MulticlassNegativePredictiveValue(MulticlassStatScores):
 class MultilabelNegativePredictiveValue(MultilabelStatScores):
     r"""Compute `Negative Predictive Value`_ for multilabel tasks.
 
-    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
-    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and false negatives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FN} \neq 0`. If this case is
     encountered for any label, the metric for that label will be set to 0 and the overall metric may therefore be
     affected in turn.
 
@@ -459,10 +459,10 @@ class MultilabelNegativePredictiveValue(MultilabelStatScores):
 class NegativePredictiveValue(_ClassificationTaskWrapper):
     r"""Compute `Negative Predictive Value`_.
 
-    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
-    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and false negatives
+    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FN} \neq 0`. If this case is
     encountered for any class/label, the metric for that class/label will be set to 0 and the overall metric may
     therefore be affected in turn.
 
