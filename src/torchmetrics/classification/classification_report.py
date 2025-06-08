@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pprint as pprint
 from collections.abc import Sequence
 from typing import Any, Dict, Optional, Union
 
@@ -319,16 +320,15 @@ class BinaryClassificationReport(_BaseClassificationReport):
         ...     output_dict=False,
         ... )
         >>> metric.update(preds, target)
-        >>> test_result = metric.compute()
-        >>> print(test_result)
-                            precision    recall  f1-score   support
+        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
+                      precision    recall  f1-score   support
 
-                        0        0.50      0.33      0.43         3
-                        1        0.50      0.67      0.57         3
+                   0       0.50      0.33      0.43         3
+                   1       0.50      0.67      0.57         3
 
-                accuracy                             0.50         6
-               macro avg         0.50      0.50      0.50         6
-            weighted avg         0.50      0.50      0.50         6
+            accuracy                           0.50         6
+           macro avg       0.50      0.50      0.50         6
+        weighted avg       0.50      0.50      0.50         6
 
     """
 
@@ -450,16 +450,16 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         ...     output_dict=False,
         ... )
         >>> metric.update(preds, target)
-        >>> print(metric.compute())
-                          precision    recall  f1-score   support
+        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
+                      precision    recall  f1-score   support
 
-                       0       0.50      0.50      0.50         2
-                       1       0.67      0.67      0.67         3
-                       2       1.00      1.00      1.00         1
+                   0       0.50      0.50      0.50         2
+                   1       0.67      0.67      0.67         3
+                   2       1.00      1.00      1.00         1
 
-                accuracy                           0.67         6
-               macro avg       0.72      0.72      0.72         6
-            weighted avg       0.67      0.67      0.67         6
+            accuracy                           0.67         6
+           macro avg       0.72      0.72      0.72         6
+        weighted avg       0.67      0.67      0.67         6
 
     """
 
@@ -587,17 +587,16 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         ...     output_dict=False,
         ... )
         >>> metric.update(preds, target)
-        >>> test_result = metric.compute()
-        >>> print(test_result)
-                          precision    recall  f1-score   support
+        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
+                      precision    recall  f1-score   support
 
-                       A       1.00      1.00      1.00         2
-                       B       1.00      1.00      1.00         2
-                       C       0.50      0.50      0.50         2
+                   A       1.00      1.00      1.00         2
+                   B       1.00      1.00      1.00         2
+                   C       0.50      0.50      0.50         2
 
-                accuracy                           0.78         6
-               macro avg       0.83      0.83      0.83         6
-            weighted avg       0.83      0.83      0.83         6
+            accuracy                           0.78         6
+           macro avg       0.83      0.83      0.83         6
+        weighted avg       0.83      0.83      0.83         6
 
     """
 
@@ -712,16 +711,15 @@ class ClassificationReport(_ClassificationTaskWrapper):
         ...     output_dict=False,
         ... )
         >>> metric.update(preds, target)
-        >>> test_result = metric.compute()
-        >>> print(test_result)
-                            precision    recall  f1-score   support
+        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
+                      precision    recall  f1-score   support
 
-                        0        0.50      0.33      0.43         3
-                        1        0.50      0.67      0.57         3
+                   0       0.50      0.33      0.43         3
+                   1       0.50      0.67      0.57         3
 
-                accuracy                             0.50         6
-               macro avg         0.50      0.50      0.50         6
-            weighted avg         0.50      0.50      0.50         6
+            accuracy                           0.50         6
+           macro avg       0.50      0.50      0.50         6
+        weighted avg       0.50      0.50      0.50         6
 
     Example (Multiclass Classification):
         >>> from torch import tensor
@@ -734,16 +732,16 @@ class ClassificationReport(_ClassificationTaskWrapper):
         ...     output_dict=False,
         ... )
         >>> metric.update(preds, target)
-        >>> print(metric.compute())
-                          precision    recall  f1-score   support
+        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
+                      precision    recall  f1-score   support
 
-                       0       0.50      0.50      0.50         2
-                       1       0.67      0.67      0.67         3
-                       2       1.00      1.00      1.00         1
+                   0       0.50      0.50      0.50         2
+                   1       0.67      0.67      0.67         3
+                   2       1.00      1.00      1.00         1
 
-                accuracy                           0.67         6
-               macro avg       0.72      0.72      0.72         6
-            weighted avg       0.67      0.67      0.67         6
+            accuracy                           0.67         6
+           macro avg       0.72      0.72      0.72         6
+        weighted avg       0.67      0.67      0.67         6
 
     Example (Multilabel Classification):
         >>> from torch import tensor
@@ -758,17 +756,16 @@ class ClassificationReport(_ClassificationTaskWrapper):
         ...     output_dict=False,
         ... )
         >>> metric.update(preds, target)
-        >>> test_result = metric.compute()
-        >>> print(test_result)
-                          precision    recall  f1-score   support
+        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
+                      precision    recall  f1-score   support
 
-                       A       1.00      1.00      1.00         2
-                       B       1.00      1.00      1.00         2
-                       C       0.50      0.50      0.50         2
+                   A       1.00      1.00      1.00         2
+                   B       1.00      1.00      1.00         2
+                   C       0.50      0.50      0.50         2
 
-                accuracy                           0.78         6
-               macro avg       0.83      0.83      0.83         6
-            weighted avg       0.83      0.83      0.83         6
+            accuracy                           0.78         6
+           macro avg       0.83      0.83      0.83         6
+        weighted avg       0.83      0.83      0.83         6
 
     """
 
