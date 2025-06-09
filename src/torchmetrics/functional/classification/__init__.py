@@ -29,6 +29,12 @@ from torchmetrics.functional.classification.calibration_error import (
     calibration_error,
     multiclass_calibration_error,
 )
+from torchmetrics.functional.classification.classification_report import (
+    binary_classification_report,
+    classification_report,
+    multiclass_classification_report,
+    multilabel_classification_report,
+)
 from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, cohen_kappa, multiclass_cohen_kappa
 from torchmetrics.functional.classification.confusion_matrix import (
     binary_confusion_matrix,
@@ -245,6 +251,10 @@ __all__ = [
     "multilabel_specificity",
     "multilabel_specificity_at_sensitivity",
     "multilabel_stat_scores",
+    "classification_report",
+    "binary_classification_report",
+    "multiclass_classification_report",
+    "multilabel_classification_report",
     "negative_predictive_value",
     "precision",
     "precision_at_fixed_recall",

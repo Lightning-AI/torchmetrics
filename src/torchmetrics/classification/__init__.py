@@ -24,7 +24,12 @@ from torchmetrics.classification.calibration_error import (
     CalibrationError,
     MulticlassCalibrationError,
 )
-from torchmetrics.classification.classification_report import ClassificationReport
+from torchmetrics.classification.classification_report import (
+    BinaryClassificationReport,
+    ClassificationReport,
+    MulticlassClassificationReport,
+    MultilabelClassificationReport,
+)
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa
 from torchmetrics.classification.confusion_matrix import (
     BinaryConfusionMatrix,
@@ -165,6 +170,9 @@ __all__ = [
     "BinaryStatScores",
     "CalibrationError",
     "ClassificationReport",
+    "BinaryClassificationReport",
+    "MulticlassClassificationReport",
+    "MultilabelClassificationReport",
     "CohenKappa",
     "ConfusionMatrix",
     "ExactMatch",
