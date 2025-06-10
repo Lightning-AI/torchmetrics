@@ -74,9 +74,7 @@ def _compute_averages(
             recall_values = [
                 float(metrics.get("recall", 0.0)) * w for metrics, w in zip(class_metrics.values(), weights)
             ]
-            f1_values = [
-                float(metrics.get("f1-score", 0.0)) * w for metrics, w in zip(class_metrics.values(), weights)
-            ]
+            f1_values = [float(metrics.get("f1-score", 0.0)) * w for metrics, w in zip(class_metrics.values(), weights)]
 
             avg_precision = sum(precision_values)
             avg_recall = sum(recall_values)
