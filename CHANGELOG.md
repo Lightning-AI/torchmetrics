@@ -10,12 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Enhance: improve performance of `_rank_data` ([#3103](https://github.com/Lightning-AI/torchmetrics/pull/3103))
+-
 
 
 ### Fixed
 
 - Fixed: Ensure `WrapperMetric` Resets `wrapped_metric` State ([#3123](https://github.com/Lightning-AI/torchmetrics/pull/3123))
+
+
+- Fixed: `top_k` in `multiclass_accuracy` ([#3117](https://github.com/Lightning-AI/torchmetrics/pull/3117))
 
 
 ## [1.7.2] - 2025-05-27
