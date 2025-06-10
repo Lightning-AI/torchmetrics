@@ -52,26 +52,35 @@ def _compute_averages(
     class_metrics: Dict[str, Dict[str, Union[float, int]]],
 ) -> Dict[str, Dict[str, Union[float, int]]]:
     """Compute macro and weighted averages for the classification report."""
-    total_support = sum(metrics["support"] for metrics in class_metrics.values())
+    total_support = int(sum(metrics["support"] for metrics in class_metrics.values()))
     num_classes = len(class_metrics)
 
-    averages = {}
+    averages: Dict[str, Dict[str, Union[float, int]]] = {}
     for avg_name in ["macro avg", "weighted avg"]:
         is_weighted = avg_name == "weighted avg"
 
         if total_support == 0:
-            avg_precision = avg_recall = avg_f1 = 0
+            avg_precision = avg_recall = avg_f1 = 0.0
         else:
             if is_weighted:
-                weights = [metrics["support"] / total_support for metrics in class_metrics.values()]
+                weights = [float(metrics["support"]) / float(total_support) for metrics in class_metrics.values()]
             else:
-                weights = [1 / num_classes for _ in class_metrics]
+                weights = [1.0 / float(num_classes) for _ in range(num_classes)]
 
-            avg_precision = sum(
-                metrics.get("precision", 0.0) * w for metrics, w in zip(class_metrics.values(), weights)
-            )
-            avg_recall = sum(metrics.get("recall", 0.0) * w for metrics, w in zip(class_metrics.values(), weights))
-            avg_f1 = sum(metrics.get("f1-score", 0.0) * w for metrics, w in zip(class_metrics.values(), weights))
+            # Calculate weighted metrics by explicitly creating a list then summing
+            precision_values = [
+                float(metrics.get("precision", 0.0)) * w for metrics, w in zip(class_metrics.values(), weights)
+            ]
+            recall_values = [
+                float(metrics.get("recall", 0.0)) * w for metrics, w in zip(class_metrics.values(), weights)
+            ]
+            f1_values = [
+                float(metrics.get("f1-score", 0.0)) * w for metrics, w in zip(class_metrics.values(), weights)
+            ]
+
+            avg_precision = sum(precision_values)
+            avg_recall = sum(recall_values)
+            avg_f1 = sum(f1_values)
 
         averages[avg_name] = {
             "precision": avg_precision,
@@ -89,7 +98,7 @@ def _format_report(
     target_names: Optional[List[str]] = None,
     digits: int = 2,
     output_dict: bool = False,
-) -> Union[str, Dict[str, Dict[str, Union[float, int]]]]:
+) -> Union[str, Dict[str, Union[float, Dict[str, Union[float, int]]]]]:
     """Format metrics into a classification report.
 
     Args:
@@ -104,15 +113,15 @@ def _format_report(
 
     """
     if output_dict:
-        result_dict = {}
+        result_dict: Dict[str, Union[float, Dict[str, Union[float, int]]]] = {}
 
         # Add class metrics
         for i, (class_name, metrics) in enumerate(class_metrics.items()):
             display_name = target_names[i] if target_names is not None and i < len(target_names) else str(class_name)
             result_dict[display_name] = {
-                "precision": round(metrics["precision"], digits),
-                "recall": round(metrics["recall"], digits),
-                "f1-score": round(metrics["f1-score"], digits),
+                "precision": round(float(metrics["precision"]), digits),
+                "recall": round(float(metrics["recall"]), digits),
+                "f1-score": round(float(metrics["f1-score"]), digits),
                 "support": metrics["support"],
             }
 
@@ -307,7 +316,7 @@ def classification_report(
     zero_division: Union[str, float] = 0.0,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[str, Dict[str, Dict[str, Union[float, int]]]]:
+) -> Union[str, Dict[str, Union[float, Dict[str, Union[float, int]]]]]:
     """Compute a classification report for various classification tasks.
 
     The classification report shows the precision, recall, F1 score, and support for each class/label.
@@ -432,7 +441,10 @@ def classification_report(
     # Apply zero division handling
     _apply_zero_division_handling(class_metrics, zero_division)
 
-    return _format_report(class_metrics, accuracy_val, target_names, digits, output_dict)
+    # Convert integer keys to strings for compatibility with _format_report
+    class_metrics_str = {str(k): v for k, v in class_metrics.items()}
+
+    return _format_report(class_metrics_str, accuracy_val, target_names, digits, output_dict)
 
 
 def binary_classification_report(
@@ -444,7 +456,7 @@ def binary_classification_report(
     output_dict: bool = False,
     zero_division: Union[str, float] = 0.0,
     validate_args: bool = True,
-) -> Union[str, Dict[str, Dict[str, Union[float, int]]]]:
+) -> Union[str, Dict[str, Union[float, Dict[str, Union[float, int]]]]]:
     """Compute a classification report for binary classification tasks.
 
     The classification report shows the precision, recall, F1 score, and support for each class.
@@ -508,7 +520,7 @@ def multiclass_classification_report(
     zero_division: Union[str, float] = 0.0,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[str, Dict[str, Dict[str, Union[float, int]]]]:
+) -> Union[str, Dict[str, Union[float, Dict[str, Union[float, int]]]]]:
     """Compute a classification report for multiclass classification tasks.
 
     The classification report shows the precision, recall, F1 score, and support for each class.
@@ -575,7 +587,7 @@ def multilabel_classification_report(
     output_dict: bool = False,
     zero_division: Union[str, float] = 0.0,
     validate_args: bool = True,
-) -> Union[str, Dict[str, Dict[str, Union[float, int]]]]:
+) -> Union[str, Dict[str, Union[float, Dict[str, Union[float, int]]]]]:
     """Compute a classification report for multilabel classification tasks.
 
     The classification report shows the precision, recall, F1 score, and support for each label.

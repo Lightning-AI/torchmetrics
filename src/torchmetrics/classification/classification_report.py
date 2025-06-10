@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -51,6 +51,10 @@ class _BaseClassificationReport(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
+    # Make mypy aware of the dynamically added states
+    preds: List[Tensor]
+    target: List[Tensor]
+
     def __init__(
         self,
         target_names: Optional[Sequence[str]] = None,
@@ -66,6 +70,7 @@ class _BaseClassificationReport(Metric):
         self.digits = digits
         self.output_dict = output_dict
         self.zero_division = zero_division
+        self.target_names: List[str] = []
 
         # Add states for tracking data
         self.add_state("preds", default=[], dist_reduce_fx="cat")
@@ -77,7 +82,7 @@ class _BaseClassificationReport(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Union[Dict[str, Any], str]:
+    def compute(self) -> Union[Dict[str, Union[Tensor, Dict[str, Union[float, int]]]], str]:
         """Compute the classification report."""
         metrics_dict = self.metrics.compute()
         precision, recall, f1, accuracy = self._extract_metrics(metrics_dict)
@@ -87,6 +92,11 @@ class _BaseClassificationReport(Metric):
         preds = dim_zero_cat(self.preds)
 
         return self._format_report(precision, recall, f1, support, accuracy, preds, target)
+
+    @property
+    def metrics(self) -> MetricCollection:
+        """Get the metrics collection."""
+        raise NotImplementedError("Subclasses must implement the metrics property")
 
     def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Extract and format metrics from the metrics dictionary.
@@ -113,7 +123,7 @@ class _BaseClassificationReport(Metric):
         accuracy: Tensor,
         preds: Tensor,
         target: Tensor,
-    ) -> Union[Dict[str, Any], str]:
+    ) -> Union[Dict[str, Union[Tensor, Dict[str, Union[float, int]]]], str]:
         """Format the classification report as either a dictionary or string."""
         if self.output_dict:
             return self._format_dict_report(precision, recall, f1, support, accuracy, preds, target)
@@ -128,9 +138,9 @@ class _BaseClassificationReport(Metric):
         accuracy: Tensor,
         preds: Tensor,
         target: Tensor,
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Union[Tensor, Dict[str, Union[float, int]]]]:
         """Format the classification report as a dictionary."""
-        report_dict = {
+        report_dict: Dict[str, Union[Tensor, Dict[str, Union[float, int]]]] = {
             "precision": precision,
             "recall": recall,
             "f1-score": f1,
@@ -360,7 +370,7 @@ class BinaryClassificationReport(_BaseClassificationReport):
             self.target_names = ["0", "1"]
 
         # Initialize metrics lazily to avoid circular imports
-        self._metrics = None
+        self._metrics: Optional[MetricCollection] = None
 
     @property
     def metrics(self) -> MetricCollection:
@@ -492,7 +502,7 @@ class MulticlassClassificationReport(_BaseClassificationReport):
             self.target_names = [str(i) for i in range(num_classes)]
 
         # Initialize metrics lazily to avoid circular imports
-        self._metrics = None
+        self._metrics: Optional[MetricCollection] = None
 
     @property
     def metrics(self) -> MetricCollection:
@@ -631,7 +641,7 @@ class MultilabelClassificationReport(_BaseClassificationReport):
             self.target_names = [str(i) for i in range(num_labels)]
 
         # Initialize metrics lazily to avoid circular imports
-        self._metrics = None
+        self._metrics: Optional[MetricCollection] = None
 
     @property
     def metrics(self) -> MetricCollection:
@@ -797,9 +807,13 @@ class ClassificationReport(_ClassificationTaskWrapper):
             return BinaryClassificationReport(threshold=threshold, **common_kwargs)
 
         if task == ClassificationTask.MULTICLASS:
+            if num_classes is None:
+                raise ValueError("num_classes must be provided for multiclass classification")
             return MulticlassClassificationReport(num_classes=num_classes, **common_kwargs)
 
         if task == ClassificationTask.MULTILABEL:
+            if num_labels is None:
+                raise ValueError("num_labels must be provided for multilabel classification")
             return MultilabelClassificationReport(num_labels=num_labels, threshold=threshold, **common_kwargs)
 
         raise ValueError(f"Not handled value: {task}")
