@@ -151,8 +151,8 @@ class JensenShannonDivergence(Metric):
 
             >>> from torch import randn
             >>> # Example plotting a single value
-            >>> from torchmetrics.regression import KLDivergence
-            >>> metric = KLDivergence()
+            >>> from torchmetrics.regression import JensenShannonDivergence
+            >>> metric = JensenShannonDivergence()
             >>> metric.update(randn(10,3).softmax(dim=-1), randn(10,3).softmax(dim=-1))
             >>> fig_, ax_ = metric.plot()
 
@@ -161,8 +161,8 @@ class JensenShannonDivergence(Metric):
 
             >>> from torch import randn
             >>> # Example plotting multiple values
-            >>> from torchmetrics.regression import KLDivergence
-            >>> metric = KLDivergence()
+            >>> from torchmetrics.regression import JensenShannonDivergence
+            >>> metric = JensenShannonDivergence()
             >>> values = []
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,3).softmax(dim=-1), randn(10,3).softmax(dim=-1)))
