@@ -103,7 +103,9 @@ def _reference_symmetric_mape(
             Note that we return a large value instead of `inf` when y_true is zero.
 
     """
-    _, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, sample_weight=sample_weight, multioutput=multioutput)
+    _, y_true, y_pred, multioutput = _check_reg_targets(
+        y_true, y_pred, sample_weight=sample_weight, multioutput=multioutput
+    )
     check_consistent_length(y_true, y_pred, sample_weight)
     epsilon = np.finfo(np.float64).eps
     smape = 2 * np.abs(y_pred - y_true) / np.maximum(np.abs(y_true) + np.abs(y_pred), epsilon)
