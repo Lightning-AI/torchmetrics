@@ -103,7 +103,7 @@ def _reference_symmetric_mape(
             Note that we return a large value instead of `inf` when y_true is zero.
 
     """
-    _, y_true, y_pred, multioutput = _check_reg_targets(
+    _, y_true, y_pred, sample_weight, multioutput  = _check_reg_targets(
         y_true, y_pred, sample_weight=sample_weight, multioutput=multioutput
     )
     check_consistent_length(y_true, y_pred, sample_weight)
