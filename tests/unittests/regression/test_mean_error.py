@@ -45,7 +45,7 @@ from torchmetrics.regression import (
 from torchmetrics.regression.nrmse import NormalizedRootMeanSquaredError
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests._helpers import seed_all, _SKLEARN_GREATER_EQUAL_1_7
+from unittests._helpers import _SKLEARN_GREATER_EQUAL_1_7, seed_all
 from unittests._helpers.testers import MetricTester
 
 seed_all(42)

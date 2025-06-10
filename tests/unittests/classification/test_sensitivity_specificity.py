@@ -36,7 +36,7 @@ from torchmetrics.functional.classification.sensitivity_specificity import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
-from unittests._helpers import seed_all, _SKLEARN_GREATER_EQUAL_1_3
+from unittests._helpers import _SKLEARN_GREATER_EQUAL_1_3, seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
