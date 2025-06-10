@@ -60,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed: `top_k` in `multiclass_accuracy` ([#3117](https://github.com/Lightning-AI/torchmetrics/pull/3117))
 
 
+- Fixed: Ensure `WrapperMetric` Resets `wrapped_metric` State ([#3123](https://github.com/Lightning-AI/torchmetrics/pull/3123))
+
+
 ---
 
 ## [1.7.1] - 2025-04-06
