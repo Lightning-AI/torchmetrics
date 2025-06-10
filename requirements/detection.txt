@@ -2,4 +2,4 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 torchvision >=0.15.1, <0.23.0
-pycocotools >2.0.0, <=2.0.8
+pycocotools >2.0.0, <=2.0.10
