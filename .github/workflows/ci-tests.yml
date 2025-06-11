@@ -44,20 +44,20 @@ jobs:
           - "2.4.1"
           - "2.5.1"
           - "2.6.0"
-          - "2.7.0"
+          - "2.7.1"
         include:
           # cover additional python and PT combinations
           - { os: "ubuntu-22.04", python-version: "3.9", pytorch-version: "2.0.1", requires: "oldest" }
           - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.6.0" }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.0" }
+          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1" }
           # standard mac machine, not the M1
           - { os: "macOS-13", python-version: "3.10", pytorch-version: "2.0.1" }
           # using the ARM based M1 machine
           - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.7.0" }
+          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.7.1" }
           # some windows
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.7.0" }
+          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.7.1" }
           # Future released version
           #- { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.8.0" }
           #- { os: "macOS-14", python-version: "3.11", pytorch-version: "2.8.0" }

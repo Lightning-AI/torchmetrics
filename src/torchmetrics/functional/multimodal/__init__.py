@@ -11,10 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.functional.multimodal.lve import lip_vertex_error
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
+
+__all__ = ["lip_vertex_error"]
 
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from torchmetrics.functional.multimodal.clip_iqa import clip_image_quality_assessment
     from torchmetrics.functional.multimodal.clip_score import clip_score
 
-    __all__ = ["clip_image_quality_assessment", "clip_score"]
+    __all__ += ["clip_image_quality_assessment", "clip_score"]
