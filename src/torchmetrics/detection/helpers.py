@@ -466,24 +466,7 @@ class CocoBackend:
             target_dataset = apply_to_collection(target_dataset, dtype=bytes, function=lambda x: x.decode("utf-8"))
             target_dataset = apply_to_collection(target_dataset, dtype=np.uint32, function=lambda x: int(x))
 
-        def convert_numpy_types(obj: Any) -> Union[int, float, list, Any]:
-            """Convert numpy types to Python native types for JSON serialization."""
-            if isinstance(obj, np.integer):
-                return int(obj)
-            if isinstance(obj, np.floating):
-                return float(obj)
-            if isinstance(obj, np.ndarray):
-                return obj.tolist()
-            return obj
-
-        preds_dataset = apply_to_collection(
-            preds_dataset, dtype=(np.integer, np.floating, np.ndarray), function=convert_numpy_types
-        )
-        target_dataset = apply_to_collection(
-            target_dataset, dtype=(np.integer, np.floating, np.ndarray), function=convert_numpy_types
-        )
-
-        preds_json = json.dumps(preds_dataset, indent=4)
+        preds_json = json.dumps(preds_dataset["annotations"], indent=4)
         target_json = json.dumps(target_dataset, indent=4)
 
         with open(f"{name}_preds.json", "w") as f:
