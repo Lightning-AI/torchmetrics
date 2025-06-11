@@ -464,7 +464,9 @@ class CocoBackend:
                 function=lambda x: int(x),
             )
             target_dataset = apply_to_collection(target_dataset, dtype=bytes, function=lambda x: x.decode("utf-8"))
-            target_dataset = apply_to_collection(target_dataset, dtype=dtype=(np.uint32, np.uint64), function=lambda x: int(x))
+            target_dataset = apply_to_collection(
+                target_dataset, dtype=(np.uint32, np.uint64), function=lambda x: int(x)
+            )
 
         preds_json = json.dumps(preds_dataset["annotations"], indent=4)
         target_json = json.dumps(target_dataset, indent=4)
