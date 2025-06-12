@@ -1,4 +1,4 @@
-__version__ = "1.7.2"
+__version__ = "1.7.3"
 __author__ = "Lightning-AI et al."
 __author_email__ = "name@pytorchlightning.ai"
 __license__ = "Apache-2.0"
