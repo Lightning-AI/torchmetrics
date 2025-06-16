@@ -74,6 +74,7 @@ from torchmetrics.functional.image._deprecated import (
 )
 from torchmetrics.functional.image._deprecated import _total_variation as total_variation
 from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
+from torchmetrics.functional.multimodal import lip_vertex_error
 from torchmetrics.functional.nominal import (
     cramers_v,
     cramers_v_matrix,
@@ -174,6 +175,7 @@ __all__ = [
     "jaccard_index",
     "kendall_rank_corrcoef",
     "kl_divergence",
+    "lip_vertex_error",
     "log_cosh_error",
     "logauc",
     "match_error_rate",
