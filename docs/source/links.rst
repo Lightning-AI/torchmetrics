@@ -51,7 +51,7 @@
 .. _BERT_score: https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
-.. _BLEU: http://www.aclweb.org/anthology/P02-1040
+.. _BLEU: https://dl.acm.org/doi/10.3115/1073083.1073135
 .. _SacreBLEU: https://github.com/mjpost/sacrebleu
 .. _SacreBleu_ter: https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py
 .. _Machine Translation Evolution: https://aclanthology.org/P04-1077
@@ -163,7 +163,7 @@
 .. _fork of pycocotools: https://github.com/ppwwyyxx/cocoapi
 .. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
 .. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
-.. _V-Measure Score: https://www.aclweb.org/anthology/D07-1043
+.. _V-Measure Score: https://www.semanticscholar.org/paper/V-Measure%3A-A-Conditional-Entropy-Based-External-Rosenberg-Hirschberg/5421dbcb7e14766eb3d951910ae8d7892d735a01
 .. _Homogeneity Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html
 .. _Completeness Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html
 .. _Davies-Bouldin Score: https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index
