@@ -51,7 +51,7 @@
 .. _BERT_score: https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
-.. _BLEU: https://dl.acm.org/doi/10.3115/1073083.1073135
+.. _BLEU: https://www.semanticscholar.org/paper/Bleu%3A-a-Method-for-Automatic-Evaluation-of-Machine-Papineni-Roukos/d7da009f457917aa381619facfa5ffae9329a6e9
 .. _SacreBLEU: https://github.com/mjpost/sacrebleu
 .. _SacreBleu_ter: https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py
 .. _Machine Translation Evolution: https://aclanthology.org/P04-1077
