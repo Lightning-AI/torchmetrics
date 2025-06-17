@@ -21,7 +21,7 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
-from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_EQUAL_4_52
+from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_BETWEEN_4_51_AND_4_52
 
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
@@ -645,10 +645,11 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _text_input_1,
             _text_input_2,
             id="info lm",
-            marks=pytest.mark.skipif(
+            marks=pytest.mark.xfail(
+                RuntimeError,
                 # todo: if the transformers compatibility issue present in next feature release,
                 #  consider bumping also torch min versions in the metrics implementations
-                _TORCH_LESS_THAN_2_1 and _TRANSFORMERS_EQUAL_4_52,
+                condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_BETWEEN_4_51_AND_4_52,
                 reason="could be due to torch compatibility issues with transformers",
             ),
         ),
@@ -771,10 +772,11 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on windows")
-@pytest.mark.skipif(
+@pytest.mark.xfail(
+    RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    _TORCH_LESS_THAN_2_1 and _TRANSFORMERS_EQUAL_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_BETWEEN_4_51_AND_4_52,
     reason="could be due to torch compatibility issues with transformers",
 )
 def test_plot_methods_special_text_metrics():
