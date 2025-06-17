@@ -88,10 +88,12 @@ class _BaseClassificationReport(Metric):
         """Compute the classification report using functional interface."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        
+
         return self._call_functional_report(preds, target)
 
-    def _call_functional_report(self, preds: Tensor, target: Tensor) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+    def _call_functional_report(
+        self, preds: Tensor, target: Tensor
+    ) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
         """Call the appropriate functional classification report."""
         raise NotImplementedError("Subclasses must implement _call_functional_report")
 
@@ -178,6 +180,7 @@ class BinaryClassificationReport(_BaseClassificationReport):
         accuracy                                    0.75       4
         macro avg                  0.83    0.75     0.73       4
         weighted avg               0.83    0.75     0.73       4
+
     """
 
     def __init__(
@@ -208,7 +211,9 @@ class BinaryClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = ["0", "1"]
 
-    def _call_functional_report(self, preds: Tensor, target: Tensor) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+    def _call_functional_report(
+        self, preds: Tensor, target: Tensor
+    ) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
         """Call binary classification report from functional interface."""
         return binary_classification_report(
             preds=preds,
@@ -220,6 +225,7 @@ class BinaryClassificationReport(_BaseClassificationReport):
             zero_division=self.zero_division,
             ignore_index=self.ignore_index,
         )
+
 
 class MulticlassClassificationReport(_BaseClassificationReport):
     r"""Compute precision, recall, F-measure and support for multiclass classification tasks.
@@ -284,6 +290,7 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         accuracy                                  0.60       5
         macro avg                0.50    0.56     0.49       5
         weighted avg             0.70    0.60     0.61       5
+
     """
 
     plot_legend_name: str = "Class"
@@ -318,7 +325,9 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = [str(i) for i in range(num_classes)]
 
-    def _call_functional_report(self, preds: Tensor, target: Tensor) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+    def _call_functional_report(
+        self, preds: Tensor, target: Tensor
+    ) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
         """Call multiclass classification report from functional interface."""
         return multiclass_classification_report(
             preds=preds,
@@ -331,6 +340,7 @@ class MulticlassClassificationReport(_BaseClassificationReport):
             ignore_index=self.ignore_index,
             top_k=self.top_k,
         )
+
 
 class MultilabelClassificationReport(_BaseClassificationReport):
     r"""Compute precision, recall, F-measure and support for multilabel classification tasks.
@@ -397,6 +407,7 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         macro avg                0.83    0.83     0.78       5
         weighted avg             0.90    0.80     0.80       5
         samples avg              0.83    0.83     0.78       5
+
     """
 
     plot_legend_name: str = "Label"
@@ -431,7 +442,9 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = [str(i) for i in range(num_labels)]
 
-    def _call_functional_report(self, preds: Tensor, target: Tensor) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+    def _call_functional_report(
+        self, preds: Tensor, target: Tensor
+    ) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
         """Call multilabel classification report from functional interface."""
         return multilabel_classification_report(
             preds=preds,
@@ -444,6 +457,7 @@ class MultilabelClassificationReport(_BaseClassificationReport):
             zero_division=self.zero_division,
             ignore_index=self.ignore_index,
         )
+
 
 class ClassificationReport(_ClassificationTaskWrapper):
     r"""Compute precision, recall, F-measure and support for each class.
@@ -462,9 +476,9 @@ class ClassificationReport(_ClassificationTaskWrapper):
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
-    :class:`~torchmetrics.classification.BinaryClassificationReport`, 
+    :class:`~torchmetrics.classification.BinaryClassificationReport`,
     :class:`~torchmetrics.classification.MulticlassClassificationReport` and
-    :class:`~torchmetrics.classification.MultilabelClassificationReport` for the specific details of each argument 
+    :class:`~torchmetrics.classification.MultilabelClassificationReport` for the specific details of each argument
     influence and examples.
 
     Example (Binary Classification):
@@ -488,6 +502,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
         accuracy                                    0.75       4
         macro avg                  0.83    0.75     0.73       4
         weighted avg               0.83    0.75     0.73       4
+
     """
 
     def __new__(  # type: ignore[misc]

@@ -38,7 +38,6 @@ from torchmetrics.functional.classification.precision_recall import (
 from torchmetrics.utilities.enums import ClassificationTask
 
 
-
 def _handle_zero_division(value: float, zero_division: Union[str, float]) -> float:
     """Handle NaN values based on zero_division parameter."""
     if torch.isnan(torch.tensor(value)):
@@ -63,7 +62,7 @@ def _compute_averages(
     num_classes = len(class_metrics)
 
     averages: Dict[str, Dict[str, Union[float, int]]] = {}
-    
+
     # Add micro average if provided and should be shown
     if micro_metrics is not None and show_micro_avg:
         averages["micro avg"] = {
@@ -72,7 +71,7 @@ def _compute_averages(
             "f1-score": micro_metrics["f1-score"],
             "support": total_support,
         }
-    
+
     # Calculate macro and weighted averages
     for avg_name in ["macro avg", "weighted avg"]:
         is_weighted = avg_name == "weighted avg"
@@ -88,13 +87,12 @@ def _compute_averages(
             # Calculate weighted metrics more efficiently
             metric_names = ["precision", "recall", "f1-score"]
             avg_metrics = {}
-            
+
             for metric_name in metric_names:
                 avg_metrics[metric_name] = sum(
-                    float(metrics.get(metric_name, 0.0)) * w 
-                    for metrics, w in zip(class_metrics.values(), weights)
+                    float(metrics.get(metric_name, 0.0)) * w for metrics, w in zip(class_metrics.values(), weights)
                 )
-            
+
             avg_precision = avg_metrics["precision"]
             avg_recall = avg_metrics["recall"]
             avg_f1 = avg_metrics["f1-score"]
@@ -105,35 +103,35 @@ def _compute_averages(
             "f1-score": avg_f1,
             "support": total_support,
         }
-    
+
     # Add samples average for multilabel classification
     if is_multilabel and preds is not None and target is not None:
         # Convert to binary predictions
         binary_preds = (preds >= threshold).float()
-        
+
         # Calculate per-sample metrics
         n_samples = preds.shape[0]
         sample_precision = torch.zeros(n_samples, dtype=torch.float32)
         sample_recall = torch.zeros(n_samples, dtype=torch.float32)
         sample_f1 = torch.zeros(n_samples, dtype=torch.float32)
-        
+
         for i in range(n_samples):
             true_positives = torch.sum(binary_preds[i] * target[i])
             pred_positives = torch.sum(binary_preds[i])
             actual_positives = torch.sum(target[i])
-            
+
             if pred_positives > 0:
                 sample_precision[i] = true_positives / pred_positives
             if actual_positives > 0:
                 sample_recall[i] = true_positives / actual_positives
             if pred_positives > 0 and actual_positives > 0:
                 sample_f1[i] = 2 * (sample_precision[i] * sample_recall[i]) / (sample_precision[i] + sample_recall[i])
-        
+
         # Average across samples
         avg_precision = torch.mean(sample_precision).item()
         avg_recall = torch.mean(sample_recall).item()
         avg_f1 = torch.mean(sample_f1).item()
-        
+
         averages["samples avg"] = {
             "precision": avg_precision,
             "recall": avg_recall,
@@ -174,63 +172,57 @@ def _format_report(
         # Add accuracy (only for non-multilabel) and averages
         if not is_multilabel:
             result_dict["accuracy"] = accuracy
-            
-        result_dict.update(_compute_averages(
-            class_metrics, micro_metrics, show_micro_avg, is_multilabel, preds, target_tensor, threshold
-        ))
+
+        result_dict.update(
+            _compute_averages(
+                class_metrics, micro_metrics, show_micro_avg, is_multilabel, preds, target_tensor, threshold
+            )
+        )
 
         return result_dict
 
     # String formatting
     headers = ["precision", "recall", "f1-score", "support"]
-    
+
     # Convert numpy array to list if necessary
     if target_names is not None and hasattr(target_names, "tolist"):
         target_names = target_names.tolist()
-    
+
     # Calculate widths needed for formatting
     name_width = max(len(str(name)) for name in class_metrics)
     if target_names:
         name_width = max(name_width, max(len(str(name)) for name in target_names))
-    
+
     # Add extra width for average methods
     name_width = max(name_width, len("weighted avg"))
     if is_multilabel:
         name_width = max(name_width, len("samples avg"))
-    
+
     # Determine width for each metric column
     width = max(digits + 6, len(headers[0]))
-    
+
     # Format header
     head = " " * name_width + " "
     for h in headers:
         head += "{:>{width}} ".format(h, width=width)
-    
+
     report_lines = [head, ""]
-    
+
     # Format rows for each class
     for i, (class_name, metrics) in enumerate(class_metrics.items()):
         display_name = target_names[i] if target_names and i < len(target_names) else str(class_name)
         # Right-align the class/label name for scikit-learn compatibility
         row = "{:>{name_width}} ".format(display_name, name_width=name_width)
-        
-        row += "{:>{width}.{digits}f} ".format(
-            metrics.get("precision", 0.0), width=width, digits=digits
-        )
-        row += "{:>{width}.{digits}f} ".format(
-            metrics.get("recall", 0.0), width=width, digits=digits
-        )
-        row += "{:>{width}.{digits}f} ".format(
-            metrics.get("f1-score", 0.0), width=width, digits=digits
-        )
-        row += "{:>{width}} ".format(
-            metrics.get("support", 0), width=width
-        )
+
+        row += "{:>{width}.{digits}f} ".format(metrics.get("precision", 0.0), width=width, digits=digits)
+        row += "{:>{width}.{digits}f} ".format(metrics.get("recall", 0.0), width=width, digits=digits)
+        row += "{:>{width}.{digits}f} ".format(metrics.get("f1-score", 0.0), width=width, digits=digits)
+        row += "{:>{width}} ".format(metrics.get("support", 0), width=width)
         report_lines.append(row)
-    
+
     # Add a blank line
     report_lines.append("")
-    
+
     # Format accuracy row (only for non-multilabel)
     if not is_multilabel:
         total_support = sum(metrics["support"] for metrics in class_metrics.values())
@@ -240,28 +232,20 @@ def _format_report(
         acc_row += "{:>{width}.{digits}f} ".format(accuracy, width=width, digits=digits)
         acc_row += "{:>{width}} ".format(total_support, width=width)
         report_lines.append(acc_row)
-    
+
     # Format averages rows
     averages = _compute_averages(
         class_metrics, micro_metrics, show_micro_avg, is_multilabel, preds, target_tensor, threshold
     )
     for avg_name, avg_metrics in averages.items():
         row = "{:>{name_width}} ".format(avg_name, name_width=name_width)
-        
-        row += "{:>{width}.{digits}f} ".format(
-            avg_metrics["precision"], width=width, digits=digits
-        )
-        row += "{:>{width}.{digits}f} ".format(
-            avg_metrics["recall"], width=width, digits=digits
-        )
-        row += "{:>{width}.{digits}f} ".format(
-            avg_metrics["f1-score"], width=width, digits=digits
-        )
-        row += "{:>{width}} ".format(
-            avg_metrics["support"], width=width
-        )
+
+        row += "{:>{width}.{digits}f} ".format(avg_metrics["precision"], width=width, digits=digits)
+        row += "{:>{width}.{digits}f} ".format(avg_metrics["recall"], width=width, digits=digits)
+        row += "{:>{width}.{digits}f} ".format(avg_metrics["f1-score"], width=width, digits=digits)
+        row += "{:>{width}} ".format(avg_metrics["support"], width=width)
         report_lines.append(row)
-    
+
     return "\n".join(report_lines)
 
 
@@ -287,15 +271,28 @@ def _compute_binary_metrics(
                 inv_preds = 1 - preds
                 inv_target = 1 - target
 
-            precision_val = binary_precision(inv_preds, inv_target, threshold, ignore_index=ignore_index, validate_args=validate_args).item()
-            recall_val = binary_recall(inv_preds, inv_target, threshold, ignore_index=ignore_index, validate_args=validate_args).item()
+            precision_val = binary_precision(
+                inv_preds, inv_target, threshold, ignore_index=ignore_index, validate_args=validate_args
+            ).item()
+            recall_val = binary_recall(
+                inv_preds, inv_target, threshold, ignore_index=ignore_index, validate_args=validate_args
+            ).item()
             f1_val = binary_fbeta_score(
-                inv_preds, inv_target, beta=1.0, threshold=threshold, ignore_index=ignore_index, validate_args=validate_args
+                inv_preds,
+                inv_target,
+                beta=1.0,
+                threshold=threshold,
+                ignore_index=ignore_index,
+                validate_args=validate_args,
             ).item()
         else:
             # For class 1 (positive class), use binary metrics directly
-            precision_val = binary_precision(preds, target, threshold, ignore_index=ignore_index, validate_args=validate_args).item()
-            recall_val = binary_recall(preds, target, threshold, ignore_index=ignore_index, validate_args=validate_args).item()
+            precision_val = binary_precision(
+                preds, target, threshold, ignore_index=ignore_index, validate_args=validate_args
+            ).item()
+            recall_val = binary_recall(
+                preds, target, threshold, ignore_index=ignore_index, validate_args=validate_args
+            ).item()
             f1_val = binary_fbeta_score(
                 preds, target, beta=1.0, threshold=threshold, ignore_index=ignore_index, validate_args=validate_args
             ).item()
@@ -323,10 +320,22 @@ def _compute_multiclass_metrics(
     """Compute metrics for multiclass classification."""
     # Calculate per-class metrics
     precision_vals = multiclass_precision(
-        preds, target, num_classes=num_classes, average=None, top_k=top_k, ignore_index=ignore_index, validate_args=validate_args
+        preds,
+        target,
+        num_classes=num_classes,
+        average=None,
+        top_k=top_k,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
     )
     recall_vals = multiclass_recall(
-        preds, target, num_classes=num_classes, average=None, top_k=top_k, ignore_index=ignore_index, validate_args=validate_args
+        preds,
+        target,
+        num_classes=num_classes,
+        average=None,
+        top_k=top_k,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
     )
     f1_vals = multiclass_fbeta_score(
         preds,
@@ -364,13 +373,32 @@ def _compute_multilabel_metrics(
     """Compute metrics for multilabel classification."""
     # Calculate per-label metrics
     precision_vals = multilabel_precision(
-        preds, target, num_labels=num_labels, threshold=threshold, average=None, ignore_index=ignore_index, validate_args=validate_args
+        preds,
+        target,
+        num_labels=num_labels,
+        threshold=threshold,
+        average=None,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
     )
     recall_vals = multilabel_recall(
-        preds, target, num_labels=num_labels, threshold=threshold, average=None, ignore_index=ignore_index, validate_args=validate_args
+        preds,
+        target,
+        num_labels=num_labels,
+        threshold=threshold,
+        average=None,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
     )
     f1_vals = multilabel_fbeta_score(
-        preds, target, beta=1.0, num_labels=num_labels, threshold=threshold, average=None, ignore_index=ignore_index, validate_args=validate_args
+        preds,
+        target,
+        beta=1.0,
+        num_labels=num_labels,
+        threshold=threshold,
+        average=None,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
     )
 
     # Calculate support for each label, accounting for ignore_index
@@ -443,11 +471,11 @@ def classification_report(
     Returns:
         If output_dict=True, a dictionary with the classification report data.
         Otherwise, a formatted string with the classification report.
-        
+
     Examples:
         >>> from torch import tensor
         >>> from torchmetrics.functional.classification.classification_report import classification_report
-        >>> 
+        >>>
         >>> # Binary classification example
         >>> binary_target = tensor([0, 1, 0, 1])
         >>> binary_preds = tensor([0, 1, 1, 1])
@@ -467,7 +495,7 @@ def classification_report(
         accuracy                                    0.75       4
         macro avg                   0.83    0.75     0.73       4
         weighted avg                0.83    0.75     0.73       4
-        >>> 
+        >>>
         >>> # Multiclass classification example
         >>> multiclass_target = tensor([0, 1, 2, 2, 2])
         >>> multiclass_preds = tensor([0, 0, 2, 2, 1])
@@ -489,7 +517,7 @@ def classification_report(
         accuracy                                    0.60       5
         macro avg                  0.50    0.56     0.49       5
         weighted avg               0.70    0.60     0.61       5
-        >>> 
+        >>>
         >>> # Multilabel classification example
         >>> multilabel_target = tensor([[1, 0, 1], [0, 1, 0], [1, 1, 0]])
         >>> multilabel_preds = tensor([[1, 0, 1], [0, 1, 1], [1, 0, 0]])
@@ -512,6 +540,7 @@ def classification_report(
         macro avg                  0.83    0.83     0.78       5
         weighted avg               0.90    0.80     0.80       5
         samples avg                0.83    0.83     0.78       5
+
     """
     # Determine if micro average should be shown in the report based on classification task
     # Following scikit-learn's logic:
@@ -521,18 +550,16 @@ def classification_report(
     # - Don't show for full multiclass classification with all classes (micro avg is same as accuracy)
     show_micro_avg = False
     is_multilabel = task == ClassificationTask.MULTILABEL
-    
+
     # Compute task-specific metrics
     if task == ClassificationTask.BINARY:
         class_metrics = _compute_binary_metrics(preds, target, threshold, ignore_index, validate_args)
-        accuracy_val = binary_accuracy(preds, target, threshold, ignore_index=ignore_index, validate_args=validate_args).item()
-        
+        accuracy_val = binary_accuracy(
+            preds, target, threshold, ignore_index=ignore_index, validate_args=validate_args
+        ).item()
+
         # Calculate micro metrics (same as accuracy for binary classification)
-        micro_metrics = {
-            "precision": accuracy_val,
-            "recall": accuracy_val,
-            "f1-score": accuracy_val
-        }
+        micro_metrics = {"precision": accuracy_val, "recall": accuracy_val, "f1-score": accuracy_val}
         # For binary classification, don't show micro avg (it's same as accuracy)
         show_micro_avg = False
 
@@ -541,13 +568,12 @@ def classification_report(
             raise ValueError("num_classes must be provided for multiclass classification")
 
         class_metrics = _compute_multiclass_metrics(preds, target, num_classes, ignore_index, validate_args, top_k)
-        
+
         # Filter metrics by labels if provided
         if labels is not None:
             # Create a new dict with only the specified labels
             filtered_metrics = {
-                class_idx: metrics for class_idx, metrics in class_metrics.items() 
-                if class_idx in labels
+                class_idx: metrics for class_idx, metrics in class_metrics.items() if class_idx in labels
             }
             class_metrics = filtered_metrics
             show_micro_avg = True  # Always show micro avg when specific labels are requested
@@ -565,26 +591,38 @@ def classification_report(
             ignore_index=ignore_index,
             validate_args=validate_args,
         ).item()
-        
+
         # Calculate micro-averaged metrics
         micro_precision = multiclass_precision(
-            preds, target, num_classes=num_classes, average="micro", 
-            top_k=top_k, ignore_index=ignore_index, validate_args=validate_args
+            preds,
+            target,
+            num_classes=num_classes,
+            average="micro",
+            top_k=top_k,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
         ).item()
         micro_recall = multiclass_recall(
-            preds, target, num_classes=num_classes, average="micro", 
-            top_k=top_k, ignore_index=ignore_index, validate_args=validate_args
+            preds,
+            target,
+            num_classes=num_classes,
+            average="micro",
+            top_k=top_k,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
         ).item()
         micro_f1 = multiclass_fbeta_score(
-            preds, target, beta=1.0, num_classes=num_classes, average="micro",
-            top_k=top_k, ignore_index=ignore_index, validate_args=validate_args
+            preds,
+            target,
+            beta=1.0,
+            num_classes=num_classes,
+            average="micro",
+            top_k=top_k,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
         ).item()
-        
-        micro_metrics = {
-            "precision": micro_precision,
-            "recall": micro_recall,
-            "f1-score": micro_f1
-        }
+
+        micro_metrics = {"precision": micro_precision, "recall": micro_recall, "f1-score": micro_f1}
 
     elif task == ClassificationTask.MULTILABEL:
         if num_labels is None:
@@ -592,29 +630,47 @@ def classification_report(
 
         class_metrics = _compute_multilabel_metrics(preds, target, num_labels, threshold, ignore_index, validate_args)
         accuracy_val = multilabel_accuracy(
-            preds, target, num_labels=num_labels, threshold=threshold, average="micro", ignore_index=ignore_index, validate_args=validate_args
+            preds,
+            target,
+            num_labels=num_labels,
+            threshold=threshold,
+            average="micro",
+            ignore_index=ignore_index,
+            validate_args=validate_args,
         ).item()
-        
+
         # Calculate micro-averaged metrics
         micro_precision = multilabel_precision(
-            preds, target, num_labels=num_labels, threshold=threshold, 
-            average="micro", ignore_index=ignore_index, validate_args=validate_args
+            preds,
+            target,
+            num_labels=num_labels,
+            threshold=threshold,
+            average="micro",
+            ignore_index=ignore_index,
+            validate_args=validate_args,
         ).item()
         micro_recall = multilabel_recall(
-            preds, target, num_labels=num_labels, threshold=threshold, 
-            average="micro", ignore_index=ignore_index, validate_args=validate_args
+            preds,
+            target,
+            num_labels=num_labels,
+            threshold=threshold,
+            average="micro",
+            ignore_index=ignore_index,
+            validate_args=validate_args,
         ).item()
         micro_f1 = multilabel_fbeta_score(
-            preds, target, beta=1.0, num_labels=num_labels, threshold=threshold, 
-            average="micro", ignore_index=ignore_index, validate_args=validate_args
+            preds,
+            target,
+            beta=1.0,
+            num_labels=num_labels,
+            threshold=threshold,
+            average="micro",
+            ignore_index=ignore_index,
+            validate_args=validate_args,
         ).item()
-        
-        micro_metrics = {
-            "precision": micro_precision,
-            "recall": micro_recall,
-            "f1-score": micro_f1
-        }
-        
+
+        micro_metrics = {"precision": micro_precision, "recall": micro_recall, "f1-score": micro_f1}
+
         # Always show micro avg for multilabel
         show_micro_avg = True
 
@@ -628,31 +684,28 @@ def classification_report(
     # to ensure proper calculation of overall statistics, but before formatting
     if task == ClassificationTask.MULTICLASS and labels is not None:
         # Create a new dict with only the specified labels
-        filtered_metrics = {
-            class_idx: metrics for class_idx, metrics in class_metrics.items() 
-            if class_idx in labels
-        }
+        filtered_metrics = {class_idx: metrics for class_idx, metrics in class_metrics.items() if class_idx in labels}
         class_metrics = filtered_metrics
 
     # Convert integer keys to strings for compatibility with _format_report
     class_metrics_str = {str(k): v for k, v in class_metrics.items()}
-    
+
     # Apply zero_division to micro metrics
     for key in micro_metrics:
         micro_metrics[key] = _handle_zero_division(micro_metrics[key], zero_division)
 
     return _format_report(
-        class_metrics_str, 
-        accuracy_val, 
-        target_names, 
-        digits, 
-        output_dict, 
-        micro_metrics, 
-        show_micro_avg, 
+        class_metrics_str,
+        accuracy_val,
+        target_names,
+        digits,
+        output_dict,
+        micro_metrics,
+        show_micro_avg,
         is_multilabel,
         preds if is_multilabel else None,
         target if is_multilabel else None,
-        threshold
+        threshold,
     )
 
 
@@ -707,6 +760,7 @@ def binary_classification_report(
         accuracy                                    0.75       4
         macro avg                  0.83    0.75     0.73       4
         weighted avg               0.83    0.75     0.73       4
+
     """
     return classification_report(
         preds,
@@ -780,6 +834,7 @@ def multiclass_classification_report(
         accuracy                                  0.60       5
         macro avg                0.50    0.56     0.49       5
         weighted avg             0.70    0.60     0.61       5
+
     """
     return classification_report(
         preds,
