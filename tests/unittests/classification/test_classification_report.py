@@ -868,9 +868,7 @@ class TestTopKFunctionality:
         ])
         target = torch.tensor([0, 2, 1])
 
-        multiclass_classification_report(
-            preds=preds, target=target, num_classes=3, top_k=1, output_dict=True
-        )
+        multiclass_classification_report(preds=preds, target=target, num_classes=3, top_k=1, output_dict=True)
 
         # Test top_k=2 (should have higher accuracy)
         result_k2 = multiclass_classification_report(
@@ -894,9 +892,7 @@ class TestTopKFunctionality:
         ])
         target = torch.tensor([0, 2, 1])
 
-        multiclass_classification_report(
-            preds=preds, target=target, num_classes=3, top_k=1, output_dict=True
-        )
+        multiclass_classification_report(preds=preds, target=target, num_classes=3, top_k=1, output_dict=True)
 
         result_k2 = multiclass_classification_report(
             preds=preds, target=target, num_classes=3, top_k=2, output_dict=True
@@ -970,9 +966,7 @@ class TestTopKFunctionality:
         preds = torch.tensor([1, 2, 0])  # Hard predictions
         target = torch.tensor([0, 2, 1])
 
-        multiclass_classification_report(
-            preds=preds, target=target, num_classes=3, top_k=1, output_dict=True
-        )
+        multiclass_classification_report(preds=preds, target=target, num_classes=3, top_k=1, output_dict=True)
 
         # With hard predictions, top_k > 1 should raise an error
         with pytest.raises(RuntimeError, match="selected index k out of range"):
