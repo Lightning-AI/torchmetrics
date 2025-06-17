@@ -14,12 +14,15 @@
 from collections.abc import Sequence
 from typing import Any, Dict, List, Optional, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification.base import _ClassificationTaskWrapper
-from torchmetrics.collections import MetricCollection
+from torchmetrics.functional.classification.classification_report import (
+    binary_classification_report,
+    multiclass_classification_report,
+    multilabel_classification_report,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
@@ -78,183 +81,19 @@ class _BaseClassificationReport(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric with predictions and targets."""
-        self.metrics.update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Union[Dict[str, Union[Tensor, Dict[str, Union[float, int]]]], str]:
-        """Compute the classification report."""
-        metrics_dict = self.metrics.compute()
-        precision, recall, f1, accuracy = self._extract_metrics(metrics_dict)
-
-        target = dim_zero_cat(self.target)
-        support = self._compute_support(target)
+    def compute(self) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+        """Compute the classification report using functional interface."""
         preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target)
+        
+        return self._call_functional_report(preds, target)
 
-        return self._format_report(precision, recall, f1, support, accuracy, preds, target)
-
-    @property
-    def metrics(self) -> MetricCollection:
-        """Get the metrics collection."""
-        raise NotImplementedError("Subclasses must implement the metrics property")
-
-    def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Extract and format metrics from the metrics dictionary.
-
-        To be implemented by subclasses.
-
-        """
-        raise NotImplementedError
-
-    def _compute_support(self, target: Tensor) -> Tensor:
-        """Compute support values.
-
-        To be implemented by subclasses.
-
-        """
-        raise NotImplementedError
-
-    def _format_report(
-        self,
-        precision: Tensor,
-        recall: Tensor,
-        f1: Tensor,
-        support: Tensor,
-        accuracy: Tensor,
-        preds: Tensor,
-        target: Tensor,
-    ) -> Union[Dict[str, Union[Tensor, Dict[str, Union[float, int]]]], str]:
-        """Format the classification report as either a dictionary or string."""
-        if self.output_dict:
-            return self._format_dict_report(precision, recall, f1, support, accuracy, preds, target)
-        return self._format_string_report(precision, recall, f1, support, accuracy)
-
-    def _format_dict_report(
-        self,
-        precision: Tensor,
-        recall: Tensor,
-        f1: Tensor,
-        support: Tensor,
-        accuracy: Tensor,
-        preds: Tensor,
-        target: Tensor,
-    ) -> Dict[str, Union[Tensor, Dict[str, Union[float, int]]]]:
-        """Format the classification report as a dictionary."""
-        report_dict: Dict[str, Union[Tensor, Dict[str, Union[float, int]]]] = {
-            "precision": precision,
-            "recall": recall,
-            "f1-score": f1,
-            "support": support,
-            "accuracy": accuracy,
-            "preds": preds,
-            "target": target,
-        }
-
-        # Add class-specific entries
-        for i, name in enumerate(self.target_names):
-            report_dict[name] = {
-                "precision": precision[i].item(),
-                "recall": recall[i].item(),
-                "f1-score": f1[i].item(),
-                "support": support[i].item(),
-            }
-
-        # Add aggregate metrics
-        report_dict["macro avg"] = {
-            "precision": precision.mean().item(),
-            "recall": recall.mean().item(),
-            "f1-score": f1.mean().item(),
-            "support": support.sum().item(),
-        }
-
-        # Add weighted average
-        weighted_precision = (precision * support).sum() / support.sum()
-        weighted_recall = (recall * support).sum() / support.sum()
-        weighted_f1 = (f1 * support).sum() / support.sum()
-
-        report_dict["weighted avg"] = {
-            "precision": weighted_precision.item(),
-            "recall": weighted_recall.item(),
-            "f1-score": weighted_f1.item(),
-            "support": support.sum().item(),
-        }
-
-        return report_dict
-
-    def _format_string_report(
-        self,
-        precision: Tensor,
-        recall: Tensor,
-        f1: Tensor,
-        support: Tensor,
-        accuracy: Tensor,
-    ) -> str:
-        """Format the classification report as a string."""
-        headers = ["precision", "recall", "f1-score", "support"]
-
-        # Set up string formatting
-        name_width = max(len(cn) for cn in self.target_names)
-        longest_last_line_heading = "weighted avg"
-        width = max(name_width, len(longest_last_line_heading))
-
-        # Create the header line with proper spacing
-        head_fmt = "{:>{width}s} " + " {:>9}" * len(headers)
-        report = head_fmt.format("", *headers, width=width)
-        report += "\n\n"
-
-        # Format for rows
-        row_fmt = "{:>{width}s} " + " {:>9.{digits}f}" * 3 + " {:>9}\n"
-
-        # Add result rows
-        for i, name in enumerate(self.target_names):
-            report += row_fmt.format(
-                name,
-                precision[i].item(),
-                recall[i].item(),
-                f1[i].item(),
-                int(support[i].item()),
-                width=width,
-                digits=self.digits,
-            )
-
-        # Add blank line
-        report += "\n"
-
-        # Add accuracy row - with exact spacing matching sklearn
-        report += "{:>{width}s} {:>18} {:>11.{digits}f} {:>9}\n".format(
-            "accuracy", "", accuracy.item(), int(support.sum().item()), width=width, digits=self.digits
-        )
-
-        # Add macro avg
-        macro_precision = precision.mean().item()
-        macro_recall = recall.mean().item()
-        macro_f1 = f1.mean().item()
-        report += row_fmt.format(
-            "macro avg",
-            macro_precision,
-            macro_recall,
-            macro_f1,
-            int(support.sum().item()),
-            width=width,
-            digits=self.digits,
-        )
-
-        # Add weighted avg
-        weighted_precision = (precision * support).sum() / support.sum()
-        weighted_recall = (recall * support).sum() / support.sum()
-        weighted_f1 = (f1 * support).sum() / support.sum()
-
-        report += row_fmt.format(
-            "weighted avg",
-            weighted_precision.item(),
-            weighted_recall.item(),
-            weighted_f1.item(),
-            int(support.sum().item()),
-            width=width,
-            digits=self.digits,
-        )
-
-        return report
+    def _call_functional_report(self, preds: Tensor, target: Tensor) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+        """Call the appropriate functional classification report."""
+        raise NotImplementedError("Subclasses must implement _call_functional_report")
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -318,27 +157,27 @@ class BinaryClassificationReport(_BaseClassificationReport):
         output_dict: If True, return a dict instead of a string report
         zero_division: Value to use when dividing by zero
 
-    Example (with int tensors):
+    Example:
         >>> from torch import tensor
-        >>> from torchmetrics.classification import ClassificationReport
-        >>> target = tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = tensor([1, 0, 1, 1, 0, 1])
-        >>> metric = ClassificationReport(
-        ...     task="binary",
-        ...     num_classes=2,
-        ...     output_dict=False,
+        >>> from torchmetrics.classification.classification_report import binary_classification_report
+        >>> target = tensor([0, 1, 0, 1])
+        >>> preds = tensor([0, 1, 1, 1])
+        >>> target_names = ['0', '1']
+        >>> report = binary_classification_report(
+        ...     preds=preds,
+        ...     target=target,
+        ...     target_names=target_names,
+        ...     digits=2
         ... )
-        >>> metric.update(preds, target)
-        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
-                      precision    recall  f1-score   support
+        >>> print(report) # doctest: +NORMALIZE_WHITESPACE
+                              precision  recall f1-score support
         <BLANKLINE>
-                   0       0.50      0.33      0.43         3
-                   1       0.50      0.67      0.57         3
+        0                          1.00    0.50     0.67       2
+        1                          0.67    1.00     0.80       2
         <BLANKLINE>
-            accuracy                           0.50         6
-           macro avg       0.50      0.50      0.50         6
-        weighted avg       0.50      0.50      0.50         6
-
+        accuracy                                    0.75       4
+        macro avg                  0.83    0.75     0.73       4
+        weighted avg               0.83    0.75     0.73       4
     """
 
     def __init__(
@@ -349,6 +188,7 @@ class BinaryClassificationReport(_BaseClassificationReport):
         digits: int = 2,
         output_dict: bool = False,
         zero_division: Union[str, int] = "warn",
+        ignore_index: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -360,8 +200,7 @@ class BinaryClassificationReport(_BaseClassificationReport):
             **kwargs,
         )
         self.threshold = threshold
-        self.task = "binary"
-        self.num_classes = 2
+        self.ignore_index = ignore_index
 
         # Set target names if they were provided
         if target_names is not None:
@@ -369,46 +208,18 @@ class BinaryClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = ["0", "1"]
 
-        # Initialize metrics lazily to avoid circular imports
-        self._metrics: Optional[MetricCollection] = None
-
-    @property
-    def metrics(self) -> MetricCollection:
-        """Get the metrics collection.
-
-        Returns:
-            MetricCollection: Collection of binary classification metrics including precision, recall, f1, and accuracy.
-
-        """
-        if self._metrics is None:
-            from torchmetrics.classification import (
-                BinaryAccuracy,
-                BinaryF1Score,
-                BinaryPrecision,
-                BinaryRecall,
-            )
-
-            self._metrics = MetricCollection({
-                "precision": BinaryPrecision(threshold=self.threshold),
-                "recall": BinaryRecall(threshold=self.threshold),
-                "f1": BinaryF1Score(threshold=self.threshold),
-                "accuracy": BinaryAccuracy(threshold=self.threshold),
-            })
-        return self._metrics
-
-    def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Extract and format metrics from the metrics dictionary for binary classification."""
-        # For binary classification, we need to create per-class metrics
-        precision = torch.tensor([1 - metrics_dict["precision"], metrics_dict["precision"]])
-        recall = torch.tensor([1 - metrics_dict["recall"], metrics_dict["recall"]])
-        f1 = torch.tensor([1 - metrics_dict["f1"], metrics_dict["f1"]])
-        accuracy = metrics_dict["accuracy"]
-        return precision, recall, f1, accuracy
-
-    def _compute_support(self, target: Tensor) -> Tensor:
-        """Compute support values for binary classification."""
-        return torch.bincount(target.int(), minlength=self.num_classes).float()
-
+    def _call_functional_report(self, preds: Tensor, target: Tensor) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+        """Call binary classification report from functional interface."""
+        return binary_classification_report(
+            preds=preds,
+            target=target,
+            threshold=self.threshold,
+            target_names=self.target_names,
+            digits=self.digits,
+            output_dict=self.output_dict,
+            zero_division=self.zero_division,
+            ignore_index=self.ignore_index,
+        )
 
 class MulticlassClassificationReport(_BaseClassificationReport):
     r"""Compute precision, recall, F-measure and support for multiclass classification tasks.
@@ -447,29 +258,32 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         digits: Number of decimal places to display in the report
         output_dict: If True, return a dict instead of a string report
         zero_division: Value to use when dividing by zero
+        top_k: Number of highest probability or logit score predictions considered to find the correct label.
+            Only works when ``preds`` contain probabilities/logits.
 
-    Example (with int tensors):
+    Example:
         >>> from torch import tensor
-        >>> from torchmetrics.classification import ClassificationReport
-        >>> target = tensor([2, 1, 0, 1, 0, 1])
-        >>> preds = tensor([2, 0, 1, 1, 0, 1])
-        >>> metric = ClassificationReport(
-        ...     task="multiclass",
+        >>> from torchmetrics.classification.classification_report import multiclass_classification_report
+        >>> target = tensor([0, 1, 2, 2, 2])
+        >>> preds = tensor([0, 0, 2, 2, 1])
+        >>> target_names = ["class 0", "class 1", "class 2"]
+        >>> report = multiclass_classification_report(
+        ...     preds=preds,
+        ...     target=target,
         ...     num_classes=3,
-        ...     output_dict=False,
+        ...     target_names=target_names,
+        ...     digits=2
         ... )
-        >>> metric.update(preds, target)
-        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
-                      precision    recall  f1-score   support
+        >>> print(report) # doctest: +NORMALIZE_WHITESPACE
+                            precision  recall f1-score support
         <BLANKLINE>
-                   0       0.50      0.50      0.50         2
-                   1       0.67      0.67      0.67         3
-                   2       1.00      1.00      1.00         1
+        class 0                  0.50    1.00     0.67       1
+        class 1                  0.00    0.00     0.00       1
+        class 2                  1.00    0.67     0.80       3
         <BLANKLINE>
-            accuracy                           0.67         6
-           macro avg       0.72      0.72      0.72         6
-        weighted avg       0.67      0.67      0.67         6
-
+        accuracy                                  0.60       5
+        macro avg                0.50    0.56     0.49       5
+        weighted avg             0.70    0.60     0.61       5
     """
 
     plot_legend_name: str = "Class"
@@ -482,6 +296,8 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         digits: int = 2,
         output_dict: bool = False,
         zero_division: Union[str, int] = "warn",
+        ignore_index: Optional[int] = None,
+        top_k: int = 1,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -492,8 +308,9 @@ class MulticlassClassificationReport(_BaseClassificationReport):
             zero_division=zero_division,
             **kwargs,
         )
-        self.task = "multiclass"
         self.num_classes = num_classes
+        self.ignore_index = ignore_index
+        self.top_k = top_k
 
         # Set target names if they were provided
         if target_names is not None:
@@ -501,46 +318,19 @@ class MulticlassClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = [str(i) for i in range(num_classes)]
 
-        # Initialize metrics lazily to avoid circular imports
-        self._metrics: Optional[MetricCollection] = None
-
-    @property
-    def metrics(self) -> MetricCollection:
-        """Get the metrics collection.
-
-        Returns:
-            MetricCollection: Collection of multiclass classification metrics
-                including precision, recall, f1, and accuracy.
-
-        """
-        if self._metrics is None:
-            from torchmetrics.classification import (
-                MulticlassAccuracy,
-                MulticlassF1Score,
-                MulticlassPrecision,
-                MulticlassRecall,
-            )
-
-            self._metrics = MetricCollection({
-                "precision": MulticlassPrecision(num_classes=self.num_classes, average=None),
-                "recall": MulticlassRecall(num_classes=self.num_classes, average=None),
-                "f1": MulticlassF1Score(num_classes=self.num_classes, average=None),
-                "accuracy": MulticlassAccuracy(num_classes=self.num_classes, average="micro"),
-            })
-        return self._metrics
-
-    def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Extract and format metrics from the metrics dictionary for multiclass classification."""
-        precision = metrics_dict["precision"]
-        recall = metrics_dict["recall"]
-        f1 = metrics_dict["f1"]
-        accuracy = metrics_dict["accuracy"]
-        return precision, recall, f1, accuracy
-
-    def _compute_support(self, target: Tensor) -> Tensor:
-        """Compute support values for multiclass classification."""
-        return torch.bincount(target.int(), minlength=self.num_classes).float()
-
+    def _call_functional_report(self, preds: Tensor, target: Tensor) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+        """Call multiclass classification report from functional interface."""
+        return multiclass_classification_report(
+            preds=preds,
+            target=target,
+            num_classes=self.num_classes,
+            target_names=self.target_names,
+            digits=self.digits,
+            output_dict=self.output_dict,
+            zero_division=self.zero_division,
+            ignore_index=self.ignore_index,
+            top_k=self.top_k,
+        )
 
 class MultilabelClassificationReport(_BaseClassificationReport):
     r"""Compute precision, recall, F-measure and support for multilabel classification tasks.
@@ -583,30 +373,30 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         output_dict: If True, return a dict instead of a string report
         zero_division: Value to use when dividing by zero
 
-    Example (with int tensors):
+    Example:
         >>> from torch import tensor
-        >>> from torchmetrics.classification import ClassificationReport
-        >>> labels = ['A', 'B', 'C']
-        >>> target = tensor([[1, 0, 1], [0, 1, 0], [1, 1, 1]])
-        >>> preds = tensor([[1, 0, 0], [0, 1, 1], [1, 1, 1]])
-        >>> metric = ClassificationReport(
-        ...     task="multilabel",
-        ...     num_labels=len(labels),
-        ...     target_names=labels,
-        ...     output_dict=False,
+        >>> from torchmetrics.classification.classification_report import multilabel_classification_report
+        >>> target = tensor([[1, 0, 1], [0, 1, 0], [1, 1, 0]])
+        >>> preds = tensor([[1, 0, 1], [0, 1, 1], [1, 0, 0]])
+        >>> target_names = ["Label A", "Label B", "Label C"]
+        >>> report = multilabel_classification_report(
+        ...     preds=preds,
+        ...     target=target,
+        ...     num_labels=len(target_names),
+        ...     target_names=target_names,
+        ...     digits=2,
         ... )
-        >>> metric.update(preds, target)
-        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
-                      precision    recall  f1-score   support
+        >>> print(report) # doctest: +NORMALIZE_WHITESPACE
+                            precision  recall f1-score support
         <BLANKLINE>
-                   A       1.00      1.00      1.00         2
-                   B       1.00      1.00      1.00         2
-                   C       0.50      0.50      0.50         2
+        Label A                  1.00    1.00     1.00       2
+        Label B                  1.00    0.50     0.67       2
+        Label C                  0.50    1.00     0.67       1
         <BLANKLINE>
-            accuracy                           0.78         6
-           macro avg       0.83      0.83      0.83         6
-        weighted avg       0.83      0.83      0.83         6
-
+        micro avg                0.80    0.80     0.80       5
+        macro avg                0.83    0.83     0.78       5
+        weighted avg             0.90    0.80     0.80       5
+        samples avg              0.83    0.83     0.78       5
     """
 
     plot_legend_name: str = "Label"
@@ -620,6 +410,7 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         digits: int = 2,
         output_dict: bool = False,
         zero_division: Union[str, int] = "warn",
+        ignore_index: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -631,8 +422,8 @@ class MultilabelClassificationReport(_BaseClassificationReport):
             **kwargs,
         )
         self.threshold = threshold
-        self.task = "multilabel"
         self.num_labels = num_labels
+        self.ignore_index = ignore_index
 
         # Set target names if they were provided
         if target_names is not None:
@@ -640,46 +431,19 @@ class MultilabelClassificationReport(_BaseClassificationReport):
         else:
             self.target_names = [str(i) for i in range(num_labels)]
 
-        # Initialize metrics lazily to avoid circular imports
-        self._metrics: Optional[MetricCollection] = None
-
-    @property
-    def metrics(self) -> MetricCollection:
-        """Get the metrics collection.
-
-        Returns:
-            MetricCollection: Collection of multilabel classification metrics
-                including precision, recall, f1, and accuracy.
-
-        """
-        if self._metrics is None:
-            from torchmetrics.classification import (
-                MultilabelAccuracy,
-                MultilabelF1Score,
-                MultilabelPrecision,
-                MultilabelRecall,
-            )
-
-            self._metrics = MetricCollection({
-                "precision": MultilabelPrecision(num_labels=self.num_labels, average=None, threshold=self.threshold),
-                "recall": MultilabelRecall(num_labels=self.num_labels, average=None, threshold=self.threshold),
-                "f1": MultilabelF1Score(num_labels=self.num_labels, average=None, threshold=self.threshold),
-                "accuracy": MultilabelAccuracy(num_labels=self.num_labels, average="micro", threshold=self.threshold),
-            })
-        return self._metrics
-
-    def _extract_metrics(self, metrics_dict: Dict[str, Any]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Extract and format metrics from the metrics dictionary for multilabel classification."""
-        precision = metrics_dict["precision"]
-        recall = metrics_dict["recall"]
-        f1 = metrics_dict["f1"]
-        accuracy = metrics_dict["accuracy"]
-        return precision, recall, f1, accuracy
-
-    def _compute_support(self, target: Tensor) -> Tensor:
-        """Compute support values for multilabel classification."""
-        return torch.sum(target, dim=0)
-
+    def _call_functional_report(self, preds: Tensor, target: Tensor) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
+        """Call multilabel classification report from functional interface."""
+        return multilabel_classification_report(
+            preds=preds,
+            target=target,
+            num_labels=self.num_labels,
+            threshold=self.threshold,
+            target_names=self.target_names,
+            digits=self.digits,
+            output_dict=self.output_dict,
+            zero_division=self.zero_division,
+            ignore_index=self.ignore_index,
+        )
 
 class ClassificationReport(_ClassificationTaskWrapper):
     r"""Compute precision, recall, F-measure and support for each class.
@@ -696,86 +460,34 @@ class ClassificationReport(_ClassificationTaskWrapper):
     Where :math:`TP` is true positives, :math:`FP` is false positives, :math:`FN` is false negatives,
     :math:`y` is a tensor of target values, :math:`k` is the class, and :math:`N` is the number of samples.
 
-    This module is a simple wrapper that computes per-class metrics and produces a formatted report.
-    The report shows the main classification metrics for each class and includes micro and macro averages.
-
-    As input to ``forward`` and ``update`` the metric accepts the following input:
-
-        - ``preds`` (:class:`~torch.Tensor`): A tensor of predictions
-        - ``target`` (:class:`~torch.Tensor`): A tensor of targets
-
-    As output to ``forward`` and ``compute`` the metric returns either:
-
-        - A formatted string report if ``output_dict=False``
-        - A dictionary of metrics if ``output_dict=True``
+    This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
+    :class:`~torchmetrics.classification.BinaryClassificationReport`, 
+    :class:`~torchmetrics.classification.MulticlassClassificationReport` and
+    :class:`~torchmetrics.classification.MultilabelClassificationReport` for the specific details of each argument 
+    influence and examples.
 
     Example (Binary Classification):
         >>> from torch import tensor
         >>> from torchmetrics.classification import ClassificationReport
-        >>> target = tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = tensor([1, 0, 1, 1, 0, 1])
-        >>> metric = ClassificationReport(
+        >>> target = tensor([0, 1, 0, 1])
+        >>> preds = tensor([0, 1, 1, 1])
+        >>> target_names = ['0', '1']
+        >>> report = ClassificationReport(
         ...     task="binary",
-        ...     num_classes=2,
-        ...     output_dict=False,
+        ...     target_names=target_names,
+        ...     digits=2
         ... )
-        >>> metric.update(preds, target)
-        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
-                      precision    recall  f1-score   support
+        >>> report.update(preds, target)
+        >>> print(report.compute()) # doctest: +NORMALIZE_WHITESPACE
+                              precision  recall f1-score support
         <BLANKLINE>
-                   0       0.50      0.33      0.43         3
-                   1       0.50      0.67      0.57         3
+        0                          1.00    0.50     0.67       2
+        1                          0.67    1.00     0.80       2
         <BLANKLINE>
-            accuracy                           0.50         6
-           macro avg       0.50      0.50      0.50         6
-        weighted avg       0.50      0.50      0.50         6
-
-    Example (Multiclass Classification):
-        >>> from torch import tensor
-        >>> from torchmetrics.classification import ClassificationReport
-        >>> target = tensor([2, 1, 0, 1, 0, 1])
-        >>> preds = tensor([2, 0, 1, 1, 0, 1])
-        >>> metric = ClassificationReport(
-        ...     task="multiclass",
-        ...     num_classes=3,
-        ...     output_dict=False,
-        ... )
-        >>> metric.update(preds, target)
-        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
-                      precision    recall  f1-score   support
-        <BLANKLINE>
-                   0       0.50      0.50      0.50         2
-                   1       0.67      0.67      0.67         3
-                   2       1.00      1.00      1.00         1
-        <BLANKLINE>
-            accuracy                           0.67         6
-           macro avg       0.72      0.72      0.72         6
-        weighted avg       0.67      0.67      0.67         6
-
-    Example (Multilabel Classification):
-        >>> from torch import tensor
-        >>> from torchmetrics.classification import ClassificationReport
-        >>> labels = ['A', 'B', 'C']
-        >>> target = tensor([[1, 0, 1], [0, 1, 0], [1, 1, 1]])
-        >>> preds = tensor([[1, 0, 0], [0, 1, 1], [1, 1, 1]])
-        >>> metric = ClassificationReport(
-        ...     task="multilabel",
-        ...     num_labels=len(labels),
-        ...     target_names=labels,
-        ...     output_dict=False,
-        ... )
-        >>> metric.update(preds, target)
-        >>> print(metric.compute()) # doctest: +NORMALIZE_WHITESPACE
-                      precision    recall  f1-score   support
-        <BLANKLINE>
-                   A       1.00      1.00      1.00         2
-                   B       1.00      1.00      1.00         2
-                   C       0.50      0.50      0.50         2
-        <BLANKLINE>
-            accuracy                           0.78         6
-           macro avg       0.83      0.83      0.83         6
-        weighted avg       0.83      0.83      0.83         6
-
+        accuracy                                    0.75       4
+        macro avg                  0.83    0.75     0.73       4
+        weighted avg               0.83    0.75     0.73       4
     """
 
     def __new__(  # type: ignore[misc]
@@ -789,31 +501,35 @@ class ClassificationReport(_ClassificationTaskWrapper):
         digits: int = 2,
         output_dict: bool = False,
         zero_division: Union[str, int] = "warn",
+        ignore_index: Optional[int] = None,
+        top_k: int = 1,
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
 
-        common_kwargs = {
+        kwargs.update({
             "target_names": target_names,
             "sample_weight": sample_weight,
             "digits": digits,
             "output_dict": output_dict,
             "zero_division": zero_division,
-            **kwargs,
-        }
+            "ignore_index": ignore_index,
+        })
 
         if task == ClassificationTask.BINARY:
-            return BinaryClassificationReport(threshold=threshold, **common_kwargs)
-
+            return BinaryClassificationReport(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
-            if num_classes is None:
-                raise ValueError("num_classes must be provided for multiclass classification")
-            return MulticlassClassificationReport(num_classes=num_classes, **common_kwargs)
-
+            if not isinstance(num_classes, int):
+                raise ValueError(
+                    f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
+                )
+            kwargs.update({"top_k": top_k})
+            return MulticlassClassificationReport(num_classes, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            if num_labels is None:
-                raise ValueError("num_labels must be provided for multilabel classification")
-            return MultilabelClassificationReport(num_labels=num_labels, threshold=threshold, **common_kwargs)
-
+            if not isinstance(num_labels, int):
+                raise ValueError(
+                    f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
+                )
+            return MultilabelClassificationReport(num_labels, **kwargs, threshold=threshold)
         raise ValueError(f"Not handled value: {task}")
