@@ -19,7 +19,7 @@ import torch
 from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
-from unittests._helpers import skip_on_connection_issues
+from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_BETWEEN_4_51_AND_4_52, skip_on_connection_issues
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
@@ -97,6 +97,13 @@ def _reference_infolm_score(preds, target, model_name, information_measure, idf,
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>=4.4")
+@pytest.mark.xfail(
+    RuntimeError,
+    # todo: if the transformers compatibility issue present in next feature release,
+    #  consider bumping also torch min versions in the metrics implementations
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_BETWEEN_4_51_AND_4_52,
+    reason="could be due to torch compatibility issues with transformers",
+)
 class TestInfoLM(TextTester):
     """Test class for `InfoLM` metric."""
 
