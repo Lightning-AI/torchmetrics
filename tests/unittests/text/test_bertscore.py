@@ -283,11 +283,6 @@ def test_bertscore_single_str_input():
                 "f1": torch.tensor([1.0000, 0.9811, 0.9961]),
             },
         ),
-        (
-            _inputs_multiple_references.preds,
-            _inputs_multiple_references.target,
-            "ValueError",
-        ),
     ],
 )
 @skip_on_connection_issues()
@@ -301,23 +296,28 @@ def test_bertscore_single_str_input():
 )
 def test_bertscore_multiple_references(preds, target, expected):
     """Test both functional and class APIs with multiple references."""
-    if expected == "ValueError":
-        import pytest
+    result_func = bert_score(preds, target)
+    for k in expected:
+        assert torch.allclose(result_func[k], expected[k], atol=1e-4), (
+            f"Functional {k} mismatch: {result_func[k]} vs {expected[k]}"
+        )
 
-        with pytest.raises(ValueError, match="Invalid input provided."):
-            bert_score(preds, target)
-        metric = BERTScore()
-        with pytest.raises(ValueError, match="Invalid input provided."):
-            metric(preds, target)
-    else:
-        result_func = bert_score(preds, target)
-        for k in expected:
-            assert torch.allclose(result_func[k], expected[k], atol=1e-4), (
-                f"Functional {k} mismatch: {result_func[k]} vs {expected[k]}"
-            )
-        metric = BERTScore()
-        result_class = metric(preds, target)
-        for k in expected:
-            assert torch.allclose(result_class[k], expected[k], atol=1e-4), (
-                f"Class {k} mismatch: {result_class[k]} vs {expected[k]}"
-            )
+    metric = BERTScore()
+    result_class = metric(preds, target)
+    for k in expected:
+        assert torch.allclose(result_class[k], expected[k], atol=1e-4), (
+            f"Class {k} mismatch: {result_class[k]} vs {expected[k]}"
+        )
+
+
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+def test_bertscore_invalid_references():
+    """Test both functional and class APIs with invalid references."""
+    preds = _inputs_multiple_references.preds
+    target = _inputs_multiple_references.target
+
+    with pytest.raises(ValueError, match="Invalid input provided."):
+        bert_score(preds, target)
+    metric = BERTScore()
+    with pytest.raises(ValueError, match="Invalid input provided."):
+        metric(preds, target)
