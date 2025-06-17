@@ -37,6 +37,9 @@ def _weighted_pearson_corrcoef_update(
 
     Check for same shape of input tensors.
 
+    Updates are based on `Algorithms for calculating variance`_. Specifically, `online weighted variance`_ and
+    `online weighted covariance`_.
+
     Args:
         preds: estimated scores
         target: ground truth scores
