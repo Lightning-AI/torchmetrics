@@ -49,13 +49,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed: Ensure `WrapperMetric` Resets `wrapped_metric` State ([#3123](https://github.com/Lightning-AI/torchmetrics/pull/3123))
-
-
-- Fixed: `top_k` in `multiclass_accuracy` ([#3117](https://github.com/Lightning-AI/torchmetrics/pull/3117))
+-
 
 
 ---
+
+## [1.7.3] - 2025-06-13
+
+### Fixed
+
+- Fixed: Ensure `WrapperMetric` Resets `wrapped_metric` State ([#3123](https://github.com/Lightning-AI/torchmetrics/pull/3123))
+- Fixed `top_k` in `multiclass_accuracy` ([#3117](https://github.com/Lightning-AI/torchmetrics/pull/3117))
+- Fixed compatibility to COCO format for `pycocotools` 2.0.10 ([#3131](https://github.com/Lightning-AI/torchmetrics/pull/3131))
+
 
 ## [1.7.2] - 2025-05-27
 
