@@ -1,2 +1,2 @@
-vmaf_torch @ git+https://github.com/alvitrioliks/VMAF-torch
+vmaf-torch >=1.1.0, <1.2.0
 einops
