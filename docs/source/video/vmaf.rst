@@ -18,5 +18,5 @@ ________________
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.segmentation.video_multi_method_assessment_fusion
+.. autofunction:: torchmetrics.functional.video.video_multi_method_assessment_fusion
     :noindex:
