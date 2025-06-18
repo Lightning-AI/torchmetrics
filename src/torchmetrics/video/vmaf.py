@@ -20,6 +20,9 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE
 
+if not _TORCH_VMAF_AVAILABLE:
+    __doctest_skip__ = ["VideoMultiMethodAssessmentFusion"]
+
 
 class VideoMultiMethodAssessmentFusion(Metric):
     """Calculates Video Multi-Method Assessment Fusion (VMAF) metric.

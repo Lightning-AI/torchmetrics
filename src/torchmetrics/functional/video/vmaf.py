@@ -21,6 +21,9 @@ from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE
 
 if _TORCH_VMAF_AVAILABLE:
     import vmaf_torch
+    import pandas as pd  # pandas is installed as a dependency of vmaf-torch
+else:
+    __doctest_skip__ = ["video_multi_method_assessment_fusion"]
 
 
 def calculate_luma(video: Tensor) -> Tensor:
@@ -121,7 +124,6 @@ def video_multi_method_assessment_fusion(
             for video in range(b)
         ]
         return torch.cat(scores, dim=1).t().to(orig_dtype)
-    import pandas as pd  # pandas is installed as a dependency of vmaf-torch
 
     scores_and_features = [
         vmaf.table(
