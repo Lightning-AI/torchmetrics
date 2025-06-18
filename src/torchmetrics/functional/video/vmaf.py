@@ -108,6 +108,7 @@ def video_multi_method_assessment_fusion(
         >>> vmaf_dict['integer_vif_scale0']
         tensor([[0.0013, 0.0005, 0.0010, 0.0004, 0.0003, 0.0018, 0.0016, 0.0015, 0.0003, 0.0010],
                 [0.0002, 0.0003, 0.0010, 0.0006, 0.0012, 0.0006, 0.0004, 0.0005, 0.0018, 0.0010]])
+
     """
     if not _TORCH_VMAF_AVAILABLE:
         raise RuntimeError("vmaf-torch is not installed. Please install with `pip install torchmetrics[video]`.")

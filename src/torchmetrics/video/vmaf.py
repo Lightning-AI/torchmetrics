@@ -41,7 +41,8 @@ class VideoMultiMethodAssessmentFusion(Metric):
 
     .. note::
        This implementation requires you to have vmaf-torch installed: https://github.com/alvitrioliks/VMAF-torch.
-       Install either by cloning the repository and running ``pip install .`` or with ``pip install torchmetrics[video]``.
+       Install either by cloning the repository and running ``pip install .``
+       or with ``pip install torchmetrics[video]``.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -52,9 +53,9 @@ class VideoMultiMethodAssessmentFusion(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-        - ``vmaf`` (:class:`~torch.Tensor`): If ``features`` is False, returns a tensor with shape (batch, frame) of VMAF
-          score for each frame in each video. Higher scores indicate better quality, with typical values ranging from
-          0 to 100.
+        - ``vmaf`` (:class:`~torch.Tensor`): If ``features`` is False, returns a tensor with shape (batch, frame)
+          of VMAF score for each frame in each video. Higher scores indicate better quality, with typical values
+          ranging from 0 to 100.
 
           If ``features`` is True, returns a dictionary where each value is a (batch, frame) tensor of the
           corresponding feature. The keys are:
@@ -73,8 +74,8 @@ class VideoMultiMethodAssessmentFusion(Metric):
 
     Args:
         features: If True, all the elementary features (ADM, VIF, motion) are returned along with the VMAF score in
-            a dictionary. This corresponds to the output you would get from the VMAF command line tool with the ``--csv``
-            option enabled. If False, only the VMAF score is returned as a tensor.
+            a dictionary. This corresponds to the output you would get from the VMAF command line tool with
+            the ``--csv`` option enabled. If False, only the VMAF score is returned as a tensor.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -104,6 +105,7 @@ class VideoMultiMethodAssessmentFusion(Metric):
         >>> vmaf_dict['integer_vif_scale0']
         tensor([[0.0013, 0.0005, 0.0010, 0.0004, 0.0003, 0.0018, 0.0016, 0.0015, 0.0003, 0.0010],
                 [0.0002, 0.0003, 0.0010, 0.0006, 0.0012, 0.0006, 0.0004, 0.0005, 0.0018, 0.0010]])
+
     """
 
     is_differentiable: bool = False
