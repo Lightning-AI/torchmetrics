@@ -19,8 +19,8 @@ from torch import Tensor
 from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE, _EINOPS_AVAILABLE
 
 if _TORCH_VMAF_AVAILABLE:
-    from vmaf_torch import VMAF
     import pandas as pd  # pandas is installed as a dependency of vmaf-torch
+    from vmaf_torch import VMAF
 else:
     __doctest_skip__ = ["video_multi_method_assessment_fusion"]
 
@@ -115,7 +115,7 @@ def video_multi_method_assessment_fusion(
     preds_luma = calculate_luma(preds)
     target_luma = calculate_luma(target)
 
-    vmaf = VMAF().to(device)
+    vmaf = vmaf_torch.VMAF().to(device)
 
     # we need to compute the model for each video separately
     if not features:
