@@ -16,11 +16,10 @@ from typing import Dict, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE, _EINOPS_AVAILABLE
+from torchmetrics.utilities.imports import _EINOPS_AVAILABLE, _TORCH_VMAF_AVAILABLE
 
 if _TORCH_VMAF_AVAILABLE:
     import pandas as pd  # pandas is installed as a dependency of vmaf-torch
-    from vmaf_torch import VMAF
 else:
     __doctest_skip__ = ["video_multi_method_assessment_fusion"]
 
