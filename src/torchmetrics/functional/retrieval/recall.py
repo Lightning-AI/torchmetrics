@@ -13,10 +13,10 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
+from torchmetrics.utilities.compute import build_positive_top_k_mask
 
 
 def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
@@ -55,9 +55,12 @@ def retrieval_recall(preds: Tensor, target: Tensor, top_k: Optional[int] = None)
 
     if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`top_k` has to be a positive integer or None")
-
+    mask = build_positive_top_k_mask(preds, top_k)
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
-    relevant = target[torch.argsort(preds, dim=-1, descending=True)][:top_k].sum().float()
-    return relevant / target.sum()
+    if not mask.sum():
+        return tensor(0.0, device=preds.device)
+
+    relevant_retrieved = target[mask].sum().float()
+    return relevant_retrieved / target.sum()
