@@ -20,8 +20,8 @@ from torch import Tensor
 from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE
 
 if _TORCH_VMAF_AVAILABLE:
-    import vmaf_torch
     import pandas as pd  # pandas is installed as a dependency of vmaf-torch
+    import vmaf_torch
 else:
     __doctest_skip__ = ["video_multi_method_assessment_fusion"]
 
