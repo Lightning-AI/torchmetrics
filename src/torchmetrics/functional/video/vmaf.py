@@ -14,11 +14,13 @@
 from typing import Dict, Union
 
 import torch
-import vmaf_torch
 from einops import rearrange
 from torch import Tensor
 
 from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE
+
+if _TORCH_VMAF_AVAILABLE:
+    import vmaf_torch
 
 
 def calculate_luma(video: Tensor) -> Tensor:
