@@ -48,14 +48,15 @@ def video_multi_method_assessment_fusion(
     quality more accurately than traditional metrics like PSNR or SSIM.
 
     The metric works by:
-    1. Converting input videos to luma component (grayscale)
-    2. Computing multiple elementary features:
-       - Additive Detail Measure (ADM): Evaluates detail preservation at different scales
-       - Visual Information Fidelity (VIF): Measures preservation of visual information across frequency bands
-       - Motion: Quantifies the amount of motion in the video
-    3. Combining these features using a trained SVM model to predict quality
+        1. Converting input videos to luma component (grayscale)
+        2. Computing multiple elementary features:
+            - Additive Detail Measure (ADM): Evaluates detail preservation at different scales
+            - Visual Information Fidelity (VIF): Measures preservation of visual information across frequency bands
+            - Motion: Quantifies the amount of motion in the video
+        3. Combining these features using a trained SVM model to predict quality
 
     .. note::
+
         This implementation requires you to have vmaf-torch installed: https://github.com/alvitrioliks/VMAF-torch.
         Install either by cloning the repository and running `pip install .` or with `pip install torchmetrics[video]`.
 
@@ -74,18 +75,18 @@ def video_multi_method_assessment_fusion(
 
         If `features` is True, returns a dictionary where each value is a (batch, frame) tensor of the
         corresponding feature. The keys are:
-        - 'integer_motion2': Integer motion feature
-        - 'integer_motion': Integer motion feature
-        - 'integer_adm2': Integer ADM feature
-        - 'integer_adm_scale0': Integer ADM feature at scale 0
-        - 'integer_adm_scale1': Integer ADM feature at scale 1
-        - 'integer_adm_scale2': Integer ADM feature at scale 2
-        - 'integer_adm_scale3': Integer ADM feature at scale 3
-        - 'integer_vif_scale0': Integer VIF feature at scale 0
-        - 'integer_vif_scale1': Integer VIF feature at scale 1
-        - 'integer_vif_scale2': Integer VIF feature at scale 2
-        - 'integer_vif_scale3': Integer VIF feature at scale 3
-        - 'vmaf': VMAF score for each frame in each video
+            - 'integer_motion2': Integer motion feature
+            - 'integer_motion': Integer motion feature
+            - 'integer_adm2': Integer ADM feature
+            - 'integer_adm_scale0': Integer ADM feature at scale 0
+            - 'integer_adm_scale1': Integer ADM feature at scale 1
+            - 'integer_adm_scale2': Integer ADM feature at scale 2
+            - 'integer_adm_scale3': Integer ADM feature at scale 3
+            - 'integer_vif_scale0': Integer VIF feature at scale 0
+            - 'integer_vif_scale1': Integer VIF feature at scale 1
+            - 'integer_vif_scale2': Integer VIF feature at scale 2
+            - 'integer_vif_scale3': Integer VIF feature at scale 3
+            - 'vmaf': VMAF score for each frame in each video
 
     Example:
         >>> import torch
@@ -107,7 +108,6 @@ def video_multi_method_assessment_fusion(
         >>> vmaf_dict['integer_vif_scale0']
         tensor([[0.0013, 0.0005, 0.0010, 0.0004, 0.0003, 0.0018, 0.0016, 0.0015, 0.0003, 0.0010],
                 [0.0002, 0.0003, 0.0010, 0.0006, 0.0012, 0.0006, 0.0004, 0.0005, 0.0018, 0.0010]])
-
     """
     if not _TORCH_VMAF_AVAILABLE:
         raise RuntimeError("vmaf-torch is not installed. Please install with `pip install torchmetrics[video]`.")

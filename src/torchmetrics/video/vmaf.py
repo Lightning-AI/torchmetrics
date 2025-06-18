@@ -32,48 +32,48 @@ class VideoMultiMethodAssessmentFusion(Metric):
     quality more accurately than traditional metrics like PSNR or SSIM.
 
     The metric works by:
-    1. Converting input videos to luma component (grayscale)
-    2. Computing multiple elementary features:
-       - Additive Detail Measure (ADM): Evaluates detail preservation at different scales
-       - Visual Information Fidelity (VIF): Measures preservation of visual information across frequency bands
-       - Motion: Quantifies the amount of motion in the video
-    3. Combining these features using a trained SVM model to predict quality
+        1. Converting input videos to luma component (grayscale)
+        2. Computing multiple elementary features:
+            - Additive Detail Measure (ADM): Evaluates detail preservation at different scales
+            - Visual Information Fidelity (VIF): Measures preservation of visual information across frequency bands
+            - Motion: Quantifies the amount of motion in the video
+        3. Combining these features using a trained SVM model to predict quality
 
     .. note::
-        This implementation requires you to have vmaf-torch installed: https://github.com/alvitrioliks/VMAF-torch.
-        Install either by cloning the repository and running `pip install .` or with `pip install torchmetrics[video]`.
+       This implementation requires you to have vmaf-torch installed: https://github.com/alvitrioliks/VMAF-torch.
+       Install either by cloning the repository and running ``pip install .`` or with ``pip install torchmetrics[video]``.
 
-    As input to ``forward`` and ``update`` the metric accepts the following input
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Video tensor of shape ``(batch, channels, frames, height, width)``.
-      Expected to be in RGB format with values in range [0, 1].
-    - ``target`` (:class:`~torch.Tensor`): Video tensor of shape ``(batch, channels, frames, height, width)``.
-      Expected to be in RGB format with values in range [0, 1].
+        - ``preds`` (:class:`~torch.Tensor`): Video tensor of shape ``(batch, channels, frames, height, width)``.
+          Expected to be in RGB format with values in range [0, 1].
+        - ``target`` (:class:`~torch.Tensor`): Video tensor of shape ``(batch, channels, frames, height, width)``.
+          Expected to be in RGB format with values in range [0, 1].
 
-    As output of `forward` and `compute` the metric returns the following output
+    As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``vmaf`` (:class:`~torch.Tensor`): If `features` is False, returns a tensor with shape (batch, frame) of VMAF
-        score for each frame in each video. Higher scores indicate better quality, with typical values ranging from
-        0 to 100.
+        - ``vmaf`` (:class:`~torch.Tensor`): If ``features`` is False, returns a tensor with shape (batch, frame) of VMAF
+          score for each frame in each video. Higher scores indicate better quality, with typical values ranging from
+          0 to 100.
 
-        If `features` is True, returns a dictionary where each value is a (batch, frame) tensor of the
-        corresponding feature. The keys are:
-        - 'integer_motion2': Integer motion feature
-        - 'integer_motion': Integer motion feature
-        - 'integer_adm2': Integer ADM feature
-        - 'integer_adm_scale0': Integer ADM feature at scale 0
-        - 'integer_adm_scale1': Integer ADM feature at scale 1
-        - 'integer_adm_scale2': Integer ADM feature at scale 2
-        - 'integer_adm_scale3': Integer ADM feature at scale 3
-        - 'integer_vif_scale0': Integer VIF feature at scale 0
-        - 'integer_vif_scale1': Integer VIF feature at scale 1
-        - 'integer_vif_scale2': Integer VIF feature at scale 2
-        - 'integer_vif_scale3': Integer VIF feature at scale 3
-        - 'vmaf': VMAF score for each frame in each video
+          If ``features`` is True, returns a dictionary where each value is a (batch, frame) tensor of the
+          corresponding feature. The keys are:
+            - 'integer_motion2': Integer motion feature
+            - 'integer_motion': Integer motion feature
+            - 'integer_adm2': Integer ADM feature
+            - 'integer_adm_scale0': Integer ADM feature at scale 0
+            - 'integer_adm_scale1': Integer ADM feature at scale 1
+            - 'integer_adm_scale2': Integer ADM feature at scale 2
+            - 'integer_adm_scale3': Integer ADM feature at scale 3
+            - 'integer_vif_scale0': Integer VIF feature at scale 0
+            - 'integer_vif_scale1': Integer VIF feature at scale 1
+            - 'integer_vif_scale2': Integer VIF feature at scale 2
+            - 'integer_vif_scale3': Integer VIF feature at scale 3
+            - 'vmaf': VMAF score for each frame in each video
 
     Args:
         features: If True, all the elementary features (ADM, VIF, motion) are returned along with the VMAF score in
-            a dictionary. This corresponds to the output you would get from the VMAF command line tool with the `--csv`
+            a dictionary. This corresponds to the output you would get from the VMAF command line tool with the ``--csv``
             option enabled. If False, only the VMAF score is returned as a tensor.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -81,7 +81,7 @@ class VideoMultiMethodAssessmentFusion(Metric):
         RuntimeError:
             If vmaf-torch is not installed.
         ValueError:
-            If `features` is not a boolean.
+            If ``features`` is not a boolean.
 
     Example:
         >>> import torch
@@ -104,7 +104,6 @@ class VideoMultiMethodAssessmentFusion(Metric):
         >>> vmaf_dict['integer_vif_scale0']
         tensor([[0.0013, 0.0005, 0.0010, 0.0004, 0.0003, 0.0018, 0.0016, 0.0015, 0.0003, 0.0010],
                 [0.0002, 0.0003, 0.0010, 0.0006, 0.0012, 0.0006, 0.0004, 0.0005, 0.0018, 0.0010]])
-
     """
 
     is_differentiable: bool = False
