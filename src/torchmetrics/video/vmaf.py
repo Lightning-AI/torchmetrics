@@ -32,12 +32,13 @@ class VideoMultiMethodAssessmentFusion(Metric):
     quality more accurately than traditional metrics like PSNR or SSIM.
 
     The metric works by:
-        1. Converting input videos to luma component (grayscale)
-        2. Computing multiple elementary features:
-            - Additive Detail Measure (ADM): Evaluates detail preservation at different scales
-            - Visual Information Fidelity (VIF): Measures preservation of visual information across frequency bands
-            - Motion: Quantifies the amount of motion in the video
-        3. Combining these features using a trained SVM model to predict quality
+
+       1. Converting input videos to luma component (grayscale)
+       2. Computing multiple elementary features:
+          - Additive Detail Measure (ADM): Evaluates detail preservation at different scales
+          - Visual Information Fidelity (VIF): Measures preservation of visual information across frequency bands
+          - Motion: Quantifies the amount of motion in the video
+       3. Combining these features using a trained SVM model to predict quality
 
     .. note::
        This implementation requires you to have vmaf-torch installed: https://github.com/alvitrioliks/VMAF-torch.
@@ -51,13 +52,12 @@ class VideoMultiMethodAssessmentFusion(Metric):
         - ``target`` (:class:`~torch.Tensor`): Video tensor of shape ``(batch, channels, frames, height, width)``.
           Expected to be in RGB format with values in range [0, 1].
 
-    As output of ``forward`` and ``compute`` the metric returns the following output:
+    As output of ``forward`` and ``compute`` the metric returns the following output ``vmaf`` (:class:`~torch.Tensor`):
 
-        - ``vmaf`` (:class:`~torch.Tensor`): If ``features`` is False, returns a tensor with shape (batch, frame)
+        - If ``features`` is False, returns a tensor with shape (batch, frame)
           of VMAF score for each frame in each video. Higher scores indicate better quality, with typical values
           ranging from 0 to 100.
-
-          If ``features`` is True, returns a dictionary where each value is a (batch, frame) tensor of the
+        - If ``features`` is True, returns a dictionary where each value is a (batch, frame) tensor of the
           corresponding feature. The keys are:
             - 'integer_motion2': Integer motion feature
             - 'integer_motion': Integer motion feature

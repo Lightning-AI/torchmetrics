@@ -48,15 +48,15 @@ def video_multi_method_assessment_fusion(
     quality more accurately than traditional metrics like PSNR or SSIM.
 
     The metric works by:
-        1. Converting input videos to luma component (grayscale)
-        2. Computing multiple elementary features:
-            - Additive Detail Measure (ADM): Evaluates detail preservation at different scales
-            - Visual Information Fidelity (VIF): Measures preservation of visual information across frequency bands
-            - Motion: Quantifies the amount of motion in the video
-        3. Combining these features using a trained SVM model to predict quality
+
+       1. Converting input videos to luma component (grayscale)
+       2. Computing multiple elementary features:
+          - Additive Detail Measure (ADM): Evaluates detail preservation at different scales
+          - Visual Information Fidelity (VIF): Measures preservation of visual information across frequency bands
+          - Motion: Quantifies the amount of motion in the video
+       3. Combining these features using a trained SVM model to predict quality
 
     .. note::
-
         This implementation requires you to have vmaf-torch installed: https://github.com/alvitrioliks/VMAF-torch.
         Install either by cloning the repository and running `pip install .` or with `pip install torchmetrics[video]`.
 
@@ -70,11 +70,11 @@ def video_multi_method_assessment_fusion(
             option enabled. If False, only the VMAF score is returned as a tensor.
 
     Returns:
-        If `features` is False, returns a tensor with shape (batch, frame) of VMAF score for each frame in
-        each video. Higher scores indicate better quality, with typical values ranging from 0 to 100.
+        - If `features` is False, returns a tensor with shape (batch, frame) of VMAF score for each frame in
+          each video. Higher scores indicate better quality, with typical values ranging from 0 to 100.
 
-        If `features` is True, returns a dictionary where each value is a (batch, frame) tensor of the
-        corresponding feature. The keys are:
+        - If `features` is True, returns a dictionary where each value is a (batch, frame) tensor of the
+          corresponding feature. The keys are:
             - 'integer_motion2': Integer motion feature
             - 'integer_motion': Integer motion feature
             - 'integer_adm2': Integer ADM feature
