@@ -13,9 +13,9 @@
 # limitations under the License.
 from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE
 
+__all__ = []
+
 if _TORCH_VMAF_AVAILABLE:
     from torchmetrics.functional.video.vmaf import video_multi_method_assessment_fusion
 
-    __all__ = ["video_multi_method_assessment_fusion"]
-else:
-    __all__ = []
+    __all__ += ["video_multi_method_assessment_fusion"]
