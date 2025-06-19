@@ -99,7 +99,7 @@ class TestVMAF(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_vmaf(self, preds, target, features, ddp):
+    def test_vmaf_module(self, preds, target, features, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -108,6 +108,7 @@ class TestVMAF(MetricTester):
             metric_class=VideoMultiMethodAssessmentFusion,
             reference_metric=partial(_reference_vmaf_with_features if features else _reference_vmaf_no_features),
             metric_args={"features": features},
+            dist_sync_on_step=True,
         )
 
     def test_vmaf_functional(self, preds, target, features):
