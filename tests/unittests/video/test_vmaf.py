@@ -118,8 +118,9 @@ class TestVMAF(MetricTester):
             )
 
 
-@pytest.mark.skipif(_TORCH_VMAF_AVAILABLE, reason="test requires vmaf-torch")
-def test_vmaf_raises_error():
+def test_vmaf_raises_error(monkeypatch):
     """Test that appropriate error is raised when vmaf-torch is not installed."""
+    # mock/fake that vmaf-torch is not installed
+    monkeypatch.setattr("torchmetrics.functional.video.vmaf._TORCH_VMAF_AVAILABLE", False)
     with pytest.raises(RuntimeError, match="vmaf-torch is not installed"):
         video_multi_method_assessment_fusion(torch.rand(1, 3, 10, 32, 32), torch.rand(1, 3, 10, 32, 32))
