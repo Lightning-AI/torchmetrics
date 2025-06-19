@@ -103,7 +103,7 @@ class TestVMAF(MetricTester):
         """Test class implementation of metric."""
         if ddp:
             pytest.skip("DDP test skipped due to non-deterministic row ordering")
-            
+
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
