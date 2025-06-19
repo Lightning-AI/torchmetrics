@@ -87,8 +87,7 @@ class VideoMultiMethodAssessmentFusion(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.video import VideoMultiMethodAssessmentFusion
-        >>> torch.manual_seed(42)
-        >>> torch.cuda.manual_seed_all(42)
+        >>> _, _ = torch.manual_seed(42), torch.cuda.manual_seed_all(42)
         >>> # 2 videos, 3 channels, 10 frames, 32x32 resolution
         >>> preds = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(42))
         >>> target = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(43))
