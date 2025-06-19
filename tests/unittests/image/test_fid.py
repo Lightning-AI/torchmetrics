@@ -27,9 +27,10 @@ from unittests._helpers import seed_all
 seed_all(42)
 
 
-@pytest.mark.skipif(_TORCH_FIDELITY_AVAILABLE, reason="test only works if torch-fidelity is not installed")
-def test_no_train_network_missing_torch_fidelity():
+def test_no_train_network_missing_torch_fidelity(monkeypatch):
     """Assert that NoTrainInceptionV3 raises an error if torch-fidelity is not installed."""
+    # mock/fake the import of torch-fidelity
+    monkeypatch.setattr("torchmetrics.image.fid._TORCH_FIDELITY_AVAILABLE", False)
     with pytest.raises(
         ModuleNotFoundError, match="NoTrainInceptionV3 module requires that `Torch-fidelity` is installed.*"
     ):
