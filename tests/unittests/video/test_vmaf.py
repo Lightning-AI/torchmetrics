@@ -41,7 +41,6 @@ def _reference_vmaf_no_features(preds, target) -> dict[str, torch.Tensor] | torc
     orig_dtype, device = preds.dtype, preds.device
     preds_luma = calculate_luma(preds)
     target_luma = calculate_luma(target)
-
     vmaf = VMAF().to(device)
 
     # we need to compute the model for each video separately
@@ -66,7 +65,6 @@ def _reference_vmaf_with_features(preds, target) -> dict[str, torch.Tensor] | to
     orig_dtype, device = preds.dtype, preds.device
     preds_luma = calculate_luma(preds)
     target_luma = calculate_luma(target)
-
     vmaf = VMAF().to(device)
 
     scores_and_features = [
@@ -98,7 +96,7 @@ for size in [32, 64]:
 class TestVMAF(MetricTester):
     """Test class for `VideoMultiMethodAssessmentFusion` metric."""
 
-    atol = 1e-1
+    atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_vmaf(self, preds, target, features, ddp):
