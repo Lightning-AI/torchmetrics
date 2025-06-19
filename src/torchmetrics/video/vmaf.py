@@ -59,6 +59,7 @@ class VideoMultiMethodAssessmentFusion(Metric):
           ranging from 0 to 100.
         - If ``features`` is True, returns a dictionary where each value is a (batch, frame) tensor of the
           corresponding feature. The keys are:
+
             - 'integer_motion2': Integer motion feature
             - 'integer_motion': Integer motion feature
             - 'integer_adm2': Integer ADM feature
