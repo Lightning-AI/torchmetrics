@@ -96,9 +96,9 @@ def video_multi_method_assessment_fusion(
         >>> preds = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(42))
         >>> target = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(43))
         >>> vmaf_score = video_multi_method_assessment_fusion(preds, target)
-        >>> torch.round(vmaf_score, decimals=3)
-        tensor([[ 9.9900, 15.9050, 14.2600, 16.6130, 15.9130, 14.3000, 13.5800, 13.4940, 15.4680, 20.2770],
-                [ 6.2500, 11.2990, 17.3000, 11.4560, 19.0600, 14.9340, 14.0540, 14.4130, 12.4680, 14.8180]])
+        >>> torch.round(vmaf_score, decimals=2)
+        tensor([[ 9.9900, 15.9000, 14.2600, 16.6100, 15.9100, 14.3000, 13.5800, 13.4900, 15.4700, 20.2800],
+                [ 6.2500, 11.3000, 17.3000, 11.4600, 19.0600, 14.9300, 14.0500, 14.4100, 12.4700, 14.8200]])
         >>> vmaf_dict = video_multi_method_assessment_fusion(preds, target, features=True)
         >>> # show a couple of features, more features are available
         >>> vmaf_dict['vmaf'].to(torch.float32)

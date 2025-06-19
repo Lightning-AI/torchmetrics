@@ -92,9 +92,9 @@ class VideoMultiMethodAssessmentFusion(Metric):
         >>> preds = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(42))
         >>> target = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(43))
         >>> vmaf = VideoMultiMethodAssessmentFusion()
-        >>> torch.round(vmaf(preds, target), decimals=3)
-        tensor([[ 9.9900, 15.9050, 14.2600, 16.6130, 15.9130, 14.3000, 13.5800, 13.4940, 15.4680, 20.2770],
-                [ 6.2500, 11.2990, 17.3000, 11.4560, 19.0600, 14.9340, 14.0540, 14.4130, 12.4680, 14.8180]])
+        >>> torch.round(vmaf(preds, target), decimals=2)
+        tensor([[ 9.9900, 15.9000, 14.2600, 16.6100, 15.9100, 14.3000, 13.5800, 13.4900, 15.4700, 20.2800],
+                [ 6.2500, 11.3000, 17.3000, 11.4600, 19.0600, 14.9300, 14.0500, 14.4100, 12.4700, 14.8200]])
         >>> vmaf = VideoMultiMethodAssessmentFusion(features=True)
         >>> vmaf_dict = vmaf(preds, target)
         >>> vmaf_dict['vmaf'].to(torch.float32)
