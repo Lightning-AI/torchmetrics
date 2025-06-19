@@ -92,21 +92,20 @@ def video_multi_method_assessment_fusion(
         >>> import torch
         >>> from torchmetrics.functional.video import video_multi_method_assessment_fusion
         >>> # 2 videos, 3 channels, 10 frames, 32x32 resolution
-        >>> torch.use_deterministic_algorithms(True)
         >>> preds = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(42))
         >>> target = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(43))
-        >>> video_multi_method_assessment_fusion(preds, target)
+        >>> video_multi_method_assessment_fusion(preds, target).to("cpu")
         tensor([[ 9.9904, 15.9046, 14.2601, 16.6132, 15.9126, 14.3000, 13.5804, 13.4943, 15.4681, 20.2774],
                 [ 6.2496, 11.2987, 17.2996, 11.4559, 19.0596, 14.9337, 14.0543, 14.4134, 12.4684, 14.8184]])
         >>> vmaf_dict = video_multi_method_assessment_fusion(preds, target, features=True)
         >>> # show a couple of features, more features are available
-        >>> vmaf_dict['vmaf']
+        >>> vmaf_dict['vmaf'].to("cpu")
         tensor([[ 9.9904, 15.9046, 14.2601, 16.6132, 15.9126, 14.3000, 13.5804, 13.4943, 15.4681, 20.2774],
                 [ 6.2496, 11.2987, 17.2996, 11.4559, 19.0596, 14.9337, 14.0543, 14.4134, 12.4684, 14.8184]])
-        >>> vmaf_dict['integer_adm2']
+        >>> vmaf_dict['integer_adm2'].to("cpu")
         tensor([[0.4546, 0.4497, 0.3650, 0.4733, 0.4278, 0.3572, 0.3925, 0.4132, 0.3723, 0.4704],
                 [0.4165, 0.3905, 0.4369, 0.3702, 0.4536, 0.3852, 0.3793, 0.4787, 0.3869, 0.3938]])
-        >>> vmaf_dict['integer_vif_scale0']
+        >>> vmaf_dict['integer_vif_scale0'].to("cpu")
         tensor([[0.0013, 0.0005, 0.0010, 0.0004, 0.0003, 0.0018, 0.0016, 0.0015, 0.0003, 0.0010],
                 [0.0002, 0.0003, 0.0010, 0.0006, 0.0012, 0.0006, 0.0004, 0.0005, 0.0018, 0.0010]])
 
