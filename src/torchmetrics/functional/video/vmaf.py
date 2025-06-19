@@ -95,7 +95,8 @@ def video_multi_method_assessment_fusion(
         >>> # 2 videos, 3 channels, 10 frames, 32x32 resolution
         >>> preds = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(42))
         >>> target = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(43))
-        >>> video_multi_method_assessment_fusion(preds, target).to(torch.float32)
+        >>> vmaf_score = video_multi_method_assessment_fusion(preds, target)
+        >>> torch.round(vmaf_score, decimals=4)
         tensor([[ 9.9904, 15.9046, 14.2601, 16.6132, 15.9126, 14.3000, 13.5804, 13.4943, 15.4681, 20.2774],
                 [ 6.2496, 11.2987, 17.2996, 11.4559, 19.0596, 14.9337, 14.0543, 14.4134, 12.4684, 14.8184]])
         >>> vmaf_dict = video_multi_method_assessment_fusion(preds, target, features=True)
