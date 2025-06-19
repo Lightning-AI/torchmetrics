@@ -13,10 +13,11 @@
 # limitations under the License.
 from functools import partial
 
+import pandas as pd  # pandas is installed as a dependency of vmaf-torch
 import pytest
 import torch
-import vmaf_torch
 from einops import rearrange
+from vmaf_torch import VMAF
 
 from torchmetrics.functional.video.vmaf import calculate_luma, video_multi_method_assessment_fusion
 from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE
@@ -28,7 +29,7 @@ from unittests._helpers.testers import MetricTester
 seed_all(42)
 
 
-def _reference_vmaf(preds, target, features=False):
+def _reference_vmaf_no_features(preds, target) -> dict[str, torch.Tensor] | torch.Tensor:
     """Reference implementation of VMAF metric.
 
     This should preferably be replaced with the python version of the netflix library
@@ -41,18 +42,32 @@ def _reference_vmaf(preds, target, features=False):
     preds_luma = calculate_luma(preds)
     target_luma = calculate_luma(target)
 
-    vmaf = vmaf_torch.VMAF().to(device)
+    vmaf = VMAF().to(device)
 
     # we need to compute the model for each video separately
-    if not features:
-        scores = [
-            vmaf.compute_vmaf_score(
-                rearrange(target_luma[video], "c f h w -> f c h w"), rearrange(preds_luma[video], "c f h w -> f c h w")
-            )
-            for video in range(b)
-        ]
-        return torch.cat(scores, dim=1).t().to(orig_dtype)
-    import pandas as pd  # pandas is installed as a dependency of vmaf-torch
+    scores = [
+        vmaf.compute_vmaf_score(
+            rearrange(target_luma[video], "c f h w -> f c h w"), rearrange(preds_luma[video], "c f h w -> f c h w")
+        )
+        for video in range(b)
+    ]
+    return torch.cat(scores, dim=1).t().to(orig_dtype)
+
+
+def _reference_vmaf_with_features(preds, target) -> dict[str, torch.Tensor] | torch.Tensor:
+    """Reference implementation of VMAF metric.
+
+    This should preferably be replaced with the python version of the netflix library
+    https://github.com/Netflix/vmaf
+    but that requires it to be compiled on the system.
+
+    """
+    b = preds.shape[0]
+    orig_dtype, device = preds.dtype, preds.device
+    preds_luma = calculate_luma(preds)
+    target_luma = calculate_luma(target)
+
+    vmaf = VMAF().to(device)
 
     scores_and_features = [
         vmaf.table(
@@ -93,7 +108,7 @@ class TestVMAF(MetricTester):
             preds=preds,
             target=target,
             metric_class=VideoMultiMethodAssessmentFusion,
-            reference_metric=partial(_reference_vmaf, features=features),
+            reference_metric=partial(_reference_vmaf_with_features if features else _reference_vmaf_no_features),
             metric_args={"features": features},
         )
 
@@ -103,7 +118,7 @@ class TestVMAF(MetricTester):
             preds=preds,
             target=target,
             metric_functional=video_multi_method_assessment_fusion,
-            reference_metric=partial(_reference_vmaf, features=features),
+            reference_metric=partial(_reference_vmaf_with_features if features else _reference_vmaf_no_features),
             metric_args={"features": features},
         )
 
@@ -119,7 +134,7 @@ class TestVMAF(MetricTester):
 
 
 def test_vmaf_raises_error(monkeypatch):
-    """Test that appropriate error is raised when vmaf-torch is not installed."""
+    """Test that the appropriate error is raised when vmaf-torch is not installed."""
     # mock/fake that vmaf-torch is not installed
     monkeypatch.setattr("torchmetrics.functional.video.vmaf._TORCH_VMAF_AVAILABLE", False)
     with pytest.raises(RuntimeError, match="vmaf-torch is not installed"):
