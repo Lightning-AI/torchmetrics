@@ -92,6 +92,7 @@ def video_multi_method_assessment_fusion(
         >>> import torch
         >>> from torchmetrics.functional.video import video_multi_method_assessment_fusion
         >>> # 2 videos, 3 channels, 10 frames, 32x32 resolution
+        >>> torch.use_deterministic_algorithms(True)
         >>> preds = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(42))
         >>> target = torch.rand(2, 3, 10, 32, 32, generator=torch.manual_seed(43))
         >>> video_multi_method_assessment_fusion(preds, target)
