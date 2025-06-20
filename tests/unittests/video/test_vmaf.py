@@ -96,7 +96,7 @@ for size in [32, 64]:
 class TestVMAF(MetricTester):
     """Test class for `VideoMultiMethodAssessmentFusion` metric."""
 
-    atol = 1e-2
+    atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_vmaf_module(self, preds, target, features, ddp):
