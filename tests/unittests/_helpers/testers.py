@@ -205,7 +205,11 @@ def _class_test(
             if isinstance(batch_result, dict):
                 for key in batch_result:
                     _assert_allclose(
-                        batch_result, ref_batch_result[key].numpy(), atol=atol, key=key, check_ddp_sorting=check_ddp_sorting
+                        batch_result,
+                        ref_batch_result[key].numpy(),
+                        atol=atol,
+                        key=key,
+                        check_ddp_sorting=check_ddp_sorting,
                     )
             else:
                 _assert_allclose(batch_result, ref_batch_result, atol=atol, check_ddp_sorting=check_ddp_sorting)
@@ -221,7 +225,11 @@ def _class_test(
             if isinstance(batch_result, dict):
                 for key in batch_result:
                     _assert_allclose(
-                        batch_result, ref_batch_result[key].numpy(), atol=atol, key=key, check_ddp_sorting=check_ddp_sorting
+                        batch_result,
+                        ref_batch_result[key].numpy(),
+                        atol=atol,
+                        key=key,
+                        check_ddp_sorting=check_ddp_sorting,
                     )
             else:
                 _assert_allclose(batch_result, ref_batch_result, atol=atol, check_ddp_sorting=check_ddp_sorting)
