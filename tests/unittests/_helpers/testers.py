@@ -49,7 +49,7 @@ def _assert_allclose(
     # multi output compare
     elif isinstance(tm_result, Sequence):
         for pl_res, ref_res in zip(tm_result, ref_result):
-            _assert_allclose(pl_res, ref_res, atol=atol)
+            _assert_allclose(pl_res, ref_res, atol=atol, check_ddp_sorting=check_ddp_sorting)
     elif isinstance(tm_result, dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
