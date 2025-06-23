@@ -101,9 +101,6 @@ class TestVMAF(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_vmaf_module(self, preds, target, features, ddp):
         """Test class implementation of metric."""
-        if ddp:
-            pytest.skip("DDP test skipped due to non-deterministic row ordering")
-
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -111,6 +108,7 @@ class TestVMAF(MetricTester):
             metric_class=VideoMultiMethodAssessmentFusion,
             reference_metric=partial(_reference_vmaf_with_features if features else _reference_vmaf_no_features),
             metric_args={"features": features},
+            check_ddp_sorting=True,
         )
 
     def test_vmaf_functional(self, preds, target, features):
