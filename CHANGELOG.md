@@ -28,8 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `Lip Vertex Error (LVE)` in multimodal domain ([3090](https://github.com/Lightning-AI/torchmetrics/pull/3090))
 
-- Added sorting option for DDP metric comparisons using `check_ddp_sorting` ([3145](https://github.com/Lightning-AI/torchmetrics/pull/3145))
-
 
 ### Changed
 
