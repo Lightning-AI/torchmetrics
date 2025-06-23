@@ -29,6 +29,39 @@ from torchmetrics.utilities.data import _flatten
 from unittests import NUM_PROCESSES, _reference_cachier
 
 
+def _sort_if_needed(arr: np.ndarray) -> np.ndarray:
+    """Sort a numpy array for comparison.
+
+    - If 1D, returns a sorted copy of the array.
+    - If 2D or higher, sorts the rows lexicographically (dictionary order).
+    - Otherwise, returns the array unchanged.
+
+    Args:
+        arr (np.ndarray): The input numpy array.
+
+    Returns:
+        np.ndarray: The sorted array (or unchanged if not 1D or 2D+).
+
+    Examples:
+        >>> import numpy as np
+        >>> arr = np.array([
+        ...     [2, 1, 3],
+        ...     [1, 2, 3],
+        ...     [1, 1, 2]
+        ... ])
+        >>> _sort_if_needed(arr)
+        array([[1, 1, 2],
+               [1, 2, 3],
+               [2, 1, 3]])
+
+    """
+    if arr.ndim == 1:
+        return np.sort(arr)
+    if arr.ndim > 1:
+        return arr[np.lexsort(arr.T[::-1])]
+    return arr
+
+
 def _assert_allclose(
     tm_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None, check_ddp_sorting: bool = False
 ) -> None:
@@ -43,13 +76,6 @@ def _assert_allclose(
                     f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
                     f"ref_result_np.ndim={ref_result_np.ndim}"
                 )
-
-            def _sort_if_needed(arr):
-                if arr.ndim == 1:
-                    return np.sort(arr)
-                if arr.ndim > 1:
-                    return arr[np.lexsort(arr.T[::-1])]
-                return arr
 
             tm_result_np = _sort_if_needed(tm_result_np)
             ref_result_np = _sort_if_needed(ref_result_np)
@@ -74,13 +100,6 @@ def _assert_allclose(
                     f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
                     f"ref_result_np.ndim={ref_result_np.ndim}"
                 )
-
-            def _sort_if_needed(arr):
-                if arr.ndim == 1:
-                    return np.sort(arr)
-                if arr.ndim > 1:
-                    return arr[np.lexsort(arr.T[::-1])]
-                return arr
 
             tm_result_np = _sort_if_needed(tm_result_np)
             ref_result_np = _sort_if_needed(ref_result_np)
