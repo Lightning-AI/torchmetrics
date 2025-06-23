@@ -43,21 +43,16 @@ def _assert_allclose(
                     f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
                     f"ref_result_np.ndim={ref_result_np.ndim}"
                 )
-            tm_result_np = (
-                np.sort(tm_result_np)
-                if tm_result_np.ndim == 1
-                else tm_result_np[np.lexsort(tm_result_np.T[::-1])]
-                if tm_result_np.ndim > 1
-                else tm_result_np
-            )
 
-            ref_result_np = (
-                np.sort(ref_result_np)
-                if ref_result_np.ndim == 1
-                else ref_result_np[np.lexsort(ref_result_np.T[::-1])]
-                if ref_result_np.ndim > 1
-                else ref_result_np
-            )
+            def _sort_if_needed(arr):
+                if arr.ndim == 1:
+                    return np.sort(arr)
+                elif arr.ndim > 1:
+                    return arr[np.lexsort(arr.T[::-1])]
+                return arr
+
+            tm_result_np = _sort_if_needed(tm_result_np)
+            ref_result_np = _sort_if_needed(ref_result_np)
         assert np.allclose(
             tm_result_np,
             ref_result_np,
@@ -79,21 +74,16 @@ def _assert_allclose(
                     f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
                     f"ref_result_np.ndim={ref_result_np.ndim}"
                 )
-            tm_result_np = (
-                np.sort(tm_result_np)
-                if tm_result_np.ndim == 1
-                else tm_result_np[np.lexsort(tm_result_np.T[::-1])]
-                if tm_result_np.ndim > 1
-                else tm_result_np
-            )
 
-            ref_result_np = (
-                np.sort(ref_result_np)
-                if ref_result_np.ndim == 1
-                else ref_result_np[np.lexsort(ref_result_np.T[::-1])]
-                if ref_result_np.ndim > 1
-                else ref_result_np
-            )
+            def _sort_if_needed(arr):
+                if arr.ndim == 1:
+                    return np.sort(arr)
+                elif arr.ndim > 1:
+                    return arr[np.lexsort(arr.T[::-1])]
+                return arr
+
+            tm_result_np = _sort_if_needed(tm_result_np)
+            ref_result_np = _sort_if_needed(ref_result_np)
         assert np.allclose(
             ref_result_np,
             ref_result_np,
