@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Union, Dict
+from typing import Dict, Union
 
 import pandas as pd  # pandas is installed as a dependency of vmaf-torch
 import pytest
