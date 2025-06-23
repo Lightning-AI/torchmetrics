@@ -53,9 +53,14 @@ def _assert_allclose(
     elif isinstance(tm_result, dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
+        tm_val = tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key]
+        ref_val = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
+        if check_ddp_sorting:
+            tm_val = np.sort(tm_val)
+            ref_val = np.sort(ref_val)
         assert np.allclose(
-            tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key],
-            ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,
+            tm_val,
+            ref_val,
             atol=atol,
             equal_nan=True,
         ), f"tm_result: {tm_result}, ref_result: {ref_result}"
@@ -334,11 +339,7 @@ def _functional_test(
             **extra_kwargs,
         )
         # assert it is the same
-        if isinstance(ref_result, dict):
-            for key in ref_result:
-                _assert_allclose(tm_result, ref_result[key].numpy(), atol=atol, key=key)
-        else:
-            _assert_allclose(tm_result, ref_result, atol=atol)
+        _assert_allclose(tm_result, ref_result, atol=atol)
 
 
 def _assert_dtype_support(
