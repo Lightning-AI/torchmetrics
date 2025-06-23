@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Dict, Union
+from typing import Union
 
 import pandas as pd  # pandas is installed as a dependency of vmaf-torch
 import pytest
@@ -30,7 +30,7 @@ from unittests._helpers.testers import MetricTester
 seed_all(42)
 
 
-def _reference_vmaf_no_features(preds, target) -> Union[Dict[str, torch.Tensor], torch.Tensor]:
+def _reference_vmaf_no_features(preds, target) -> Union[dict[str, torch.Tensor], torch.Tensor]:
     """Reference implementation of VMAF metric.
 
     This should preferably be replaced with the python version of the netflix library
@@ -54,7 +54,7 @@ def _reference_vmaf_no_features(preds, target) -> Union[Dict[str, torch.Tensor],
     return torch.cat(scores, dim=1).t().to(orig_dtype)
 
 
-def _reference_vmaf_with_features(preds, target) -> Union[Dict[str, torch.Tensor], torch.Tensor]:
+def _reference_vmaf_with_features(preds, target) -> Union[dict[str, torch.Tensor], torch.Tensor]:
     """Reference implementation of VMAF metric.
 
     This should preferably be replaced with the python version of the netflix library
