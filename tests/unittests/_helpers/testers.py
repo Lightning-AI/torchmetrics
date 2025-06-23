@@ -71,8 +71,8 @@ def _assert_allclose(
     elif isinstance(tm_result, dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        tm_val = tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key]
-        ref_val = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
+        tm_result_np = tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key]
+        ref_result_np = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
         if check_ddp_sorting:
             if tm_result_np.ndim != ref_result_np.ndim:
                 raise ValueError(
@@ -95,8 +95,8 @@ def _assert_allclose(
                 else ref_result_np
             )
         assert np.allclose(
-            tm_val,
-            ref_val,
+            ref_result_np,
+            ref_result_np,
             atol=atol,
             equal_nan=True,
         ), f"tm_result: {tm_result}, ref_result: {ref_result}"
