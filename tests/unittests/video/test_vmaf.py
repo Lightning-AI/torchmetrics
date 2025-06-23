@@ -108,6 +108,7 @@ class TestVMAF(MetricTester):
             metric_class=VideoMultiMethodAssessmentFusion,
             reference_metric=partial(_reference_vmaf_with_features if features else _reference_vmaf_no_features),
             metric_args={"features": features},
+            check_ddp_sorting=True,
         )
 
     def test_vmaf_functional(self, preds, target, features):
