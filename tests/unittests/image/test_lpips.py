@@ -73,6 +73,7 @@ class TestLPIPS(MetricTester):
             check_scriptable=False,
             check_state_dict=False,
             metric_args={"net_type": net_type},
+            check_ddp_sorting=True,
         )
 
     def test_lpips_functional(self):
