@@ -47,7 +47,7 @@ def _assert_allclose(
             def _sort_if_needed(arr):
                 if arr.ndim == 1:
                     return np.sort(arr)
-                elif arr.ndim > 1:
+                if arr.ndim > 1:
                     return arr[np.lexsort(arr.T[::-1])]
                 return arr
 
@@ -78,7 +78,7 @@ def _assert_allclose(
             def _sort_if_needed(arr):
                 if arr.ndim == 1:
                     return np.sort(arr)
-                elif arr.ndim > 1:
+                if arr.ndim > 1:
                     return arr[np.lexsort(arr.T[::-1])]
                 return arr
 
