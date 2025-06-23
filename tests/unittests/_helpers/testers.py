@@ -63,7 +63,7 @@ def _assert_allclose(
             ref_result_np,
             atol=atol,
             equal_nan=True,
-        ), f"tm_result: {tm_result}, ref_result: {ref_result}"
+        ), f"tm_result: {tm_result_np}, ref_result: {ref_result_np}"
     # multi output compare
     elif isinstance(tm_result, Sequence):
         for pl_res, ref_res in zip(tm_result, ref_result):
@@ -99,7 +99,7 @@ def _assert_allclose(
             ref_result_np,
             atol=atol,
             equal_nan=True,
-        ), f"tm_result: {tm_result}, ref_result: {ref_result}"
+        ), f"tm_result: {tm_result_np}, ref_result: {ref_result_np}"
     else:
         raise ValueError("Unknown format for comparison")
 
