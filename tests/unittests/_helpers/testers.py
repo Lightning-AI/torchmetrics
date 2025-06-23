@@ -38,8 +38,11 @@ def _assert_allclose(
         tm_result_np = tm_result.detach().cpu().numpy()
         ref_result_np = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
         if check_ddp_sorting:
-            tm_result_np = np.sort(tm_result_np) if tm_result_np.ndim > 0 else tm_result_np
-            ref_result_np = np.sort(ref_result_np) if ref_result_np.ndim > 0 else ref_result_np
+            # Sort rows lexicographically
+            tm_result_np = tm_result_np[np.lexsort(tm_result_np.T[::-1])] if tm_result_np.ndim > 0 else tm_result_np
+            ref_result_np = (
+                ref_result_np[np.lexsort(ref_result_np.T[::-1])] if ref_result_np.ndim > 0 else ref_result_np
+            )
         assert np.allclose(
             tm_result_np,
             ref_result_np,
