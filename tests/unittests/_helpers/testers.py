@@ -39,9 +39,26 @@ def _assert_allclose(
         ref_result_np = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
         if check_ddp_sorting:
             # Sort rows lexicographically
-            tm_result_np = tm_result_np[np.lexsort(tm_result_np.T[::-1])] if tm_result_np.ndim > 0 else tm_result_np
+            if tm_result_np.ndim != ref_result_np.ndim:
+                raise ValueError(
+                    f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
+                    f"ref_result_np.ndim={ref_result_np.ndim}"
+                )
+            # Sort rows lexicographically
+            tm_result_np = (
+                np.sort(tm_result_np)
+                if tm_result_np.ndim == 1
+                else tm_result_np[np.lexsort(tm_result_np.T[::-1])]
+                if tm_result_np.ndim > 1
+                else tm_result_np
+            )
+
             ref_result_np = (
-                ref_result_np[np.lexsort(ref_result_np.T[::-1])] if ref_result_np.ndim > 0 else ref_result_np
+                np.sort(ref_result_np)
+                if ref_result_np.ndim == 1
+                else ref_result_np[np.lexsort(ref_result_np.T[::-1])]
+                if ref_result_np.ndim > 1
+                else ref_result_np
             )
         assert np.allclose(
             tm_result_np,
@@ -59,8 +76,28 @@ def _assert_allclose(
         tm_val = tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key]
         ref_val = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
         if check_ddp_sorting:
-            tm_val = np.sort(tm_val) if tm_val.ndim > 0 else tm_val
-            ref_val = np.sort(ref_val) if ref_val.ndim > 0 else ref_val
+            # Sort rows lexicographically
+            if tm_result_np.ndim != ref_result_np.ndim:
+                raise ValueError(
+                    f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
+                    f"ref_result_np.ndim={ref_result_np.ndim}"
+                )
+            # Sort rows lexicographically
+            tm_result_np = (
+                np.sort(tm_result_np)
+                if tm_result_np.ndim == 1
+                else tm_result_np[np.lexsort(tm_result_np.T[::-1])]
+                if tm_result_np.ndim > 1
+                else tm_result_np
+            )
+
+            ref_result_np = (
+                np.sort(ref_result_np)
+                if ref_result_np.ndim == 1
+                else ref_result_np[np.lexsort(ref_result_np.T[::-1])]
+                if ref_result_np.ndim > 1
+                else ref_result_np
+            )
         assert np.allclose(
             tm_val,
             ref_val,
