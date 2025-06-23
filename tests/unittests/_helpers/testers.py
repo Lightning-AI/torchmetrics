@@ -38,8 +38,8 @@ def _assert_allclose(
         tm_result_np = tm_result.detach().cpu().numpy()
         ref_result_np = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
         if check_ddp_sorting:
-            tm_result_np = np.sort(tm_result_np)
-            ref_result_np = np.sort(ref_result_np)
+            tm_result_np = np.sort(tm_result_np) if tm_result_np.ndim > 0 else tm_result_np
+            ref_result_np = np.sort(ref_result_np) if ref_result_np.ndim > 0 else ref_result_np
         assert np.allclose(
             tm_result_np,
             ref_result_np,
@@ -56,8 +56,8 @@ def _assert_allclose(
         tm_val = tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key]
         ref_val = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
         if check_ddp_sorting:
-            tm_val = np.sort(tm_val)
-            ref_val = np.sort(ref_val)
+            tm_val = np.sort(tm_val) if tm_val.ndim > 0 else tm_val
+            ref_val = np.sort(ref_val) if ref_val.ndim > 0 else ref_val
         assert np.allclose(
             tm_val,
             ref_val,
