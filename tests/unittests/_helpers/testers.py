@@ -38,13 +38,11 @@ def _assert_allclose(
         tm_result_np = tm_result.detach().cpu().numpy()
         ref_result_np = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
         if check_ddp_sorting:
-            # Sort rows lexicographically
             if tm_result_np.ndim != ref_result_np.ndim:
                 raise ValueError(
                     f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
                     f"ref_result_np.ndim={ref_result_np.ndim}"
                 )
-            # Sort rows lexicographically
             tm_result_np = (
                 np.sort(tm_result_np)
                 if tm_result_np.ndim == 1
@@ -76,13 +74,11 @@ def _assert_allclose(
         tm_val = tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key]
         ref_val = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
         if check_ddp_sorting:
-            # Sort rows lexicographically
             if tm_result_np.ndim != ref_result_np.ndim:
                 raise ValueError(
                     f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
                     f"ref_result_np.ndim={ref_result_np.ndim}"
                 )
-            # Sort rows lexicographically
             tm_result_np = (
                 np.sort(tm_result_np)
                 if tm_result_np.ndim == 1
