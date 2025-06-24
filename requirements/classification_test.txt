@@ -5,4 +5,4 @@ pandas >1.4.0, <=2.3.0
 netcal >1.0.0, <1.4.0 # calibration_error
 numpy <2.4.0
 fairlearn # group_fairness
-PyTDC ==0.4.1 ; python_version <"3.12"  # locauc, temporal_dependency
+PyTDC @ https://github.com/Lightning-Sandbox/PyTDC/archive/refs/heads/main.zip ; python_version <"3.12"  # locauc, temporal_dependency
