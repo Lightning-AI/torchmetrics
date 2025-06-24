@@ -29,29 +29,86 @@ from torchmetrics.utilities.data import _flatten
 from unittests import NUM_PROCESSES, _reference_cachier
 
 
-def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
+def _sort_if_needed(arr: np.ndarray) -> np.ndarray:
+    """Sort a numpy array for comparison.
+
+    - If 1D, returns a sorted copy of the array.
+    - If 2D or higher, sorts the rows lexicographically (dictionary order).
+    - Otherwise, returns the array unchanged.
+
+    Args:
+        arr (np.ndarray): The input numpy array.
+
+    Returns:
+        np.ndarray: The sorted array (or unchanged if not 1D or 2D+).
+
+    Examples:
+        >>> import numpy as np
+        >>> arr = np.array([
+        ...     [2, 1, 3],
+        ...     [1, 2, 3],
+        ...     [1, 1, 2]
+        ... ])
+        >>> _sort_if_needed(arr)
+        array([[1, 1, 2],
+               [1, 2, 3],
+               [2, 1, 3]])
+
+    """
+    if arr.ndim == 1:
+        return np.sort(arr)
+    if arr.ndim > 1:
+        return arr[np.lexsort(arr.T[::-1])]
+    return arr
+
+
+def _assert_allclose(
+    tm_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None, check_ddp_sorting: bool = False
+) -> None:
     """Recursively assert that two results are within a certain tolerance."""
     # single output compare
     if isinstance(tm_result, Tensor):
+        tm_result_np = tm_result.detach().cpu().numpy()
+        ref_result_np = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
+        if check_ddp_sorting:
+            if tm_result_np.ndim != ref_result_np.ndim:
+                raise ValueError(
+                    f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
+                    f"ref_result_np.ndim={ref_result_np.ndim}"
+                )
+
+            tm_result_np = _sort_if_needed(tm_result_np)
+            ref_result_np = _sort_if_needed(ref_result_np)
         assert np.allclose(
-            tm_result.detach().cpu().numpy() if isinstance(tm_result, Tensor) else tm_result,
-            ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,
+            tm_result_np,
+            ref_result_np,
             atol=atol,
             equal_nan=True,
-        ), f"tm_result: {tm_result}, ref_result: {ref_result}"
+        ), f"tm_result: {tm_result_np}, ref_result: {ref_result_np}"
     # multi output compare
     elif isinstance(tm_result, Sequence):
         for pl_res, ref_res in zip(tm_result, ref_result):
-            _assert_allclose(pl_res, ref_res, atol=atol)
+            _assert_allclose(pl_res, ref_res, atol=atol, check_ddp_sorting=check_ddp_sorting)
     elif isinstance(tm_result, dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
+        tm_result_np = tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key]
+        ref_result_np = ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result
+        if check_ddp_sorting:
+            if tm_result_np.ndim != ref_result_np.ndim:
+                raise ValueError(
+                    f"Dimension mismatch: tm_result_np.ndim={tm_result_np.ndim}, "
+                    f"ref_result_np.ndim={ref_result_np.ndim}"
+                )
+
+            tm_result_np = _sort_if_needed(tm_result_np)
+            ref_result_np = _sort_if_needed(ref_result_np)
         assert np.allclose(
-            tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key],
-            ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,
+            ref_result_np,
+            ref_result_np,
             atol=atol,
             equal_nan=True,
-        ), f"tm_result: {tm_result}, ref_result: {ref_result}"
+        ), f"tm_result: {tm_result_np}, ref_result: {ref_result_np}"
     else:
         raise ValueError("Unknown format for comparison")
 
@@ -99,6 +156,7 @@ def _class_test(
     check_scriptable: bool = True,
     check_state_dict: bool = True,
     check_picklable: bool = True,
+    check_ddp_sorting: bool = False,
     **kwargs_update: Any,
 ):
     """Comparison between class metric and reference metric.
@@ -123,6 +181,7 @@ def _class_test(
         check_scriptable: bool indicating if metric should also be tested if it can be scripted
         check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
         check_picklable: bool indicating if metric should be tested that it can be pickled
+        check_ddp_sorting: bool indicating if metric output should be sorted before comparison
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
 
@@ -195,9 +254,15 @@ def _class_test(
             ref_batch_result = _reference_cachier(reference_metric)(ddp_preds, ddp_target, **ddp_kwargs_upd)
             if isinstance(batch_result, dict):
                 for key in batch_result:
-                    _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
+                    _assert_allclose(
+                        batch_result,
+                        ref_batch_result[key].numpy(),
+                        atol=atol,
+                        key=key,
+                        check_ddp_sorting=check_ddp_sorting,
+                    )
             else:
-                _assert_allclose(batch_result, ref_batch_result, atol=atol)
+                _assert_allclose(batch_result, ref_batch_result, atol=atol, check_ddp_sorting=check_ddp_sorting)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
@@ -209,9 +274,15 @@ def _class_test(
             ref_batch_result = _reference_cachier(reference_metric)(preds_, target_, **batch_kwargs_update)
             if isinstance(batch_result, dict):
                 for key in batch_result:
-                    _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
+                    _assert_allclose(
+                        batch_result,
+                        ref_batch_result[key].numpy(),
+                        atol=atol,
+                        key=key,
+                        check_ddp_sorting=check_ddp_sorting,
+                    )
             else:
-                _assert_allclose(batch_result, ref_batch_result, atol=atol)
+                _assert_allclose(batch_result, ref_batch_result, atol=atol, check_ddp_sorting=check_ddp_sorting)
 
     # check that metrics are hashable
     assert hash(metric), repr(metric)
@@ -248,9 +319,9 @@ def _class_test(
     # assert after aggregation
     if isinstance(ref_result, dict):
         for key in ref_result:
-            _assert_allclose(result, ref_result[key].numpy(), atol=atol, key=key)
+            _assert_allclose(result, ref_result[key].numpy(), atol=atol, key=key, check_ddp_sorting=check_ddp_sorting)
     else:
-        _assert_allclose(result, ref_result, atol=atol)
+        _assert_allclose(result, ref_result, atol=atol, check_ddp_sorting=check_ddp_sorting)
 
 
 def _functional_test(
@@ -436,6 +507,7 @@ class MetricTester:
         check_state_dict: bool = True,
         check_picklable: bool = True,
         atol: Optional[float] = None,
+        check_ddp_sorting: bool = False,
         **kwargs_update: Any,
     ):
         """Core method that should be used for testing class. Call this inside testing methods.
@@ -457,6 +529,7 @@ class MetricTester:
             check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
             check_picklable: bool indicating if metric should be tested that it can be pickled
             atol: absolute tolerance used for comparison of results, if None will use self.atol
+            check_ddp_sorting: bool indicating if metric output should be sorted before comparison
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
 
@@ -476,6 +549,7 @@ class MetricTester:
             "check_scriptable": check_scriptable,
             "check_state_dict": check_state_dict,
             "check_picklable": check_picklable,
+            "check_ddp_sorting": check_ddp_sorting,
         }
 
         if ddp and hasattr(pytest, "pool"):
