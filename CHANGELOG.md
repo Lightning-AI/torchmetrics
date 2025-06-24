@@ -25,12 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhance: `BERTScore` to evaluate hypotheses against multiple references ([#3069](https://github.com/Lightning-AI/torchmetrics/pull/3069))
 
+
 - Added `Lip Vertex Error (LVE)` in multimodal domain ([3090](https://github.com/Lightning-AI/torchmetrics/pull/3090))
 
 
 ### Changed
 
-- Enhance: improve performance of `_rank_data` ([#3103](https://github.com/Lightning-AI/torchmetrics/pull/3103))
+-
 
 
 ### Deprecated
@@ -45,19 +46,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed `UnboundLocalError` in `MatthewsCorrCoef` ([#3059](https://github.com/Lightning-AI/torchmetrics/pull/3059))
-
-
-- Fixed  MIFID incorrectly converts inputs to `byte` dtype with custom encoders ([#3064](https://github.com/Lightning-AI/torchmetrics/pull/3064))
-
-
-- Fixed `ignore_index` in `MultilabelExactMatch` ([#3085](https://github.com/Lightning-AI/torchmetrics/pull/3085))
-
-
-- Fixed: disable non-blocking on MPS ([#3101](https://github.com/Lightning-AI/torchmetrics/pull/3101))
+-
 
 
 ---
+
+## [1.7.3] - 2025-06-13
+
+### Fixed
+
+- Fixed: Ensure `WrapperMetric` Resets `wrapped_metric` State ([#3123](https://github.com/Lightning-AI/torchmetrics/pull/3123))
+- Fixed `top_k` in `multiclass_accuracy` ([#3117](https://github.com/Lightning-AI/torchmetrics/pull/3117))
+- Fixed compatibility to COCO format for `pycocotools` 2.0.10 ([#3131](https://github.com/Lightning-AI/torchmetrics/pull/3131))
+
+
+## [1.7.2] - 2025-05-27
+
+### Changed
+
+- Enhance: improve performance of `_rank_data` ([#3103](https://github.com/Lightning-AI/torchmetrics/pull/3103))
+
+### Fixed
+
+- Fixed `UnboundLocalError` in `MatthewsCorrCoef` ([#3059](https://github.com/Lightning-AI/torchmetrics/pull/3059))
+- Fixed  MIFID incorrectly converts inputs to `byte` dtype with custom encoders ([#3064](https://github.com/Lightning-AI/torchmetrics/pull/3064))
+- Fixed `ignore_index` in `MultilabelExactMatch` ([#3085](https://github.com/Lightning-AI/torchmetrics/pull/3085))
+- Fixed: disable non-blocking on MPS ([#3101](https://github.com/Lightning-AI/torchmetrics/pull/3101))
+
 
 ## [1.7.1] - 2025-04-06
 

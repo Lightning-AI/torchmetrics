@@ -45,7 +45,7 @@ from torchmetrics.regression import (
 from torchmetrics.regression.nrmse import NormalizedRootMeanSquaredError
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests._helpers import seed_all
+from unittests._helpers import _SKLEARN_GREATER_EQUAL_1_7, seed_all
 from unittests._helpers.testers import MetricTester
 
 seed_all(42)
@@ -103,7 +103,12 @@ def _reference_symmetric_mape(
             Note that we return a large value instead of `inf` when y_true is zero.
 
     """
-    _, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, multioutput)
+    if _SKLEARN_GREATER_EQUAL_1_7:
+        _, y_true, y_pred, sample_weight, multioutput = _check_reg_targets(
+            y_true, y_pred, sample_weight=sample_weight, multioutput=multioutput
+        )
+    else:
+        _, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, multioutput)
     check_consistent_length(y_true, y_pred, sample_weight)
     epsilon = np.finfo(np.float64).eps
     smape = 2 * np.abs(y_pred - y_true) / np.maximum(np.abs(y_true) + np.abs(y_pred), epsilon)
