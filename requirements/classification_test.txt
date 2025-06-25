@@ -5,5 +5,8 @@ pandas >1.4.0, <=2.3.0
 netcal >1.0.0, <1.4.0 # calibration_error
 numpy <2.4.0
 fairlearn # group_fairness
-# locauc, temporal_dependency; skip testing on Windows due AssertionError: error when building libtiledbsoma from source
-PyTDC @ https://github.com/Lightning-Sandbox/PyTDC/archive/576e4983c6b42a36bd27a0db32979428f56baebb.zip ; platform_system != "Windows"
+
+# locauc, temporal_dependency
+# skip testing on Windows due AssertionError: error when building libtiledbsoma from source
+PyTDC @ https://github.com/Lightning-Sandbox/PyTDC/archive/576e4983c6b42a36bd27a0db32979428f56baebb.zip ; platform_system != "Windows" and python_version > "3.9"
+PyTDC ==0.4.1 ; python_version <"3.10" or platform_system == "Windows"
