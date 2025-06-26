@@ -58,8 +58,13 @@ RUN \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get install -y \
         python${PYTHON_VERSION} \
-        python${PYTHON_VERSION}-distutils \
         python${PYTHON_VERSION}-dev \
+    && \
+    # Handle distutils differently based on Python version
+    if [ $(echo "${PYTHON_VERSION} < 3.12" | bc -l) -eq 1 ]; then \
+        # For older Python versions that need separate distutils package
+        apt-get install -y python${PYTHON_VERSION}-distutils; \
+    fi \
     && \
     update-alternatives --install /usr/bin/python${PYTHON_VERSION%%.*} python${PYTHON_VERSION%%.*} /usr/bin/python${PYTHON_VERSION} 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1 && \
