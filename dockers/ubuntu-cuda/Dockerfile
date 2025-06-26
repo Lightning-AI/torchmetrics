@@ -61,11 +61,9 @@ RUN \
         python${PYTHON_VERSION}-dev \
     && \
     # Handle distutils differently based on Python version
-    if [ $(echo "${PYTHON_VERSION} < 3.12" | bc -l) -eq 1 ]; then \
-        # For older Python versions that need separate distutils package
+    if dpkg --compare-versions "$PYTHON_VERSION" lt "3.10"; then \
         apt-get install -y python${PYTHON_VERSION}-distutils; \
-    fi \
-    && \
+    fi && \
     update-alternatives --install /usr/bin/python${PYTHON_VERSION%%.*} python${PYTHON_VERSION%%.*} /usr/bin/python${PYTHON_VERSION} 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1 && \
     curl https://bootstrap.pypa.io/get-pip.py | python && \
