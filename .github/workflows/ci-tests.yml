@@ -109,12 +109,12 @@ jobs:
         if: ${{ matrix.pytorch-version == '2.8.0' }}
         run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
       - name: Install pkg
-        timeout-minutes: 25
         run: |
           pip --version
           pip install -e . -U "setuptools==69.5.1" -r requirements/_doctest.txt \
             $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
           pip list
+        timeout-minutes: 25
 
       - name: DocTests
         timeout-minutes: 25
@@ -136,6 +136,7 @@ jobs:
           pip install --requirement requirements/clustering.txt -U \
             $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR" || true # separate install to avoid conflicts and ignore failures
           pip list
+        timeout-minutes: 25
 
       - name: set special vars for PR
         if: ${{ github.event_name == 'pull_request' }}
