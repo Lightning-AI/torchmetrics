@@ -34,4 +34,4 @@ __all__ = ["seed_all", "skip_on_connection_issues", "skip_on_cuda_oom", "skip_on
 _SKLEARN_GREATER_EQUAL_1_3 = RequirementCache("scikit-learn>=1.3.0")
 _SKLEARN_GREATER_EQUAL_1_7 = RequirementCache("scikit-learn>=1.7.0")
 _TORCH_LESS_THAN_2_1 = RequirementCache("torch<2.1.0")
-_TRANSFORMERS_BETWEEN_4_51_AND_4_52 = RequirementCache("transformers>=4.51.0,<4.53.0")
+_TRANSFORMERS_RANGE_LT_4_50_LE_4_52 = RequirementCache("transformers>=4.50.0,<4.53.0")

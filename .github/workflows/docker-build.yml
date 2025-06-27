@@ -66,6 +66,7 @@ jobs:
         include:
           # These are the base images for PL release docker images,
           #  so include at least all the combinations in release-dockers.yml.
+          - { python: "3.9", pytorch: "2.0.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.10", pytorch: "2.0.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.1.2", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.2.2", cuda: "12.1.1", ubuntu: "22.04" }
