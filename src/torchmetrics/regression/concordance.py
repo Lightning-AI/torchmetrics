@@ -92,6 +92,8 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         else:
             mean_x = self.mean_x
             mean_y = self.mean_y
+            max_abs_dev_x = self.max_abs_dev_x
+            max_abs_dev_y = self.max_abs_dev_y
             var_x = self.var_x
             var_y = self.var_y
             corr_xy = self.corr_xy
