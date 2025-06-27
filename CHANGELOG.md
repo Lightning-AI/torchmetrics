@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Improved numerical stability of pearson's correlation coefficient ([#3152](https://github.com/Lightning-AI/torchmetrics/pull/3152))
 
 
 ### Deprecated
