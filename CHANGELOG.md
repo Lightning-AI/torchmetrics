@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
+
+## [Unreleased] - YYYY-MM-DD
+
+### Changed
+
+- Improved numerical stability of pearson's correlation coefficient ([#3152](https://github.com/Lightning-AI/torchmetrics/pull/3152))
+
+
+### Deprecated
+
+-
+
+### Fixed
+
+-
+
+
+---
+
 ## [1.7.3] - 2025-06-13
 
 ### Fixed
