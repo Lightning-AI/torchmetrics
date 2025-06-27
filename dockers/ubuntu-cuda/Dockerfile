@@ -58,9 +58,12 @@ RUN \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get install -y \
         python${PYTHON_VERSION} \
-        python${PYTHON_VERSION}-distutils \
         python${PYTHON_VERSION}-dev \
     && \
+    # Handle distutils differently based on Python version
+    if dpkg --compare-versions "$PYTHON_VERSION" lt "3.10"; then \
+        apt-get install -y python${PYTHON_VERSION}-distutils; \
+    fi && \
     update-alternatives --install /usr/bin/python${PYTHON_VERSION%%.*} python${PYTHON_VERSION%%.*} /usr/bin/python${PYTHON_VERSION} 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1 && \
     curl https://bootstrap.pypa.io/get-pip.py | python && \
@@ -77,7 +80,7 @@ COPY .github/assistant.py ./assistant.py
 
 RUN \
     # set particular PyTorch version
-    pip install -q wget packaging "setuptools==69.5.1" && \
+    pip install -U wget packaging setuptools && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
