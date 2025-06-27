@@ -153,6 +153,8 @@ class PearsonCorrCoef(Metric):
     target: List[Tensor]
     mean_x: Tensor
     mean_y: Tensor
+    max_abs_dev_x: Tensor
+    max_abs_dev_y: Tensor
     var_x: Tensor
     var_y: Tensor
     corr_xy: Tensor
