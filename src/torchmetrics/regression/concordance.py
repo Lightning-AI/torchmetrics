@@ -80,14 +80,14 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         """Compute final concordance correlation coefficient over metric states."""
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             mean_x, mean_y, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, n_total = _final_aggregation(
-                self.mean_x,
-                self.mean_y,
-                self.max_abs_dev_x,
-                self.max_abs_dev_y,
-                self.var_x,
-                self.var_y,
-                self.corr_xy,
-                self.n_total,
+                means_x=self.mean_x,
+                means_y=self.mean_y,
+                maxs_abs_x=self.max_abs_dev_x,
+                maxs_abs_y=self.max_abs_dev_y,
+                vars_x=self.var_x,
+                vars_y=self.var_y,
+                corrs_xy=self.corr_xy,
+                nbs=self.n_total,
             )
         else:
             mean_x = self.mean_x

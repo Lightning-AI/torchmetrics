@@ -50,27 +50,23 @@ def _final_aggregation(
     """
     if len(means_x) == 1:
         return means_x[0], means_y[0], maxs_abs_x[0], maxs_abs_y[0], vars_x[0], vars_y[0], corrs_xy[0], nbs[0]
-    mx1, my1, max1, may1, vx1, vy1, cxy1, n1 = (
-        means_x[0],
-        means_y[0],
-        maxs_abs_x[0],
-        maxs_abs_y[0],
-        vars_x[0],
-        vars_y[0],
-        corrs_xy[0],
-        nbs[0],
-    )
+    mx1 = means_x[0]
+    my1 = means_y[0]
+    max1 = maxs_abs_x[0]
+    may1 = maxs_abs_y[0]
+    vx1 = vars_x[0]
+    vy1 = vars_y[0]
+    cxy1 = corrs_xy[0]
+    n1 = nbs[0]
     for i in range(1, len(means_x)):
-        mx2, my2, max2, may2, vx2, vy2, cxy2, n2 = (
-            means_x[i],
-            means_y[i],
-            maxs_abs_x[i],
-            maxs_abs_y[i],
-            vars_x[i],
-            vars_y[i],
-            corrs_xy[i],
-            nbs[i],
-        )
+        mx2 = means_x[i]
+        my2 = means_y[i]
+        max2 = maxs_abs_x[i]
+        may2 = maxs_abs_y[i]
+        vx2 = vars_x[i]
+        vy2 = vars_y[i]
+        cxy2 = corrs_xy[i]
+        n2 = nbs[i]
         # count
         nb = torch.where(torch.logical_or(n1, n2), n1 + n2, eps)
         # mean_x
@@ -90,16 +86,14 @@ def _final_aggregation(
         max_abs_dev_x = torch.maximum(max1, max2)
         max_abs_dev_y = torch.maximum(may1, may2)
 
-        mx1, my1, max1, may1, vx1, vy1, cxy1, n1 = (
-            mean_x,
-            mean_y,
-            max_abs_dev_x,
-            max_abs_dev_y,
-            var_x,
-            var_y,
-            corr_xy,
-            nb,
-        )
+        mx1 = mean_x
+        my1 = mean_y
+        max1 = max_abs_dev_x
+        may1 = max_abs_dev_y
+        vx1 = var_x
+        vy1 = var_y
+        cxy1 = corr_xy
+        n1 = nb
     return mean_x, mean_y, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, nb
 
 
@@ -191,17 +185,17 @@ class PearsonCorrCoef(Metric):
             self.corr_xy,
             self.n_total,
         ) = _pearson_corrcoef_update(
-            preds,
-            target,
-            self.mean_x,
-            self.mean_y,
-            self.max_abs_dev_x,
-            self.max_abs_dev_y,
-            self.var_x,
-            self.var_y,
-            self.corr_xy,
-            self.n_total,
-            self.num_outputs,
+            preds=preds,
+            target=target,
+            mean_x=self.mean_x,
+            mean_y=self.mean_y,
+            max_abs_dev_x=self.max_abs_dev_x,
+            max_abs_dev_y=self.max_abs_dev_y,
+            var_x=self.var_x,
+            var_y=self.var_y,
+            corr_xy=self.corr_xy,
+            num_prior=self.n_total,
+            num_outputs=self.num_outputs,
         )
 
     def compute(self) -> Tensor:
@@ -209,14 +203,14 @@ class PearsonCorrCoef(Metric):
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             # multiple devices, need further reduction
             _, _, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, n_total = _final_aggregation(
-                self.mean_x,
-                self.mean_y,
-                self.max_abs_dev_x,
-                self.max_abs_dev_y,
-                self.var_x,
-                self.var_y,
-                self.corr_xy,
-                self.n_total,
+                means_x=self.mean_x,
+                means_y=self.mean_y,
+                maxs_abs_x=self.max_abs_dev_x,
+                maxs_abs_y=self.max_abs_dev_y,
+                vars_x=self.var_x,
+                vars_y=self.var_y,
+                corrs_xy=self.corr_xy,
+                nbs=self.n_total,
             )
         else:
             max_abs_dev_x = self.max_abs_dev_x

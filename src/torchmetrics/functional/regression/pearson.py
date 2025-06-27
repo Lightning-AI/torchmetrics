@@ -176,16 +176,16 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
     max_abs_dev_x, max_abs_dev_y = _temp.clone(), _temp.clone()
     _, _, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
-        preds,
-        target,
-        mean_x,
-        mean_y,
-        max_abs_dev_x,
-        max_abs_dev_y,
-        var_x,
-        var_y,
-        corr_xy,
-        nb,
+        preds=preds,
+        target=target,
+        mean_x=mean_x,
+        mean_y=mean_y,
+        max_abs_dev_x=max_abs_dev_x,
+        max_abs_dev_y=max_abs_dev_y,
+        var_x=var_x,
+        var_y=var_y,
+        corr_xy=corr_xy,
+        num_prior=nb,
         num_outputs=1 if preds.ndim == 1 else preds.shape[-1],
     )
     return _pearson_corrcoef_compute(max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, nb)
