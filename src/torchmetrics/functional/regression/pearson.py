@@ -86,7 +86,7 @@ def _pearson_corrcoef_update(
 
         corr_xy = corr_xy + batch_cov_xy + delta_x * delta_y * correction
         max_abs_dev_x = torch.maximum(max_abs_dev_x, torch.max((preds - mx_new).abs(), dim=0)[0])
-        max_abs_dev_y = torch.maximum(max_abs_dev_y, torch.max((target - my_new).abs()[0]))
+        max_abs_dev_y = torch.maximum(max_abs_dev_y, torch.max((target - my_new).abs(), dim=0)[0])
     return mx_new, my_new, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, n_total
 
 
