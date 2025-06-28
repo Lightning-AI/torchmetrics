@@ -9,7 +9,7 @@ from itertools import chain
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from pkg_resources import Requirement, yield_lines
+from pkg_resources import Requirement
 from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
@@ -55,6 +55,20 @@ class _RequirementWithComment(Requirement):
         return out
 
 
+def _yield_lines(strs):
+    """Yield non-empty/non-comment lines of a string or sequence"""
+    if isinstance(strs, str):
+        for s in strs.splitlines():
+            s = s.strip()
+            # skip blank lines/comments
+            if s and not s.startswith('#'):
+                yield s
+    else:
+        for ss in strs:
+            for s in _yield_lines(ss):
+                yield s
+
+
 def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_RequirementWithComment]:
     r"""Adapted from `pkg_resources.parse_requirements` to include comments.
 
@@ -66,7 +80,7 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
     ['this', 'example', 'foo  # strict', 'thing']
 
     """
-    lines = yield_lines(strs)
+    lines = _yield_lines(strs)
     pip_argument = None
     for line in lines:
         # Drop comments -- a hash without a space may be in a URL.
