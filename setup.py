@@ -56,12 +56,12 @@ class _RequirementWithComment(Requirement):
 
 
 def _yield_lines(strs):
-    """Yield non-empty/non-comment lines of a string or sequence"""
+    """Yield non-empty/non-comment lines of a string or sequence."""
     if isinstance(strs, str):
         for s in strs.splitlines():
             s = s.strip()
             # skip blank lines/comments
-            if s and not s.startswith('#'):
+            if s and not s.startswith("#"):
                 yield s
     else:
         for ss in strs:
