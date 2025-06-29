@@ -384,7 +384,11 @@ def _functional_test(
             **extra_kwargs,
         )
         # assert it is the same
-        _assert_allclose(tm_result, ref_result, atol=atol)
+        if isinstance(ref_result, dict):
+            for key in ref_result:
+                _assert_allclose(tm_result, ref_result[key].numpy(), atol=atol, key=key)
+        else:
+            _assert_allclose(tm_result, ref_result, atol=atol)
 
 
 def _assert_dtype_support(
