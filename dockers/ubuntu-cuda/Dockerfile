@@ -71,7 +71,8 @@ RUN \
     rm -rf /root/.cache && \
     rm -rf /var/lib/apt/lists/* \
 
-RUN python${PYTHON_VERSION} -m venv /opt/venv
+RUN python${PYTHON_VERSION} -m pip venv && \
+    python${PYTHON_VERSION} -m venv /opt/venv
 
 ENV PATH="/opt/venv/bin:$PATH"
 
