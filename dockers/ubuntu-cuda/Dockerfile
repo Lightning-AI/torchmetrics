@@ -81,7 +81,7 @@ COPY .github/assistant.py ./assistant.py
 
 RUN \
     # set particular PyTorch version
-    pip install -U wget packaging setuptools && \
+    pip install -U wget packaging "setuptools>=80.9.0" && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
