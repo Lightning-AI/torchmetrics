@@ -64,16 +64,15 @@ RUN \
     if dpkg --compare-versions "$PYTHON_VERSION" lt "3.10"; then \
         apt-get install -y python${PYTHON_VERSION}-distutils; \
     fi && \
-    update-alternatives --install /usr/bin/python${PYTHON_VERSION%%.*} python${PYTHON_VERSION%%.*} /usr/bin/python${PYTHON_VERSION} 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1 && \
-    curl https://bootstrap.pypa.io/get-pip.py | python && \
     # Cleaning
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /root/.cache && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* \
 
-ENV PYTHONPATH="/usr/lib/python${PYTHON_VERSION}/site-packages"
+RUN python${PYTHON_VERSION} -m venv /opt/venv
+
+ENV PATH="/opt/venv/bin:$PATH"
 
 COPY requirements/ requirements/
 COPY .github/assistant.py ./assistant.py
