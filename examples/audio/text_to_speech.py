@@ -9,10 +9,12 @@ By ranking the PESQ scores, we identify which synthetic speaker sounds most natu
 
 # %%
 # Import necessary libraries
+import json
+import os
+
 import numpy as np
 import torch
 from IPython.display import Audio
-from target_speaker_embedding import TARGET_EMBEDDING
 from transformers import pipeline
 
 from torchmetrics.audio import PerceptualEvaluationSpeechQuality
@@ -46,6 +48,14 @@ for idx, e in enumerate(speaker_embeddings):
 
 # %%
 # Get the target audio using the speaker embedding from the separate file
+
+# Get the directory of the current script to locate the JSON file
+json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "target_embedding.json")
+with open(json_path) as f:
+    embedding_list = json.load(f)
+# Target speaker embedding (512-dimensional X-vector)
+TARGET_EMBEDDING = torch.Tensor(embedding_list)
+# Generate target audio using the target speaker embedding
 target_audio = torch.Tensor(pipe(TEST_STRING, forward_params={"speaker_embeddings": TARGET_EMBEDDING})["audio"])
 
 # %%
