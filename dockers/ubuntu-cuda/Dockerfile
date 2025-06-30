@@ -79,8 +79,8 @@ COPY requirements/ requirements/
 COPY .github/assistant.py ./assistant.py
 
 RUN \
-    # set particular PyTorch version
-    pip install -U wget packaging "setuptools>=80.9.0" && \
+    # set particular PyTorch version and requirements for assistant
+    pip install -U wget packaging "setuptools>=80.9.0" fire && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
@@ -89,8 +89,6 @@ RUN \
     pip install -q "numpy<1.24" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
-    # requirements for assistant
-    pip install -q -U packaging fire && \
     # switch some packages to be GPU related
     python assistant.py replace_str_requirements "onnxruntime" "onnxruntime_gpu" --req_files requirements/audio.txt && \
     # install develop environment
