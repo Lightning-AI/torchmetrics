@@ -29,8 +29,8 @@ def _weighted_pearson_corrcoef_update(
     mean_y: Tensor,
     var_x: Tensor,
     var_y: Tensor,
-    corr_xy: Tensor,
-    num_prior: Tensor,
+    cov_xy: Tensor,
+    weights_prior: Tensor,
     num_outputs: int,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Update and returns variables required to compute weighted Pearson Correlation Coefficient.
@@ -40,17 +40,20 @@ def _weighted_pearson_corrcoef_update(
     Updates are based on `Algorithms for calculating variance`_. Specifically, `online weighted variance`_ and
     `online weighted covariance`_.
 
+    Variance intentionally not divided by sum of weights in `update` step as it is computed as necessary in
+    the `compute` step.
+
     Args:
         preds: estimated scores
         target: ground truth scores
+        weights: weight associated with scores
         mean_x: current mean estimate of x tensor
         mean_y: current mean estimate of y tensor
         var_x: current variance estimate of x tensor
         var_y: current variance estimate of y tensor
-        corr_xy: current covariance estimate between x and y tensor
-        num_prior: current number of observed observations
+        cov_xy: current covariance estimate between x and y tensor
+        weights_prior: current sum of weights
         num_outputs: number of outputs in multioutput setting
-        weights: weight associated with scores
 
     """
     # Data checking
@@ -58,51 +61,46 @@ def _weighted_pearson_corrcoef_update(
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
     _check_data_shape_to_weights(preds, weights)
 
-    num_obs = weights.sum()
-    cond = num_prior.mean() > 0 or num_obs == 1  # True if prior observations exist
+    weights_sum = weights.sum()
 
-    if cond:
-        mx_new = (num_prior * mean_x + preds.sum(0)) / (num_prior + num_obs)
-        my_new = (num_prior * mean_y + target.sum(0)) / (num_prior + num_obs)
+    if weights_prior > 0:  # True if prior observations exist
+        mx_new = (weights_prior * mean_x + (weights * preds).sum(0)) / (weights_prior + weights_sum)
+        my_new = (weights_prior * mean_y + (weights * target).sum(0)) / (weights_prior + weights_sum)
+
+        var_x += (weights * (preds - mx_new) * (preds - mean_x)).sum(0)
+        var_y += (weights * (target - my_new) * (target - mean_y)).sum(0)
     else:
-        mx_new = preds.mean(0).to(mean_x.dtype)
-        my_new = target.mean(0).to(mean_y.dtype)
+        mx_new = ((weights * preds).sum(0) / weights_sum).to(mean_x.dtype)
+        my_new = ((weights * target).sum(0) / weights_sum).to(mean_y.dtype)
 
-    num_prior += num_obs
+        var_x = (weights * (preds - mx_new) ** 2).sum(0)
+        var_y = (weights * (target - my_new) ** 2).sum(0)
 
-    if cond:
-        var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
-        var_y += ((target - my_new) * (target - mean_y)).sum(0)
-    else:
-        var_x += preds.var(0) * (num_obs - 1)
-        var_y += target.var(0) * (num_obs - 1)
+    cov_xy += (weights * (preds - mx_new) * (target - mean_y)).sum(0)
 
-    corr_xy += ((preds - mx_new) * (target - mean_y)).sum(0)
-    mean_x = mx_new
-    mean_y = my_new
-
-    return mean_x, mean_y, var_x, var_y, corr_xy, num_prior
+    return mx_new, my_new, var_x, var_y, cov_xy, weights_prior + weights_sum
 
 
 def _weighted_pearson_corrcoef_compute(
     var_x: Tensor,
     var_y: Tensor,
-    corr_xy: Tensor,
-    nb: Tensor,
+    cov_xy: Tensor,
+    weights_sum: Tensor,
 ) -> Tensor:
     """Compute the final weighted Pearson correlation based on accumulated statistics.
 
     Args:
         var_x: variance estimate of x tensor
         var_y: variance estimate of y tensor
-        corr_xy: covariance estimate between x and y tensor
-        nb: number of observations
+        cov_xy: covariance estimate between x and y tensor
+        weights_sum: sum of weights
 
     """
     # prevent overwrite the inputs
-    var_x = var_x / (nb - 1)
-    var_y = var_y / (nb - 1)
-    corr_xy = corr_xy / (nb - 1)
+    var_x = var_x / (weights_sum - 1)
+    var_y = var_y / (weights_sum - 1)
+    cov_xy = cov_xy / (weights_sum - 1)
+
     # if var_x, var_y is float16 and on cpu, make it bfloat16 as sqrt is not supported for float16
     # on cpu, remove this after https://github.com/pytorch/pytorch/issues/54774 is fixed
     if var_x.dtype == torch.float16 and var_x.device == torch.device("cpu"):
@@ -119,14 +117,15 @@ def _weighted_pearson_corrcoef_compute(
         )
 
     zero_var_mask = (var_x < bound) | (var_y < bound)
-    corrcoef = torch.full_like(corr_xy, float("nan"), device=corr_xy.device, dtype=corr_xy.dtype)
+    corrcoef = torch.full_like(cov_xy, float("nan"), device=cov_xy.device, dtype=cov_xy.dtype)
     valid_mask = ~zero_var_mask
 
     if valid_mask.any():
         corrcoef[valid_mask] = (
-            (corr_xy[valid_mask] / (var_x[valid_mask] * var_y[valid_mask]).sqrt()).squeeze().to(corrcoef.dtype)
+            (cov_xy[valid_mask] / (var_x[valid_mask] * var_y[valid_mask]).sqrt()).squeeze().to(corrcoef.dtype)
         )
         corrcoef = torch.clamp(corrcoef, -1.0, 1.0)
+
     return corrcoef.squeeze()
 
 
@@ -142,27 +141,27 @@ def weighted_pearson_corrcoef(preds: Tensor, target: Tensor, weights: Tensor) ->
             Sample weights
 
     Example (single output weighted regression):
-        >>> from torchmetrics.functional.regression import pearson_corrcoef
+        >>> from torchmetrics.functional.regression import weighted_pearson_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> weights = torch.tensor([0.1, 0.2, 0.5])
-        >>> pearson(preds, target, weights)
+        >>> weights = torch.tensor([0.2, 0.3, 0.5])
+        >>> weighted_pearson_corrcoef(preds, target, weights)
         tensor(0.9849)
 
     Example (multi output weighted regression):
-        >>> from torchmetrics.functional.regression import pearson_corrcoef
+        >>> from torchmetrics.functional.regression import weighted_pearson_corrcoef
         >>> target = torch.tensor([[3, -0.5], [2, 7]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
-        >>> weights = torch.tensor([0.1, 0.2])
-        >>> pearson(preds, target, weights)
+        >>> weights = torch.tensor([0.4, 0.6])
+        >>> weighted_pearson_corrcoef(preds, target, weights)
         tensor([1., 1.])
 
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
-    var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
-    _, _, var_x, var_y, corr_xy, nb = _weighted_pearson_corrcoef_update(
+    var_y, corr_xy, weights_sum = _temp.clone(), _temp.clone(), _temp.clone().sum()
+    _, _, var_x, var_y, corr_xy, weights_sum = _weighted_pearson_corrcoef_update(
         preds,
         target,
         weights,
@@ -171,7 +170,7 @@ def weighted_pearson_corrcoef(preds: Tensor, target: Tensor, weights: Tensor) ->
         var_x,
         var_y,
         corr_xy,
-        nb,
+        weights_sum,
         num_outputs=1 if preds.ndim == 1 else preds.shape[-1],
     )
-    return _weighted_pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)
+    return _weighted_pearson_corrcoef_compute(var_x, var_y, corr_xy, weights_sum)
