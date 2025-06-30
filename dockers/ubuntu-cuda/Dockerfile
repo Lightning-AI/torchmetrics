@@ -69,7 +69,7 @@ RUN \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /root/.cache && \
-    rm -rf /var/lib/apt/lists/* \
+    rm -rf /var/lib/apt/lists/*
 
 RUN python${PYTHON_VERSION} -m pip venv && \
     python${PYTHON_VERSION} -m venv /opt/venv
