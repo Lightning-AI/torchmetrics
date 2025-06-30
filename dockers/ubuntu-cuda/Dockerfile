@@ -59,6 +59,7 @@ RUN \
     apt-get install -y \
         python${PYTHON_VERSION} \
         python${PYTHON_VERSION}-dev \
+        python${PYTHON_VERSION}-venv \
     && \
     # Handle distutils differently based on Python version
     if dpkg --compare-versions "$PYTHON_VERSION" lt "3.10"; then \
@@ -71,8 +72,7 @@ RUN \
     rm -rf /root/.cache && \
     rm -rf /var/lib/apt/lists/*
 
-RUN python${PYTHON_VERSION} -m pip venv && \
-    python${PYTHON_VERSION} -m venv /opt/venv
+RUN python${PYTHON_VERSION} -m venv /opt/venv
 
 ENV PATH="/opt/venv/bin:$PATH"
 
