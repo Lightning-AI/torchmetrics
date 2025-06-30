@@ -249,6 +249,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: video
+   :caption: Video
+   :glob:
+
+   video/*
+
+.. toctree::
+   :maxdepth: 2
    :name: wrappers
    :caption: Wrappers
    :glob:

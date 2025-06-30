@@ -267,7 +267,9 @@ def test_1d_input_allowed(metric_functional, metric_args):
 def test_final_aggregation_function(shapes):
     """Test that final aggregation function can take various shapes of input."""
     input_fn = lambda: torch.rand(shapes)
-    output = _final_aggregation(input_fn(), input_fn(), input_fn(), input_fn(), input_fn(), torch.randint(10, shapes))
+    output = _final_aggregation(
+        input_fn(), input_fn(), input_fn(), input_fn(), input_fn(), input_fn(), input_fn(), torch.randint(10, shapes)
+    )
     assert all(isinstance(out, torch.Tensor) for out in output)
     assert all(out.ndim == input_fn().ndim - 1 for out in output)
 
@@ -280,6 +282,8 @@ def test_final_aggregation_no_inplace_change():
 
     mean_x = torch.randn(n_devices, n_outputs)
     mean_y = torch.randn(n_devices, n_outputs)
+    max_abs_dev_x = torch.randn(n_devices, n_outputs)
+    max_abs_dev_y = torch.randn(n_devices, n_outputs)
     var_x = torch.randn(n_devices, n_outputs)
     var_y = torch.randn(n_devices, n_outputs)
     corr_xy = torch.randn(n_devices, n_outputs)
@@ -287,16 +291,24 @@ def test_final_aggregation_no_inplace_change():
 
     _mean_x = mean_x.clone()
     _mean_y = mean_y.clone()
+    _max_abs_dev_x = max_abs_dev_x.clone()
+    _max_abs_dev_y = max_abs_dev_y.clone()
     _var_x = var_x.clone()
     _var_y = var_y.clone()
     _corr_xy = corr_xy.clone()
     _n_total = n_total.clone()
 
     for _ in range(n_repeats):
-        _final_aggregation(_mean_x, _mean_y, _var_x, _var_y, _corr_xy, _n_total)
+        _final_aggregation(_mean_x, _mean_y, max_abs_dev_x, max_abs_dev_y, _var_x, _var_y, _corr_xy, _n_total)
 
     assert torch.allclose(_mean_x, mean_x), f"Mean X drift: mean={(_mean_x - mean_x).abs().mean().item()}"
     assert torch.allclose(_mean_y, mean_y), f"Mean Y drift: mean={(_mean_y - mean_y).abs().mean().item()}"
+    assert torch.allclose(_max_abs_dev_x, max_abs_dev_x), (
+        f"Max Abs X drift: mean={(_max_abs_dev_x - max_abs_dev_x).abs().mean().item()}"
+    )
+    assert torch.allclose(_max_abs_dev_y, max_abs_dev_y), (
+        f"Max Abs Y drift: mean={(_max_abs_dev_y - max_abs_dev_y).abs().mean().item()}"
+    )
     assert torch.allclose(_var_x, var_x), f"Var X drift: mean={(_var_x - var_x).abs().mean().item()}"
     assert torch.allclose(_var_y, var_y), f"Var Y drift: mean={(_var_y - var_y).abs().mean().item()}"
     assert torch.allclose(_corr_xy, corr_xy), f"Corr XY drift: mean={(_corr_xy - corr_xy).abs().mean().item()}"
@@ -309,32 +321,42 @@ def test_final_aggregation_with_empty_devices():
     n_outputs = 5
     mean_x = torch.randn(n_devices, n_outputs)
     mean_y = torch.randn(n_devices, n_outputs)
-    var_x = torch.randn(n_devices, n_outputs)
-    var_y = torch.randn(n_devices, n_outputs)
+    max_abs_dev_x = torch.randn(n_devices, n_outputs).abs()
+    max_abs_dev_y = torch.randn(n_devices, n_outputs).abs()
+    var_x = torch.randn(n_devices, n_outputs).abs()
+    var_y = torch.randn(n_devices, n_outputs).abs()
     corr_xy = torch.randn(n_devices, n_outputs)
     n_total = torch.randint(1, 100, (n_devices, n_outputs))
 
-    for x in [mean_x, mean_y, var_x, var_y, corr_xy, n_total]:
+    for x in [mean_x, mean_y, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, n_total]:
         x[:2] = 0
 
     # Current
-    mean_x_cur, mean_y_cur, var_x_cur, var_y_cur, corr_xy_cur, n_total_cur = _final_aggregation(
-        mean_x, mean_y, var_x, var_y, corr_xy, n_total
+    mean_x_cur, mean_y_cur, max_abs_dev_x_cur, max_abs_dev_y_cur, var_x_cur, var_y_cur, corr_xy_cur, n_total_cur = (
+        _final_aggregation(mean_x, mean_y, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, n_total)
     )
     # Expected
-    mean_x_exp, mean_y_exp, var_x_exp, var_y_exp, corr_xy_exp, n_total_exp = _final_aggregation(
-        mean_x[2:], mean_y[2:], var_x[2:], var_y[2:], corr_xy[2:], n_total[2:]
+    mean_x_exp, mean_y_exp, max_abs_dev_x_exp, max_abs_dev_y_exp, var_x_exp, var_y_exp, corr_xy_exp, n_total_exp = (
+        _final_aggregation(
+            mean_x[2:], mean_y[2:], max_abs_dev_x[2:], max_abs_dev_y[2:], var_x[2:], var_y[2:], corr_xy[2:], n_total[2:]
+        )
     )
 
     assert torch.allclose(mean_x_cur, mean_x_exp), f"mean_x: {mean_x_cur} (expected: {mean_x_exp})"
     assert torch.allclose(mean_y_cur, mean_y_exp), f"mean_y: {mean_y_cur} (expected: {mean_y_exp})"
+    assert torch.allclose(max_abs_dev_x_cur, max_abs_dev_x_exp), (
+        f"max_abs_dev_x: {max_abs_dev_x_cur} (expected: {max_abs_dev_x_exp})"
+    )
+    assert torch.allclose(max_abs_dev_y_cur, max_abs_dev_y_exp), (
+        f"max_abs_dev_y: {max_abs_dev_y_cur} (expected: {max_abs_dev_y_exp})"
+    )
     assert torch.allclose(var_x_cur, var_x_exp), f"var_x: {var_x_cur} (expected: {var_x_exp})"
     assert torch.allclose(var_y_cur, var_y_exp), f"var_y: {var_y_cur} (expected: {var_y_exp})"
     assert torch.allclose(corr_xy_cur, corr_xy_exp), f"corr_xy: {corr_xy_cur} (expected: {corr_xy_exp})"
     assert torch.allclose(n_total_cur, n_total_exp), f"n_total: {n_total_cur} (expected: {n_total_exp})"
 
 
-@pytest.mark.parametrize(("dtype", "scale"), [(torch.float16, 1e-4), (torch.float32, 1e-8), (torch.float64, 1e-16)])
+@pytest.mark.parametrize(("dtype", "scale"), [(torch.float16, 1e-4), (torch.float32, 1e-32), (torch.float64, 1e-256)])
 def test_pearsons_warning_on_small_input(dtype, scale):
     """Check that a user warning is raised for small input."""
     preds = scale * torch.randn(100, dtype=dtype)
@@ -351,7 +373,6 @@ def test_single_sample_update():
     metric(torch.tensor([3.0, -0.5, 2.0, 7.0]), torch.tensor([2.5, 0.0, 2.0, 8.0]))
     res1 = metric.compute()
     metric.reset()
-
     metric(torch.tensor([3.0]), torch.tensor([2.5]))
     metric(torch.tensor([-0.5]), torch.tensor([0.0]))
     metric(torch.tensor([2.0]), torch.tensor([2.0]))

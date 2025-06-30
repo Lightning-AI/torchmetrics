@@ -3,6 +3,11 @@
 
 pandas >1.4.0, <=2.3.0
 netcal >1.0.0, <1.4.0 # calibration_error
-numpy <2.3.0
+numpy <2.4.0
 fairlearn # group_fairness
-PyTDC ==0.4.1 ; python_version <"3.12"  # locauc, temporal_dependency
+
+# locauc, temporal_dependency
+PyTDC @ https://github.com/Lightning-Sandbox/PyTDC/archive/576e4983c6b42a36bd27a0db32979428f56baebb.zip ; platform_system != "Windows" and python_version > "3.9"
+# switch to old version on Windows due AssertionError: error when building libtiledbsoma from source
+# switch to old version for Python <3.10 due to impossible version/dependency resolving
+PyTDC ==0.4.1 ; python_version <"3.10" or (platform_system == "Windows" and python_version < "3.12")

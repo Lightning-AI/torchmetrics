@@ -1,6 +1,6 @@
 .. customcarditem::
    :header: Cluster Accuracy
-   :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/default.svg
+   :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/clustering.svg
    :tags: Clustering
 
 .. include:: ../links.rst
