@@ -65,7 +65,6 @@ RUN \
     if dpkg --compare-versions "$PYTHON_VERSION" lt "3.10"; then \
         apt-get install -y python${PYTHON_VERSION}-distutils; \
     fi && \
-    curl https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION} && \
     # Cleaning
     apt-get autoremove -y && \
     apt-get clean && \
