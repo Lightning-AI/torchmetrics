@@ -187,4 +187,3 @@
 .. _Algorithms_for_calculating_variance: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
 .. _online_weighted_variance: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
 .. _online_weighted_covariance: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Weighted_batched_version
-
