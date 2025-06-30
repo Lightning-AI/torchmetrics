@@ -563,6 +563,7 @@ class MetricTester:
         metric_module: Metric,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
+        **kwargs_update: Any,
     ) -> None:
         """Test if a metric is differentiable or not.
 
@@ -572,14 +573,16 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: functional version of the metric
             metric_args: dict with additional arguments used for class initialization
+            kwargs_update: dict with additional arguments for metric update
 
         """
         metric_args = metric_args or {}
+
         # only floating point tensors can require grad
         metric = metric_module(**metric_args)
         if preds.is_floating_point():
             preds.requires_grad = True
-            out = metric(preds[0, :2], target[0, :2])
+            out = metric(preds[0, :2], target[0, :2], **kwargs_update)
 
             # Check if requires_grad matches is_differentiable attribute
             _assert_requires_grad(metric, out)
