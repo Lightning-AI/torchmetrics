@@ -12,9 +12,9 @@ By ranking the PESQ scores, we identify which synthetic speaker sounds most natu
 import json
 import os
 
-import ipynbname
 import numpy as np
 import torch
+from ipykernel import get_connection_file
 from IPython.display import Audio
 from transformers import pipeline
 
@@ -51,7 +51,7 @@ for idx, e in enumerate(speaker_embeddings):
 # Get the target audio using the speaker embedding from the separate file
 
 # Get the directory of the current script to locate the JSON file
-json_path = os.path.join(os.path.dirname(ipynbname.path()), "target_embedding.json")
+json_path = os.path.join(os.path.dirname(get_connection_file()), "target_embedding.json")
 with open(json_path) as f:
     embedding_list = json.load(f)
 # Target speaker embedding (512-dimensional X-vector)
