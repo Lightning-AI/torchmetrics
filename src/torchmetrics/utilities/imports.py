@@ -63,4 +63,6 @@ _SCIPI_AVAILABLE = RequirementCache("scipy")
 _TORCH_LINEAR_ASSIGNMENT_AVAILABLE = RequirementCache("torch_linear_assignment")
 _AEON_AVAILABLE = RequirementCache("aeon")
 _PYTDC_AVAILABLE = RequirementCache("pyTDC")
+_TORCH_VMAF_AVAILABLE = RequirementCache("vmaf_torch")
+_EINOPS_AVAILABLE = RequirementCache("einops")
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None
