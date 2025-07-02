@@ -15,6 +15,7 @@ from typing import Callable, Optional, Union
 
 import numpy as np
 import pytest
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -211,3 +212,12 @@ class TestPrecision(RetrievalMetricTester):
             exception_type=ValueError,
             kwargs_update=metric_args,
         )
+
+    def test_precision_all_zero_predictions_returns_zero(self):
+        """Test that Precision returns 0 when all predictions are zero and there are positive targets."""
+        preds = torch.tensor([0.0, 0.0, 0.0])
+        target = torch.tensor([1, 0, 1])
+        indexes = torch.tensor([0, 0, 0])
+        metric = RetrievalPrecision()
+        result = metric(preds, target, indexes=indexes)
+        assert result == 0.0, f"Expected Precision to be 0.0, got {result}"
