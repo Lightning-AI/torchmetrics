@@ -30,7 +30,7 @@ ENV \
     CUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" \
     MKL_THREADING_LAYER="GNU" \
     # MAKEFLAGS="-j$(nproc)"
-    MAKEFLAGS="-j2"
+    MAKEFLAGS="-j2" \
     PIP_NO_BUILD_ISOLATION=1
 
 RUN \
