@@ -23,7 +23,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
-from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_RANGE_LT_4_50_LE_4_52, skip_on_connection_issues
+from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_RANGE_LT_4_50_LE_4_53, skip_on_connection_issues
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import (
     _inputs_multiple_references,
@@ -96,7 +96,7 @@ def _reference_bert_score(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
     reason="could be due to torch compatibility issues with transformers",
 )
 class TestBERTScore(TextTester):
@@ -191,7 +191,7 @@ class TestBERTScore(TextTester):
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
     reason="could be due to torch compatibility issues with transformers",
 )
 @pytest.mark.parametrize("idf", [True, False])
@@ -216,7 +216,7 @@ def test_bertscore_sorting(idf: bool):
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
     reason="could be due to torch compatibility issues with transformers",
 )
 @pytest.mark.parametrize("truncation", [True, False])
@@ -240,7 +240,7 @@ def test_bertscore_truncation(truncation: bool):
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
     reason="could be due to torch compatibility issues with transformers",
 )
 def test_bertscore_single_str_input():
@@ -291,7 +291,7 @@ def test_bertscore_single_str_input():
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
     reason="could be due to torch compatibility issues with transformers",
 )
 def test_bertscore_multiple_references(preds, target, expected):
