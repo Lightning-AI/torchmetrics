@@ -75,14 +75,22 @@ RUN python${PYTHON_VERSION} -m venv /opt/venv
 
 ENV PATH="/opt/venv/bin:$PATH"
 
+#  ─── Monkey-patch pkgutil.ImpImporter ───
+RUN python3 - <<'EOF'
+import sysconfig, zipimport
+stdlib = sysconfig.get_path('stdlib')
+target = f"{stdlib}/pkgutil.py"
+with open(target, 'a') as f:
+    f.write("""
+
+# Back-port ImpImporter for Python 3.12+
+class ImpImporter(zipimport.zipimporter):
+    pass
+""")
+EOF
+
 COPY requirements/ requirements/
 COPY .github/assistant.py ./assistant.py
-
-# Monkey-patch missing ImpImporter before any build step
-RUN python - <<'EOF'
-import pkgutil, zipimport
-pkgutil.ImpImporter = zipimport.zipimporter
-EOF
 
 RUN \
     # set particular PyTorch version and requirements for assistant
