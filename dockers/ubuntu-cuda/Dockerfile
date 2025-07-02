@@ -78,6 +78,12 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY requirements/ requirements/
 COPY .github/assistant.py ./assistant.py
 
+# Monkey-patch missing ImpImporter before any build step
+RUN python - <<'EOF'
+import pkgutil, zipimport
+pkgutil.ImpImporter = zipimport.zipimporter
+EOF
+
 RUN \
     # set particular PyTorch version and requirements for assistant
     pip install -U wget packaging "setuptools>=80.9.0" fire && \
