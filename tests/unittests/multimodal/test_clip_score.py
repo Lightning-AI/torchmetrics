@@ -31,7 +31,7 @@ from torchmetrics.multimodal.clip_score import CLIPScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 from unittests._helpers import (
     _TORCH_LESS_THAN_2_1,
-    _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
     seed_all,
     skip_on_connection_issues,
     skip_on_cuda_oom,
@@ -94,7 +94,7 @@ def _custom_clip_processor_model():
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.skipif(
-    _TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    _TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
     reason="could be due to torch compatibility issues with transformers",
