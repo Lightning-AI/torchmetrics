@@ -30,8 +30,7 @@ ENV \
     CUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" \
     MKL_THREADING_LAYER="GNU" \
     # MAKEFLAGS="-j$(nproc)"
-    MAKEFLAGS="-j2" \
-    PIP_NO_BUILD_ISOLATION=1
+    MAKEFLAGS="-j2"
 
 RUN \
     apt-get -y update --fix-missing && \
@@ -77,7 +76,7 @@ RUN python${PYTHON_VERSION} -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # ─── Patch pkgutil only on Python 3.12+ ───
-RUN python${PYTHON_VERSION} - << 'EOF'
+RUN python << 'EOF'
 import sys
 if sys.version_info >= (3, 12):
     import sysconfig, zipimport
@@ -89,7 +88,6 @@ if sys.version_info >= (3, 12):
 # Back-port ImpImporter for Python 3.12+
 class ImpImporter(zipimport.zipimporter):
     pass
-""")
 EOF
 
 COPY requirements/ requirements/
