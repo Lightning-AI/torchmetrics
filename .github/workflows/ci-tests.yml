@@ -126,6 +126,7 @@ jobs:
 
       - name: Install all dependencies
         run: |
+          set -e
           curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
           pip install -q cython  # needed for installing `pycocotools` in latest config
           for fpath in `ls requirements/*.txt`; do
