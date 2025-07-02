@@ -126,16 +126,16 @@ jobs:
 
       - name: Install all dependencies
         run: |
-          set -e
+          set -ex
           curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
           pip install -q cython  # needed for installing `pycocotools` in latest config
           for fpath in `ls requirements/*.txt`; do
               python adjust-torch-versions.py $fpath
           done
+          pip install --requirement requirements/clustering.txt -U \
+            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR" || true # separate install to avoid conflicts and ignore failures
           pip install --requirement requirements/_devel.txt -U --upgrade-strategy=eager \
             $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
-          pip install --requirement requirements/clustering.txt -U --upgrade-strategy=eager \
-            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR" || true # separate install to avoid conflicts and ignore failures
           pip list
         timeout-minutes: 25
 
