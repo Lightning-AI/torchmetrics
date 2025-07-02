@@ -88,6 +88,7 @@ if sys.version_info >= (3, 12):
 # Back-port ImpImporter for Python 3.12+
 class ImpImporter(zipimport.zipimporter):
     pass
+""")
 EOF
 
 COPY requirements/ requirements/
