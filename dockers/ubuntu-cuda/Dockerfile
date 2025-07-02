@@ -31,6 +31,7 @@ ENV \
     MKL_THREADING_LAYER="GNU" \
     # MAKEFLAGS="-j$(nproc)"
     MAKEFLAGS="-j2"
+    PIP_NO_BUILD_ISOLATION=1
 
 RUN \
     apt-get -y update --fix-missing && \
@@ -75,13 +76,15 @@ RUN python${PYTHON_VERSION} -m venv /opt/venv
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-#  ─── Monkey-patch pkgutil.ImpImporter ───
-RUN python3 - <<'EOF'
-import sysconfig, zipimport
-stdlib = sysconfig.get_path('stdlib')
-target = f"{stdlib}/pkgutil.py"
-with open(target, 'a') as f:
-    f.write("""
+# ─── Patch pkgutil only on Python 3.12+ ───
+RUN python${PYTHON_VERSION} - << 'EOF'
+import sys
+if sys.version_info >= (3, 12):
+    import sysconfig, zipimport
+    stdlib = sysconfig.get_path('stdlib')
+    target = f"{stdlib}/pkgutil.py"
+    with open(target, 'a') as f:
+        f.write("""
 
 # Back-port ImpImporter for Python 3.12+
 class ImpImporter(zipimport.zipimporter):
