@@ -66,6 +66,6 @@ def retrieval_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = No
         return tensor(0.0, device=preds.device)
 
     target_filtered = torch.where(preds > 0, target, torch.zeros_like(target))
-    relevant = target_filtered[torch.argsort(preds, dim=-1, descending=True)][:top_k].sum().float()
+    relevant = target_filtered[preds.topk(min(top_k, preds.shape[-1]), dim=-1)[1]].sum().float()
 
     return relevant / top_k
