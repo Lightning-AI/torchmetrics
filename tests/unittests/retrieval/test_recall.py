@@ -15,6 +15,7 @@ from typing import Callable, Optional, Union
 
 import numpy as np
 import pytest
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -193,3 +194,12 @@ class TestRecall(RetrievalMetricTester):
             exception_type=ValueError,
             kwargs_update=metric_args,
         )
+
+    def test_recall_all_zero_predictions_returns_zero(self):
+        """Test that Recall returns 0 when all predictions are zero and there are positive targets."""
+        preds = torch.tensor([0.0, 0.0, 0.0])
+        target = torch.tensor([1, 0, 1])
+        indexes = torch.tensor([0, 0, 0])
+        metric = RetrievalRecall()
+        result = metric(preds, target, indexes=indexes)
+        assert result == 0.0, f"Expected Recall to be 0.0, got {result}"
