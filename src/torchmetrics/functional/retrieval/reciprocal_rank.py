@@ -52,7 +52,9 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor, top_k: Optional[int
     if not isinstance(top_k, int) and top_k <= 0:
         raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
 
+    target = torch.where(preds > 0, target, torch.zeros_like(target))
     target = target[preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)[1]]
+
     if not target.sum():
         return tensor(0.0, device=preds.device)
 
