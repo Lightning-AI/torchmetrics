@@ -105,22 +105,24 @@ def test_ms_ssim_contrast_sensitivity():
     )
     assert isinstance(out, torch.Tensor)
 
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP)])
 def test_ssim_reduction_none_distributed_training(ddp):
     """Test that SSIM with reduction=None works correctly in distributed training.
-    
+
     This test verifies the fix for issue #3159 where the metric would fail with
     "Expected `self.similarity` to be a list for reduction='none'." in distributed
     training due to incorrect dist_reduce_fx='cat' configuration.
-    
+
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
+
     """
     metric = MultiScaleStructuralSimilarityIndexMeasure(reduction=None)
-    
+
     preds = torch.rand(4, 3, 224, 224)
     target = torch.rand(4, 3, 224, 224)
-    
+
     # Multiple updates to trigger the distributed state issue
     for _ in range(3):
         metric.update(preds, target)
