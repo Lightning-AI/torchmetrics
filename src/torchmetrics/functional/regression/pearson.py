@@ -70,8 +70,6 @@ def _pearson_corrcoef_update(
         var_x = var_x + delta2_x * delta_x
         var_y = var_y + delta2_y * delta_y
         corr_xy = corr_xy + delta_x * delta2_y
-        max_abs_dev_x = torch.maximum(max_abs_dev_x, (preds - mx_new).abs())
-        max_abs_dev_y = torch.maximum(max_abs_dev_y, (target - my_new).abs())
     else:
         preds_centered = preds - batch_mean_x
         target_centered = target - batch_mean_y
@@ -85,8 +83,8 @@ def _pearson_corrcoef_update(
         var_y = var_y + batch_var_y + delta_y**2 * correction
 
         corr_xy = corr_xy + batch_cov_xy + delta_x * delta_y * correction
-        max_abs_dev_x = torch.maximum(max_abs_dev_x, torch.max((preds - mx_new).abs(), dim=0)[0])
-        max_abs_dev_y = torch.maximum(max_abs_dev_y, torch.max((target - my_new).abs(), dim=0)[0])
+    max_abs_dev_x = torch.maximum(max_abs_dev_x, torch.max((preds - mx_new).abs(), dim=0)[0])
+    max_abs_dev_y = torch.maximum(max_abs_dev_y, torch.max((target - my_new).abs(), dim=0)[0])
     return mx_new, my_new, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, n_total
 
 
