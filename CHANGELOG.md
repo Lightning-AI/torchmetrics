@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed: Ignore zero and negative predictions in retrieval metrics ([#3160](https://github.com/Lightning-AI/torchmetrics/pull/3160))
+- Fixed SSIM `dist_reduce_fx` when `reduction=None` for distributed training ([#3162](https://github.com/Lightning-AI/torchmetrics/pull/3162))
+- Fixed attribute error ([#3154](https://github.com/Lightning-AI/torchmetrics/pull/3154))
+- Fixed incorrect shape in `_pearson_corrcoef_update` ([#3168](https://github.com/Lightning-AI/torchmetrics/pull/3168))
 
 
 ---
