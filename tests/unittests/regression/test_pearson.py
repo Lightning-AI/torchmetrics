@@ -289,43 +289,29 @@ def test_corner_cases():
 @pytest.mark.parametrize("num_outputs", [1, 2, 3])
 def test_pearson_update_shape(num_outputs: int):
     """Test that the shape of the update is correct."""
+
+    def _assert_shapes(metric):
+        assert metric.mean_x.shape == (num_outputs,)
+        assert metric.mean_y.shape == (num_outputs,)
+        assert metric.max_abs_dev_x.shape == (num_outputs,)
+        assert metric.max_abs_dev_y.shape == (num_outputs,)
+        assert metric.var_x.shape == (num_outputs,)
+        assert metric.var_y.shape == (num_outputs,)
+        assert metric.corr_xy.shape == (num_outputs,)
+        assert metric.n_total.shape == (num_outputs,)
+
     preds = torch.randn(num_outputs)
     target = torch.randn(num_outputs)
-
     metric = PearsonCorrCoef(num_outputs=num_outputs)
     metric.update(preds, target)
-
-    assert metric.mean_x.shape == (num_outputs,)
-    assert metric.mean_y.shape == (num_outputs,)
-    assert metric.max_abs_dev_x.shape == (num_outputs,)
-    assert metric.max_abs_dev_y.shape == (num_outputs,)
-    assert metric.var_x.shape == (num_outputs,)
-    assert metric.var_y.shape == (num_outputs,)
-    assert metric.corr_xy.shape == (num_outputs,)
-    assert metric.n_total.shape == (num_outputs,)
+    _assert_shapes(metric)
 
     preds_additional_dim = torch.randn(1, num_outputs)
     target_additional_dim = torch.randn(1, num_outputs)
-
     metric.update(preds_additional_dim, target_additional_dim)
-    assert metric.mean_x.shape == (num_outputs,)
-    assert metric.mean_y.shape == (num_outputs,)
-    assert metric.max_abs_dev_x.shape == (num_outputs,)
-    assert metric.max_abs_dev_y.shape == (num_outputs,)
-    assert metric.var_x.shape == (num_outputs,)
-    assert metric.var_y.shape == (num_outputs,)
-    assert metric.corr_xy.shape == (num_outputs,)
-    assert metric.n_total.shape == (num_outputs,)
+    _assert_shapes(metric)
 
     preds_multi = torch.randn(10, num_outputs)
     target_multi = torch.randn(10, num_outputs)
-
     metric.update(preds_multi, target_multi)
-    assert metric.mean_x.shape == (num_outputs,)
-    assert metric.mean_y.shape == (num_outputs,)
-    assert metric.max_abs_dev_x.shape == (num_outputs,)
-    assert metric.max_abs_dev_y.shape == (num_outputs,)
-    assert metric.var_x.shape == (num_outputs,)
-    assert metric.var_y.shape == (num_outputs,)
-    assert metric.corr_xy.shape == (num_outputs,)
-    assert metric.n_total.shape == (num_outputs,)
+    _assert_shapes(metric)
