@@ -52,6 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed: Ignore zero and negative predictions in retrieval metrics ([#3160](https://github.com/Lightning-AI/torchmetrics/pull/3160))
 
 
+- Fixed incorrect shape in `_pearson_corrcoef_update` ([#3168](https://github.com/Lightning-AI/torchmetrics/pull/3168))
+
+
 ---
 
 ## [1.7.3] - 2025-06-13
