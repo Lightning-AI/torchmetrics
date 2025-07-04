@@ -113,19 +113,34 @@ def test_ms_ssim_contrast_sensitivity():
     assert isinstance(out, torch.Tensor)
 
 
+def _find_free_port(start=START_PORT, end=MAX_PORT):
+    """Return an available localhost port in the given range."""
+    for port in range(start, end + 1):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("localhost", port))
+                return port
+            except OSError:
+                continue
+    raise RuntimeError("No free ports available")
+    
+
 def _setup_ddp(rank: int, world_size: int):
+    """Set up DDP with a free port and assign CUDA device to the given rank."""
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = "12356"
+    os.environ["MASTER_PORT"] = str(_find_free_port())
     dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
 
 
 def _cleanup_ddp():
+    """Clean up the DDP process group if initialized."""
     if dist.is_initialized():
         dist.destroy_process_group()
 
 
-def _run_ddp(rank, world_size):
+def _run_ms_ssim_ddp(rank, world_size):
+    """Run MSSSIM metric computation in a DDP setup."""
     _setup_ddp(rank, world_size)
     device = torch.device(f"cuda:{rank}")
     metric = MultiScaleStructuralSimilarityIndexMeasure(reduction="none").to(device)
@@ -139,24 +154,13 @@ def _run_ddp(rank, world_size):
     _cleanup_ddp()
 
 
-def _find_free_port(start=START_PORT, end=MAX_PORT):
-    for port in range(start, end + 1):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(("localhost", port))
-                return port
-            except OSError:
-                continue
-    raise RuntimeError("No free ports available")
-
-
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on Windows")
 def test_ms_ssim_reduction_none_ddp():
-    """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP."""
+    """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
+    
+    """
     world_size = 2
-
-    os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(_find_free_port())
-
-    mp.spawn(_run_ddp, args=(world_size,), nprocs=world_size, join=True)
+    mp.spawn(_run_ms_ssim_ddp, args=(world_size,), nprocs=world_size, join=True)
