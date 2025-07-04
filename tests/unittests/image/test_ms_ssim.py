@@ -123,7 +123,7 @@ def _find_free_port(start=START_PORT, end=MAX_PORT):
             except OSError:
                 continue
     raise RuntimeError("No free ports available")
-    
+
 
 def _setup_ddp(rank: int, world_size: int):
     """Set up DDP with a free port and assign CUDA device to the given rank."""
@@ -160,7 +160,7 @@ def test_ms_ssim_reduction_none_ddp():
     """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
-    
+
     """
     world_size = 2
     mp.spawn(_run_ms_ssim_ddp, args=(world_size,), nprocs=world_size, join=True)
