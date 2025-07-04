@@ -368,17 +368,19 @@ def test_ssim_for_correct_padding():
 
 def _run_ssim_ddp(rank: int, world_size: int, free_port: int):
     """Run SSIM metric computation in a DDP setup."""
-    setup_ddp(rank, world_size, free_port)
-    device = torch.device(f"cuda:{rank}")
-    metric = StructuralSimilarityIndexMeasure(reduction="none").to(device)
-
-    for _ in range(3):
-        x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
-        metric.update(x, y)
-
-    result = metric.compute()
-    assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
-    cleanup_ddp()
+    try:
+        setup_ddp(rank, world_size, free_port)
+        device = torch.device(f"cuda:{rank}")
+        metric = StructuralSimilarityIndexMeasure(reduction="none").to(device)
+    
+        for _ in range(3):
+            x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
+            metric.update(x, y)
+    
+        result = metric.compute()
+        assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
+    finally:
+        cleanup_ddp()
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
