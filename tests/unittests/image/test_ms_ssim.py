@@ -12,8 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import socket
+import sys
+
 import pytest
 import torch
+import torch.distributed as dist
+import torch.multiprocessing as mp
 from pytorch_msssim import ms_ssim
 
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure
@@ -21,6 +27,7 @@ from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
+from unittests.conftest import MAX_PORT, START_PORT
 
 seed_all(42)
 
@@ -106,25 +113,50 @@ def test_ms_ssim_contrast_sensitivity():
     assert isinstance(out, torch.Tensor)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-@pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP)])
-def test_ms_ssim_reduction_none_distributed_training(ddp):
-    """Test that MSSSIM with reduction=None works correctly in distributed training.
+def _setup_ddp(rank: int, world_size: int):
+    os.environ["MASTER_ADDR"] = "localhost"
+    os.environ["MASTER_PORT"] = "12356"
+    dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
+    torch.cuda.set_device(rank)
 
-    This test verifies the fix for issue #3159 where the metric would fail with
-    "Expected `self.similarity` to be a list for reduction='none'." in distributed
-    training due to incorrect dist_reduce_fx='cat' configuration.
 
-    See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
+def _cleanup_ddp():
+    if dist.is_initialized():
+        dist.destroy_process_group()
 
-    """
-    metric = MultiScaleStructuralSimilarityIndexMeasure(reduction=None)
 
-    preds = torch.rand(4, 3, 224, 224)
-    target = torch.rand(4, 3, 224, 224)
+def _run_ddp(rank, world_size):
+    _setup_ddp(rank, world_size)
+    device = torch.device(f"cuda:{rank}")
+    metric = MultiScaleStructuralSimilarityIndexMeasure(reduction="none").to(device)
 
     for _ in range(3):
-        metric.update(preds, target)
+        x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
+        metric.update(x, y)
 
     result = metric.compute()
     assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
+    _cleanup_ddp()
+
+
+def _find_free_port(start=START_PORT, end=MAX_PORT):
+    for port in range(start, end + 1):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("localhost", port))
+                return port
+            except OSError:
+                continue
+    raise RuntimeError("No free ports available")
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on Windows")
+def test_ms_ssim_reduction_none_ddp():
+    """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP."""
+    world_size = 2
+
+    os.environ["MASTER_ADDR"] = "localhost"
+    os.environ["MASTER_PORT"] = str(_find_free_port())
+
+    mp.spawn(_run_ddp, args=(world_size,), nprocs=world_size, join=True)
