@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import socket
 import sys
 
 import pytest
@@ -27,7 +26,7 @@ from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-from unittests.conftest import MAX_PORT, START_PORT
+from unittests.utilities.test_utilities import find_free_port
 
 seed_all(42)
 
@@ -113,35 +112,23 @@ def test_ms_ssim_contrast_sensitivity():
     assert isinstance(out, torch.Tensor)
 
 
-def _find_free_port(start=START_PORT, end=MAX_PORT):
-    """Return an available localhost port in the given range."""
-    for port in range(start, end + 1):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(("localhost", port))
-                return port
-            except OSError:
-                continue
-    raise RuntimeError("No free ports available")
-
-
-def _setup_ddp(rank: int, world_size: int):
+def _setup_ms_ssim_ddp(rank: int, world_size: int, free_port: int):
     """Set up DDP with a free port and assign CUDA device to the given rank."""
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(_find_free_port())
+    os.environ["MASTER_PORT"] = str(free_port)
     dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
 
 
-def _cleanup_ddp():
+def _cleanup_ms_ssim_ddp():
     """Clean up the DDP process group if initialized."""
     if dist.is_initialized():
         dist.destroy_process_group()
 
 
-def _run_ms_ssim_ddp(rank, world_size):
+def _run_ms_ssim_ddp(rank: int, world_size: int, free_port: int):
     """Run MSSSIM metric computation in a DDP setup."""
-    _setup_ddp(rank, world_size)
+    _setup_ms_ssim_ddp(rank, world_size, free_port)
     device = torch.device(f"cuda:{rank}")
     metric = MultiScaleStructuralSimilarityIndexMeasure(reduction="none").to(device)
 
@@ -151,7 +138,7 @@ def _run_ms_ssim_ddp(rank, world_size):
 
     result = metric.compute()
     assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
-    _cleanup_ddp()
+    _cleanup_ms_ssim_ddp()
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -163,4 +150,7 @@ def test_ms_ssim_reduction_none_ddp():
 
     """
     world_size = 2
-    mp.spawn(_run_ms_ssim_ddp, args=(world_size,), nprocs=world_size, join=True)
+    free_port = find_free_port()
+    if free_port == -1:
+        pytest.skip("No free port available for DDP test.")
+    mp.spawn(_run_ms_ssim_ddp, args=(world_size, free_port), nprocs=world_size, join=True)
