@@ -75,6 +75,8 @@ jobs:
           - { python: "3.11", pytorch: "2.5.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.6.0", cuda: "12.4.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "22.04" }
+          - { python: "3.12", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "24.04" }
+          - { python: "3.13", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "24.04" }
     steps:
       - uses: actions/checkout@v4
 
