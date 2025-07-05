@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 import pytest
 import torch
+import torch.multiprocessing as mp
 from pytorch_msssim import ms_ssim
 
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure
@@ -21,6 +24,8 @@ from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
+from unittests.image import cleanup_ddp, setup_ddp
+from unittests.utilities.test_utilities import find_free_port
 
 seed_all(42)
 
@@ -104,3 +109,35 @@ def test_ms_ssim_contrast_sensitivity():
         preds, target, data_range=1.0, kernel_size=3, betas=(1.0, 0.5, 0.25)
     )
     assert isinstance(out, torch.Tensor)
+
+
+def _run_ms_ssim_ddp(rank: int, world_size: int, free_port: int):
+    """Run MSSSIM metric computation in a DDP setup."""
+    try:
+        setup_ddp(rank, world_size, free_port)
+        device = torch.device(f"cuda:{rank}")
+        metric = MultiScaleStructuralSimilarityIndexMeasure(reduction="none").to(device)
+
+        for _ in range(3):
+            x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
+            metric.update(x, y)
+
+        result = metric.compute()
+        assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
+    finally:
+        cleanup_ddp()
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on Windows")
+def test_ms_ssim_reduction_none_ddp():
+    """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
+
+    """
+    world_size = 2
+    free_port = find_free_port()
+    if free_port == -1:
+        pytest.skip("No free port available for DDP test.")
+    mp.spawn(_run_ms_ssim_ddp, args=(world_size, free_port), nprocs=world_size, join=True)

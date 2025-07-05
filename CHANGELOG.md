@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Improved numerical stability of pearson's correlation coefficient ([#3152](https://github.com/Lightning-AI/torchmetrics/pull/3152))
+-
 
 
 ### Deprecated
@@ -49,10 +49,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed: Ignore zero and negative predictions in retrieval metrics ([#3160](https://github.com/Lightning-AI/torchmetrics/pull/3160))
+-
 
 
 ---
+
+## [1.7.4] - 2025-07-03
+
+### Changed
+
+- Improved numerical stability of pearson's correlation coefficient ([#3152](https://github.com/Lightning-AI/torchmetrics/pull/3152))
+
+### Fixed
+
+- Fixed: Ignore zero and negative predictions in retrieval metrics ([#3160](https://github.com/Lightning-AI/torchmetrics/pull/3160))
+- Fixed SSIM `dist_reduce_fx` when `reduction=None` for distributed training (
+    [#3162](https://github.com/Lightning-AI/torchmetrics/pull/3162), [#3166](https://github.com/Lightning-AI/torchmetrics/pull/3166))
+- Fixed attribute error ([#3154](https://github.com/Lightning-AI/torchmetrics/pull/3154))
+- Fixed incorrect shape in `_pearson_corrcoef_update` ([#3168](https://github.com/Lightning-AI/torchmetrics/pull/3168))
+
 
 ## [1.7.3] - 2025-06-13
 
