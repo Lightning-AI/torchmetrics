@@ -76,9 +76,9 @@ lint.per-file-ignores."tests/**" = [
   "ANN201",
   "ANN202",
   "ANN401",
+  "PT028",  # Test function parameter has default argument
   "S101",
   "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
-  "PT028",  # Test function parameter has default argument
 ]
 # Unlike Flake8, default to a complexity level of 10.
 lint.mccabe.max-complexity = 10
