@@ -76,6 +76,7 @@ lint.per-file-ignores."tests/**" = [
   "ANN201",
   "ANN202",
   "ANN401",
+  "PT028",  # Test function parameter has default argument
   "S101",
   "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
 ]
