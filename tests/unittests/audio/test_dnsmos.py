@@ -167,7 +167,7 @@ def _reference_metric_batch(
         # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
         # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
         return score.mean(dim=0)
-    return score.reshape(*shape[:-1], 4).reshape(shape[:-1] + (4,)).numpy()
+    return score.reshape(*shape[:-1], 4).reshape((*shape[:-1], 4)).numpy()
 
 
 def _dnsmos_cheat(preds, target, **kwargs: dict[str, Any]):
