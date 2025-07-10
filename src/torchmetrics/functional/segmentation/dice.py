@@ -139,8 +139,8 @@ def dice_score(
         include_background: Whether to include the background class in the computation
         average: The method to average the dice score. Options are ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``
             or ``None``. This determines how to average the dice score across different classes.
-        input_format: What kind of input the function receives. 
-            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors 
+        input_format: What kind of input the function receives.
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
             or ``"mixed"`` for one one-hot encoded and one index tensor
         aggregation_level: The level at which to aggregate the dice score. Options are ``"samplewise"`` or ``"global"``.
             For ``"samplewise"`` the dice score is computed for each sample and then averaged. For ``"global"`` the dice

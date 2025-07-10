@@ -73,8 +73,8 @@ def hausdorff_distance(
           `"chessboard"` or `"taxicab"`
         spacing: spacing between pixels along each spatial dimension. If not provided the spacing is assumed to be 1
         directed: whether to calculate directed or undirected Hausdorff distance
-        input_format: What kind of input the function receives. 
-            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors 
+        input_format: What kind of input the function receives.
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
             or ``"mixed"`` for one one-hot encoded and one index tensor
 
     Returns:
