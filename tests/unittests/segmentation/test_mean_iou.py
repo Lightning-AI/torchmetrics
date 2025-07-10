@@ -23,7 +23,7 @@ from torchmetrics.functional.segmentation.mean_iou import mean_iou
 from torchmetrics.segmentation.mean_iou import MeanIoU
 from unittests import NUM_CLASSES
 from unittests._helpers.testers import MetricTester
-from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3
+from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3, _inputs5, _inputs6
 
 
 def _reference_mean_iou(
@@ -39,6 +39,11 @@ def _reference_mean_iou(
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+    elif input_format == "mixed":
+        if preds.dim() == (target.dim() + 1):
+            target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
+        elif (preds.dim() + 1) == target.dim():
+            preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
 
     val = compute_iou(preds, target, include_background=include_background)
     val[torch.isnan(val)] = 0.0
@@ -56,6 +61,8 @@ def _reference_mean_iou(
         (_inputs2.preds, _inputs2.target, "one-hot", None),
         (_inputs3.preds, _inputs3.target, "index", NUM_CLASSES),
         (_inputs3.preds, _inputs3.target, "index", None),
+        (_inputs5.preds, _inputs5.target, "mixed", NUM_CLASSES),
+        (_inputs6.preds, _inputs6.target, "mixed", NUM_CLASSES),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
@@ -68,7 +75,7 @@ class TestMeanIoU(MetricTester):
     @pytest.mark.parametrize("per_class", [True, False])
     def test_mean_iou_class(self, preds, target, input_format, num_classes, include_background, per_class, ddp):
         """Test class implementation of metric."""
-        if input_format == "index" and num_classes is None:
+        if input_format in ["index", "mixed"] and num_classes is None:
             with pytest.raises(
                 ValueError, match="Argument `num_classes` must be provided when `input_format='index'`."
             ):

@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.segmentation.utils import _ignore_background
+from torchmetrics.functional.segmentation.utils import _check_mixed_shape, _ignore_background
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_divide
@@ -27,7 +27,7 @@ def _dice_score_validate_args(
     num_classes: int,
     include_background: bool,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-    input_format: Literal["one-hot", "index"] = "one-hot",
+    input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
     aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
 ) -> None:
     """Validate the arguments of the metric."""
@@ -38,8 +38,10 @@ def _dice_score_validate_args(
     allowed_average = ["micro", "macro", "weighted", "none"]
     if average is not None and average not in allowed_average:
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} or None, but got {average}.")
-    if input_format not in ["one-hot", "index"]:
-        raise ValueError(f"Expected argument `input_format` to be one of 'one-hot', 'index', but got {input_format}.")
+    if input_format not in ["one-hot", "index", "mixed"]:
+        raise ValueError(
+            f"Expected argument `input_format` to be one of 'one-hot', 'index', 'mixed', but got {input_format}."
+        )
     if aggregation_level not in ("samplewise", "global"):
         raise ValueError(
             f"Expected argument `aggregation_level` to be one of `samplewise`, `global`, but got {aggregation_level}"
@@ -51,14 +53,22 @@ def _dice_score_update(
     target: Tensor,
     num_classes: int,
     include_background: bool,
-    input_format: Literal["one-hot", "index"] = "one-hot",
+    input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
 ) -> tuple[Tensor, Tensor, Tensor]:
     """Update the state with the current prediction and target."""
-    _check_same_shape(preds, target)
+    if input_format == "mixed":
+        _check_mixed_shape(preds, target)
+    else:
+        _check_same_shape(preds, target)
 
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+    elif input_format == "mixed":
+        if preds.dim() == (target.dim() + 1):
+            target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+        elif (preds.dim() + 1) == target.dim():
+            preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
 
     if preds.ndim < 3:
         raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
@@ -117,7 +127,7 @@ def dice_score(
     num_classes: int,
     include_background: bool = True,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-    input_format: Literal["one-hot", "index"] = "one-hot",
+    input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
     aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
 ) -> Tensor:
     """Compute the Dice score for semantic segmentation.
@@ -128,9 +138,9 @@ def dice_score(
         num_classes: Number of classes
         include_background: Whether to include the background class in the computation
         average: The method to average the dice score. Options are ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``
-          or ``None``. This determines how to average the dice score across different classes.
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
-          or ``"index"`` for index tensors
+            or ``None``. This determines how to average the dice score across different classes.
+        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors,
+            ``"index"`` for index tensors or ``"mixed"`` for one one-hot encoded and one index tensor
         aggregation_level: The level at which to aggregate the dice score. Options are ``"samplewise"`` or ``"global"``.
             For ``"samplewise"`` the dice score is computed for each sample and then averaged. For ``"global"`` the dice
             score is computed globally over all samples.

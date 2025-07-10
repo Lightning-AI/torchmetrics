@@ -23,7 +23,7 @@ from torchmetrics.segmentation.dice import DiceScore
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3, _inputs4
+from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3, _inputs4, _inputs5, _inputs6
 
 seed_all(42)
 
@@ -40,6 +40,10 @@ def _reference_dice_score(
     """Calculate reference metric for dice score."""
     if input_format == "one-hot":
         preds = preds.argmax(dim=1)
+        target = target.argmax(dim=1)
+    elif input_format == "mixed" and preds.dim() == (target.dim() + 1):
+        preds = preds.argmax(dim=1)
+    elif input_format == "mixed" and (preds.dim() + 1) == target.dim():
         target = target.argmax(dim=1)
     preds = preds.cpu().numpy()
     target = target.cpu().numpy()
@@ -63,6 +67,8 @@ def _reference_dice_score(
         (_inputs2.preds, _inputs2.target, "one-hot"),
         (_inputs3.preds, _inputs3.target, "index"),
         (_inputs4.preds, _inputs4.target, "index"),
+        (_inputs5.preds, _inputs5.target, "mixed"),
+        (_inputs6.preds, _inputs6.target, "mixed"),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
