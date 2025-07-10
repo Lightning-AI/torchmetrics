@@ -94,6 +94,8 @@ def _mean_iou_update(
         if num_classes == 0:
             raise ValueError(f"Expected argument `num_classes` to be a positive integer, but got {num_classes}.")
     elif input_format == "mixed":
+        if num_classes is None:
+            raise ValueError("Argument `num_classes` must be provided when `input_format='mixed'`.")
         if preds.dim() == (target.dim() + 1):
             target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
         elif (preds.dim() + 1) == target.dim():
