@@ -137,8 +137,9 @@ def mean_iou(
         num_classes: Number of classes (required when input_format="index", optional when input_format="one-hot")
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately, else average over all classes
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors,
-            ``"index"`` for index tensors or ``"mixed"`` for one one-hot encoded and one index tensor
+        input_format: What kind of input the function receives. 
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors 
+            or ``"mixed"`` for one one-hot encoded and one index tensor
 
     Returns:
         The mean IoU score

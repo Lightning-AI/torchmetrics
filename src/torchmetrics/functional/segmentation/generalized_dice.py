@@ -130,8 +130,9 @@ def generalized_dice_score(
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the score for each class separately, else average over all classes
         weight_type: Type of weight factor to apply to the classes. One of ``"square"``, ``"simple"``, or ``"linear"``
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors,
-            ``"index"`` for index tensors or ``"mixed"`` for one one-hot encoded and one index tensor
+        input_format: What kind of input the function receives. 
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors 
+            or ``"mixed"`` for one one-hot encoded and one index tensor
 
     Returns:
         The Generalized Dice Score

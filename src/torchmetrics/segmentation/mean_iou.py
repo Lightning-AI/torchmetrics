@@ -58,8 +58,9 @@ class MeanIoU(Metric):
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately. If set to ``False``, the metric will
             compute the mean IoU over all classes.
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors,
-            ``"index"`` for index tensors or ``"mixed"`` for one one-hot encoded and one index tensor
+        input_format: What kind of input the function receives. 
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors 
+            or ``"mixed"`` for one one-hot encoded and one index tensor
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
