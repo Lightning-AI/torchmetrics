@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Changed `data_range` argument in `PSNR` metric to be a required argument ([3178](https://github.com/Lightning-AI/torchmetrics/pull/3178))
 
 
 ### Deprecated
