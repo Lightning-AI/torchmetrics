@@ -18,6 +18,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.segmentation.utils import (
+    _check_mixed_shape,
     _ignore_background,
     edge_surface_distance,
 )
@@ -30,7 +31,7 @@ def _hausdorff_distance_validate_args(
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
     spacing: Optional[Union[Tensor, list[float]]] = None,
     directed: bool = False,
-    input_format: Literal["one-hot", "index"] = "one-hot",
+    input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
 ) -> None:
     """Validate the arguments of `hausdorff_distance` function."""
     if num_classes <= 0:
@@ -45,8 +46,10 @@ def _hausdorff_distance_validate_args(
         raise ValueError(f"Arg `spacing` must be a list or tensor, but got {type(spacing)}.")
     if not isinstance(directed, bool):
         raise ValueError(f"Expected argument `directed` must be a boolean, but got {directed}.")
-    if input_format not in ["one-hot", "index"]:
-        raise ValueError(f"Expected argument `input_format` to be one of 'one-hot', 'index', but got {input_format}.")
+    if input_format not in ["one-hot", "index", "mixed"]:
+        raise ValueError(
+            f"Expected argument `input_format` to be one of 'one-hot', 'index', 'mixed', but got {input_format}."
+        )
 
 
 def hausdorff_distance(
@@ -57,7 +60,7 @@ def hausdorff_distance(
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
     spacing: Optional[Union[Tensor, list[float]]] = None,
     directed: bool = False,
-    input_format: Literal["one-hot", "index"] = "one-hot",
+    input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
 ) -> Tensor:
     """Calculate `Hausdorff Distance`_ for semantic segmentation.
 
@@ -70,8 +73,9 @@ def hausdorff_distance(
           `"chessboard"` or `"taxicab"`
         spacing: spacing between pixels along each spatial dimension. If not provided the spacing is assumed to be 1
         directed: whether to calculate directed or undirected Hausdorff distance
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
-          or ``"index"`` for index tensors
+        input_format: What kind of input the function receives.
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
+            or ``"mixed"`` for one one-hot encoded and one index tensor
 
     Returns:
         Hausdorff Distance for each class and batch element
@@ -89,11 +93,19 @@ def hausdorff_distance(
 
     """
     _hausdorff_distance_validate_args(num_classes, include_background, distance_metric, spacing, directed, input_format)
-    _check_same_shape(preds, target)
+    if input_format == "mixed":
+        _check_mixed_shape(preds, target)
+    else:
+        _check_same_shape(preds, target)
 
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+    elif input_format == "mixed":
+        if preds.dim() == (target.dim() + 1):
+            target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+        elif (preds.dim() + 1) == target.dim():
+            preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
 
     if not include_background:
         preds, target = _ignore_background(preds, target)
