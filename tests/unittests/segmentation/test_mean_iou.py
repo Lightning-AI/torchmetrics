@@ -23,7 +23,13 @@ from torchmetrics.functional.segmentation.mean_iou import mean_iou
 from torchmetrics.segmentation.mean_iou import MeanIoU
 from unittests import NUM_CLASSES
 from unittests._helpers.testers import MetricTester
-from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3, _inputs5, _inputs6
+from unittests.segmentation.inputs import (
+    _index_input_1,
+    _mixed_input_1,
+    _mixed_input_2,
+    _one_hot_input_1,
+    _one_hot_input_2,
+)
 
 
 def _reference_mean_iou(
@@ -55,14 +61,14 @@ def _reference_mean_iou(
 @pytest.mark.parametrize(
     ("preds", "target", "input_format", "num_classes"),
     [
-        (_inputs1.preds, _inputs1.target, "one-hot", NUM_CLASSES),
-        (_inputs2.preds, _inputs2.target, "one-hot", NUM_CLASSES),
-        (_inputs1.preds, _inputs1.target, "one-hot", None),
-        (_inputs2.preds, _inputs2.target, "one-hot", None),
-        (_inputs3.preds, _inputs3.target, "index", NUM_CLASSES),
-        (_inputs3.preds, _inputs3.target, "index", None),
-        (_inputs5.preds, _inputs5.target, "mixed", NUM_CLASSES),
-        (_inputs6.preds, _inputs6.target, "mixed", NUM_CLASSES),
+        (_one_hot_input_1.preds, _one_hot_input_1.target, "one-hot", NUM_CLASSES),
+        (_one_hot_input_2.preds, _one_hot_input_2.target, "one-hot", NUM_CLASSES),
+        (_one_hot_input_1.preds, _one_hot_input_1.target, "one-hot", None),
+        (_one_hot_input_2.preds, _one_hot_input_2.target, "one-hot", None),
+        (_index_input_1.preds, _index_input_1.target, "index", NUM_CLASSES),
+        (_index_input_1.preds, _index_input_1.target, "index", None),
+        (_mixed_input_1.preds, _mixed_input_1.target, "mixed", NUM_CLASSES),
+        (_mixed_input_2.preds, _mixed_input_2.target, "mixed", NUM_CLASSES),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])

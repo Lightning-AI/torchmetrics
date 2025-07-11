@@ -24,7 +24,14 @@ from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3, _inputs4, _inputs5, _inputs6
+from unittests.segmentation.inputs import (
+    _index_input_1,
+    _index_input_2,
+    _mixed_input_1,
+    _mixed_input_2,
+    _one_hot_input_1,
+    _one_hot_input_2,
+)
 
 seed_all(42)
 
@@ -55,12 +62,12 @@ def _reference_generalized_dice(
 @pytest.mark.parametrize(
     ("preds", "target", "input_format"),
     [
-        (_inputs1.preds, _inputs1.target, "one-hot"),
-        (_inputs2.preds, _inputs2.target, "one-hot"),
-        (_inputs3.preds, _inputs3.target, "index"),
-        (_inputs4.preds, _inputs4.target, "index"),
-        (_inputs5.preds, _inputs5.target, "mixed"),
-        (_inputs6.preds, _inputs6.target, "mixed"),
+        (_one_hot_input_1.preds, _one_hot_input_1.target, "one-hot"),
+        (_one_hot_input_2.preds, _one_hot_input_2.target, "one-hot"),
+        (_index_input_1.preds, _index_input_1.target, "index"),
+        (_index_input_2.preds, _index_input_2.target, "index"),
+        (_mixed_input_1.preds, _mixed_input_1.target, "mixed"),
+        (_mixed_input_2.preds, _mixed_input_2.target, "mixed"),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
