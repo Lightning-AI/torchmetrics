@@ -231,3 +231,22 @@ def test_dtype_transfer_to_submodule():
 
     out = metric.inception(imgs)
     assert out.dtype == torch.float64
+
+
+def test_antialias():
+    """Test that on random input the antialiasing should produce similar results."""
+    imgs = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
+
+    metric_no_aa = FrechetInceptionDistance(feature=64, antialias=False)
+    metric_aa = FrechetInceptionDistance(feature=64, antialias=True)
+
+    metric_no_aa.update(imgs, real=True)
+    metric_no_aa.update(imgs, real=False)
+
+    metric_aa.update(imgs, real=True)
+    metric_aa.update(imgs, real=False)
+
+    val_no_aa = metric_no_aa.compute()
+    val_aa = metric_aa.compute()
+
+    assert torch.allclose(val_no_aa, val_aa, atol=1e-3)
