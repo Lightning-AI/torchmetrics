@@ -45,11 +45,14 @@ else:
 class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
     """Module that never leaves evaluation mode."""
 
+    INPUT_IMAGE_SIZE: int
+
     def __init__(
         self,
         name: str,
         features_list: list[str],
         feature_extractor_weights_path: Optional[str] = None,
+        antialias: bool = True,
     ) -> None:
         if not _TORCH_FIDELITY_AVAILABLE:
             raise ModuleNotFoundError(
@@ -58,6 +61,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
             )
 
         super().__init__(name, features_list, feature_extractor_weights_path)
+        self.use_antialias = antialias
         # put into evaluation mode
         self.eval()
 
@@ -81,11 +85,21 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         remaining_features = self.features_list.copy()
 
         x = x.to(self._dtype) if hasattr(self, "_dtype") else x.to(torch.float)
-        x = interpolate_bilinear_2d_like_tensorflow1x(
-            x,
-            size=(self.INPUT_IMAGE_SIZE, self.INPUT_IMAGE_SIZE),
-            align_corners=False,
-        )
+        if self.use_antialias:
+            x = torch.nn.functional.interpolate(
+                x,
+                size=(self.INPUT_IMAGE_SIZE, self.INPUT_IMAGE_SIZE),
+                mode="bilinear",
+                align_corners=False,
+                antialias=True,
+            )
+        else:
+            x = interpolate_bilinear_2d_like_tensorflow1x(
+                x,
+                size=(self.INPUT_IMAGE_SIZE, self.INPUT_IMAGE_SIZE),
+                align_corners=False,
+            )
+
         x = (x - 128) / 128
 
         x = self.Conv2d_1a_3x3(x)
@@ -250,6 +264,9 @@ class FrechetInceptionDistance(Metric):
               - True: if input imgs are expected to be in the data type of torch.float32.
               - False: if input imgs are expected to be in the data type of torch.int8.
         input_img_size: tuple of integers. Indicates input img size to the custom feature extractor network if provided.
+        use_antialias: boolian flag to indicate whether to use antialiasing when resizing images. This will change the
+            resize function to use bilinear interpolation with antialiasing, which is different from the original
+            Inception v3 implementation. Does not apply to custom feature extractor networks.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -301,6 +318,7 @@ class FrechetInceptionDistance(Metric):
         normalize: bool = False,
         input_img_size: tuple[int, int, int] = (3, 299, 299),
         feature_extractor_weights_path: Optional[str] = None,
+        antialias: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -309,6 +327,7 @@ class FrechetInceptionDistance(Metric):
             raise ValueError("Argument `normalize` expected to be a bool")
         self.normalize = normalize
         self.used_custom_model = False
+        antialias = antialias
 
         if isinstance(feature, int):
             num_features = feature
@@ -327,6 +346,7 @@ class FrechetInceptionDistance(Metric):
                 name="inception-v3-compat",
                 features_list=[str(feature)],
                 feature_extractor_weights_path=feature_extractor_weights_path,
+                antialias=antialias,
             )
 
         elif isinstance(feature, Module):
