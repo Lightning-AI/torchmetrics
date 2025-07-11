@@ -83,7 +83,7 @@ class TestMeanIoU(MetricTester):
         """Test class implementation of metric."""
         if input_format in ["index", "mixed"] and num_classes is None:
             with pytest.raises(
-                ValueError, match="Argument `num_classes` must be provided when `input_format='index'`."
+                ValueError, match="Argument `num_classes` must be provided when `input_format` is 'index' or 'mixed'."
             ):
                 MeanIoU(num_classes=None, input_format="index")
             return
