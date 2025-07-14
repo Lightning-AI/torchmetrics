@@ -48,7 +48,7 @@ class PeakSignalNoiseRatio(Metric):
 
     Args:
         data_range:
-            the range of the data. If a tuple is provided then the range is calculated as the difference and
+            the range of the data. If a tuple is provided, then the range is calculated as the difference and
             input is clamped between the values.
         base: a base of a logarithm to use.
         reduction: a method to reduce metric score over labels.
