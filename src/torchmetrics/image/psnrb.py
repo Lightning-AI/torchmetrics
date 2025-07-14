@@ -92,7 +92,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
             self.clamping_fn = lambda x: torch.clamp(x, min=data_range[0], max=data_range[1])
         else:
             self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx="mean")
-            self.clamping_fn = None # type: ignore[assignment]
+            self.clamping_fn = None  # type: ignore[assignment]
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
