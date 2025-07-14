@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.segmentation.utils import _ignore_background
+from torchmetrics.functional.segmentation.utils import _check_mixed_shape, _ignore_background
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_divide
 
@@ -27,7 +27,7 @@ def _generalized_dice_validate_args(
     include_background: bool,
     per_class: bool,
     weight_type: Literal["square", "simple", "linear"],
-    input_format: Literal["one-hot", "index"],
+    input_format: Literal["one-hot", "index", "mixed"],
 ) -> None:
     """Validate the arguments of the metric."""
     if not isinstance(num_classes, int) or num_classes <= 0:
@@ -40,8 +40,10 @@ def _generalized_dice_validate_args(
         raise ValueError(
             f"Expected argument `weight_type` to be one of 'square', 'simple', 'linear', but got {weight_type}."
         )
-    if input_format not in ["one-hot", "index"]:
-        raise ValueError(f"Expected argument `input_format` to be one of 'one-hot', 'index', but got {input_format}.")
+    if input_format not in ["one-hot", "index", "mixed"]:
+        raise ValueError(
+            f"Expected argument `input_format` to be one of 'one-hot', 'index', 'mixed', but got {input_format}."
+        )
 
 
 def _generalized_dice_update(
@@ -50,14 +52,22 @@ def _generalized_dice_update(
     num_classes: int,
     include_background: bool,
     weight_type: Literal["square", "simple", "linear"] = "square",
-    input_format: Literal["one-hot", "index"] = "one-hot",
+    input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
 ) -> Tuple[Tensor, Tensor]:
     """Update the state with the current prediction and target."""
-    _check_same_shape(preds, target)
+    if input_format == "mixed":
+        _check_mixed_shape(preds, target)
+    else:
+        _check_same_shape(preds, target)
 
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+    elif input_format == "mixed":
+        if preds.dim() == (target.dim() + 1):
+            target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+        elif (preds.dim() + 1) == target.dim():
+            preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
 
     if preds.ndim < 3:
         raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
@@ -109,7 +119,7 @@ def generalized_dice_score(
     include_background: bool = True,
     per_class: bool = False,
     weight_type: Literal["square", "simple", "linear"] = "square",
-    input_format: Literal["one-hot", "index"] = "one-hot",
+    input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
 ) -> Tensor:
     """Compute the Generalized Dice Score for semantic segmentation.
 
@@ -120,8 +130,9 @@ def generalized_dice_score(
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the score for each class separately, else average over all classes
         weight_type: Type of weight factor to apply to the classes. One of ``"square"``, ``"simple"``, or ``"linear"``
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
-            or ``"index"`` for index tensors
+        input_format: What kind of input the function receives.
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
+            or ``"mixed"`` for one one-hot encoded and one index tensor
 
     Returns:
         The Generalized Dice Score
