@@ -71,7 +71,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     total: Tensor
     bef: Tensor
     data_range: Tensor
-    clamping_fn: Optional[callable]
+    clamping_fn: callable
 
     def __init__(
         self,
