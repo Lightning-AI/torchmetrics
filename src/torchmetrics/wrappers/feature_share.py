@@ -74,11 +74,13 @@ class FeatureShare(MetricCollection):
         >>> # initialize the metrics
         >>> fs = FeatureShare([FrechetInceptionDistance(), KernelInceptionDistance(subset_size=10, subsets=2)])
         >>> # update metric
-        >>> fs.update(torch.randint(255, (50, 3, 64, 64), dtype=torch.uint8), real=True)
-        >>> fs.update(torch.randint(255, (50, 3, 64, 64), dtype=torch.uint8), real=False)
+        >>> input_tensor = torch.randint(255, (50, 3, 64, 64), dtype=torch.uint8, generator=torch.manual_seed(42))
+        >>> fs.update(input_tensor, real=True)
+        >>> input_tensor = torch.randint(255, (50, 3, 64, 64), dtype=torch.uint8, generator=torch.manual_seed(43))
+        >>> fs.update(input_tensor, real=False)
         >>> # compute metric
         >>> fs.compute()
-        {'FrechetInceptionDistance': tensor(15.1700), 'KernelInceptionDistance': (tensor(-0.0012), tensor(0.0014))}
+        {'FrechetInceptionDistance': tensor(13.5367), 'KernelInceptionDistance': (tensor(0.0003), tensor(0.0003))}
 
     """
 

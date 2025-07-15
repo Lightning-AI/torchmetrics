@@ -48,12 +48,14 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     - ``psnrb`` (:class:`~torch.Tensor`): float scalar tensor with aggregated PSNRB value
 
     Args:
+        data_range: the range of the data. If a tuple is provided then the range is calculated as the difference and
+            input is clamped between the values.
         block_size: integer indication the block size
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> from torch import rand
-        >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
+        >>> metric = PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0)
         >>> preds = rand(2, 1, 10, 10)
         >>> target = rand(2, 1, 10, 10)
         >>> metric(preds, target)
@@ -72,6 +74,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
 
     def __init__(
         self,
+        data_range: Union[float, tuple[float, float]],
         block_size: int = 8,
         **kwargs: Any,
     ) -> None:
@@ -83,15 +86,24 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("bef", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("data_range", default=tensor(0), dist_reduce_fx="max")
+
+        if isinstance(data_range, tuple):
+            self.add_state("data_range", default=tensor(data_range[1] - data_range[0]), dist_reduce_fx="mean")
+            self.clamping_fn = lambda x: torch.clamp(x, min=data_range[0], max=data_range[1])
+        else:
+            self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx="mean")
+            self.clamping_fn = None  # type: ignore[assignment]
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
+        if self.clamping_fn is not None:
+            preds = self.clamping_fn(preds)
+            target = self.clamping_fn(target)
+
         sum_squared_error, bef, num_obs = _psnrb_update(preds, target, block_size=self.block_size)
         self.sum_squared_error += sum_squared_error
         self.bef += bef
         self.total += num_obs
-        self.data_range = torch.maximum(self.data_range, torch.max(target) - torch.min(target))
 
     def compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""
@@ -120,7 +132,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
-            >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
+            >>> metric = PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0)
             >>> metric.update(torch.rand(2, 1, 10, 10), torch.rand(2, 1, 10, 10))
             >>> fig_, ax_ = metric.plot()
 
@@ -130,7 +142,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
-            >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
+            >>> metric = PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0)
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(2, 1, 10, 10), torch.rand(2, 1, 10, 10)))

@@ -283,7 +283,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="error relative global dimensionless synthesis",
         ),
         pytest.param(
-            PeakSignalNoiseRatio,
+            partial(PeakSignalNoiseRatio, data_range=3.0),
             lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]]),
             lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]]),
             id="peak signal noise ratio",

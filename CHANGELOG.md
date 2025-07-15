@@ -32,11 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Lip Vertex Error (LVE)` in multimodal domain ([3090](https://github.com/Lightning-AI/torchmetrics/pull/3090))
 
 
+- Added `antialias` argument to `FID` metric ([3177](https://github.com/Lightning-AI/torchmetrics/pull/3177))
+
+
 - Added `mixed` input format to segmentation metrics ([3176](https://github.com/Lightning-AI/torchmetrics/pull/3176))
 
 ### Changed
 
--
+- Changed `data_range` argument in `PSNR` metric to be a required argument ([3178](https://github.com/Lightning-AI/torchmetrics/pull/3178))
 
 
 ### Deprecated
