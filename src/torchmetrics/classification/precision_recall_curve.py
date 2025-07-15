@@ -163,7 +163,9 @@ class BinaryPrecisionRecallCurve(Metric):
         """Update metric states."""
         if self.validate_args:
             _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index)
-        preds, target, _ = _binary_precision_recall_curve_format(preds, target, self.thresholds, self.ignore_index, None)
+        preds, target, _ = _binary_precision_recall_curve_format(
+            preds, target, self.thresholds, self.ignore_index, None
+        )
         state = _binary_precision_recall_curve_update(preds, target, self.thresholds)
         if isinstance(state, Tensor):
             self.confmat += state
