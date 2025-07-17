@@ -96,7 +96,7 @@ def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float
 
     Raises:
         ValueError:
-            If predicted or ground truth image shape is not at least at least ``(41, 41)``
+            If predicted or ground truth image shape is not at least ``(41, 41)``
 
     """
     # This code is inspired by
