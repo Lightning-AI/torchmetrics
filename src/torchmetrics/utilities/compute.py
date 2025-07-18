@@ -201,7 +201,7 @@ def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
     return m[indices] * x + b[indices]
 
 
-def normalize_logits_if_needed(tensor: Tensor, normalization: Literal["sigmoid", "softmax"]) -> Tensor:
+def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["sigmoid", "softmax"]]) -> Tensor:
     """Normalize logits if needed.
 
     If input tensor is outside the [0,1] we assume that logits are provided and apply the normalization.
@@ -228,6 +228,9 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Literal["sigmoid",
         tensor([0.0000, 0.5000, 1.0000])
 
     """
+    # if not specified, do nothing.
+    if not normalization:
+        return tensor
     # decrease sigmoid on cpu .
     if tensor.device == torch.device("cpu"):
         if not torch.all((tensor >= 0) * (tensor <= 1)):
