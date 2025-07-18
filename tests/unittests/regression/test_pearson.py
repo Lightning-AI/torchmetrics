@@ -18,7 +18,9 @@ import torch
 from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
+from torchmetrics.functional.regression.weighted_pearson import weighted_pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
+from torchmetrics.regression.weighted_pearson import WeightedPearsonCorrCoef
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_5
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
@@ -37,7 +39,6 @@ _single_target_inputs2 = _Input(
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
 )
 
-
 _multi_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
@@ -48,11 +49,25 @@ _multi_target_inputs2 = _Input(
     target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
+_weights = torch.rand(NUM_BATCHES, BATCH_SIZE)
+
 
 def _reference_scipy_pearson(preds, target):
     if preds.ndim == 2:
         return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
     return pearsonr(target.numpy(), preds.numpy())[0]
+
+
+def _reference_weighted_pearson(preds, target, weights):
+    if preds.ndim == 2:
+        return [_reference_weighted_pearson(p, t, weights) for p, t in zip(preds.T, target.T)]
+
+    mx = (weights * preds).sum() / weights.sum()
+    my = (weights * target).sum() / weights.sum()
+    var_x = (weights * (preds - mx) ** 2).sum()
+    var_y = (weights * (target - my) ** 2).sum()
+    cov_xy = (weights * (preds - mx) * (target - my)).sum()
+    return cov_xy / (var_x * var_y).sqrt()
 
 
 @pytest.mark.parametrize(
@@ -112,25 +127,140 @@ class TestPearsonCorrCoef(MetricTester):
         self.run_precision_test_gpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
 
 
-def test_error_on_different_shape():
+@pytest.mark.parametrize(
+    ("preds", "target", "weights"),
+    [
+        (_single_target_inputs1.preds, _single_target_inputs1.target, _weights),
+        (_single_target_inputs2.preds, _single_target_inputs2.target, _weights),
+        (_multi_target_inputs1.preds, _multi_target_inputs1.target, _weights),
+        (_multi_target_inputs2.preds, _multi_target_inputs2.target, _weights),
+    ],
+)
+class TestWeightedPearsonCorrCoef(MetricTester):
+    """Test class for `WeightedPearsonCorrCoef` metric."""
+
+    atol = 1e-3
+
+    @pytest.mark.parametrize("compute_on_cpu", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_pearson_corrcoef(self, preds, target, weights, compute_on_cpu, ddp):
+        """Test class implementation of metric."""
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=WeightedPearsonCorrCoef,
+            reference_metric=_reference_weighted_pearson,
+            metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
+            weights=weights,
+        )
+
+    def test_pearson_corrcoef_functional(self, preds, target, weights):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=weighted_pearson_corrcoef,
+            reference_metric=_reference_weighted_pearson,
+            weights=weights,
+        )
+
+    def test_pearson_corrcoef_differentiability(self, preds, target, weights):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=partial(WeightedPearsonCorrCoef, num_outputs=num_outputs),
+            metric_functional=weighted_pearson_corrcoef,
+            weights=weights,
+        )
+
+    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_5, reason="Requires torch>=2.5.0")
+    def test_pearson_corrcoef_half_cpu(self, preds, target, weights):
+        """Test dtype support of the metric on CPU."""
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
+        self.run_precision_test_cpu(
+            preds,
+            target,
+            partial(WeightedPearsonCorrCoef, num_outputs=num_outputs),
+            weighted_pearson_corrcoef,
+            weights=weights,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    def test_pearson_corrcoef_half_gpu(self, preds, target, weights):
+        """Test dtype support of the metric on GPU."""
+        num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
+        self.run_precision_test_gpu(
+            preds,
+            target,
+            partial(WeightedPearsonCorrCoef, num_outputs=num_outputs),
+            weighted_pearson_corrcoef,
+            weights=weights,
+        )
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "metric_args"),
+    [
+        (PearsonCorrCoef, [torch.randn(100), torch.randn(50)]),
+        (WeightedPearsonCorrCoef, [torch.randn(100), torch.randn(50), torch.randn(50)]),
+    ],
+)
+def test_error_on_different_shape(metric_class, metric_args):
     """Test that error is raised on different shapes of input."""
-    metric = PearsonCorrCoef(num_outputs=1)
+    metric = metric_class(num_outputs=1)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
-        metric(torch.randn(100), torch.randn(50))
+        metric(*metric_args)
 
-    metric = PearsonCorrCoef(num_outputs=5)
+
+@pytest.mark.parametrize(
+    ("metric_class", "metric_args"),
+    [
+        (PearsonCorrCoef, [torch.randn(100, 2, 5), torch.randn(100, 2, 5)]),
+        (WeightedPearsonCorrCoef, [torch.randn(100, 2, 5), torch.randn(100, 2, 5), torch.randn(100)]),
+    ],
+)
+def test_error_on_invalid_ndim(metric_class, metric_args):
+    """Test that error is raised on invalid dimensions."""
+    metric = metric_class(num_outputs=5)
     with pytest.raises(ValueError, match="Expected both predictions and target to be either 1- or 2-.*"):
-        metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
+        metric(*metric_args)
 
-    metric = PearsonCorrCoef(num_outputs=2)
+
+@pytest.mark.parametrize(
+    ("metric_class", "metric_args"),
+    [
+        (PearsonCorrCoef, [torch.randn(100, 3), torch.randn(100, 3)]),
+        (WeightedPearsonCorrCoef, [torch.randn(100, 3), torch.randn(100, 3), torch.randn(100)]),
+    ],
+)
+def test_error_on_num_outputs_mismatch(metric_class, metric_args):
+    """Test that error is raised if `num_outputs` of `preds` or `target` do not match initialization."""
+    metric = metric_class(num_outputs=2)
     with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
-        metric(torch.randn(100, 5), torch.randn(100, 5))
+        metric(*metric_args)
 
 
-def test_1d_input_allowed():
+@pytest.mark.parametrize(
+    ("metric_functional", "metric_args"),
+    [
+        (pearson_corrcoef, [[torch.randn(10, 1), torch.randn(10, 1)], [torch.randn(10), torch.randn(10)]]),
+        (
+            weighted_pearson_corrcoef,
+            [
+                [torch.randn(10, 1), torch.randn(10, 1), torch.randn(10)],
+                [torch.randn(10), torch.randn(10), torch.randn(10)],
+            ],
+        ),
+    ],
+)
+def test_1d_input_allowed(metric_functional, metric_args):
     """Check that both input of the form [N,] and [N,1] is allowed with default num_outputs argument."""
-    assert isinstance(pearson_corrcoef(torch.randn(10, 1), torch.randn(10, 1)), torch.Tensor)
-    assert isinstance(pearson_corrcoef(torch.randn(10), torch.randn(10)), torch.Tensor)
+    assert isinstance(metric_functional(*metric_args[0]), torch.Tensor)
+    assert isinstance(metric_functional(*metric_args[1]), torch.Tensor)
 
 
 @pytest.mark.parametrize("shapes", [(5,), (1, 5), (2, 5)])
