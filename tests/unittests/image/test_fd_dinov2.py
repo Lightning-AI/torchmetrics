@@ -31,9 +31,7 @@ def test_no_train_network_missing_torch_fidelity(monkeypatch):
     """Assert that NoTrainDinoV2 raises an error if torch-fidelity is not installed."""
     # mock/fake the import of torch-fidelity
     monkeypatch.setattr("torchmetrics.image.fid._TORCH_FIDELITY_AVAILABLE", False)
-    with pytest.raises(
-        ModuleNotFoundError, match="NoTrainDinoV2 module requires that `Torch-fidelity` is installed.*"
-    ):
+    with pytest.raises(ModuleNotFoundError, match="NoTrainDinoV2 module requires that `Torch-fidelity` is installed.*"):
         NoTrainDinoV2(name="dinov2-vit-g-14", features_list=["1536"])
 
 

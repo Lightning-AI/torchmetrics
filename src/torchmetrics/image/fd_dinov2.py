@@ -16,10 +16,10 @@ from copy import deepcopy
 from typing import Any, Optional, Union
 
 import torch
+import torchvision
 from torch import Tensor
 from torch.nn import Module
-from torch.nn.functional import adaptive_avg_pool2d
-import torchvision
+
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -264,10 +264,10 @@ class FrechetDistanceDinoV2(Metric):
         self.normalize = normalize
         self.used_custom_model = False
         self.feature_name_dict = {
-            384: 'dinov2-vit-s-14',
-            768: 'dinov2-vit-b-14',
-            1024: 'dinov2-vit-l-14',
-            1536: 'dinov2-vit-g-14'
+            384: "dinov2-vit-s-14",
+            768: "dinov2-vit-b-14",
+            1024: "dinov2-vit-l-14",
+            1536: "dinov2-vit-g-14",
         }
 
         if isinstance(feature, int):
@@ -285,7 +285,7 @@ class FrechetDistanceDinoV2(Metric):
 
             self.dinov2 = NoTrainDinoV2(
                 name=self.feature_name_dict[feature],
-                features_list=['dinov2'],
+                features_list=["dinov2"],
                 feature_extractor_weights_path=feature_extractor_weights_path,
             )
 
@@ -349,7 +349,9 @@ class FrechetDistanceDinoV2(Metric):
     def compute(self) -> Tensor:
         """Calculate FD Dinov2 score based on accumulated extracted features from the two distributions."""
         if self.real_features_num_samples < 2 or self.fake_features_num_samples < 2:
-            raise RuntimeError("More than one sample is required for both the real and fake distributed to compute FD Dinov2 score.")
+            raise RuntimeError(
+                "More than one sample is required for both the real and fake distributed to compute FD Dinov2 score."
+            )
         mean_real = (self.real_features_sum / self.real_features_num_samples).unsqueeze(0)
         mean_fake = (self.fake_features_sum / self.fake_features_num_samples).unsqueeze(0)
 
