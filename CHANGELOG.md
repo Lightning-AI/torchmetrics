@@ -7,54 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [Unreleased] - YYYY-MM-DD
+## [1.8.0] - 2025-07-23
 
 ### Added
 
 - Added `VMAF` metric to new video domain ([#2991](https://github.com/Lightning-AI/torchmetrics/pull/2991))
-
-
-- Added CRPS in regression domain ([#3024](https://github.com/Lightning-AI/torchmetrics/pull/3024))
-
-
+- Added `CRPS` in regression domain ([#3024](https://github.com/Lightning-AI/torchmetrics/pull/3024))
 - Added `aggregation_level` argument to `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
-
-
 - Added support for `reduction="none"` to `LearnedPerceptualImagePatchSimilarity` ([#3053](https://github.com/Lightning-AI/torchmetrics/pull/3053))
-
-
 - Added support single `str` input for functional interface of `bert_score` ([#3056](https://github.com/Lightning-AI/torchmetrics/pull/3056))
-
-
 - Enhance: `BERTScore` to evaluate hypotheses against multiple references ([#3069](https://github.com/Lightning-AI/torchmetrics/pull/3069))
-
-
-- Added `Lip Vertex Error (LVE)` in multimodal domain ([3090](https://github.com/Lightning-AI/torchmetrics/pull/3090))
-
-
-- Added `antialias` argument to `FID` metric ([3177](https://github.com/Lightning-AI/torchmetrics/pull/3177))
-
-
-- Added `mixed` input format to segmentation metrics ([3176](https://github.com/Lightning-AI/torchmetrics/pull/3176))
+- Added `Lip Vertex Error (LVE)` in multimodal domain ([#3090](https://github.com/Lightning-AI/torchmetrics/pull/3090))
+- Added `antialias` argument to `FID` metric ([#3177](https://github.com/Lightning-AI/torchmetrics/pull/3177))
+- Added `mixed` input format to segmentation metrics ([#3176](https://github.com/Lightning-AI/torchmetrics/pull/3176))
 
 ### Changed
 
-- Changed `data_range` argument in `PSNR` metric to be a required argument ([3178](https://github.com/Lightning-AI/torchmetrics/pull/3178))
-
-
-### Deprecated
-
--
-
+- Changed `data_range` argument in `PSNR` metric to be a required argument ([#3178](https://github.com/Lightning-AI/torchmetrics/pull/3178))
 
 ### Removed
 
 - Removed `zero_division` argument from `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
-
-
-### Fixed
-
--
 
 
 ---
