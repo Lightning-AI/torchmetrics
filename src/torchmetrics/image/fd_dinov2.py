@@ -277,10 +277,9 @@ class FrechetDistanceDinoV2(Metric):
                     "FrechetDistanceDinoV2 metric requires that `Torch-fidelity` is installed."
                     " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
                 )
-            valid_int_input = (384, 768, 1024, 1536)
-            if feature not in valid_int_input:
+            if feature not in self.feature_name_dict:
                 raise ValueError(
-                    f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
+                    f"Integer input to argument `feature` must be one of {self.feature_name_dict.keys()}, but got {feature}."
                 )
 
             self.dinov2 = NoTrainDinoV2(
