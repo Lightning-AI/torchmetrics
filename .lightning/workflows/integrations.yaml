@@ -14,6 +14,7 @@ parametrize:
       requires: "oldest"
     - image: "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
       torch-ver: "2.7"
+      requires: "latest"
   exclude: []
 
 run: |
@@ -21,15 +22,19 @@ run: |
   nvidia-smi
   python --version
   pip --version
-  #pip list
+  pip install -q fire wget packaging
   set -ex
 
-  python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
-  cat requirements/_integrate.txt
+  if [ "${requires}" == "oldest" ]; then
+    pip install -q 'lightning-utilities[cli]'
+    python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
+    cat requirements/_integrate.txt
+  fi
 
   CUDA_VERSION=$(nvcc --version | sed -n 's/^.*release \([0-9]\+\.[0-9]\+\).*$/\1/p')
   CUDA_VERSION_MM="${CUDA_VERSION//'.'/''}"
   TORCH_URL="https://download.pytorch.org/whl/cu${CUDA_VERSION_MM}/torch_stable.html"
+  echo ${TORCH_URL}
 
   python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
   for fpath in `ls requirements/*.txt`; do
