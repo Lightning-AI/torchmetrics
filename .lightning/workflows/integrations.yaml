@@ -10,9 +10,11 @@ parametrize:
   matrix: {}
   include:
     - image: "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
+      CUDA_VERSION: "11.7"
       torch_ver: "2.0"
       requires: "oldest"
     - image: "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
+      CUDA_VERSION: "12.6"
       torch_ver: "2.7"
       requires: "latest"
   exclude: []
@@ -31,7 +33,6 @@ run: |
     cat requirements/_integrate.txt
   fi
 
-  CUDA_VERSION=$(nvcc --version | sed -n 's/^.*release \([0-9]\+\.[0-9]\+\).*$/\1/p')
   CUDA_VERSION_MM="${CUDA_VERSION//'.'/''}"
   TORCH_URL="https://download.pytorch.org/whl/cu${CUDA_VERSION_MM}/torch_stable.html"
   echo ${TORCH_URL}
