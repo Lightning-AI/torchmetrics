@@ -10,10 +10,10 @@ parametrize:
   matrix: {}
   include:
     - image: "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
-      torch-ver: "2.0"
+      torch_ver: "2.0"
       requires: "oldest"
     - image: "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
-      torch-ver: "2.7"
+      torch_ver: "2.7"
       requires: "latest"
   exclude: []
 
@@ -47,7 +47,7 @@ run: |
   pip install . -U -r requirements/_tests.txt --find-links ${TORCH_URL}
 
   pip list
-  python -c "from torch import __version__ as ver ; assert '.'.join(str(ver).split('.')[:2]) == '$(torch-ver)', f'PyTorch: {ver}'"
+  python -c "from torch import __version__ as ver ; assert '.'.join(str(ver).split('.')[:2]) == '${torch_ver}', f'PyTorch: {ver}'"
   python -c "import torch ; mgpu = torch.cuda.device_count() ; assert mgpu >= 1, f'found GPUs: {mgpu}'"
 
   pytest . -v --durations=0 --timeout=360
