@@ -50,29 +50,29 @@ run: |
       # torch version shall be sourced based on the used docker
       python adjust-torch-versions.py $fpath
   done
-  
+
   if [ "${requires}" == "oldest" ]; then
     python .github/assistant.py set-oldest-versions
   fi
-  
+
   pip install . -U -r ./requirements/_devel.txt --upgrade-strategy=eager --prefer-binary --find-links=${TORCH_URL}
   pip list
-  
+
   python -c "import torch ; mgpu = torch.cuda.device_count() ; assert mgpu >= 2, f'found GPUs: {mgpu}'"
   python -c "from torch import __version__ as ver ; assert '.'.join(str(ver).split('.')[:2]) == '${torch_ver}', f'PyTorch: installed {ver} but expected $(torch-ver)'"
-  
+
   # DocTesting
   cd src/
   python -m pytest torchmetrics --cov=torchmetrics \
     --timeout=240 --durations=50 \
     --reruns 2 --reruns-delay 1
   cd ..
-  
+
   # Pull testing data from S3
   wget https://pl-public-data.s3.amazonaws.com/metrics/data.zip
   unzip -o data.zip
   ls -l _data/*
-  
+
   cd tests/
   # UnitTesting common
   du -h --max-depth=1 .
@@ -80,22 +80,22 @@ run: |
     -m "not DDP" --numprocesses=6 --dist=loadfile \
     --cov=torchmetrics --timeout=240 --durations=100 \
     --reruns 3 --reruns-delay 1
-  
+
   # UnitTesting DDP
   export USE_PYTEST_POOL="1"
   python -m pytest ${TEST_DIRS} -v \
     --cov=torchmetrics -m "DDP" \
     --timeout=240 --durations=100
   cd ..
-  
+
   #  python -m coverage report
   #  python -m coverage xml
   #  python -m codecov --token=$(CODECOV_TOKEN) --name="GPU-coverage" \
   #    --commit=$(Build.SourceVersion) --flags=gpu,unittest --env=linux,azure
-  
+
   # Examples
   cd _samples/
-  
+
   FILES="*.py"
   for fn in $FILES
   do
