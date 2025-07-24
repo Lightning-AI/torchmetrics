@@ -26,7 +26,7 @@ run: |
 
   python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
   cat requirements/_integrate.txt
-  
+
   CUDA_VERSION=$(nvcc --version | sed -n 's/^.*release \([0-9]\+\.[0-9]\+\).*$/\1/p')
   CUDA_VERSION_MM="${CUDA_VERSION//'.'/''}"
   TORCH_URL="https://download.pytorch.org/whl/cu${CUDA_VERSION_MM}/torch_stable.html"
@@ -36,13 +36,13 @@ run: |
       # torch version shall be sourced based on the used docker
       python adjust-torch-versions.py $fpath
   done
-  
+
   pip install -q -r requirements/_integrate.txt
   # force reinstall TM as it could be overwritten by integration's dependencies
   pip install . -U -r requirements/_tests.txt --find-links ${TORCH_URL}
-  
+
   pip list
   python -c "from torch import __version__ as ver ; assert '.'.join(str(ver).split('.')[:2]) == '$(torch-ver)', f'PyTorch: {ver}'"
   python -c "import torch ; mgpu = torch.cuda.device_count() ; assert mgpu >= 1, f'found GPUs: {mgpu}'"
-  
+
   pytest . -v --durations=0 --timeout=360
