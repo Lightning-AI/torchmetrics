@@ -9,10 +9,10 @@ timeout: "35" # minutes
 parametrize:
   matrix: {}
   include:
-    - docker-image: "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
+    - image: "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
       torch-ver: "2.0"
       requires: "oldest"
-    - docker-image: "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
+    - image: "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
       torch-ver: "2.7"
   exclude: []
 
