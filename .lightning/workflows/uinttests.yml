@@ -5,7 +5,7 @@ trigger:
     branches: ["master"]
 
 machine: "L4_X_4"
-timeout: "35" # minutes
+timeout: "75" # minutes
 parametrize:
   matrix: {}
   include:
