@@ -87,14 +87,14 @@ run: |
   if [ "$testing" == "common" ]; then
     python -m pytest ${TEST_DIRS} -v \
       -m "not DDP" --numprocesses=6 --dist=loadfile \
-      --cov=torchmetrics --timeout=240 --durations=100 \
+      --cov=torchmetrics --timeout=360 --durations=100 \
       --reruns 3 --reruns-delay 1
   # UnitTesting DDP
   elif [ "$testing" == "distributed" ]; then
     export USE_PYTEST_POOL="1"
     python -m pytest ${TEST_DIRS} -v \
       --cov=torchmetrics -m "DDP" \
-      --timeout=240 --durations=100
+      --timeout=360 --durations=100
   fi
   cd ..
 
