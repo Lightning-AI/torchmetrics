@@ -80,13 +80,13 @@ run: |
     --reruns 2 --reruns-delay 1
   cd ..
 
+
+  cd tests/
   # Pull testing data from S3
   wget https://pl-public-data.s3.amazonaws.com/metrics/data.zip
   unzip -o data.zip
   ls -l _data/*
-
-  cd tests/
-  du -h --max-depth=1 .
+  #du -h --max-depth=1 .
   # UnitTesting common
   if [ "$testing" == "common" ]; then
     python -m pytest ${TEST_DIRS} \
