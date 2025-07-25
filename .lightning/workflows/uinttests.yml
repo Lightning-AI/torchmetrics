@@ -17,10 +17,10 @@ parametrize:
       machine: "L4"
     - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
       testing: "distributed"
-      machine: "L4_X_4"
+      machine: "L4_X_2"
     - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.6.3-py3.11-torch2.7"
       testing: "distributed"
-      machine: "L4_X_4"
+      machine: "L4_X_2"
   exclude: []
 
 env:
