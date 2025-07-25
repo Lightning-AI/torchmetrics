@@ -4,7 +4,7 @@ trigger:
   pull_request:
     branches: ["master"]
 
-timeout: "45" # minutes
+timeout: "75" # minutes
 parametrize:
   matrix: {}
   include:
