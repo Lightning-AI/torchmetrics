@@ -5,7 +5,7 @@ trigger:
     branches: ["master"]
 
 timeout: "55" # minutes
-machine: "L4_X_4"
+machine: "L4_X_2"
 parametrize:
   matrix: {}
   include:
@@ -77,7 +77,6 @@ run: |
     --reruns 2 --reruns-delay 1
   cd ..
 
-
   cd tests/
   # Pull testing data from S3
   wget https://pl-public-data.s3.amazonaws.com/metrics/data.zip
@@ -86,7 +85,7 @@ run: |
   #du -h --max-depth=1 .
   # UnitTesting common
   if [ "$testing" == "common" ]; then
-    python -m pytest ${TEST_DIRS} \
+    python -m pytest ${TEST_DIRS} -v \
       -m "not DDP" --numprocesses=6 --dist=loadfile \
       --cov=torchmetrics --timeout=240 --durations=100 \
       --reruns 3 --reruns-delay 1
