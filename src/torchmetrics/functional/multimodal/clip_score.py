@@ -326,16 +326,16 @@ def clip_score(
         >>> from torchmetrics.functional.multimodal import clip_score
         >>> image = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(42))
         >>> score = clip_score(image, "a photo of a cat", "openai/clip-vit-base-patch16")
-        >>> score.detach()
-        tensor(24.4255)
+        >>> score.detach().round(decimals=3)
+        tensor(24.4260)
 
     Example:
         >>> from torchmetrics.functional.multimodal import clip_score
         >>> image1 = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(42))
         >>> image2 = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(43))
         >>> score = clip_score(image1, image2, "openai/clip-vit-base-patch16")
-        >>> score.detach()
-        tensor(99.4859)
+        >>> score.detach().round(decimals=3)
+        tensor(99.4860)
 
     Example:
         >>> from torchmetrics.functional.multimodal import clip_score
@@ -344,7 +344,7 @@ def clip_score(
         ...     "A 28-year-old chef who recently moved to San Francisco was found dead.",
         ...     "openai/clip-vit-base-patch16"
         ... )
-        >>> score.detach()
+        >>> score.detach().round(decimals=3)
         tensor(91.3950)
 
     """
