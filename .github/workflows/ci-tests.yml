@@ -48,8 +48,20 @@ jobs:
         testing: ["common", "distributed"]
         include:
           # cover additional python and PT combinations
-          - { os: "ubuntu-22.04", python-version: "3.9", pytorch-version: "2.0.1", requires: "oldest", testing: "common" }
-          - { os: "ubuntu-22.04", python-version: "3.9", pytorch-version: "2.0.1", requires: "oldest", testing: "distributed" }
+          - {
+              os: "ubuntu-22.04",
+              python-version: "3.9",
+              pytorch-version: "2.0.1",
+              requires: "oldest",
+              testing: "common",
+            }
+          - {
+              os: "ubuntu-22.04",
+              python-version: "3.9",
+              pytorch-version: "2.0.1",
+              requires: "oldest",
+              testing: "distributed",
+            }
           - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1", testing: "common" }
           - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1", testing: "distributed" }
           # standard mac machine, not the M1
