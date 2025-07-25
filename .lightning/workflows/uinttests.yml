@@ -4,16 +4,23 @@ trigger:
   pull_request:
     branches: ["master"]
 
-machine: "L4_X_4"
 timeout: "45" # minutes
 parametrize:
-  matrix:
-    image:
-      # note that this is setting also all oldest requirements which is linked to Torch == 2.0
-      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
-      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.6.3-py3.11-torch2.7"
-    testing: ["distributed", "common", "examples"]
-  include: []
+  matrix: {}
+  include:
+    # note that this is setting also all oldest requirements which is linked to Torch == 2.0
+    - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
+      testing: "common"
+      machine: "L4"
+    - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.6.3-py3.11-torch2.7"
+      testing: "distributed"
+      machine: "L4_X_4"
+    - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
+      testing: "common"
+      machine: "L4"
+    - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.6.3-py3.11-torch2.7"
+      testing: "distributed"
+      machine: "L4_X_4"
   exclude: []
 
 env:
@@ -100,13 +107,11 @@ run: |
   #    --commit=$(Build.SourceVersion) --flags=gpu,unittest --env=linux,azure
 
   # Examples
-  if [ "$testing" == "examples" ]; then
-    cd _samples/
-    FILES="*.py"
-    for fn in $FILES
-    do
-      echo "Processing $fn example..."
-      python $fn
-    done
-    cd ..
-  fi
+  cd _samples/
+  FILES="*.py"
+  for fn in $FILES
+  do
+    echo "Processing $fn example..."
+    python $fn
+  done
+  cd ..
