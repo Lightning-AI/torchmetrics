@@ -21,7 +21,7 @@ run: |
   pip --version
   pip install -q fire wget packaging
   set -ex
-  
+
   image_tmp="${image##*cuda}" # Remove everything up to and including "cuda"
   CUDA_VERSION="${image_tmp%%-*}" # Extract the CUDA version up to the first hyphen
   CUDA_VERSION_MM="${CUDA_VERSION//'.'/''}"
