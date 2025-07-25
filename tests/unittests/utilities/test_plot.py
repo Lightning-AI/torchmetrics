@@ -21,6 +21,7 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
+from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_RANGE_LT_4_50_LE_4_53
 
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
@@ -123,6 +124,7 @@ from torchmetrics.image import (
     TotalVariation,
     UniversalImageQualityIndex,
 )
+from torchmetrics.multimodal import LipVertexError
 from torchmetrics.nominal import CramersV, FleissKappa, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
 from torchmetrics.regression import (
     ConcordanceCorrCoef,
@@ -281,7 +283,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="error relative global dimensionless synthesis",
         ),
         pytest.param(
-            PeakSignalNoiseRatio,
+            partial(PeakSignalNoiseRatio, data_range=3.0),
             lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]]),
             lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]]),
             id="peak signal noise ratio",
@@ -643,6 +645,13 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _text_input_1,
             _text_input_2,
             id="info lm",
+            marks=pytest.mark.xfail(
+                RuntimeError,
+                # todo: if the transformers compatibility issue present in next feature release,
+                #  consider bumping also torch min versions in the metrics implementations
+                condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
+                reason="could be due to torch compatibility issues with transformers",
+            ),
         ),
         pytest.param(Perplexity, lambda: torch.rand(2, 8, 5), lambda: torch.randint(5, (2, 8)), id="perplexity"),
         pytest.param(ROUGEScore, lambda: "My name is John", lambda: "Is your name John", id="rouge score"),
@@ -665,6 +674,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             lambda: torch.randn(1, 100, 3),
             lambda: torch.randn(1, 100, 3),
             id="procrustes disparity",
+        ),
+        pytest.param(
+            partial(LipVertexError, mouth_map=[0, 1, 2, 3, 4]),
+            lambda: torch.randn(10, 100, 3),
+            lambda: torch.randn(10, 100, 3),
+            id="lip vertex error",
         ),
     ],
 )
@@ -757,6 +772,13 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on windows")
+@pytest.mark.xfail(
+    RuntimeError,
+    # todo: if the transformers compatibility issue present in next feature release,
+    #  consider bumping also torch min versions in the metrics implementations
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
+    reason="could be due to torch compatibility issues with transformers",
+)
 def test_plot_methods_special_text_metrics():
     """Test the plot method for text metrics that does not fit the default testing format."""
     metric = BERTScore()

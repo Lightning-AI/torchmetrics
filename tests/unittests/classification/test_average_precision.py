@@ -52,7 +52,7 @@ def _reference_sklearn_avg_precision_binary(preds, target, ignore_index=None):
     return sk_average_precision_score(target, preds)
 
 
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryAveragePrecision(MetricTester):
     """Test class for `BinaryAveragePrecision` metric."""
 
@@ -174,7 +174,7 @@ def _reference_sklearn_avg_precision_multiclass(preds, target, average="macro", 
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassAveragePrecision(MetricTester):
     """Test class for `MulticlassAveragePrecision` metric."""
@@ -294,7 +294,7 @@ def _reference_sklearn_avg_precision_multilabel(preds, target, average="macro", 
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelAveragePrecision(MetricTester):
     """Test class for `MultilabelAveragePrecision` metric."""

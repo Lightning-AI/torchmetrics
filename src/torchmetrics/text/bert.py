@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
 import torch
 from torch import Tensor
 from torch.nn import Module
 
-from torchmetrics.functional.text.bert import bert_score
+from torchmetrics.functional.text.bert import (
+    _postprocess_multiple_references,
+    _preprocess_multiple_references,
+    bert_score,
+)
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -63,8 +67,16 @@ class BERTScore(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~List`): An iterable of predicted sentences
-    - ``target`` (:class:`~List`): An iterable of reference sentences
+    - ``preds``: Predicted sentence(s). Can be one of:
+
+        * A single predicted sentence as a string (``str``)
+        * A sequence of predicted sentences (``Sequence[str]``)
+
+    - ``target``: Target/reference sentence(s). Can be one of:
+
+        * A single reference sentence as a string (``str``)
+        * A sequence of reference sentences (``Sequence[str]``)
+        * A sequence of sequences of reference sentences for multi-reference evaluation (``Sequence[Sequence[str]]``)
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -72,8 +84,9 @@ class BERTScore(Metric):
       corresponding values
 
     Args:
-        preds: An iterable of predicted sentences.
-        target: An iterable of target sentences.
+        preds (Union[str, Sequence[str]]): A single predicted sentence or a sequence of predicted sentences.
+        target (Union[str, Sequence[str], Sequence[Sequence[str]]]): A single target sentence, a sequence of target
+            sentences, or a sequence of sequences of target sentences for multiple references per prediction.
         model_type: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:
@@ -116,6 +129,15 @@ class BERTScore(Metric):
         >>> from torchmetrics.text.bert import BERTScore
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
+        >>> bertscore = BERTScore()
+        >>> pprint(bertscore(preds, target))
+        {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
+    Example:
+        >>> from pprint import pprint
+        >>> from torchmetrics.text.bert import BERTScore
+        >>> preds = ["hello there", "general kenobi"]
+        >>> target = [["hello there", "master kenobi"], ["hello there", "master kenobi"]]
         >>> bertscore = BERTScore()
         >>> pprint(bertscore(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
@@ -173,6 +195,7 @@ class BERTScore(Metric):
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
         self.truncation = truncation
+        self.ref_group_boundaries: Optional[List[Tuple[int, int]]] = None
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -199,16 +222,31 @@ class BERTScore(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
-    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
+    def update(
+        self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
+    ) -> None:
         """Store predictions/references for computing BERT scores.
 
         It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
 
         """
+        if isinstance(preds, str):
+            preds = [preds]
+        if isinstance(target, str):
+            target = [target]
         if not isinstance(preds, list):
             preds = list(preds)
         if not isinstance(target, list):
             target = list(target)
+
+        if len(preds) != len(target):
+            raise ValueError(
+                "Expected number of predicted and reference sentences to be the same, but got"
+                f"{len(preds)} and {len(target)}"
+            )
+
+        if isinstance(preds, list) and len(preds) > 0 and isinstance(target, list) and len(target) > 0:
+            preds, target, self.ref_group_boundaries = _preprocess_multiple_references(preds, target)
 
         preds_dict, _ = _preprocess_text(
             preds,
@@ -219,7 +257,7 @@ class BERTScore(Metric):
             own_tokenizer=self.user_tokenizer,
         )
         target_dict, _ = _preprocess_text(
-            target,
+            cast(List[str], target),
             self.tokenizer,
             self.max_length,
             truncation=self.truncation,
@@ -232,7 +270,7 @@ class BERTScore(Metric):
         self.target_input_ids.append(target_dict["input_ids"])
         self.target_attention_mask.append(target_dict["attention_mask"])
 
-    def compute(self) -> dict[str, Union[Tensor, list[float], str]]:
+    def compute(self) -> dict[str, Union[Tensor, List[float], str]]:
         """Calculate BERT scores."""
         preds = {
             "input_ids": dim_zero_cat(self.preds_input_ids),
@@ -242,7 +280,8 @@ class BERTScore(Metric):
             "input_ids": dim_zero_cat(self.target_input_ids),
             "attention_mask": dim_zero_cat(self.target_attention_mask),
         }
-        return bert_score(
+
+        output_dict = bert_score(
             preds=preds,
             target=target,
             model_name_or_path=self.model_name_or_path,
@@ -263,6 +302,18 @@ class BERTScore(Metric):
             baseline_path=self.baseline_path,
             baseline_url=self.baseline_url,
         )
+
+        if (
+            self.ref_group_boundaries is not None
+            and isinstance(output_dict["precision"], Tensor)
+            and isinstance(output_dict["recall"], Tensor)
+            and isinstance(output_dict["f1"], Tensor)
+        ):
+            output_dict["precision"], output_dict["recall"], output_dict["f1"] = _postprocess_multiple_references(
+                output_dict["precision"], output_dict["recall"], output_dict["f1"], self.ref_group_boundaries
+            )
+
+        return output_dict
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

@@ -30,7 +30,7 @@ env:
 
 jobs:
   build-Devcontainer:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -66,6 +66,7 @@ jobs:
         include:
           # These are the base images for PL release docker images,
           #  so include at least all the combinations in release-dockers.yml.
+          - { python: "3.9", pytorch: "2.0.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.10", pytorch: "2.0.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.1.2", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.2.2", cuda: "12.1.1", ubuntu: "22.04" }
@@ -73,7 +74,7 @@ jobs:
           - { python: "3.11", pytorch: "2.4.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.5.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.6.0", cuda: "12.4.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.7.0", cuda: "12.6.3", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "22.04" }
     steps:
       - uses: actions/checkout@v4
 

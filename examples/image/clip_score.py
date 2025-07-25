@@ -9,6 +9,8 @@ The benefit of CLIPScore is that it does not require reference captions for eval
 
 # %%
 # Here's a hypothetical Python example demonstrating the usage of the CLIPScore metric to evaluate image captions:
+import warnings
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
@@ -48,12 +50,30 @@ models = [
 # Collect scores for each image-caption pair
 
 score_results = []
+
+
+def process_model(model):
+    """Process a CLIP model by evaluating image-caption pairs and recording scores.
+
+    Args:
+        model: The name or path of the CLIP model to use for evaluation
+
+    This function handles exceptions if the model fails to load or process,
+    allowing the program to continue with other models.
+
+    """
+    try:
+        clip_score = CLIPScore(model_name_or_path=model)
+        for key, img in images.items():
+            img_tensor = torch.tensor(np.array(img))
+            caption_scores = {caption: clip_score(img_tensor, caption) for caption in captions}
+            score_results.append({"scores": caption_scores, "image": key, "model": model})
+    except Exception as e:
+        warnings.warn(f"Error loading model {model} - skipping this test. Error details: {e}", stacklevel=2)
+
+
 for model in models:
-    clip_score = CLIPScore(model_name_or_path=model)
-    for key, img in images.items():
-        img_tensor = torch.tensor(np.array(img))
-        caption_scores = {caption: clip_score(img_tensor, caption) for caption in captions}
-        score_results.append({"scores": caption_scores, "image": key, "model": model})
+    process_model(model)
 
 # %%
 # Create an animation to display the scores

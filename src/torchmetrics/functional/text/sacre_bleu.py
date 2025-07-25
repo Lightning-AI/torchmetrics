@@ -121,9 +121,9 @@ class _SacreBLEUTokenizer:
         import regex
 
         _INT_REGEX = (
-            # Separate out punctuations preceded by a non-digit
+            # Separate out punctuation preceded by a non-digit
             (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
-            # Separate out punctuations followed by a non-digit
+            # Separate out punctuation followed by a non-digit
             (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
             # Separate out symbols
             (regex.compile(r"(\p{S})"), r" \1 "),
@@ -271,7 +271,7 @@ class _SacreBLEUTokenizer:
         We just tokenize on punctuation and symbols,
         except when a punctuation is preceded and followed by a digit
         (e.g. a comma/dot as a thousand/decimal separator).
-        We do not recover escaped forms of punctuations such as &apos; or &gt;
+        We do not recover escaped forms of punctuation such as &apos; or &gt;
         as these should never appear in MT system outputs (see issue #138)
 
         Note that a number (e.g., a year) followed by a dot at the end of
@@ -468,6 +468,28 @@ def sacre_bleu_score(
     """Calculate `BLEU score`_ [1] of machine translated text with one or more references.
 
     This implementation follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
+
+    .. note::
+        In the original SacreBLEU, references are passed as a list of reference sets (grouped by reference index).
+        In TorchMetrics, references are passed grouped per prediction (each prediction has its own list of references).
+
+        For example::
+
+            # Predictions
+            preds = ['The dog bit the man.', "It wasn't surprising.", 'The man had just bitten him.']
+
+            # Original SacreBLEU:
+            refs = [
+                ['The dog bit the man.', 'It was not unexpected.', 'The man bit him first.'], # First set
+                ['The dog had bit the man.', 'No one was surprised.', 'The man had bitten the dog.'], # Second set
+            ]
+
+            # TorchMetrics SacreBLEU:
+            target = [
+                ['The dog bit the man.', 'The dog had bit the man.'], # References for first prediction
+                ['It was not unexpected.', 'No one was surprised.'], # References for second prediction
+                ['The man bit him first.', 'The man had bitten the dog.'], # References for third prediction
+            ]
 
     Args:
         preds: An iterable of machine translated corpus

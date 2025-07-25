@@ -77,7 +77,7 @@ def _reference_sklearn_psnr_log(preds, target, data_range, reduction, dim):
 
 
 @pytest.mark.parametrize(
-    "preds, target, data_range, reduction, dim",
+    ("preds", "target", "data_range", "reduction", "dim"),
     [
         (_inputs[0].preds, _inputs[0].target, 10, "elementwise_mean", None),
         (_inputs[1].preds, _inputs[1].target, 10, "elementwise_mean", None),
@@ -89,7 +89,7 @@ def _reference_sklearn_psnr_log(preds, target, data_range, reduction, dim):
     ],
 )
 @pytest.mark.parametrize(
-    "base, ref_metric",
+    ("base", "ref_metric"),
     [
         (10.0, _reference_skimage_psnr),
         (2.718281828459045, _reference_sklearn_psnr_log),
@@ -154,19 +154,10 @@ def test_reduction_for_dim_none(reduction):
     """Test that warnings are raised when then reduction parameter is combined with no dim provided arg."""
     match = f"The `reduction={reduction}` will not have any effect when `dim` is None."
     with pytest.warns(UserWarning, match=match):
-        PeakSignalNoiseRatio(reduction=reduction, dim=None)
+        PeakSignalNoiseRatio(data_range=10.0, reduction=reduction, dim=None)
 
     with pytest.warns(UserWarning, match=match):
-        peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, reduction=reduction, dim=None)
-
-
-def test_missing_data_range():
-    """Check that error is raised if data range is not provided."""
-    with pytest.raises(ValueError, match="The `data_range` must be given when `dim` is not None."):
-        PeakSignalNoiseRatio(data_range=None, dim=0)
-
-    with pytest.raises(ValueError, match="The `data_range` must be given when `dim` is not None."):
-        peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)
+        peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, data_range=10.0, reduction=reduction, dim=None)
 
 
 def test_psnr_uint_dtype():
@@ -177,6 +168,6 @@ def test_psnr_uint_dtype():
     """
     preds = torch.randint(0, 255, _input_size, dtype=torch.uint8)
     target = torch.randint(0, 255, _input_size, dtype=torch.uint8)
-    psnr = peak_signal_noise_ratio(preds, target)
-    prnr2 = peak_signal_noise_ratio(preds.float(), target.float())
+    psnr = peak_signal_noise_ratio(preds, target, data_range=255.0)
+    prnr2 = peak_signal_noise_ratio(preds.float(), target.float(), data_range=255.0)
     assert torch.allclose(psnr, prnr2)

@@ -118,7 +118,7 @@ A few important things to note for this example:
 
 * When working with list states, The ``update(...)`` method should append the batch states to the list.
 
-* In the the ``compute`` method the list states behave a bit differently dependeding on whether you are running in
+* In the ``compute`` method the list states behave a bit differently dependeding on whether you are running in
   distributed mode or not. In non-distributed mode the list states will be a list of tensors, while in distributed mode
   the list have already been concatenated into a single tensor. For this reason, we recommend always using the
   ``dim_zero_cat`` helper function which will standardize the list states to be a single concatenated tensor regardless
@@ -209,7 +209,7 @@ metric state for accumulating over multiple batches. The ``forward()`` method ac
 to ``update``, ``compute`` and ``reset``. Depending on the class property ``full_state_update``, ``forward``
 can behave in two ways:
 
-1. If ``full_state_update`` is ``True`` it indicates that the metric during ``update`` requires access to the full
+1. If ``full_state_update`` is ``True`` or  ``full_state_update`` is ``None`` (default) it indicates that the metric during ``update`` requires access to the full
    metric state and we therefore need to do two calls to ``update`` to secure that the metric is calculated correctly
 
    1. Calls ``update()`` to update the global metric state (for accumulation over multiple batches)
@@ -219,7 +219,7 @@ can behave in two ways:
    5. Calls ``compute()`` to calculate metric for current batch.
    6. Restores the global state.
 
-2. If ``full_state_update`` is ``False`` (default) the metric state of one batch is completely independent of the state
+2. If ``full_state_update`` is ``False`` the metric state of one batch is completely independent of the state
    of other batches, which means that we only need to call ``update`` once.
 
    1. Caches the global state.

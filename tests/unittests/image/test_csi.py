@@ -40,7 +40,7 @@ def _reference_sklearn_jaccard(preds: torch.Tensor, target: torch.Tensor, thresh
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_inputs_1.preds, _inputs_1.target),
         (_inputs_2.preds, _inputs_2.target),

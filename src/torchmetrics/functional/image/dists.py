@@ -47,6 +47,8 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["deep_image_structure_and_texture_similarity"]
+else:
+    from torchvision.models import VGG16_Weights, vgg16
 
 _PATH_WEIGHT_DISTS = Path(__file__).resolve().parent / "dists_models" / "weights.pt"
 
@@ -84,14 +86,12 @@ class DISTSNetwork(torch.nn.Module):
     def __init__(self, load_weights: bool = True) -> None:
         super().__init__()
 
-        if _TORCHVISION_AVAILABLE:
-            from torchvision import models
-        else:
+        if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
                 "DISTS requires torchvision to be installed. Please install it with `pip install torchvision`."
             )
 
-        vgg_pretrained_features = models.vgg16(pretrained=True).features
+        vgg_pretrained_features = vgg16(weights=VGG16_Weights.DEFAULT).features
         self.stage1 = torch.nn.Sequential()
         self.stage2 = torch.nn.Sequential()
         self.stage3 = torch.nn.Sequential()
@@ -154,7 +154,9 @@ class DISTSNetwork(torch.nn.Module):
             with torch.inference_mode():
                 feats0 = self.forward_once(x)
                 feats1 = self.forward_once(y)
-        dist1, dist2, c1, c2 = 0, 0, 1e-6, 1e-6
+        dist1: Tensor = torch.tensor(0.0, device=x.device)
+        dist2: Tensor = torch.tensor(0.0, device=x.device)
+        c1, c2 = 1e-6, 1e-6
         w_sum = self.alpha.sum() + self.beta.sum()
         alpha = torch.split(self.alpha / w_sum, self.chns, dim=1)
         beta = torch.split(self.beta / w_sum, self.chns, dim=1)

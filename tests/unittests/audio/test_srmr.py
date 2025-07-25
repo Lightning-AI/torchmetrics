@@ -63,7 +63,7 @@ class _SpeechReverberationModulationEnergyRatioCheat(SpeechReverberationModulati
 
 
 @pytest.mark.parametrize(
-    "preds, fs, fast, norm",
+    ("preds", "fs", "fast", "norm"),
     [
         (preds, 8000, False, False),
         (preds, 8000, False, True),

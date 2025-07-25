@@ -82,7 +82,11 @@ def _assert_tensor(pl_result: dict[str, Tensor], key: Optional[str] = None) -> N
 
 
 def _assert_allclose(  # todo: unify with the general assert_allclose
-    pl_result: dict[str, Tensor], sk_result: dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
+    pl_result: dict[str, Tensor],
+    sk_result: dict[str, Tensor],
+    atol: float = 1e-8,
+    key: Optional[str] = None,
+    check_ddp_sorting: bool = False,
 ) -> None:
     if isinstance(pl_result, dict) and key is None:
         for (pl_key, pl_val), (sk_key, sk_val) in zip(pl_result.items(), sk_result.items()):
@@ -90,7 +94,7 @@ def _assert_allclose(  # todo: unify with the general assert_allclose
                 f"{pl_key} != {sk_key}"
             )
     else:
-        _core_assert_allclose(pl_result, sk_result, atol, key)
+        _core_assert_allclose(pl_result, sk_result, atol, key, check_ddp_sorting=check_ddp_sorting)
 
 
 def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None) -> None:

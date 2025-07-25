@@ -107,7 +107,7 @@ def _load_requirements(
     """
     path = Path(path_dir) / file_name
     if not path.exists():
-        raise ValueError("Path {path} not found for input dir {path_dir} and filename {file_name}.")
+        raise ValueError(f"Path {path} not found for input dir {path_dir} and filename {file_name}.")
     text = path.read_text()
     return [req.adjust(unfreeze) for req in _parse_requirements(text)]
 
@@ -242,7 +242,6 @@ if __name__ == "__main__":
             # Specify the Python versions you support here. In particular, ensure
             # that you indicate whether you support Python 2, Python 3 or both.
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",

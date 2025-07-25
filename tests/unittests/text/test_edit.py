@@ -79,7 +79,7 @@ def _reference_nltk_edit_dist(preds, target, substitution_cost=1, reduction="mea
 
 
 @pytest.mark.parametrize(
-    ["preds", "targets"],
+    ("preds", "targets"),
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 class TestEditDistance(TextTester):

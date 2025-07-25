@@ -48,9 +48,8 @@ class PeakSignalNoiseRatio(Metric):
 
     Args:
         data_range:
-            the range of the data. If None, it is determined from the data (max - min). If a tuple is provided then
-            the range is calculated as the difference and input is clamped between the values.
-            The ``data_range`` must be given when ``dim`` is not None.
+            the range of the data. If a tuple is provided, then the range is calculated as the difference and
+            input is clamped between the values.
         base: a base of a logarithm to use.
         reduction: a method to reduce metric score over labels.
 
@@ -63,13 +62,9 @@ class PeakSignalNoiseRatio(Metric):
             None meaning scores will be reduced across all dimensions and all batches.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Raises:
-        ValueError:
-            If ``dim`` is not ``None`` and ``data_range`` is not given.
-
     Example:
         >>> from torchmetrics.image import PeakSignalNoiseRatio
-        >>> psnr = PeakSignalNoiseRatio()
+        >>> psnr = PeakSignalNoiseRatio(data_range=3.0)
         >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnr(preds, target)
@@ -81,13 +76,11 @@ class PeakSignalNoiseRatio(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
-
-    min_target: Tensor
-    max_target: Tensor
+    data_range: Tensor
 
     def __init__(
         self,
-        data_range: Optional[Union[float, tuple[float, float]]] = None,
+        data_range: Union[float, tuple[float, float]],
         base: float = 10.0,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         dim: Optional[Union[int, tuple[int, ...]]] = None,
@@ -106,20 +99,12 @@ class PeakSignalNoiseRatio(Metric):
             self.add_state("total", default=[], dist_reduce_fx="cat")
 
         self.clamping_fn = None
-        if data_range is None:
-            if dim is not None:
-                # Maybe we could use `torch.amax(target, dim=dim) - torch.amin(target, dim=dim)` in PyTorch 1.7 to
-                # calculate `data_range` in the future.
-                raise ValueError("The `data_range` must be given when `dim` is not None.")
-
-            self.data_range = None
-            self.add_state("min_target", default=tensor(0.0), dist_reduce_fx=torch.min)
-            self.add_state("max_target", default=tensor(0.0), dist_reduce_fx=torch.max)
-        elif isinstance(data_range, tuple):
+        if isinstance(data_range, tuple):
             self.add_state("data_range", default=tensor(data_range[1] - data_range[0]), dist_reduce_fx="mean")
             self.clamping_fn = partial(torch.clamp, min=data_range[0], max=data_range[1])
         else:
             self.add_state("data_range", default=tensor(float(data_range)), dist_reduce_fx="mean")
+
         self.base = base
         self.reduction = reduction
         self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
@@ -132,11 +117,6 @@ class PeakSignalNoiseRatio(Metric):
 
         sum_squared_error, num_obs = _psnr_update(preds, target, dim=self.dim)
         if self.dim is None:
-            if self.data_range is None:
-                # keep track of min and max target values
-                self.min_target = torch.minimum(target.min(), self.min_target)
-                self.max_target = torch.maximum(target.max(), self.max_target)
-
             if not isinstance(self.sum_squared_error, Tensor):
                 raise TypeError(
                     f"Expected `self.sum_squared_error` to be a Tensor, but got {type(self.sum_squared_error)}"
@@ -158,8 +138,6 @@ class PeakSignalNoiseRatio(Metric):
 
     def compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""
-        data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
-
         if isinstance(self.sum_squared_error, torch.Tensor):
             sum_squared_error = self.sum_squared_error
         elif isinstance(self.sum_squared_error, list):
@@ -174,7 +152,7 @@ class PeakSignalNoiseRatio(Metric):
         else:
             raise TypeError("Expected total to be a Tensor or a list of Tensors")
 
-        return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
+        return _psnr_compute(sum_squared_error, total, self.data_range, base=self.base, reduction=self.reduction)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -199,7 +177,7 @@ class PeakSignalNoiseRatio(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.image import PeakSignalNoiseRatio
-            >>> metric = PeakSignalNoiseRatio()
+            >>> metric = PeakSignalNoiseRatio(data_range=1.0)
             >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
             >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
             >>> metric.update(preds, target)
@@ -211,7 +189,7 @@ class PeakSignalNoiseRatio(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.image import PeakSignalNoiseRatio
-            >>> metric = PeakSignalNoiseRatio()
+            >>> metric = PeakSignalNoiseRatio(data_range=1.0)
             >>> preds = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
             >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
             >>> values = [ ]

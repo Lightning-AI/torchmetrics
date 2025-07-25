@@ -117,7 +117,7 @@ def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
     # ["mos_pred", "noi_pred", "dis_pred", "col_pred", "loud_pred"]
     # the dimensions are always listed in the papers as MOS, noisiness, coloration, discontinuity and loudness
     # but based on original code the actual model output order is MOS, noisiness, discontinuity, coloration, loudness
-    return x.reshape(preds.shape[:-1] + (5,))
+    return x.reshape((*preds.shape[:-1], 5))
 
 
 @lru_cache

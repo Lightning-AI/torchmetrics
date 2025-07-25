@@ -76,6 +76,7 @@ lint.per-file-ignores."tests/**" = [
   "ANN201",
   "ANN202",
   "ANN401",
+  "PT028",  # Test function parameter has default argument
   "S101",
   "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
 ]
@@ -97,7 +98,8 @@ ignore-words-list = """
   wil, \
   fpr, \
   raison, \
-  archiv
+  archiv, \
+  lins
 """
 
 [tool.docformatter]
@@ -171,6 +173,7 @@ warn_no_return = "False"
 extend-ignore-identifiers-re = [
   # *sigh* this just isn't worth the cost of fixing
   "AttributeID.*Supress.*",
+  "Levenhstein",
 ]
 
 [tool.typos.default.extend-identifiers]

@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from functools import partial
 
 import numpy as np
 import pytest
 import torch
+import torch.multiprocessing as mp
 from pytorch_msssim import ssim
 from skimage.metrics import structural_similarity
 from torch import Tensor
@@ -25,6 +27,8 @@ from torchmetrics.image import StructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
+from unittests.image import cleanup_ddp, setup_ddp
+from unittests.utilities.test_utilities import find_free_port
 
 seed_all(42)
 
@@ -130,7 +134,7 @@ def _reference_msssim_ssim(
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 @pytest.mark.parametrize("sigma", [1.5, 0.5])
@@ -360,3 +364,35 @@ def test_ssim_for_correct_padding():
     target[:, :, :, 0] = 0
     target[:, :, :, -1] = 0
     assert structural_similarity_index_measure(preds, target) < 1.0
+
+
+def _run_ssim_ddp(rank: int, world_size: int, free_port: int):
+    """Run SSIM metric computation in a DDP setup."""
+    try:
+        setup_ddp(rank, world_size, free_port)
+        device = torch.device(f"cuda:{rank}")
+        metric = StructuralSimilarityIndexMeasure(reduction="none").to(device)
+
+        for _ in range(3):
+            x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
+            metric.update(x, y)
+
+        result = metric.compute()
+        assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
+    finally:
+        cleanup_ddp()
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on Windows")
+def test_ssim_reduction_none_ddp():
+    """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
+
+    """
+    world_size = 2
+    free_port = find_free_port()
+    if free_port == -1:
+        pytest.skip("No free port available for DDP test.")
+    mp.spawn(_run_ssim_ddp, args=(world_size, free_port), nprocs=world_size, join=True)

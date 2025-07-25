@@ -53,26 +53,27 @@ class MeanIoU(Metric):
           set to ``False``, the output will be a scalar tensor.
 
     Args:
-        num_classes: The number of classes in the segmentation problem. Required when input_format="index",
+        num_classes: The number of classes in the segmentation problem. Required when input_format="index" or "mixed",
             optional when input_format="one-hot".
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately. If set to ``False``, the metric will
             compute the mean IoU over all classes.
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
-            or ``"index"`` for index tensors
+        input_format: What kind of input the function receives.
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
+            or ``"mixed"`` for one one-hot encoded and one index tensor
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
             If ``num_classes`` is not ``None`` or a positive integer
         ValueError:
-            If ``num_classes`` is not provided when ``input_format="index"``
+            If ``num_classes`` is not provided when ``input_format`` is ``"index"`` or ``"mixed"``
         ValueError:
             If ``include_background`` is not a boolean
         ValueError:
             If ``per_class`` is not a boolean
         ValueError:
-            If ``input_format`` is not one of ``"one-hot"`` or ``"index"``
+            If ``input_format`` is not one of ``"one-hot"``, ``"index"`` or ``"mixed"``
 
     Example:
         >>> import torch
@@ -108,7 +109,7 @@ class MeanIoU(Metric):
         num_classes: Optional[int] = None,
         include_background: bool = True,
         per_class: bool = False,
-        input_format: Literal["one-hot", "index"] = "one-hot",
+        input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

@@ -33,7 +33,7 @@ seed_all(42)
 @pytest.mark.skipif(not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE, reason="test requires torch linear assignment package")
 @pytest.mark.skipif(not _AEON_AVAILABLE, reason="test requires aeon package")
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_single_target_extrinsic1.preds, _single_target_extrinsic1.target),
         (_single_target_extrinsic2.preds, _single_target_extrinsic2.target),

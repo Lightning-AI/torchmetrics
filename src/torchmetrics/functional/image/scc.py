@@ -91,10 +91,10 @@ def _symmetric_reflect_pad_2d(input_img: Tensor, pad: Union[int, tuple[int, ...]
 
 def _signal_convolve_2d(input_img: Tensor, kernel: Tensor) -> Tensor:
     """Applies 2D signal convolution to the input tensor with the given kernel."""
-    left_padding = int(math.floor((kernel.size(3) - 1) / 2))
-    right_padding = int(math.ceil((kernel.size(3) - 1) / 2))
-    top_padding = int(math.floor((kernel.size(2) - 1) / 2))
-    bottom_padding = int(math.ceil((kernel.size(2) - 1) / 2))
+    left_padding = math.floor((kernel.size(3) - 1) / 2)
+    right_padding = math.ceil((kernel.size(3) - 1) / 2)
+    top_padding = math.floor((kernel.size(2) - 1) / 2)
+    bottom_padding = math.ceil((kernel.size(2) - 1) / 2)
 
     padded = _symmetric_reflect_pad_2d(input_img, pad=(left_padding, right_padding, top_padding, bottom_padding))
     kernel = kernel.flip([2, 3])
@@ -111,8 +111,8 @@ def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor) ->
     # This code is inspired by
     # https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py#L187.
 
-    left_padding = int(math.ceil((window.size(3) - 1) / 2))
-    right_padding = int(math.floor((window.size(3) - 1) / 2))
+    left_padding = math.ceil((window.size(3) - 1) / 2)
+    right_padding = math.floor((window.size(3) - 1) / 2)
 
     preds = pad(preds, (left_padding, right_padding, left_padding, right_padding))
     target = pad(target, (left_padding, right_padding, left_padding, right_padding))

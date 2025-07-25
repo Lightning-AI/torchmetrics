@@ -44,7 +44,7 @@ def _reference_sklearn_roc_binary(preds, target, ignore_index=None):
     return [np.nan_to_num(x, nan=0.0) for x in [fpr, tpr, thresholds]]
 
 
-@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryROC(MetricTester):
     """Test class for `BinaryROC` metric."""
 
@@ -157,7 +157,7 @@ def _reference_sklearn_roc_multiclass(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
 class TestMulticlassROC(MetricTester):
     """Test class for `MulticlassROC` metric."""
@@ -280,7 +280,7 @@ def _reference_sklearn_roc_multilabel(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
 class TestMultilabelROC(MetricTester):
     """Test class for `MultilabelROC` metric."""

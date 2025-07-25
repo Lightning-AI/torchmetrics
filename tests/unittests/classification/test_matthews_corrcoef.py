@@ -26,6 +26,7 @@ from torchmetrics.classification.matthews_corrcoef import (
     MultilabelMatthewsCorrCoef,
 )
 from torchmetrics.functional.classification.matthews_corrcoef import (
+    _matthews_corrcoef_reduce,
     binary_matthews_corrcoef,
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
@@ -391,3 +392,26 @@ def test_wrapper_class(metric, kwargs, base_metric=MatthewsCorrCoef):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+def test_matthews_corrcoef_reduce():
+    """Test the corner cases of extremely rare events."""
+    confmat_tp_zero = torch.tensor([[19392673, 1], [76216, 0]]).to(torch.bfloat16)
+    out_tp_zero = _matthews_corrcoef_reduce(confmat_tp_zero)
+    assert out_tp_zero != 0
+    assert not torch.isnan(out_tp_zero)
+
+    confmat_tn_zero = torch.tensor([[0, 1], [29690, 278]]).to(torch.bfloat16)
+    out_tn_zero = _matthews_corrcoef_reduce(confmat_tn_zero)
+    assert out_tn_zero != 0
+    assert not torch.isnan(out_tn_zero)
+
+    confmat_fp_zero = torch.tensor([[6931024, 0], [29690, 278]]).to(torch.bfloat16)
+    out_fp_zero = _matthews_corrcoef_reduce(confmat_fp_zero)
+    assert out_fp_zero != 0
+    assert not torch.isnan(out_fp_zero)
+
+    confmat_fn_zero = torch.tensor([[6931024, 29690], [0, 278]]).to(torch.bfloat16)
+    out_fn_zero = _matthews_corrcoef_reduce(confmat_fn_zero)
+    assert out_fn_zero != 0
+    assert not torch.isnan(out_fn_zero)

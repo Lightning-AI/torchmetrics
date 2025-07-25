@@ -53,7 +53,7 @@ def _reference_bss_snr(preds: Tensor, target: Tensor, zero_mean: bool):
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, zero_mean",
+    ("preds", "target", "ref_metric", "zero_mean"),
     [
         (inputs.preds, inputs.target, partial(_reference_bss_snr, zero_mean=True), True),
         (inputs.preds, inputs.target, partial(_reference_bss_snr, zero_mean=False), False),

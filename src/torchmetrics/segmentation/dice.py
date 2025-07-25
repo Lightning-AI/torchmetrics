@@ -23,6 +23,7 @@ from torchmetrics.functional.segmentation.dice import (
     _dice_score_validate_args,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -66,8 +67,12 @@ class DiceScore(Metric):
         include_background: Whether to include the background class in the computation.
         average: The method to average the dice score. Options are ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``
             or ``None``. This determines how to average the dice score across different classes.
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
-            or ``"index"`` for index tensors
+        aggregation_level: The level at which to aggregate the dice score. Options are ``"samplewise"`` or ``"global"``.
+            For ``"samplewise"`` the dice score is computed for each sample and then averaged. For ``"global"`` the dice
+            score is computed globally over all samples.
+        input_format: What kind of input the function receives.
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
+            or ``"mixed"`` for one one-hot encoded and one index tensor
         zero_division: The value to return when there is a division by zero. Options are 1.0, 0.0, "warn" or "nan".
             Setting it to "warn" behaves like 0.0 but will also create a warning.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -80,7 +85,7 @@ class DiceScore(Metric):
         ValueError:
             If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"`` or ``None``
         ValueError:
-            If ``input_format`` is not one of ``"one-hot"`` or ``"index"``
+            If ``input_format`` is not one of ``"one-hot"``, ``"index"`` or ``"mixed"``
 
     Example:
         >>> from torch import randint
@@ -111,17 +116,24 @@ class DiceScore(Metric):
         num_classes: int,
         include_background: bool = True,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        input_format: Literal["one-hot", "index"] = "one-hot",
-        zero_division: Union[float, Literal["warn", "nan"]] = 0.0,
+        aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
+        input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        _dice_score_validate_args(num_classes, include_background, average, input_format, zero_division)
+        if average == "micro":
+            rank_zero_warn(
+                "DiceScore metric currently defaults to `average=micro`, but will change to"
+                "`average=macro` in the v1.9 release."
+                " If you've explicitly set this parameter, you can ignore this warning.",
+                UserWarning,
+            )
+        _dice_score_validate_args(num_classes, include_background, average, input_format, aggregation_level)
         self.num_classes = num_classes
         self.include_background = include_background
         self.average = average
+        self.aggregation_level = aggregation_level
         self.input_format = input_format
-        self.zero_division = zero_division
 
         num_classes = num_classes - 1 if not include_background else num_classes
         self.add_state("numerator", [], dist_reduce_fx="cat")
@@ -143,8 +155,8 @@ class DiceScore(Metric):
             dim_zero_cat(self.numerator),
             dim_zero_cat(self.denominator),
             self.average,
+            self.aggregation_level,
             support=dim_zero_cat(self.support) if self.average == "weighted" else None,
-            zero_division=self.zero_division,
         ).nanmean(dim=0)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:

@@ -93,7 +93,7 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
 
 
 @pytest.mark.parametrize(
-    "base_metric_class, compare_metric, preds, target, num_outputs",
+    ("base_metric_class", "compare_metric", "preds", "target", "num_outputs"),
     [
         (
             R2Score,

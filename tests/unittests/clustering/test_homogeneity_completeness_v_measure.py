@@ -41,7 +41,7 @@ def _reference_sklearn_wrapper(preds, target, fn):
 
 
 @pytest.mark.parametrize(
-    "modular_metric, functional_metric, reference_metric",
+    ("modular_metric", "functional_metric", "reference_metric"),
     [
         (HomogeneityScore, homogeneity_score, sklearn_homogeneity_score),
         (CompletenessScore, completeness_score, sklearn_completeness_score),
@@ -54,7 +54,7 @@ def _reference_sklearn_wrapper(preds, target, fn):
     ],
 )
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [
         (_single_target_extrinsic1.preds, _single_target_extrinsic1.target),
         (_single_target_extrinsic2.preds, _single_target_extrinsic2.target),

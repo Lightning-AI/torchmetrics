@@ -16,7 +16,7 @@ import logging
 import urllib
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
 import torch
 from torch import Tensor
@@ -77,7 +77,7 @@ def _get_embeddings_and_idf_scale(
     idf: bool = False,
     verbose: bool = False,
     user_forward_fn: Optional[Callable[[Module, dict[str, Tensor]], Tensor]] = None,
-) -> tuple[Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
 
     Args:
@@ -159,7 +159,7 @@ def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Ten
 
 def _get_precision_recall_f1(
     preds_embeddings: Tensor, target_embeddings: Tensor, preds_idf_scale: Tensor, target_idf_scale: Tensor
-) -> tuple[Tensor, Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
     Args:
@@ -246,7 +246,7 @@ def _rescale_metrics_with_baseline(
     baseline: Tensor,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
-) -> tuple[Tensor, Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Rescale the computed metrics with the pre-computed baseline."""
     if num_layers is None and all_layers is False:
         num_layers = -1
@@ -257,9 +257,98 @@ def _rescale_metrics_with_baseline(
     return all_metrics[..., 0], all_metrics[..., 1], all_metrics[..., 2]
 
 
+def _preprocess_multiple_references(
+    preds: List[str], target: List[Union[str, Sequence[str]]]
+) -> Tuple[List[str], List[str], Optional[List[Tuple[int, int]]]]:
+    """Preprocesses predictions and targets when dealing with multiple references.
+
+    This function handles the case where a single prediction might have multiple
+    reference targets (represented as a list/tuple of strings).
+
+    Args:
+        preds: A list of predictions
+        target: A list of targets, where each item could be a string or a list/tuple of strings
+
+    Returns:
+        Tuple: (preds, target, ref_group_boundaries)
+            - preds: Flattened list of `str`
+            - target: Flattened list of `str`
+            - ref_group_boundaries: List of tuples (start, end) indicating the boundaries
+              of reference groups in the flattened lists or `None`
+
+    """
+    if not all(isinstance(item, str) for item in preds):
+        raise ValueError("Invalid input provided.")
+
+    has_nested_sequences = any(isinstance(item, (list, tuple)) for item in target)
+
+    if has_nested_sequences:
+        ref_group_boundaries: List[Tuple[int, int]] = []
+        new_preds: List[str] = []
+        new_target: List[str] = []
+        count = 0
+
+        for pred, ref_group in zip(preds, target):
+            if isinstance(ref_group, (list, tuple)):
+                new_preds.extend([pred] * len(ref_group))
+                new_target.extend(cast(List[str], ref_group))
+                ref_group_boundaries.append((count, count + len(ref_group)))
+                count += len(ref_group)
+            else:
+                new_preds.append(pred)
+                new_target.append(cast(str, ref_group))
+                ref_group_boundaries.append((count, count + 1))
+                count += 1
+        return new_preds, new_target, ref_group_boundaries
+    return preds, cast(List[str], target), None
+
+
+def _postprocess_multiple_references(
+    precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: List[Tuple[int, int]]
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Postprocesses metrics when dealing with multiple references.
+
+    For each group of references that correspond to a single prediction,
+    this function takes the maximum score among all references.
+
+    Args:
+        precision: Tensor of precision scores
+        recall: Tensor of recall scores
+        f1_score: Tensor of F1 scores
+        ref_group_boundaries: List of tuples (start, end) indicating the boundaries
+                              of reference groups
+
+    Returns:
+        tuple: (precision, recall, f1_score) with updated metrics
+
+    """
+    max_precision, max_recall, max_f1 = [], [], []
+
+    for start, end in ref_group_boundaries:
+        if precision.dim() > 1:  # all_layers=True case
+            max_precision.append(precision[:, start:end].max(dim=1)[0])
+            max_recall.append(recall[:, start:end].max(dim=1)[0])
+            max_f1.append(f1_score[:, start:end].max(dim=1)[0])
+        else:  # standard case
+            max_precision.append(precision[start:end].max())
+            max_recall.append(recall[start:end].max())
+            max_f1.append(f1_score[start:end].max())
+
+    if precision.dim() > 1:
+        precision = torch.stack(max_precision, dim=1)
+        recall = torch.stack(max_recall, dim=1)
+        f1_score = torch.stack(max_f1, dim=1)
+    else:
+        precision = torch.stack(max_precision)
+        recall = torch.stack(max_recall)
+        f1_score = torch.stack(max_f1)
+
+    return precision, recall, f1_score
+
+
 def bert_score(
     preds: Union[str, Sequence[str], dict[str, Tensor]],
-    target: Union[str, Sequence[str], dict[str, Tensor]],
+    target: Union[str, Sequence[str], Sequence[Sequence[str]], dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -278,7 +367,7 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
     truncation: bool = False,
-) -> dict[str, Union[Tensor, list[float], str]]:
+) -> dict[str, Union[Tensor, List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
     This metric leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
@@ -289,8 +378,9 @@ def bert_score(
     This implementation follows the original implementation from `BERT_score`_.
 
     Args:
-        preds: Either an iterable of predicted sentences or a ``Dict[input_ids, attention_mask]``.
-        target: Either an iterable of target sentences or a  ``Dict[input_ids, attention_mask]``.
+        preds (Union[str, Sequence[str]]): A single predicted sentence or a sequence of predicted sentences.
+        target (Union[str, Sequence[str], Sequence[Sequence[str]]]): A single target sentence, a sequence of target
+            sentences, or a sequence of sequences of target sentences for multiple references per prediction.
         model_name_or_path: A name or a model path used to load ``transformers`` pretrained model.
         num_layers: A layer of representation to use.
         all_layers:
@@ -350,16 +440,35 @@ def bert_score(
         >>> pprint(bert_score(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
 
+    Example:
+        >>> from pprint import pprint
+        >>> from torchmetrics.functional.text.bert import bert_score
+        >>> preds = ["hello there", "general kenobi"]
+        >>> target = [["hello there", "master kenobi"], ["hello there", "master kenobi"]]
+        >>> pprint(bert_score(preds, target))
+        {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
     """
+    ref_group_boundaries: Optional[List[Tuple[int, int]]] = None
+
+    if isinstance(preds, str):
+        preds = [preds]
+    if isinstance(target, str):
+        target = [target]
+    if not isinstance(preds, (list, dict)):  # dict for BERTScore class compute call
+        preds = list(preds)
+    if not isinstance(target, (list, dict)):  # dict for BERTScore class compute call
+        target = list(target)
+
     if len(preds) != len(target):
         raise ValueError(
-            "Expected number of predicted and reference sententes to be the same, but got"
+            "Expected number of predicted and reference sentences to be the same, but got"
             f"{len(preds)} and {len(target)}"
         )
-    if not isinstance(preds, (str, list, dict)):  # dict for BERTScore class compute call
-        preds = list(preds)
-    if not isinstance(target, (str, list, dict)):  # dict for BERTScore class compute call
-        target = list(target)
+
+    if isinstance(preds, list) and len(preds) > 0 and isinstance(target, list) and len(target) > 0:
+        preds, target, ref_group_boundaries = _preprocess_multiple_references(preds, target)
+
     if not isinstance(idf, bool):
         raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
 
@@ -412,7 +521,7 @@ def bert_score(
     )
     if _are_empty_lists:
         rank_zero_warn("Predictions and references are empty.")
-        output_dict: dict[str, Union[Tensor, list[float], str]] = {
+        output_dict: dict[str, Union[Tensor, List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],
             "f1": [0.0],
@@ -464,6 +573,11 @@ def bert_score(
     if baseline is not None:
         precision, recall, f1_score = _rescale_metrics_with_baseline(
             precision, recall, f1_score, baseline, num_layers, all_layers
+        )
+
+    if ref_group_boundaries is not None:
+        precision, recall, f1_score = _postprocess_multiple_references(
+            precision, recall, f1_score, ref_group_boundaries
         )
 
     output_dict = {

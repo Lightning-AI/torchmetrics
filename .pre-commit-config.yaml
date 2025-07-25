@@ -38,7 +38,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         additional_dependencies: [tomli]
@@ -46,14 +46,14 @@ repos:
         exclude: pyproject.toml
 
   - repo: https://github.com/crate-ci/typos
-    rev: dictgen-v0.3.1
+    rev: v1
     hooks:
       - id: typos
         args: [] # empty to do not write fixes
         exclude: pyproject.toml
 
   - repo: https://github.com/PyCQA/docformatter
-    rev: 06907d0267368b49b9180eed423fae5697c1e909 # todo: fix for docformatter after last 1.7.5
+    rev: v1.7.7
     hooks:
       - id: docformatter
         additional_dependencies: [tomli]
@@ -65,7 +65,7 @@ repos:
       - id: sphinx-lint
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.21
+    rev: 0.7.22
     hooks:
       - id: mdformat
         args: ["--number"]
@@ -112,7 +112,7 @@ repos:
       - id: text-unicode-replacement-char
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
+    rev: v0.12.2
     hooks:
       # try to fix what is possible
       - id: ruff
@@ -123,11 +123,11 @@ repos:
       - id: ruff
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.5.0
+    rev: v2.6.0
     hooks:
       - id: pyproject-fmt
         additional_dependencies: [tox]
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.23
+    rev: v0.24.1
     hooks:
       - id: validate-pyproject
