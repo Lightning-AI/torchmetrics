@@ -70,7 +70,7 @@ run: |
   pip list
 
   python -c "import torch ; mgpu = torch.cuda.device_count() ; assert mgpu >= 2, f'found GPUs: {mgpu}'"
-  python -c "from torch import __version__ as ver ; assert '.'.join(str(ver).split('.')[:2]) == '${torch_ver}', f'PyTorch: installed {ver} but expected $(torch-ver)'"
+  python -c "from torch import __version__ as ver ; assert '.'.join(str(ver).split('.')[:2]) == '${TORCH_VER}', f'PyTorch: installed {ver} but expected ${TORCH_VER}'"
 
   # DocTesting
   cd src/
