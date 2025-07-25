@@ -45,19 +45,26 @@ jobs:
           - "2.5.1"
           - "2.6.0"
           - "2.7.1"
+        testing: ["common", "distributed"]
         include:
           # cover additional python and PT combinations
-          - { os: "ubuntu-22.04", python-version: "3.9", pytorch-version: "2.0.1", requires: "oldest" }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.6.0" }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1" }
+          - { os: "ubuntu-22.04", python-version: "3.9", pytorch-version: "2.0.1", requires: "oldest", testing: "common" }
+          - { os: "ubuntu-22.04", python-version: "3.9", pytorch-version: "2.0.1", requires: "oldest", testing: "distributed" }
+          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1", testing: "common" }
+          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1", testing: "distributed" }
           # standard mac machine, not the M1
-          - { os: "macOS-13", python-version: "3.10", pytorch-version: "2.0.1" }
+          - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1", testing: "common" }
+          - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1", testing: "distributed" }
           # using the ARM based M1 machine
-          - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.7.1" }
+          - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1", testing: "common" }
+          - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1", testing: "distributed" }
+          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.7.1", testing: "common" }
+          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.7.1", testing: "distributed" }
           # some windows
-          - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.7.1" }
+          - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1", testing: "common" }
+          - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1", testing: "distributed" }
+          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.7.1", testing: "common" }
+          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.7.1", testing: "distributed" }
           # Future released version
           #- { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.8.0" }
           #- { os: "macOS-14", python-version: "3.11", pytorch-version: "2.8.0" }
@@ -167,7 +174,7 @@ jobs:
 
       - name: Unittests common
         # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
-        if: ${{ env.TEST_DIRS != '' }}
+        if: ${{ env.TEST_DIRS != '' && matrix.testing == 'common' }}
         working-directory: ./tests
         run: |
           python -m pytest \
@@ -183,7 +190,7 @@ jobs:
 
       - name: Unittests DDP
         # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
-        if: ${{ env.TEST_DIRS != '' }}
+        if: ${{ env.TEST_DIRS != '' && matrix.testing == 'distributed' }}
         working-directory: ./tests
         env:
           USE_PYTEST_POOL: "1"
