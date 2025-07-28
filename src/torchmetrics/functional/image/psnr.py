@@ -95,7 +95,7 @@ def _psnr_update(
 def peak_signal_noise_ratio(
     preds: Tensor,
     target: Tensor,
-    data_range: Optional[Union[float, tuple[float, float]]] = None,
+    data_range: Union[float, tuple[float, float]],
     base: float = 10.0,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     dim: Optional[Union[int, tuple[int, ...]]] = None,
@@ -106,9 +106,8 @@ def peak_signal_noise_ratio(
         preds: estimated signal
         target: groun truth signal
         data_range:
-            the range of the data. If None, it is determined from the data (max - min). If a tuple is provided then
-            the range is calculated as the difference and input is clamped between the values.
-            The ``data_range`` must be given when ``dim`` is not None.
+            the range of the data. If a tuple is provided then the range is calculated as the difference and
+            input is clamped between the values.
         base: a base of a logarithm to use
         reduction: a method to reduce metric score over labels.
 
@@ -123,15 +122,11 @@ def peak_signal_noise_ratio(
     Return:
         Tensor with PSNR score
 
-    Raises:
-        ValueError:
-            If ``dim`` is not ``None`` and ``data_range`` is not provided.
-
     Example:
         >>> from torchmetrics.functional.image import peak_signal_noise_ratio
         >>> pred = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
-        >>> peak_signal_noise_ratio(pred, target)
+        >>> peak_signal_noise_ratio(pred, target, data_range=3.0)
         tensor(2.5527)
 
     .. attention::
@@ -141,19 +136,12 @@ def peak_signal_noise_ratio(
     if dim is None and reduction != "elementwise_mean":
         rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")
 
-    if data_range is None:
-        if dim is not None:
-            # Maybe we could use `torch.amax(target, dim=dim) - torch.amin(target, dim=dim)` in PyTorch 1.7 to calculate
-            # `data_range` in the future.
-            raise ValueError("The `data_range` must be given when `dim` is not None.")
-
-        data_range = target.max() - target.min()  # type: ignore[assignment]
-    elif isinstance(data_range, tuple):
+    if isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
-        data_range = tensor(data_range[1] - data_range[0])  # type: ignore[assignment]
+        data_range_val = tensor(data_range[1] - data_range[0])
     else:
-        data_range = tensor(float(data_range))  # type: ignore[assignment]
+        data_range_val = tensor(float(data_range))
 
     sum_squared_error, num_obs = _psnr_update(preds, target, dim=dim)
-    return _psnr_compute(sum_squared_error, num_obs, data_range, base=base, reduction=reduction)  # type: ignore[arg-type]
+    return _psnr_compute(sum_squared_error, num_obs, data_range_val, base=base, reduction=reduction)

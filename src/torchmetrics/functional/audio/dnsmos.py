@@ -286,6 +286,6 @@ def deep_noise_suppression_mean_opinion_score(
         )
         mos_np = _polyfit_val(mos_np, personalized)
 
-        mos_np = mos_np.reshape(shape[:-1] + (4,))
+        mos_np = mos_np.reshape((*shape[:-1], 4))
         moss.append(mos_np)
     return torch.from_numpy(np.mean(np.stack(moss, axis=-1), axis=-1))  # [p808_mos, mos_sig, mos_bak, mos_ovr]

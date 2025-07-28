@@ -31,6 +31,24 @@ def _ignore_background(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     return preds, target
 
 
+def _check_mixed_shape(preds: Tensor, target: Tensor) -> None:
+    """Check that predictions and target have the same shape, else raise error."""
+    if preds.dim() == (target.dim() + 1):
+        if preds.shape[0] != target.shape[0] or preds.shape[2:] != target.shape[1:]:
+            raise RuntimeError(
+                f"Predictions and targets are expected to have the same shape, got {preds.shape} and {target.shape}."
+            )
+    elif (preds.dim() + 1) == target.dim():
+        if preds.shape[0] != target.shape[0] or preds.shape[1:] != target.shape[2:]:
+            raise RuntimeError(
+                f"Predictions and targets are expected to have the same shape, got {preds.shape} and {target.shape}."
+            )
+    else:
+        raise RuntimeError(
+            f"Predictions and targets are expected to have the same shape, got {preds.shape} and {target.shape}."
+        )
+
+
 def check_if_binarized(x: Tensor) -> None:
     """Check if tensor is binarized.
 

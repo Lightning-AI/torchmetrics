@@ -109,7 +109,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         if reduction in ("elementwise_mean", "sum"):
             self.add_state("similarity", default=torch.tensor(0.0), dist_reduce_fx="sum")
         else:
-            self.add_state("similarity", default=[], dist_reduce_fx="cat")
+            self.add_state("similarity", default=[], dist_reduce_fx=None)
 
         self.add_state("total", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
@@ -331,7 +331,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         if reduction in ("elementwise_mean", "sum"):
             self.add_state("similarity", default=torch.tensor(0.0), dist_reduce_fx="sum")
         else:
-            self.add_state("similarity", default=[], dist_reduce_fx="cat")
+            self.add_state("similarity", default=[], dist_reduce_fx=None)
 
         self.add_state("total", default=torch.tensor(0.0), dist_reduce_fx="sum")
 

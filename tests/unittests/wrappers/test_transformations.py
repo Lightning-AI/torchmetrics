@@ -14,8 +14,10 @@
 from typing import ClassVar
 
 import pytest
+import torch
 from torch import Tensor
 
+from torchmetrics import MeanSquaredError
 from torchmetrics.aggregation import MeanMetric
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.retrieval import RetrievalMAP
@@ -136,6 +138,38 @@ class TestLambdaInputTransformer:
         """Tests that TypeError is raised when a non-callable is passed as `transform_target`."""
         with pytest.raises(TypeError, match=r"Expected `transform_target` to be of type .*"):
             LambdaInputTransformer(BinaryAccuracy(), transform_target=[])
+
+    def test_reset_forwards_to_wrapped_metric(self):
+        """Test that reset() on LambdaInputTransformer also resets the wrapped metric.
+
+        Issue: https://github.com/Lightning-AI/torchmetrics/issues/3122.
+
+        """
+        preds_1 = torch.tensor([1.0, 2.0, 3.0])
+        preds_2 = 2 * preds_1
+        target = torch.tensor([2.0, 4.0, 6.0])
+
+        mse_metric = MeanSquaredError()
+        lambda_metric = LambdaInputTransformer(
+            wrapped_metric=MeanSquaredError(),
+            transform_pred=lambda p: p,
+            transform_target=lambda t: t,
+        )
+
+        mse_metric.update(preds_1, target)
+        lambda_metric.update(preds_1, target)
+        assert mse_metric.compute().item() == lambda_metric.compute().item()
+        assert mse_metric.update_count == 1
+        assert lambda_metric.wrapped_metric.update_count == 1
+
+        mse_metric.reset()
+        lambda_metric.reset()
+
+        mse_metric.update(preds_2, target)
+        lambda_metric.update(preds_2, target)
+        assert mse_metric.compute().item() == lambda_metric.compute().item()
+        assert mse_metric.update_count == 1
+        assert lambda_metric.wrapped_metric.update_count == 1
 
 
 class TestBinaryTargetTransformer:

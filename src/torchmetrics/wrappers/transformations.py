@@ -75,6 +75,11 @@ class MetricInputTransformer(WrapperMetric):
         args = self._wrap_transform(*args)
         return self.wrapped_metric.forward(*args, **kwargs)
 
+    def reset(self) -> None:
+        """Wrap the reset call of the underlying metric."""
+        self.wrapped_metric.reset()
+        super().reset()
+
 
 class LambdaInputTransformer(MetricInputTransformer):
     """Wrapper class for transforming a metrics' inputs given a user-defined lambda function.

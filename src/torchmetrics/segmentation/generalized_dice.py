@@ -73,8 +73,9 @@ class GeneralizedDiceScore(Metric):
         per_class: Whether to compute the metric for each class separately.
         weight_type: The type of weight to apply to each class. Can be one of ``"square"``, ``"simple"``, or
             ``"linear"``.
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
-            or ``"index"`` for index tensors
+        input_format: What kind of input the function receives.
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
+            or ``"mixed"`` for one one-hot encoded and one index tensor
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -87,7 +88,7 @@ class GeneralizedDiceScore(Metric):
         ValueError:
             If ``weight_type`` is not one of ``"square"``, ``"simple"``, or ``"linear"``
         ValueError:
-            If ``input_format`` is not one of ``"one-hot"`` or ``"index"``
+            If ``input_format`` is not one of ``"one-hot"``, ``"index"`` or ``"mixed"``
 
     Example:
         >>> from torch import randint
@@ -120,7 +121,7 @@ class GeneralizedDiceScore(Metric):
         include_background: bool = True,
         per_class: bool = False,
         weight_type: Literal["square", "simple", "linear"] = "square",
-        input_format: Literal["one-hot", "index"] = "one-hot",
+        input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

@@ -1,6 +1,6 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-scipy >1.0.0, <1.16.0
+scipy >1.0.0, <1.17.0
 torchvision >=0.15.1, <0.23.0
 torch-fidelity <=0.4.0  # bumping to allow install version from master, now used in testing

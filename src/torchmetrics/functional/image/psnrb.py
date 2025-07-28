@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
+from typing import Union
 
 import torch
 from torch import Tensor, tensor
@@ -76,13 +77,11 @@ def _psnrb_compute(
         sum_squared_error: Sum of square of errors over all observations
         bef: block effect
         num_obs: Number of predictions or observations
-        data_range: the range of the data. If None, it is determined from the data (max - min).
+        data_range: the range of the data.
 
     """
     sum_squared_error = sum_squared_error / num_obs + bef
-    if data_range > 2:
-        return 10 * torch.log10(data_range**2 / sum_squared_error)
-    return 10 * torch.log10(1.0 / sum_squared_error)
+    return 10 * torch.log10(data_range**2 / sum_squared_error)
 
 
 def _psnrb_update(preds: Tensor, target: Tensor, block_size: int = 8) -> tuple[Tensor, Tensor, Tensor]:
@@ -103,6 +102,7 @@ def _psnrb_update(preds: Tensor, target: Tensor, block_size: int = 8) -> tuple[T
 def peak_signal_noise_ratio_with_blocked_effect(
     preds: Tensor,
     target: Tensor,
+    data_range: Union[float, tuple[float, float]],
     block_size: int = 8,
 ) -> Tensor:
     r"""Computes `Peak Signal to Noise Ratio With Blocked Effect` (PSNRB) metrics.
@@ -114,7 +114,9 @@ def peak_signal_noise_ratio_with_blocked_effect(
 
     Args:
         preds: estimated signal
-        target: groun truth signal
+        target: ground truth signal
+        data_range: the range of the data. If a tuple is provided then the range is calculated as the difference and
+            input is clamped between the values.
         block_size: integer indication the block size
 
     Return:
@@ -125,10 +127,16 @@ def peak_signal_noise_ratio_with_blocked_effect(
         >>> from torchmetrics.functional.image import peak_signal_noise_ratio_with_blocked_effect
         >>> preds = rand(1, 1, 28, 28)
         >>> target = rand(1, 1, 28, 28)
-        >>> peak_signal_noise_ratio_with_blocked_effect(preds, target)
+        >>> peak_signal_noise_ratio_with_blocked_effect(preds, target, data_range=1.0)
         tensor(7.8402)
 
     """
-    data_range = target.max() - target.min()
+    if isinstance(data_range, tuple):
+        preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
+        target = torch.clamp(target, min=data_range[0], max=data_range[1])
+        data_range_val = tensor(data_range[1] - data_range[0])
+    else:
+        data_range_val = tensor(float(data_range))
+
     sum_squared_error, bef, num_obs = _psnrb_update(preds, target, block_size=block_size)
-    return _psnrb_compute(sum_squared_error, bef, num_obs, data_range)
+    return _psnrb_compute(sum_squared_error, bef, num_obs, data_range_val)

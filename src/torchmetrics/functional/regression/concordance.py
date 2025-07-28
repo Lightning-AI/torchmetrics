@@ -18,6 +18,8 @@ from torchmetrics.functional.regression.pearson import _pearson_corrcoef_compute
 
 
 def _concordance_corrcoef_compute(
+    max_abs_dev_x: Tensor,
+    max_abs_dev_y: Tensor,
     mean_x: Tensor,
     mean_y: Tensor,
     var_x: Tensor,
@@ -26,7 +28,7 @@ def _concordance_corrcoef_compute(
     nb: Tensor,
 ) -> Tensor:
     """Compute the final concordance correlation coefficient based on accumulated statistics."""
-    pearson = _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)
+    pearson = _pearson_corrcoef_compute(max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, nb)
     var_x = var_x / (nb - 1)
     var_y = var_y / (nb - 1)
     return 2.0 * pearson * var_x.sqrt() * var_y.sqrt() / (var_x + var_y + (mean_x - mean_y) ** 2)
@@ -64,7 +66,18 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
-    mean_x, mean_y, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
-        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
+    max_abs_dev_x, max_abs_dev_y = _temp.clone(), _temp.clone()
+    mean_x, mean_y, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
+        preds=preds,
+        target=target,
+        mean_x=mean_x,
+        mean_y=mean_y,
+        max_abs_dev_x=max_abs_dev_x,
+        max_abs_dev_y=max_abs_dev_y,
+        var_x=var_x,
+        var_y=var_y,
+        corr_xy=corr_xy,
+        num_prior=nb,
+        num_outputs=1 if preds.ndim == 1 else preds.shape[-1],
     )
-    return _concordance_corrcoef_compute(mean_x, mean_y, var_x, var_y, corr_xy, nb)
+    return _concordance_corrcoef_compute(max_abs_dev_x, max_abs_dev_y, mean_x, mean_y, var_x, var_y, corr_xy, nb)

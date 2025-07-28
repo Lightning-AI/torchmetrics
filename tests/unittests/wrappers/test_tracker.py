@@ -172,23 +172,23 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
 
     with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
         best = tracker.best_metric()
-        if isinstance(best, dict):
-            assert best["MulticlassAccuracy"] is not None
-            assert best["MulticlassConfusionMatrix"] is None
-        else:
-            assert best is None
+    if isinstance(best, dict):
+        assert best["MulticlassAccuracy"] is not None
+        assert best["MulticlassConfusionMatrix"] is None
+    else:
+        assert best is None
 
     with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
         best, idx = tracker.best_metric(return_step=True)
 
-        if isinstance(best, dict):
-            assert best["MulticlassAccuracy"] is not None
-            assert best["MulticlassConfusionMatrix"] is None
-            assert idx["MulticlassAccuracy"] is not None
-            assert idx["MulticlassConfusionMatrix"] is None
-        else:
-            assert best is None
-            assert idx is None
+    if isinstance(best, dict):
+        assert best["MulticlassAccuracy"] is not None
+        assert best["MulticlassConfusionMatrix"] is None
+        assert idx["MulticlassAccuracy"] is not None
+        assert idx["MulticlassConfusionMatrix"] is None
+    else:
+        assert best is None
+        assert idx is None
 
 
 @pytest.mark.parametrize(
@@ -323,7 +323,7 @@ def test_best_metric_edge_cases():
 
     with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric"):
         best = tracker.best_metric()
-        assert best is None
+    assert best is None
 
     # Test with metric collection containing both well-defined and ill-defined metrics
     tracker = MetricTracker(
@@ -340,7 +340,7 @@ def test_best_metric_edge_cases():
 
     with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric"):
         best, idx = tracker.best_metric(return_step=True)
-        assert best["MulticlassConfusionMatrix"] is None
-        assert best["MulticlassAccuracy"] is not None
-        assert idx["MulticlassConfusionMatrix"] is None
-        assert idx["MulticlassAccuracy"] is not None
+    assert best["MulticlassConfusionMatrix"] is None
+    assert best["MulticlassAccuracy"] is not None
+    assert idx["MulticlassConfusionMatrix"] is None
+    assert idx["MulticlassAccuracy"] is not None
