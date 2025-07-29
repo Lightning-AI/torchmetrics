@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any
-from typing_extensions import Literal
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.image.vif import _vif_per_channel
 from torchmetrics.metric import Metric
@@ -32,7 +32,7 @@ class VisualInformationFidelity(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``vif-p`` (:class:`~torch.Tensor`): 
+    - ``vif-p`` (:class:`~torch.Tensor`):
         - If ``reduction='mean'`` (default), returns a Tensor mean VIF score.
         - If ``reduction='none'``, returns a tensor of shape ``(N,)`` with VIF values per sample.
 
@@ -99,5 +99,5 @@ class VisualInformationFidelity(Metric):
         """Compute VIF over state."""
         if self.reduction == "mean":
             return self.vif_score / self.total
-        else:  # reduction == "none"
-            return dim_zero_cat(self.vif_score)
+        # reduction == "none"
+        return dim_zero_cat(self.vif_score)
