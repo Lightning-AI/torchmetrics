@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.image.vif import _vif_per_channel
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class VisualInformationFidelity(Metric):
@@ -30,10 +32,17 @@ class VisualInformationFidelity(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``vif-p`` (:class:`~torch.Tensor`): Tensor with vif-p score
+    - ``vif-p`` (:class:`~torch.Tensor`): 
+        - If ``reduction='mean'`` (default), returns a Tensor mean VIF score.
+        - If ``reduction='none'``, returns a tensor of shape ``(N,)`` with VIF values per sample.
 
     Args:
         sigma_n_sq: variance of the visual noise
+        reduction: The reduction method for aggregating scores.
+
+            - ``'mean'``: return the average VIF across the batch.
+            - ``'none'``: return a VIF score for each sample in the batch.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -41,7 +50,7 @@ class VisualInformationFidelity(Metric):
         >>> from torchmetrics.image import VisualInformationFidelity
         >>> preds = randn([32, 3, 41, 41])
         >>> target = randn([32, 3, 41, 41])
-        >>> vif = VisualInformationFidelity()
+        >>> vif = VisualInformationFidelity(reduction='mean')
         >>> vif(preds, target)
         tensor(0.0032)
 
@@ -54,18 +63,23 @@ class VisualInformationFidelity(Metric):
     vif_score: Tensor
     total: Tensor
 
-    def __init__(self, sigma_n_sq: float = 2.0, **kwargs: Any) -> None:
+    def __init__(self, sigma_n_sq: float = 2.0, reduction: Literal["mean", "none"] = "mean", **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        if not isinstance(sigma_n_sq, float) and not isinstance(sigma_n_sq, int):
+        if not isinstance(sigma_n_sq, (float, int)) or sigma_n_sq < 0:
             raise ValueError(f"Argument `sigma_n_sq` is expected to be a positive float or int, but got {sigma_n_sq}")
 
-        if sigma_n_sq < 0:
-            raise ValueError(f"Argument `sigma_n_sq` is expected to be a positive float or int, but got {sigma_n_sq}")
+        if reduction not in ("mean", "none"):
+            raise ValueError(f"Argument `reduction` must be 'mean' or 'none', but got {reduction}")
 
-        self.add_state("vif_score", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
         self.sigma_n_sq = sigma_n_sq
+        self.reduction = reduction
+
+        if self.reduction == "mean":
+            self.add_state("vif_score", default=tensor(0.0), dist_reduce_fx="sum")
+            self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
+        else:  # reduction == "none"
+            self.add_state("vif_score", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
@@ -74,9 +88,16 @@ class VisualInformationFidelity(Metric):
             _vif_per_channel(preds[:, i, :, :], target[:, i, :, :], self.sigma_n_sq) for i in range(channels)
         ]
         vif_per_channel = torch.mean(torch.stack(vif_per_channel), 0) if channels > 1 else torch.cat(vif_per_channel)
-        self.vif_score += torch.sum(vif_per_channel)
-        self.total += preds.shape[0]
+
+        if self.reduction == "mean":
+            self.vif_score += torch.sum(vif_per_channel)
+            self.total += preds.shape[0]
+        else:  # reduction == "none"
+            self.vif_score.append(vif_per_channel)
 
     def compute(self) -> Tensor:
-        """Compute vif-p over state."""
-        return self.vif_score / self.total
+        """Compute VIF over state."""
+        if self.reduction == "mean":
+            return self.vif_score / self.total
+        else:  # reduction == "none"
+            return dim_zero_cat(self.vif_score)
