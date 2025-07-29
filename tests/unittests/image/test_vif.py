@@ -65,6 +65,7 @@ class TestVIF(MetricTester):
 
 
 def test_vif_reduction_none():
+        """Test that VIF metric returns correct output when `reduction=None`."""
     pred = torch.rand(2, 3, 256, 256)
     target = torch.rand(2, 3, 256, 256)
     metric = VisualInformationFidelity(reduction="none")
