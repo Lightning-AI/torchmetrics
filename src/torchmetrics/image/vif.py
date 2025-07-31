@@ -74,12 +74,7 @@ class VisualInformationFidelity(Metric):
 
         self.sigma_n_sq = sigma_n_sq
         self.reduction = reduction
-
-        if self.reduction == "mean":
-            self.add_state("vif_score", default=tensor(0.0), dist_reduce_fx="sum")
-            self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
-        else:  # reduction == "none"
-            self.add_state("vif_score", default=[], dist_reduce_fx=None)
+        self.add_state("vif_score", default=tensor([]), dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
