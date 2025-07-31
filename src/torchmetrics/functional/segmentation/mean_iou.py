@@ -50,8 +50,8 @@ def _mean_iou_validate_args(
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
 ) -> None:
     """Validate the arguments of the metric."""
-    if input_format in ["index", "mixed"] and num_classes is None:
-        raise ValueError("Argument `num_classes` must be provided when `input_format` is 'index' or 'mixed'.")
+    if input_format in ["index"] and num_classes is None:
+        raise ValueError("Argument `num_classes` must be provided when `input_format` is 'index'.")
     if num_classes is not None and num_classes <= 0:
         raise ValueError(
             f"Expected argument `num_classes` must be `None` or a positive integer, but got {num_classes}."
@@ -110,7 +110,8 @@ def mean_iou(
     Args:
         preds: Predictions from model
         target: Ground truth values
-        num_classes: Number of classes (required when input_format="index", optional when input_format="one-hot")
+        num_classes: Number of classes
+            (required when input_format="index", optional when input_format="one-hot" or "mixed")
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately, else average over all classes
         input_format: What kind of input the function receives.
