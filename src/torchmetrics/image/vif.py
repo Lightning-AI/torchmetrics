@@ -19,7 +19,6 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.image.vif import _vif_per_channel
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.data import dim_zero_cat
 
 
 class VisualInformationFidelity(Metric):
