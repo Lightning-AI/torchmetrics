@@ -53,8 +53,8 @@ class MeanIoU(Metric):
           set to ``False``, the output will be a scalar tensor.
 
     Args:
-        num_classes: The number of classes in the segmentation problem. Required when input_format="index" or "mixed",
-            optional when input_format="one-hot".
+        num_classes: The number of classes in the segmentation problem. Required when input_format="index",
+            optional when input_format="one-hot" or "mixed".
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately. If set to ``False``, the metric will
             compute the mean IoU over all classes.
@@ -67,7 +67,7 @@ class MeanIoU(Metric):
         ValueError:
             If ``num_classes`` is not ``None`` or a positive integer
         ValueError:
-            If ``num_classes`` is not provided when ``input_format`` is ``"index"`` or ``"mixed"``
+            If ``num_classes`` is not provided when ``input_format`` is ``"index"``
         ValueError:
             If ``include_background`` is not a boolean
         ValueError:
@@ -132,7 +132,20 @@ class MeanIoU(Metric):
         """Update the state with the new data."""
         if not self._is_initialized:
             try:
-                self.num_classes = preds.shape[1]
+                if self.input_format == "one-hot":
+                    self.num_classes = preds.shape[1]
+                elif self.input_format == "mixed":
+                    if preds.dim() == (target.dim() + 1):
+                        self.num_classes = preds.shape[1]
+                    elif (preds.dim() + 1) == target.dim():
+                        self.num_classes = target.shape[1]
+                    else:
+                        raise ValueError(
+                            "Predictions and targets are expected to have the same shape,",
+                            f"got {preds.shape} and {target.shape}.",
+                        )
+                else:
+                    raise ValueError("Argument `num_classes` must be provided when `input_format` is 'index'.")
             except IndexError as err:
                 raise IndexError(f"Cannot determine `num_classes` from `preds` tensor: {preds}.") from err
 

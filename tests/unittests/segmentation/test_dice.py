@@ -28,6 +28,7 @@ from unittests.segmentation.inputs import (
     _index_input_2,
     _mixed_input_1,
     _mixed_input_2,
+    _mixed_logits_input,
     _one_hot_input_1,
     _one_hot_input_2,
 )
@@ -76,6 +77,7 @@ def _reference_dice_score(
         (_index_input_2.preds, _index_input_2.target, "index"),
         (_mixed_input_1.preds, _mixed_input_1.target, "mixed"),
         (_mixed_input_2.preds, _mixed_input_2.target, "mixed"),
+        (_mixed_logits_input.preds, _mixed_logits_input.target, "mixed"),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])

@@ -17,8 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.segmentation.utils import _check_mixed_shape, _ignore_background
-from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.functional.segmentation.utils import _segmentation_inputs_format
 from torchmetrics.utilities.compute import _safe_divide
 
 
@@ -55,25 +54,7 @@ def _generalized_dice_update(
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
 ) -> Tuple[Tensor, Tensor]:
     """Update the state with the current prediction and target."""
-    if input_format == "mixed":
-        _check_mixed_shape(preds, target)
-    else:
-        _check_same_shape(preds, target)
-
-    if input_format == "index":
-        preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
-        target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
-    elif input_format == "mixed":
-        if preds.dim() == (target.dim() + 1):
-            target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
-        elif (preds.dim() + 1) == target.dim():
-            preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
-
-    if preds.ndim < 3:
-        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
-
-    if not include_background:
-        preds, target = _ignore_background(preds, target)
+    preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
 
     reduce_axis = list(range(2, target.ndim))
     intersection = torch.sum(preds * target, dim=reduce_axis)
