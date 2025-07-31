@@ -142,7 +142,7 @@ class MeanIoU(Metric):
                     else:
                         raise ValueError(
                             "Predictions and targets are expected to have the same shape,",
-                            f"got {preds.shape} and {target.shape}."
+                            f"got {preds.shape} and {target.shape}.",
                         )
                 else:
                     raise ValueError("Argument `num_classes` must be provided when `input_format` is 'index'.")
