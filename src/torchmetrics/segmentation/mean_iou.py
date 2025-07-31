@@ -139,6 +139,13 @@ class MeanIoU(Metric):
                         self.num_classes = preds.shape[1]
                     elif (preds.dim() + 1) == target.dim():
                         self.num_classes = target.shape[1]
+                    else:
+                        raise ValueError(
+                            "Predictions and targets are expected to have the same shape,",
+                            f"got {preds.shape} and {target.shape}."
+                        )
+                else:
+                    raise ValueError("Argument `num_classes` must be provided when `input_format` is 'index'.")
             except IndexError as err:
                 raise IndexError(f"Cannot determine `num_classes` from `preds` tensor: {preds}.") from err
 
