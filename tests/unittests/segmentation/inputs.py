@@ -48,3 +48,8 @@ _mixed_input_2 = _Input(
     preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
     target=to_one_hot(torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32))),
 )
+
+_mixed_logits_input = _Input(
+    preds=(torch.rand((NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)) * 12 - 6),
+    target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
+)
