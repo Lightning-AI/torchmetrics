@@ -14,8 +14,7 @@
 import torch
 from torch import Tensor
 from torch.nn.functional import conv2d
-
-from torchmetrics.utilities.distributed import reduce
+from typing_extensions import Literal
 
 
 def _filter(win_size: float, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
@@ -41,7 +40,9 @@ def _vif_per_channel(preds: Tensor, target: Tensor, sigma_n_sq: float) -> Tensor
 
     sigma_n_sq = torch.tensor(sigma_n_sq, dtype=dtype, device=device)
 
-    preds_vif, target_vif = torch.zeros(1, dtype=dtype, device=device), torch.zeros(1, dtype=dtype, device=device)
+    preds_vif = torch.zeros(preds.size(0), dtype=dtype, device=device)
+    target_vif = torch.zeros(preds.size(0), dtype=dtype, device=device)
+
     for scale in range(4):
         n = 2.0 ** (4 - scale) + 1
         kernel = _filter(n, n / 5, dtype=dtype, device=device)[None, None, :]
@@ -77,26 +78,45 @@ def _vif_per_channel(preds: Tensor, target: Tensor, sigma_n_sq: float) -> Tensor
         g[mask] = 0
         sigma_v_sq = torch.clamp(sigma_v_sq, min=eps)
 
-        preds_vif_scale = torch.log10(1.0 + (g**2.0) * sigma_target_sq / (sigma_v_sq + sigma_n_sq))
-        preds_vif = preds_vif + torch.sum(preds_vif_scale, dim=[1, 2, 3])
-        target_vif = target_vif + torch.sum(torch.log10(1.0 + sigma_target_sq / sigma_n_sq), dim=[1, 2, 3])
+        preds_vif += torch.sum(torch.log10(1.0 + (g**2) * sigma_target_sq / (sigma_v_sq + sigma_n_sq)), dim=[1, 2, 3])
+        target_vif += torch.sum(torch.log10(1.0 + sigma_target_sq / sigma_n_sq), dim=[1, 2, 3])
+
     return preds_vif / target_vif
 
 
-def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float = 2.0) -> Tensor:
-    """Compute Pixel Based Visual Information Fidelity (VIF_).
+def visual_information_fidelity(
+    preds: Tensor,
+    target: Tensor,
+    sigma_n_sq: float = 2.0,
+    reduction: Literal["mean", "none"] = "mean",
+) -> Tensor:
+    """Compute Pixel-Based Visual Information Fidelity (VIF-P).
+
+    VIF is a full-reference metric that measures the amount of visual information
+    preserved in a distorted image compared to the reference image.
 
     Args:
-        preds: predicted images of shape ``(N,C,H,W)``. ``(H, W)`` has to be at least ``(41, 41)``.
-        target: ground truth images of shape ``(N,C,H,W)``. ``(H, W)`` has to be at least ``(41, 41)``
-        sigma_n_sq: variance of the visual noise
+        preds: Predicted images of shape (N, C, H, W). Height and width must be at least 41.
+        target: Ground truth images of shape (N, C, H, W). Must match preds in shape.
+        sigma_n_sq: Variance of the visual noise. Default: 2.0.
+        reduction: Method for reducing the metric across the batch.
+            - "mean": Return a tensor average over the batch.
+            - "none": Return a VIF score for each sample as a 1D tensor of shape (N,).
 
-    Return:
-        Tensor with vif-p score
+    Returns:
+        Tensor containing the VIF score(s):
+            - A tensor with single average value if reduction="mean"
+            - A tensor of shape (N,) if reduction="none"
 
     Raises:
-        ValueError:
-            If predicted or ground truth image shape is not at least ``(41, 41)``
+        ValueError: If input dimensions are smaller than (41, 41) or shapes mismatch.
+
+    Example:
+        >>> from torch import randn
+        >>> preds = randn(8, 3, 41, 41)
+        >>> target = randn(8, 3, 41, 41)
+        >>> visual_information_fidelity(preds, target, reduction="none").shape
+        torch.Size([8])
 
     """
     # This code is inspired by
@@ -111,5 +131,15 @@ def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float
             f"Invalid size of target. Expected at least 41x41, but got {target.size(-1)}x{target.size(-2)}!"
         )
 
-    per_channel = [_vif_per_channel(preds[:, i, :, :], target[:, i, :, :], sigma_n_sq) for i in range(preds.size(1))]
-    return reduce(torch.cat(per_channel), "elementwise_mean")
+    if preds.shape != target.shape:
+        raise ValueError(f"`preds` and `target` must have the same shape, but got {preds.shape} vs {target.shape}.")
+
+    per_channel_scores = [
+        _vif_per_channel(preds[:, i, :, :], target[:, i, :, :], sigma_n_sq) for i in range(preds.size(1))
+    ]
+
+    vif_per_sample = torch.stack(per_channel_scores, dim=0).mean(0) if preds.size(1) > 1 else per_channel_scores[0]
+
+    if reduction == "mean":
+        return vif_per_sample.mean()
+    return vif_per_sample
