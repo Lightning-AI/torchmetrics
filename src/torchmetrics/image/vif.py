@@ -88,12 +88,7 @@ class VisualInformationFidelity(Metric):
             _vif_per_channel(preds[:, i, :, :], target[:, i, :, :], self.sigma_n_sq) for i in range(channels)
         ]
         vif_per_channel = torch.mean(torch.stack(vif_per_channel), 0) if channels > 1 else torch.cat(vif_per_channel)
-
-        if self.reduction == "mean":
-            self.vif_score += torch.sum(vif_per_channel)
-            self.total += preds.shape[0]
-        else:  # reduction == "none"
-            self.vif_score.append(vif_per_channel)
+        self.vif_score = torch.cat([self.vif_score, vif_per_channel])
 
     def compute(self) -> Tensor:
         """Compute VIF over state."""
