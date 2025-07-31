@@ -98,6 +98,5 @@ class VisualInformationFidelity(Metric):
     def compute(self) -> Tensor:
         """Compute VIF over state."""
         if self.reduction == "mean":
-            return self.vif_score / self.total
-        # reduction == "none"
-        return dim_zero_cat(self.vif_score)
+            return self.vif_score.mean()
+        return self.vif_score
