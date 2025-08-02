@@ -71,3 +71,12 @@ def test_vif_reduction_none():
     metric = VisualInformationFidelity(reduction="none")
     result = metric(pred, target)
     assert result.shape == (2,)
+
+
+def test_vif_functional_reduction_none():
+    """Test that functional VIF returns correct output when `reduction='none'`."""
+    pred = torch.rand(4, 3, 64, 64)
+    target = torch.rand(4, 3, 64, 64)
+    result = visual_information_fidelity(pred, target, reduction="none")
+    assert result.shape == (4,)
+    assert torch.isfinite(result).all()
