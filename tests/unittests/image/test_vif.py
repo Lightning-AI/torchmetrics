@@ -62,3 +62,21 @@ class TestVIF(MetricTester):
         self.run_functional_metric_test(
             preds, target, metric_functional=visual_information_fidelity, reference_metric=_reference_sewar_vif
         )
+
+
+def test_vif_reduction_none():
+    """Test that VIF metric returns correct output when `reduction=None`."""
+    pred = torch.rand(2, 3, 256, 256)
+    target = torch.rand(2, 3, 256, 256)
+    metric = VisualInformationFidelity(reduction="none")
+    result = metric(pred, target)
+    assert result.shape == (2,)
+
+
+def test_vif_functional_reduction_none():
+    """Test that functional VIF returns correct output when `reduction='none'`."""
+    pred = torch.rand(4, 3, 64, 64)
+    target = torch.rand(4, 3, 64, 64)
+    result = visual_information_fidelity(pred, target, reduction="none")
+    assert result.shape == (4,)
+    assert torch.isfinite(result).all()
