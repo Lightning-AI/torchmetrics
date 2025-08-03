@@ -104,14 +104,14 @@ def visual_information_fidelity(
             - "none": Return a VIF score for each sample as a 1D tensor of shape (N,).
 
     Returns:
-        Tensor containing the VIF score(s):
-            - A tensor with single average value if reduction="mean"
-            - A tensor of shape (N,) if reduction="none"
+        torch.Tensor: VIF score(s). The shape depends on the `reduction` argument:
+            - If ``reduction="mean"``, returns a scalar tensor.
+            - If ``reduction="none"``, returns a tensor of shape ``(N,)``.
 
     Raises:
-        ValueError: If input dimensions are smaller than (41, 41).
-        ValueError: If `preds` and `target` shapes don't match.
-        ValueError: If `reduction` is not 'mean' or 'none'.
+        ValueError: If input dimensions are smaller than ``41x41``.
+        ValueError: If ``preds`` and ``target`` shapes don't match.
+        ValueError: If ``reduction`` is not ``"mean"`` or ``"none"``.
 
     Example:
         >>> from torchmetrics.functional.image import visual_information_fidelity
