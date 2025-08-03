@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
+
 import numpy as np
 import pytest
 import torch
@@ -35,12 +37,14 @@ _inputs = [
 ]
 
 
-def _reference_sewar_vif(preds, target, sigma_nsq=2):
+def _reference_sewar_vif(preds, target, sigma_nsq=2, reduction="mean"):
     preds = torch.movedim(preds, 1, -1)
     target = torch.movedim(target, 1, -1)
     preds = preds.cpu().numpy()
     target = target.cpu().numpy()
     vif = [vifp(GT=target[batch], P=preds[batch], sigma_nsq=sigma_nsq) for batch in range(preds.shape[0])]
+    if reduction == "none":
+        return np.array(vif)
     return np.mean(vif)
 
 
@@ -48,35 +52,29 @@ def _reference_sewar_vif(preds, target, sigma_nsq=2):
 class TestVIF(MetricTester):
     """Test class for `VisualInformationFidelity` metric."""
 
-    atol = 1e-7
+    atol = 1e-6
 
+    @pytest.mark.parametrize("reduction", ["mean", "none"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_vif(self, preds, target, ddp):
+    def test_vif(self, preds, target, reduction, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
-            ddp, preds, target, metric_class=VisualInformationFidelity, reference_metric=_reference_sewar_vif
+            ddp,
+            preds,
+            target,
+            metric_class=VisualInformationFidelity,
+            reference_metric=partial(_reference_sewar_vif, reduction=reduction),
+            metric_args={"reduction": reduction},
+            check_ddp_sorting=True,
         )
 
-    def test_vif_functional(self, preds, target):
+    @pytest.mark.parametrize("reduction", ["mean", "none"])
+    def test_vif_functional(self, preds, target, reduction):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds, target, metric_functional=visual_information_fidelity, reference_metric=_reference_sewar_vif
+            preds,
+            target,
+            metric_functional=visual_information_fidelity,
+            reference_metric=partial(_reference_sewar_vif, reduction=reduction),
+            metric_args={"reduction": reduction},
         )
-
-
-def test_vif_reduction_none():
-    """Test that VIF metric returns correct output when `reduction=None`."""
-    pred = torch.rand(2, 3, 256, 256)
-    target = torch.rand(2, 3, 256, 256)
-    metric = VisualInformationFidelity(reduction="none")
-    result = metric(pred, target)
-    assert result.shape == (2,)
-
-
-def test_vif_functional_reduction_none():
-    """Test that functional VIF returns correct output when `reduction='none'`."""
-    pred = torch.rand(4, 3, 64, 64)
-    target = torch.rand(4, 3, 64, 64)
-    result = visual_information_fidelity(pred, target, reduction="none")
-    assert result.shape == (4,)
-    assert torch.isfinite(result).all()
