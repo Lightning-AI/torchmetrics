@@ -556,7 +556,7 @@ class MetricTester:
             "check_picklable": check_picklable,
             "check_ddp_sorting": check_ddp_sorting,
         }
-        
+
         print(f"preds shape: {preds.shape}, target shape: {target.shape}")
         if ddp and hasattr(pytest, "pool"):
             if sys.platform == "win32":
