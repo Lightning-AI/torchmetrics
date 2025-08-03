@@ -78,7 +78,7 @@ def _vif_per_channel(preds: Tensor, target: Tensor, sigma_n_sq: float) -> Tensor
         g[mask] = 0
         sigma_v_sq = torch.clamp(sigma_v_sq, min=eps)
 
-        preds_vif += torch.sum(torch.log10(1.0 + (g**2) * sigma_target_sq / (sigma_v_sq + sigma_n_sq)), dim=[1, 2, 3])
+        preds_vif += torch.sum(torch.log10(1.0 + (g**2.0) * sigma_target_sq / (sigma_v_sq + sigma_n_sq)), dim=[1, 2, 3])
         target_vif += torch.sum(torch.log10(1.0 + sigma_target_sq / sigma_n_sq), dim=[1, 2, 3])
 
     return preds_vif / target_vif
@@ -109,14 +109,16 @@ def visual_information_fidelity(
             - A tensor of shape (N,) if reduction="none"
 
     Raises:
-        ValueError: If input dimensions are smaller than (41, 41) or shapes mismatch.
+        ValueError: If input dimensions are smaller than (41, 41).
+        ValueError: If `preds` and `target` shapes don't match.
+        ValueError: If `reduction` is not 'mean' or 'none'.
 
     Example:
-        >>> from torch import randn
-        >>> preds = randn(8, 3, 41, 41)
-        >>> target = randn(8, 3, 41, 41)
-        >>> visual_information_fidelity(preds, target, reduction="none").shape
-        torch.Size([8])
+        >>> from torchmetrics.functional.image import visual_information_fidelity
+        >>> preds = torch.randn(4, 3, 41, 41,generator=torch.Generator().manual_seed(42))
+        >>> target = torch.randn(4, 3, 41, 41,generator=torch.Generator().manual_seed(43))
+        >>> visual_information_fidelity(preds, target, reduction="none")
+        tensor([0.0040, 0.0049, 0.0017, 0.0039])
 
     """
     # This code is inspired by
@@ -133,6 +135,9 @@ def visual_information_fidelity(
 
     if preds.shape != target.shape:
         raise ValueError(f"`preds` and `target` must have the same shape, but got {preds.shape} vs {target.shape}.")
+
+    if reduction not in ("mean", "none"):
+            raise ValueError(f"Argument `reduction` must be 'mean' or 'none', but got {reduction}")
 
     per_channel_scores = [
         _vif_per_channel(preds[:, i, :, :], target[:, i, :, :], sigma_n_sq) for i in range(preds.size(1))
