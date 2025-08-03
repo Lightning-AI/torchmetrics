@@ -104,7 +104,7 @@ def _assert_allclose(
             tm_result_np = _sort_if_needed(tm_result_np)
             ref_result_np = _sort_if_needed(ref_result_np)
         assert np.allclose(
-            ref_result_np,
+            tm_result_np,
             ref_result_np,
             atol=atol,
             equal_nan=True,
