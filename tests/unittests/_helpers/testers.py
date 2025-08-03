@@ -557,7 +557,7 @@ class MetricTester:
             "check_ddp_sorting": check_ddp_sorting,
         }
 
-        if isinstance(preds, np.ndarray) or isinstance(preds, torch.Tensor):
+        if isinstance(preds, (np.ndarray, torch.Tensor)):
             print(f"preds shape: {preds.shape}, target shape: {target.shape}")
         if ddp and hasattr(pytest, "pool"):
             if sys.platform == "win32":
