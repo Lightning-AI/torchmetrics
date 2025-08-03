@@ -15,6 +15,7 @@ import torch
 from torch import Tensor
 from torch.nn.functional import conv2d
 from typing_extensions import Literal
+
 from torchmetrics.utilities.data import dim_zero_cat
 
 
@@ -144,7 +145,9 @@ def visual_information_fidelity(
         _vif_per_channel(preds[:, i, :, :], target[:, i, :, :], sigma_n_sq) for i in range(preds.size(1))
     ]
 
-    vif_per_sample = dim_zero_cat(torch.stack(per_channel_scores, dim=0).mean(0) if preds.size(1) > 1 else per_channel_scores[0])
+    vif_per_sample = dim_zero_cat(
+        torch.stack(per_channel_scores, dim=0).mean(0) if preds.size(1) > 1 else per_channel_scores[0]
+    )
 
     if reduction == "mean":
         return vif_per_sample.mean()
