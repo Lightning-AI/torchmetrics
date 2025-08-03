@@ -137,7 +137,7 @@ def visual_information_fidelity(
         raise ValueError(f"`preds` and `target` must have the same shape, but got {preds.shape} vs {target.shape}.")
 
     if reduction not in ("mean", "none"):
-            raise ValueError(f"Argument `reduction` must be 'mean' or 'none', but got {reduction}")
+        raise ValueError(f"Argument `reduction` must be 'mean' or 'none', but got {reduction}")
 
     per_channel_scores = [
         _vif_per_channel(preds[:, i, :, :], target[:, i, :, :], sigma_n_sq) for i in range(preds.size(1))
