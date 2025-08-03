@@ -19,6 +19,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.image.vif import _vif_per_channel
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 
 
 class VisualInformationFidelity(Metric):
@@ -86,6 +87,7 @@ class VisualInformationFidelity(Metric):
 
     def compute(self) -> Tensor:
         """Compute VIF over state."""
+        vif_score = dim_zero_cat(self.vif_score)
         if self.reduction == "mean":
-            return self.vif_score.mean()
-        return self.vif_score
+            return vif_score.mean()
+        return vif_score
