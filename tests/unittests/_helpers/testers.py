@@ -73,10 +73,10 @@ def _assert_allclose(
         if check_ddp_sorting:
             if tm_result_np.ndim != ref_result_np.ndim:
                 raise ValueError(
-                        f"Dimension mismatch between TorchMetrics and reference results: "
-                        f"TorchMetrics ndim={tm_result_np.ndim} (shape={tm_result_np.shape}, values={tm_result_np}), "
-                        f"Reference ndim={ref_result_np.ndim} (shape={ref_result_np.shape}, values={ref_result_np})"
-                    )
+                    f"Dimension mismatch between TorchMetrics and reference results: "
+                    f"TorchMetrics ndim={tm_result_np.ndim} (shape={tm_result_np.shape}, values={tm_result_np}), "
+                    f"Reference ndim={ref_result_np.ndim} (shape={ref_result_np.shape}, values={ref_result_np})"
+                )
 
             tm_result_np = _sort_if_needed(tm_result_np)
             ref_result_np = _sort_if_needed(ref_result_np)
