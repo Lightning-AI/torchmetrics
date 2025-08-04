@@ -126,7 +126,7 @@ def dice_score(
     target: Tensor,
     num_classes: int,
     include_background: bool = True,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
     aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
 ) -> Tensor:
