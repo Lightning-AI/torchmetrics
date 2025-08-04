@@ -60,7 +60,7 @@ class VisualInformationFidelity(Metric):
     higher_is_better = True
     full_state_update = False
 
-    vif_score: Tensor
+    vif_score: List[Tensor]
     total: Tensor
 
     def __init__(self, sigma_n_sq: float = 2.0, reduction: Literal["mean", "none"] = "mean", **kwargs: Any) -> None:
