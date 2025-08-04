@@ -38,6 +38,9 @@ else:
     class _FeatureExtractorInceptionV3(Module):  # type: ignore[no-redef]
         pass
 
+    class _FeatureExtractorDinoV2(Module):  # type: ignore[no-redef]
+        pass
+
     vassert = None
     interpolate_bilinear_2d_like_tensorflow1x = None
 
