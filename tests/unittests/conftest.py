@@ -13,6 +13,7 @@
 # limitations under the License.
 import contextlib
 import os
+import socket
 import sys
 
 import pytest
@@ -30,9 +31,6 @@ NUM_CLASSES = 5
 EXTRA_DIM = 3
 THRESHOLD = 0.5
 
-MAX_PORT = 8100
-START_PORT = 8088
-CURRENT_PORT = START_PORT
 USE_PYTEST_POOL = os.getenv("USE_PYTEST_POOL", "0") == "1"
 
 
@@ -42,6 +40,14 @@ def use_deterministic_algorithms():
     torch.use_deterministic_algorithms(True)
     yield
     torch.use_deterministic_algorithms(False)
+
+
+def get_free_port():
+    """Find an available free port on localhost."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("localhost", 0))  # Bind to a free port provided by the OS
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
 
 
 def setup_ddp(rank, world_size):
@@ -56,11 +62,8 @@ def setup_ddp(rank, world_size):
         world_size: the number of processes
 
     """
-    import random
-
-    port = random.randint(10000, 20000)  # noqa: S311
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(port)
+    os.environ["MASTER_PORT"] = str(get_free_port())
 
     if torch.distributed.group.WORLD is not None:  # if already initialized, destroy the process group
         torch.distributed.destroy_process_group()
