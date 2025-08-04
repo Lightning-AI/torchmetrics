@@ -74,7 +74,7 @@ class VisualInformationFidelity(Metric):
 
         self.sigma_n_sq = sigma_n_sq
         self.reduction = reduction
-        self.add_state("vif_score", default=tensor([]), dist_reduce_fx="cat")
+        self.add_state("vif_score", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
