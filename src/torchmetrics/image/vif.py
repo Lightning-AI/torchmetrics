@@ -15,6 +15,7 @@ from typing import Any
 
 import torch
 from torch import Tensor
+from typing import List
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.vif import _vif_per_channel
