@@ -117,8 +117,8 @@ def visual_information_fidelity(
 
     Example:
         >>> from torchmetrics.functional.image import visual_information_fidelity
-        >>> preds = torch.randn(4, 3, 41, 41,generator=torch.Generator().manual_seed(42))
-        >>> target = torch.randn(4, 3, 41, 41,generator=torch.Generator().manual_seed(43))
+        >>> preds = torch.randn(4, 3, 41, 41, generator=torch.Generator().manual_seed(42))
+        >>> target = torch.randn(4, 3, 41, 41, generator=torch.Generator().manual_seed(43))
         >>> visual_information_fidelity(preds, target, reduction="none")
         tensor([0.0040, 0.0049, 0.0017, 0.0039])
 

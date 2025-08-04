@@ -48,14 +48,17 @@ class VisualInformationFidelity(Metric):
     Example:
         >>> from torch import randn
         >>> from torchmetrics.image import VisualInformationFidelity
-        >>> preds = randn([32, 3, 41, 41])
-        >>> target = randn([32, 3, 41, 41])
-        >>> vif = VisualInformationFidelity(reduction='mean')
-        >>> vif(preds, target)
+        >>> preds = randn([32, 3, 41, 41], generator=torch.Generator().manual_seed(42))
+        >>> target = randn([32, 3, 41, 41], generator=torch.Generator().manual_seed(43))
+        >>> vif_mean = VisualInformationFidelity(reduction='mean')
+        >>> vif_mean(preds, target)
         tensor(0.0032)
-        >>> vif = VisualInformationFidelity(reduction='none')
-        >>> vif(preds, target)
-        tensor(0.0032)
+        >>> vif_none = VisualInformationFidelity(reduction='none')
+        >>> vif_none(preds, target)
+        tensor([0.0040, 0.0049, 0.0017, 0.0039, 0.0041, 0.0043, 0.0030, 0.0028, 0.0012,
+                0.0067, 0.0010, 0.0014, 0.0030, 0.0048, 0.0050, 0.0038, 0.0037, 0.0025,
+                0.0041, 0.0019, 0.0007, 0.0034, 0.0037, 0.0016, 0.0026, 0.0021, 0.0038,
+                0.0033, 0.0031, 0.0020, 0.0036, 0.0057])
 
     """
 
