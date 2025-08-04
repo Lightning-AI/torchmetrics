@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Defaulting Dice score `average="macro"` ([#3042](https://github.com/Lightning-AI/torchmetrics/pull/3042))
 
 
+- Float input support for segmentation metrics ([#3198](https://github.com/Lightning-AI/torchmetrics/pull/3198))
+
+
 ### Deprecated
 
 -
