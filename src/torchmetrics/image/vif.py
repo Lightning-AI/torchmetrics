@@ -53,6 +53,9 @@ class VisualInformationFidelity(Metric):
         >>> vif = VisualInformationFidelity(reduction='mean')
         >>> vif(preds, target)
         tensor(0.0032)
+        >>> vif = VisualInformationFidelity(reduction='none')
+        >>> vif(preds, target)
+        tensor(0.0032)
 
     """
 
