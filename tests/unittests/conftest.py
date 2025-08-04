@@ -56,14 +56,11 @@ def setup_ddp(rank, world_size):
         world_size: the number of processes
 
     """
-    global CURRENT_PORT
+    import random
 
+    port = random.randint(10000, 20000)  # noqa: S311
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(CURRENT_PORT)
-
-    CURRENT_PORT += 1
-    if CURRENT_PORT > MAX_PORT:
-        CURRENT_PORT = START_PORT
+    os.environ["MASTER_PORT"] = str(port)
 
     if torch.distributed.group.WORLD is not None:  # if already initialized, destroy the process group
         torch.distributed.destroy_process_group()
