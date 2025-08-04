@@ -27,7 +27,7 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
-from unittests.conftest import setup_ddp
+from unittests.conftest import get_free_port, setup_ddp
 
 seed_all(42)
 
@@ -106,9 +106,9 @@ def test_ddp(process):
     pytest.pool.map(process, range(NUM_PROCESSES))
 
 
-def _test_ddp_gather_all_autograd_same_shape(rank: int, worldsize: int = NUM_PROCESSES) -> None:
+def _test_ddp_gather_all_autograd_same_shape(rank: int, worldsize: int, port: int) -> None:
     """Test that ddp gather preserves local rank's autograd graph for same-shaped tensors across ranks."""
-    setup_ddp(rank, worldsize)
+    setup_ddp(rank, worldsize, port)
     x = (rank + 1) * torch.ones(10, requires_grad=True)
 
     # random linear transformation, it should really not matter what we do here
@@ -121,9 +121,9 @@ def _test_ddp_gather_all_autograd_same_shape(rank: int, worldsize: int = NUM_PRO
     assert torch.allclose(grad, a * torch.ones_like(x))
 
 
-def _test_ddp_gather_all_autograd_different_shape(rank: int, worldsize: int = NUM_PROCESSES) -> None:
+def _test_ddp_gather_all_autograd_different_shape(rank: int, worldsize: int, port: int) -> None:
     """Test that ddp gather preserves local rank's autograd graph for differently-shaped tensors across ranks."""
-    setup_ddp(rank, worldsize)
+    setup_ddp(rank, worldsize, port)
     x = (rank + 1) * torch.ones(rank + 1, 2 - rank, requires_grad=True)
 
     # random linear transformation, it should really not matter what we do here
@@ -144,7 +144,8 @@ def _test_ddp_gather_all_autograd_different_shape(rank: int, worldsize: int = NU
 )
 def test_ddp_autograd(process):
     """Test ddp functions for autograd compatibility."""
-    pytest.pool.map(process, range(NUM_PROCESSES))
+    port = get_free_port()
+    pytest.pool.starmap(process, [(rank, NUM_PROCESSES, port) for rank in range(NUM_PROCESSES)])
 
 
 def _test_non_contiguous_tensors(rank):

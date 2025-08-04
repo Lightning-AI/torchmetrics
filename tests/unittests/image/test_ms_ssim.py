@@ -24,8 +24,7 @@ from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-from unittests.conftest import get_free_port
-from unittests.image import cleanup_ddp, setup_ddp
+from unittests.conftest import cleanup_ddp, get_free_port, setup_ddp
 
 seed_all(42)
 
