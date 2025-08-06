@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
-import sys
 from collections.abc import Sequence
 from copy import deepcopy
 from functools import partial
@@ -27,6 +26,7 @@ from torch import Tensor, tensor
 from torchmetrics import Metric
 from torchmetrics.utilities.data import _flatten
 from unittests import NUM_PROCESSES, _reference_cachier
+from unittests._helpers import _IS_WINDOWS
 
 
 def _sort_if_needed(arr: np.ndarray) -> np.ndarray:
@@ -557,7 +557,7 @@ class MetricTester:
         }
 
         if ddp and hasattr(pytest, "pool"):
-            if sys.platform == "win32":
+            if _IS_WINDOWS:
                 pytest.skip("DDP not supported on windows")
             pytest.pool.starmap(
                 partial(_class_test, **common_kwargs, **kwargs_update),
