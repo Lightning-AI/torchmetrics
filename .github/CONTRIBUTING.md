@@ -60,6 +60,9 @@ To build the documentation locally, simply execute the following commands from p
 - `make docs` builds documentation under _docs/build/html_
 - `make test` runs all project's tests with coverage
 
+By default all make commands will use `python`/`pip` but if you are using [uv](https://docs.astral.sh/uv/)
+as your dependency manager, you can instead run `make USE_UV=1 clean` etc. to use `uv` under the hood.
+
 ### Original code
 
 All added or edited code shall be the own original work of the particular contributor.
