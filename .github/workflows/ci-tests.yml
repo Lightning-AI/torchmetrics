@@ -190,7 +190,7 @@ jobs:
         if: ${{ env.TEST_DIRS != '' && matrix.testing == 'common' }}
         working-directory: ./tests
         run: |
-          python -m pytest \
+          pytest \
             $TEST_DIRS \
             --cov=torchmetrics \
             --durations=50 \
@@ -208,7 +208,7 @@ jobs:
         env:
           USE_PYTEST_POOL: "1"
         run: |
-          python -m pytest -v \
+          pytest -v \
             $TEST_DIRS \
             --cov=torchmetrics \
             --durations=50 \
