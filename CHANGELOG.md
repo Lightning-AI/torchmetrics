@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed unintended `sigmoid` normalization in `BinaryPrecisionRecallCurve`, which might cause incorrect ROC computation when updating incrementally with raw logits. ([#3179](https://github.com/Lightning-AI/torchmetrics/pull/3179)). This fix will only take effect when setting `disable_softmax` to False (defaults to True for compatibility).
+- Fixed unintended `sigmoid` normalization in `BinaryPrecisionRecallCurve` ([#3182](https://github.com/Lightning-AI/torchmetrics/pull/3182))
 
 
 ---
