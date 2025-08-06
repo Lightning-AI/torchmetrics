@@ -42,7 +42,6 @@ lint.extend-select = [
   "YTT",  # see: https://pypi.org/project/flake8-2020
 ]
 lint.ignore = [
-  "ANN101", # Missing type annotation for `self` in method
   "D100",   # todo: Missing docstring in public module
   "D104",   # todo: Missing docstring in public package
   "D107",   # Missing docstring in `__init__`
