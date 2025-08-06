@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 from functools import partial
 
 import pytest
@@ -23,6 +22,7 @@ from torchmetrics.collections import MetricCollection
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, PearsonCorrCoef
 from torchmetrics.wrappers import Running
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL
+from unittests._helpers import _IS_WINDOWS
 
 
 def test_errors_on_wrong_input():
@@ -144,7 +144,7 @@ def _test_ddp_running(rank, dist_sync_on_step, expected):
 
 
 @pytest.mark.DDP
-@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not available on windows")
 @pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 @pytest.mark.parametrize(("dist_sync_on_step", "expected"), [(False, 1), (True, 2)])
 def test_ddp_running(dist_sync_on_step, expected):
