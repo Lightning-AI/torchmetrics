@@ -284,3 +284,34 @@ def test_corner_cases():
     pearson_corr = PearsonCorrCoef(num_outputs=4)
     result = pearson_corr(y_pred, y_true)
     assert torch.allclose(result, torch.tensor([-1.0, 1.0, float("nan"), float("nan")]), equal_nan=True)
+
+
+@pytest.mark.parametrize("num_outputs", [1, 2, 3])
+def test_pearson_update_shape(num_outputs: int):
+    """Test that the shape of the update is correct."""
+
+    def _assert_shapes(metric):
+        assert metric.mean_x.shape == (num_outputs,)
+        assert metric.mean_y.shape == (num_outputs,)
+        assert metric.max_abs_dev_x.shape == (num_outputs,)
+        assert metric.max_abs_dev_y.shape == (num_outputs,)
+        assert metric.var_x.shape == (num_outputs,)
+        assert metric.var_y.shape == (num_outputs,)
+        assert metric.corr_xy.shape == (num_outputs,)
+        assert metric.n_total.shape == (num_outputs,)
+
+    preds = torch.randn(num_outputs)
+    target = torch.randn(num_outputs)
+    metric = PearsonCorrCoef(num_outputs=num_outputs)
+    metric.update(preds, target)
+    _assert_shapes(metric)
+
+    preds_additional_dim = torch.randn(1, num_outputs)
+    target_additional_dim = torch.randn(1, num_outputs)
+    metric.update(preds_additional_dim, target_additional_dim)
+    _assert_shapes(metric)
+
+    preds_multi = torch.randn(10, num_outputs)
+    target_multi = torch.randn(10, num_outputs)
+    metric.update(preds_multi, target_multi)
+    _assert_shapes(metric)

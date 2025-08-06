@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 from functools import partial
 from typing import Callable
 
@@ -21,7 +20,12 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
-from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_RANGE_LT_4_50_LE_4_53
+from unittests._helpers import (
+    _IS_WINDOWS,
+    _TORCH_LESS_THAN_2_1,
+    _TRANSFORMERS_GREATER_EQUAL_4_54,
+    _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
+)
 
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
@@ -283,7 +287,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="error relative global dimensionless synthesis",
         ),
         pytest.param(
-            PeakSignalNoiseRatio,
+            partial(PeakSignalNoiseRatio, data_range=3.0),
             lambda: torch.tensor([[0.0, 1.0], [2.0, 3.0]]),
             lambda: torch.tensor([[3.0, 2.0], [1.0, 0.0]]),
             id="peak signal noise ratio",
@@ -645,13 +649,20 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _text_input_1,
             _text_input_2,
             id="info lm",
-            marks=pytest.mark.xfail(
-                RuntimeError,
-                # todo: if the transformers compatibility issue present in next feature release,
-                #  consider bumping also torch min versions in the metrics implementations
-                condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
-                reason="could be due to torch compatibility issues with transformers",
-            ),
+            marks=[
+                pytest.mark.xfail(
+                    RuntimeError,
+                    # todo: if the transformers compatibility issue present in next feature release,
+                    #  consider bumping also torch min versions in the metrics implementations
+                    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
+                    reason="could be due to torch compatibility issues with transformers",
+                ),
+                pytest.mark.xfail(
+                    ImportError,
+                    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+                    reason="another strange behaviour of transformers on windows",
+                ),
+            ],
         ),
         pytest.param(Perplexity, lambda: torch.rand(2, 8, 5), lambda: torch.randint(5, (2, 8)), id="perplexity"),
         pytest.param(ROUGEScore, lambda: "My name is John", lambda: "Is your name John", id="rouge score"),
@@ -771,12 +782,12 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
     plt.close(fig)
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on windows")
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not supported on windows")
 @pytest.mark.xfail(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
 )
 def test_plot_methods_special_text_metrics():

@@ -19,7 +19,13 @@ import torch
 from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
-from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_RANGE_LT_4_50_LE_4_53, skip_on_connection_issues
+from unittests._helpers import (
+    _IS_WINDOWS,
+    _TORCH_LESS_THAN_2_1,
+    _TRANSFORMERS_GREATER_EQUAL_4_54,
+    _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
+    skip_on_connection_issues,
+)
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
@@ -101,9 +107,15 @@ def _reference_infolm_score(preds, target, model_name, information_measure, idf,
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_53,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
 )
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
+)
+@skip_on_connection_issues()
 class TestInfoLM(TextTester):
     """Test class for `InfoLM` metric."""
 
@@ -112,7 +124,6 @@ class TestInfoLM(TextTester):
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.timeout(240)  # download may be too slow for default timeout
-    @skip_on_connection_issues()
     def test_infolm_class(self, ddp, preds, targets, information_measure, idf, alpha, beta):
         """Test class implementation of metric."""
         metric_args = {
@@ -142,7 +153,6 @@ class TestInfoLM(TextTester):
             check_scriptable=False,  # huggingface transformers are not usually scriptable
         )
 
-    @skip_on_connection_issues()
     def test_infolm_functional(self, preds, targets, information_measure, idf, alpha, beta):
         """Test functional implementation of metric."""
         metric_args = {
@@ -170,7 +180,6 @@ class TestInfoLM(TextTester):
             metric_args=metric_args,
         )
 
-    @skip_on_connection_issues()
     def test_infolm_differentiability(self, preds, targets, information_measure, idf, alpha, beta):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
@@ -190,7 +199,6 @@ class TestInfoLM(TextTester):
             metric_args=metric_args,
         )
 
-    @skip_on_connection_issues()
     def test_infolm_higher_is_better_property(self, preds, targets, information_measure, idf, alpha, beta):
         """Test the `higher_is_better` property of the metric."""
         metric_args = {

@@ -17,6 +17,7 @@ Leads
 
 Core Maintainers
 ----------------
+- Rittik Panda (`rittik9 <https://github.com/rittik9>`_)
 - Bas Krahmer (`baskrahmer <https://github.com/baskrahmer>`_)
 - Shion Matsumoto (`matsumotosan <https://github.com/matsumotosan>`_)
 
