@@ -58,26 +58,46 @@ RUN \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get install -y \
         python${PYTHON_VERSION} \
-        python${PYTHON_VERSION}-distutils \
         python${PYTHON_VERSION}-dev \
+        python${PYTHON_VERSION}-venv \
     && \
-    update-alternatives --install /usr/bin/python${PYTHON_VERSION%%.*} python${PYTHON_VERSION%%.*} /usr/bin/python${PYTHON_VERSION} 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1 && \
-    curl https://bootstrap.pypa.io/get-pip.py | python && \
+    # Handle distutils differently based on Python version
+    if dpkg --compare-versions "$PYTHON_VERSION" lt "3.10"; then \
+        apt-get install -y python${PYTHON_VERSION}-distutils; \
+    fi && \
     # Cleaning
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /root/.cache && \
     rm -rf /var/lib/apt/lists/*
 
-ENV PYTHONPATH="/usr/lib/python${PYTHON_VERSION}/site-packages"
+RUN python${PYTHON_VERSION} -m venv /opt/venv
+
+ENV PATH="/opt/venv/bin:$PATH"
+
+# ─── Patch pkgutil only on Python 3.12+ ───
+RUN printf '%s\n' \
+    'import sys' \
+    'if sys.version_info >= (3, 12):' \
+    '    import sysconfig, zipimport' \
+    '    stdlib = sysconfig.get_path("stdlib")' \
+    '    target = f"{stdlib}/pkgutil.py"' \
+    '    with open(target, "a") as f:' \
+    '        f.write("""' \
+    '# Back-port ImpImporter for Python 3.12+' \
+    'class ImpImporter(zipimport.zipimporter):' \
+    '    pass' \
+    '""")' \
+    > /tmp/patch_pkgutil.py && \
+    python /tmp/patch_pkgutil.py && \
+    rm /tmp/patch_pkgutil.py
 
 COPY requirements/ requirements/
 COPY .github/assistant.py ./assistant.py
 
 RUN \
-    # set particular PyTorch version
-    pip install -q wget packaging "setuptools==69.5.1" && \
+    # set particular PyTorch version and requirements for assistant
+    pip install -U wget packaging "setuptools>=80.9.0" fire && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
@@ -86,8 +106,6 @@ RUN \
     pip install -q "numpy<1.24" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
-    # requirements for assistant
-    pip install -q -U packaging fire && \
     # switch some packages to be GPU related
     python assistant.py replace_str_requirements "onnxruntime" "onnxruntime_gpu" --req_files requirements/audio.txt && \
     # install develop environment
