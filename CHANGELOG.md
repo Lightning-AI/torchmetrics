@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Defaulting Dice score `average="macro"` ([#3042](https://github.com/Lightning-AI/torchmetrics/pull/3042))
 
 
 ### Deprecated
