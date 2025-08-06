@@ -142,7 +142,7 @@ class BinaryPrecisionRecallCurve(Metric):
         thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
-        normalization: Optional[str] = "sigmoid",
+        normalization: Optional[Literal["sigmoid", "softmax"]] = "sigmoid",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
