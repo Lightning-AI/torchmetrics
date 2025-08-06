@@ -13,12 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- enhance: add `reduction='none'` to `vif` metric ([#3196](https://github.com/Lightning-AI/torchmetrics/pull/3196))
 
 
 ### Changed
 
 - Defaulting Dice score `average="macro"` ([#3042](https://github.com/Lightning-AI/torchmetrics/pull/3042))
+
+
+- Float input support for segmentation metrics ([#3198](https://github.com/Lightning-AI/torchmetrics/pull/3198))
 
 
 ### Deprecated
@@ -33,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed unintended `sigmoid` normalization in `BinaryPrecisionRecallCurve` ([#3182](https://github.com/Lightning-AI/torchmetrics/pull/3182))
 
 
 ---
