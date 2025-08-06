@@ -17,12 +17,7 @@ from typing import Literal, Optional, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.segmentation.utils import (
-    _check_mixed_shape,
-    _ignore_background,
-    edge_surface_distance,
-)
-from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.functional.segmentation.utils import _segmentation_inputs_format, edge_surface_distance
 
 
 def _hausdorff_distance_validate_args(
@@ -93,22 +88,8 @@ def hausdorff_distance(
 
     """
     _hausdorff_distance_validate_args(num_classes, include_background, distance_metric, spacing, directed, input_format)
-    if input_format == "mixed":
-        _check_mixed_shape(preds, target)
-    else:
-        _check_same_shape(preds, target)
 
-    if input_format == "index":
-        preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
-        target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
-    elif input_format == "mixed":
-        if preds.dim() == (target.dim() + 1):
-            target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
-        elif (preds.dim() + 1) == target.dim():
-            preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
-
-    if not include_background:
-        preds, target = _ignore_background(preds, target)
+    preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
 
     distances = torch.zeros(preds.shape[0], preds.shape[1], device=preds.device)
 
