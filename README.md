@@ -55,6 +55,12 @@ Install using conda
 conda install -c conda-forge torchmetrics
 ```
 
+Install using uv
+
+```bash
+uv add torchmetrics
+```
+
 Pip from source
 
 ```bash

@@ -236,7 +236,7 @@ already in your dataset. This is done to secure an equal load for all processes.
 that the calculated metric value will be slightly biased towards those replicated samples, leading to a wrong result.
 
 During training and/or validation this may not be important, however it is highly recommended when evaluating
-the test dataset to only run on a single gpu or use a `join <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel.join>`_
+the test dataset to only run on a single gpu or use a `join <https://docs.pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel.join>`_
 context in conjunction with DDP to prevent this behaviour.
 
 ****************************
