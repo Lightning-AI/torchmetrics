@@ -12,6 +12,7 @@ on: # Trigger the workflow on push or pull request, but only for the master bran
       - "setup.py"
   pull_request:
     branches: [master]
+    types: [opened, reopened, ready_for_review, synchronize]
     paths:
       - "requirements/*"
       - "requirements.txt"
