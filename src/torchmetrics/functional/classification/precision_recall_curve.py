@@ -166,7 +166,7 @@ def _binary_precision_recall_curve_format(
     target: Tensor,
     thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
-    normalization: Optional[str] = "sigmoid",
+    normalization: Optional[Literal["sigmoid", "softmax"]] = "sigmoid",
 ) -> tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
