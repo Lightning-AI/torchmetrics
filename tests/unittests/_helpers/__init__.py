@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import random
+import sys
 
 import numpy
 import torch
@@ -31,7 +32,7 @@ def seed_all(seed):
 __all__ = ["seed_all", "skip_on_connection_issues", "skip_on_cuda_oom", "skip_on_running_out_of_memory"]
 
 
-_IS_WINDOWS = RequirementCache("sys.platform == 'win32'")
+_IS_WINDOWS = sys.platform.startswith("win32")
 _SKLEARN_GREATER_EQUAL_1_3 = RequirementCache("scikit-learn>=1.3.0")
 _SKLEARN_GREATER_EQUAL_1_7 = RequirementCache("scikit-learn>=1.7.0")
 _TORCH_LESS_THAN_2_1 = RequirementCache("torch<2.1.0")
