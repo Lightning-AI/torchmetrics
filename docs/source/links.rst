@@ -143,7 +143,7 @@
 .. _Peak Signal to Noise Ratio With Blocked Effect: https://ieeexplore.ieee.org/abstract/document/5535179
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
 .. _Demographic parity: http://www.fairmlbook.org/
-.. _Equal opportunity: https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
+.. _Equal opportunity: https://arxiv.org/abs/1610.02413
 .. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220
 .. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
