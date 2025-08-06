@@ -18,8 +18,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.segmentation.utils import _check_mixed_shape, _ignore_background
-from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.functional.segmentation.utils import _segmentation_inputs_format
 from torchmetrics.utilities.compute import _safe_divide
 
 
@@ -51,8 +50,8 @@ def _mean_iou_validate_args(
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
 ) -> None:
     """Validate the arguments of the metric."""
-    if input_format in ["index", "mixed"] and num_classes is None:
-        raise ValueError("Argument `num_classes` must be provided when `input_format` is 'index' or 'mixed'.")
+    if input_format in ["index"] and num_classes is None:
+        raise ValueError("Argument `num_classes` must be provided when `input_format` is 'index'.")
     if num_classes is not None and num_classes <= 0:
         raise ValueError(
             f"Expected argument `num_classes` must be `None` or a positive integer, but got {num_classes}."
@@ -76,33 +75,8 @@ def _mean_iou_update(
 ) -> tuple[Tensor, Tensor]:
     """Update the intersection and union counts for the mean IoU computation."""
     preds, target = _mean_iou_reshape_args(preds, target, input_format)
-    if input_format == "mixed":
-        _check_mixed_shape(preds, target)
-    else:
-        _check_same_shape(preds, target)
 
-    if input_format == "index":
-        if num_classes is None:
-            raise ValueError("Argument `num_classes` must be provided when `input_format='index'`.")
-        preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
-        target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
-    elif input_format == "one-hot" and num_classes is None:
-        try:
-            num_classes = preds.shape[1]
-        except IndexError as err:
-            raise IndexError(f"Cannot determine `num_classes` from `preds` tensor: {preds}.") from err
-        if num_classes == 0:
-            raise ValueError(f"Expected argument `num_classes` to be a positive integer, but got {num_classes}.")
-    elif input_format == "mixed":
-        if num_classes is None:
-            raise ValueError("Argument `num_classes` must be provided when `input_format='mixed'`.")
-        if preds.dim() == (target.dim() + 1):
-            target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
-        elif (preds.dim() + 1) == target.dim():
-            preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
-
-    if not include_background:
-        preds, target = _ignore_background(preds, target)
+    preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
 
     reduce_axis = list(range(2, preds.ndim))
     intersection = torch.sum(preds & target, dim=reduce_axis)
@@ -136,7 +110,8 @@ def mean_iou(
     Args:
         preds: Predictions from model
         target: Ground truth values
-        num_classes: Number of classes (required when input_format="index", optional when input_format="one-hot")
+        num_classes: Number of classes
+            (required when input_format="index", optional when input_format="one-hot" or "mixed")
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately, else average over all classes
         input_format: What kind of input the function receives.
