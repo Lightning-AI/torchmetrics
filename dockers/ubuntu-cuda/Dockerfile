@@ -76,18 +76,20 @@ RUN python${PYTHON_VERSION} -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # ─── Patch pkgutil only on Python 3.12+ ───
-RUN echo 'import sys\n\
-if sys.version_info >= (3, 12):\n\
-    import sysconfig, zipimport\n\
-    stdlib = sysconfig.get_path("stdlib")\n\
-    target = f"{stdlib}/pkgutil.py"\n\
-    with open(target, "a") as f:\n\
-        f.write("""\n\
-\n\
-# Back-port ImpImporter for Python 3.12+\n\
-class ImpImporter(zipimport.zipimporter):\n\
-    pass\n\
-""")' > /tmp/patch_pkgutil.py && \
+RUN printf '%s\n' \
+    'import sys' \
+    'if sys.version_info >= (3, 12):' \
+    '    import sysconfig, zipimport' \
+    '    stdlib = sysconfig.get_path("stdlib")' \
+    '    target = f"{stdlib}/pkgutil.py"' \
+    '    with open(target, "a") as f:' \
+    '        f.write("""' \
+    '' \
+    '# Back-port ImpImporter for Python 3.12+' \
+    'class ImpImporter(zipimport.zipimporter):' \
+    '    pass' \
+    '""")' \
+    > /tmp/patch_pkgutil.py && \
     python /tmp/patch_pkgutil.py && \
     rm /tmp/patch_pkgutil.py
 
