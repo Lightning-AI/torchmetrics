@@ -84,7 +84,6 @@ RUN printf '%s\n' \
     '    target = f"{stdlib}/pkgutil.py"' \
     '    with open(target, "a") as f:' \
     '        f.write("""' \
-    '' \
     '# Back-port ImpImporter for Python 3.12+' \
     'class ImpImporter(zipimport.zipimporter):' \
     '    pass' \
@@ -103,7 +102,10 @@ RUN \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
     done && \
-    # trying to resolve pesq installation issue
+    # trying to resolve pesq installation issue \
+    if python -c "import sys; exit(0 if sys.version_info < (3, 13) else 1)" 2>/dev/null; then \
+        pip install -q "numpy<1.24"; \
+    fi && \
     pip install -q "numpy<1.24" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
