@@ -203,6 +203,11 @@ class TestBERTScore(TextTester):
     condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
 )
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
+)
 @pytest.mark.parametrize("idf", [True, False])
 def test_bertscore_sorting(idf: bool):
     """Test that BERTScore is invariant to the order of the inputs."""
@@ -228,6 +233,11 @@ def test_bertscore_sorting(idf: bool):
     condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
 )
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
+)
 @pytest.mark.parametrize("truncation", [True, False])
 def test_bertscore_truncation(truncation: bool):
     """Test that BERTScore truncation works as expected."""
@@ -251,6 +261,11 @@ def test_bertscore_truncation(truncation: bool):
     #  consider bumping also torch min versions in the metrics implementations
     condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
+)
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
 )
 def test_bertscore_single_str_input():
     """Test if BERTScore works with single string preds and target."""
@@ -302,6 +317,11 @@ def test_bertscore_single_str_input():
     #  consider bumping also torch min versions in the metrics implementations
     condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
+)
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
 )
 def test_bertscore_multiple_references(preds, target, expected):
     """Test both functional and class APIs with multiple references."""
