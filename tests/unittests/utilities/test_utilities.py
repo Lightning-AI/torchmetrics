@@ -19,6 +19,7 @@ import pytest
 import torch
 from lightning_utilities.test.warning import no_warning_call
 from torch import tensor
+from unittests._helpers import _IS_WINDOWS
 from unittests.conftest import MAX_PORT, START_PORT
 
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
@@ -175,9 +176,7 @@ def test_recursive_allclose(inputs, expected):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
-@pytest.mark.xfail(
-    sys.platform == "win32" or not _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems"
-)
+@pytest.mark.xfail(_IS_WINDOWS or not _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems")
 def test_cumsum_still_not_supported(use_deterministic_algorithms):
     """Make sure that cumsum on GPU and deterministic mode still fails.
 
