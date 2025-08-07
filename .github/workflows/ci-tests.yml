@@ -45,6 +45,7 @@ jobs:
           - "2.5.1"
           - "2.6.0"
           - "2.7.1"
+          - "2.8.0"
         testing: ["common", "distributed"]
         include:
           # cover additional python and PT combinations
@@ -62,21 +63,21 @@ jobs:
               requires: "oldest",
               testing: "distributed",
             }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1", testing: "common" }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1", testing: "distributed" }
+          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.8.0", testing: "common" }
+          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.8.0", testing: "distributed" }
           # standard mac machine, not the M1
           - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1", testing: "common" }
           - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1", testing: "distributed" }
           # using the ARM based M1 machine
           - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1", testing: "common" }
           - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1", testing: "distributed" }
-          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.7.1", testing: "common" }
-          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.7.1", testing: "distributed" }
+          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.8.0", testing: "common" }
+          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.8.0", testing: "distributed" }
           # some windows
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1", testing: "common" }
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1", testing: "distributed" }
-          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.7.1", testing: "common" }
-          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.7.1", testing: "distributed" }
+          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.8.0", testing: "common" }
+          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.8.0", testing: "distributed" }
           # Future released version
           #- { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.8.0" }
           #- { os: "macOS-14", python-version: "3.11", pytorch-version: "2.8.0" }
