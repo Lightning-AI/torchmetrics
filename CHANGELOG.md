@@ -9,37 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - YYYY-MM-DD
-
-### Added
-
-- enhance: add `reduction='none'` to `vif` metric ([#3196](https://github.com/Lightning-AI/torchmetrics/pull/3196))
-
+## [1.8.1] - 2025-08-07
 
 ### Changed
 
--
-
-
+- Added `reduction='none'` to `vif` metric ([#3196](https://github.com/Lightning-AI/torchmetrics/pull/3196))
 - Float input support for segmentation metrics ([#3198](https://github.com/Lightning-AI/torchmetrics/pull/3198))
-
-
-### Deprecated
-
--
-
-
-### Removed
-
--
-
 
 ### Fixed
 
 - Fixed unintended `sigmoid` normalization in `BinaryPrecisionRecallCurve` ([#3182](https://github.com/Lightning-AI/torchmetrics/pull/3182))
 
-
----
 
 ## [1.8.0] - 2025-07-23
 
