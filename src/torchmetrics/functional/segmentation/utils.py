@@ -49,6 +49,69 @@ def _check_mixed_shape(preds: Tensor, target: Tensor) -> None:
         )
 
 
+def _segmentation_inputs_format(
+    preds: Tensor,
+    target: Tensor,
+    include_background: bool,
+    num_classes: Optional[int] = None,
+    input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
+) -> tuple[Tensor, Tensor]:
+    """Check and format inputs to the one-hot encodings."""
+    if input_format == "mixed":
+        _check_mixed_shape(preds, target)
+    else:
+        _check_same_shape(preds, target)
+
+    if input_format == "index":
+        if num_classes is None:
+            raise ValueError("Argument `num_classes` must be provided when `input_format='index'`.")
+        preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
+        target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+    elif input_format == "one-hot":
+        if num_classes is None:
+            num_classes = _get_num_classes(preds)
+        preds = _format_logits(preds, num_classes)
+        target = _format_logits(target, num_classes)
+    elif input_format == "mixed":
+        if preds.dim() == (target.dim() + 1):
+            if num_classes is None:
+                num_classes = _get_num_classes(preds)
+            preds = _format_logits(preds, num_classes)
+            target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+        elif (preds.dim() + 1) == target.dim():
+            if num_classes is None:
+                num_classes = _get_num_classes(target)
+            target = _format_logits(target, num_classes)
+            preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
+
+    if preds.ndim < 3:
+        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
+
+    if not include_background:
+        preds, target = _ignore_background(preds, target)
+
+    return preds, target
+
+
+def _format_logits(tensor: Tensor, num_classes: int) -> Tensor:
+    """Transform logits or probabilities into integer one-hot encodings."""
+    if torch.is_floating_point(tensor):
+        tensor = tensor.argmax(dim=1)
+        tensor = torch.nn.functional.one_hot(tensor, num_classes=num_classes).movedim(-1, 1)
+    return tensor
+
+
+def _get_num_classes(tensor: Tensor) -> int:
+    """Get num classes from a tensor if it is not set."""
+    try:
+        num_classes = tensor.shape[1]
+    except IndexError as err:
+        raise IndexError(f"Cannot determine `num_classes` from tensor: {tensor}.") from err
+    if num_classes == 0:
+        raise ValueError(f"Expected argument `num_classes` to be a positive integer, but got {num_classes}.")
+    return num_classes
+
+
 def check_if_binarized(x: Tensor) -> None:
     """Check if tensor is binarized.
 

@@ -29,6 +29,7 @@ from unittests.segmentation.inputs import (
     _index_input_2,
     _mixed_input_1,
     _mixed_input_2,
+    _mixed_logits_input,
     _one_hot_input_1,
     _one_hot_input_2,
 )
@@ -49,8 +50,14 @@ def _reference_generalized_dice(
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
     elif input_format == "mixed":
         if preds.dim() == (target.dim() + 1):
+            if torch.is_floating_point(preds):
+                preds = preds.argmax(dim=1)
+                preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
             target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
         elif (preds.dim() + 1) == target.dim():
+            if torch.is_floating_point(target):
+                target = target.argmax(dim=1)
+                target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
             preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
     monai_extra_arg = {"sum_over_classes": True} if RequirementCache("monai>=1.4.0") else {}
     val = compute_generalized_dice(preds, target, include_background=include_background, **monai_extra_arg)
@@ -68,6 +75,7 @@ def _reference_generalized_dice(
         (_index_input_2.preds, _index_input_2.target, "index"),
         (_mixed_input_1.preds, _mixed_input_1.target, "mixed"),
         (_mixed_input_2.preds, _mixed_input_2.target, "mixed"),
+        (_mixed_logits_input.preds, _mixed_logits_input.target, "mixed"),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
