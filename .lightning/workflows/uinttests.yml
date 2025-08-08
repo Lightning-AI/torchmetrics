@@ -4,20 +4,15 @@ trigger:
   pull_request:
     branches: ["master"]
 
-timeout: "55" # minutes
+timeout: "300" # minutes
 machine: "L4_X_2"
 parametrize:
-  matrix: {}
-  include:
-    # note that this is setting also all oldest requirements which is linked to Torch == 2.0
-    - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
-      testing: "common"
-    - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.6.3-py3.11-torch2.7"
-      testing: "common"
-    - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
-      testing: "distributed"
-    - image: "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.6.3-py3.11-torch2.7"
-      testing: "distributed"
+  matrix:
+    image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
+      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
+      - "pytorchlightning/torchmetrics:ubuntu24.04-cuda12.6.3-py3.12-torch2.8"
+    # testing: ["doctest", "common", "distributed"] # todo
+  include: []
   exclude: []
 
 env:
@@ -84,18 +79,18 @@ run: |
   ls -l _data/*
   #du -h --max-depth=1 .
   # UnitTesting common
-  if [ "$testing" == "common" ]; then
-    python -m pytest ${TEST_DIRS} -v \
-      -m "not DDP" --numprocesses=6 --dist=loadfile \
-      --cov=torchmetrics --timeout=360 --durations=100 \
-      --reruns 3 --reruns-delay 1
+  #if [ "$testing" == "common" ]; then
+  python -m pytest ${TEST_DIRS} -v \
+    -m "not DDP" --numprocesses=6 --dist=loadfile \
+    --cov=torchmetrics --timeout=360 --durations=100 \
+    --reruns 3 --reruns-delay 1
   # UnitTesting DDP
-  elif [ "$testing" == "distributed" ]; then
-    export USE_PYTEST_POOL="1"
-    python -m pytest ${TEST_DIRS} -v \
-      --cov=torchmetrics -m "DDP" \
-      --timeout=360 --durations=100
-  fi
+  #elif [ "$testing" == "distributed" ]; then
+  export USE_PYTEST_POOL="1"
+  python -m pytest ${TEST_DIRS} -v \
+    --cov=torchmetrics -m "DDP" \
+    --timeout=360 --durations=100
+  #fi
   cd ..
 
   #  python -m coverage report
