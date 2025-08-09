@@ -61,6 +61,9 @@ def _weighted_pearson_corrcoef_update(
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
     _check_data_shape_to_weights(preds, weights)
 
+    if preds.ndim == 2:
+        weights = weights.unsqueeze(1)  # singleton dimension for broadcasting
+
     weights_sum = weights.sum()
 
     if weights_prior > 0:  # True if prior observations exist
@@ -76,7 +79,7 @@ def _weighted_pearson_corrcoef_update(
         var_x = (weights * (preds - mx_new) ** 2).sum(0)
         var_y = (weights * (target - my_new) ** 2).sum(0)
 
-    cov_xy += (weights * (preds - mx_new) * (target - mean_y)).sum(0)
+    cov_xy += (weights * (preds - mx_new) * (target - my_new)).sum(0)
 
     return mx_new, my_new, var_x, var_y, cov_xy, weights_prior + weights_sum
 
@@ -97,9 +100,9 @@ def _weighted_pearson_corrcoef_compute(
 
     """
     # prevent overwrite the inputs
-    var_x = var_x / (weights_sum - 1)
-    var_y = var_y / (weights_sum - 1)
-    cov_xy = cov_xy / (weights_sum - 1)
+    var_x = var_x / weights_sum
+    var_y = var_y / weights_sum
+    cov_xy = cov_xy / weights_sum
 
     # if var_x, var_y is float16 and on cpu, make it bfloat16 as sqrt is not supported for float16
     # on cpu, remove this after https://github.com/pytorch/pytorch/issues/54774 is fixed

@@ -266,7 +266,7 @@ def _class_test(
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
-                k: v.cpu() if isinstance(v, Tensor) else v
+                k: v[i].cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
             preds_ = preds[i].cpu() if isinstance(preds, Tensor) else preds[i]

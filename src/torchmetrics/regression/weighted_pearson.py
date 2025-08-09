@@ -91,7 +91,7 @@ class WeightedPearsonCorrCoef(Metric):
     var_x: Tensor
     var_y: Tensor
     cov_xy: Tensor
-    n_total: Tensor
+    weights_sum: Tensor
 
     def __init__(
         self,
@@ -108,36 +108,39 @@ class WeightedPearsonCorrCoef(Metric):
         self.add_state("var_x", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
         self.add_state("var_y", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
         self.add_state("cov_xy", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
-        self.add_state("n_total", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("weights_sum", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor, weights: Tensor) -> None:
         """Update state with predictions and targets."""
-        self.mean_x, self.mean_y, self.var_x, self.var_y, self.cov_xy, self.n_total = _weighted_pearson_corrcoef_update(
-            preds,
-            target,
-            weights,
-            self.mean_x,
-            self.mean_y,
-            self.var_x,
-            self.var_y,
-            self.cov_xy,
-            self.n_total,
-            self.num_outputs,
+        self.mean_x, self.mean_y, self.var_x, self.var_y, self.cov_xy, self.weights_sum = (
+            _weighted_pearson_corrcoef_update(
+                preds,
+                target,
+                weights,
+                self.mean_x,
+                self.mean_y,
+                self.var_x,
+                self.var_y,
+                self.cov_xy,
+                self.weights_sum,
+                self.num_outputs,
+            )
         )
 
     def compute(self) -> Tensor:
         """Compute weighted Pearson correlation coefficient over state."""
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             # multiple devices, need further reduction
-            _, _, var_x, var_y, cov_xy, n_total = _final_aggregation(
-                self.mean_x, self.mean_y, self.var_x, self.var_y, self.cov_xy, self.n_total
+            _, _, var_x, var_y, cov_xy, weights_sum = _final_aggregation(
+                self.mean_x, self.mean_y, self.var_x, self.var_y, self.cov_xy, self.weights_sum
             )
         else:
             var_x = self.var_x
             var_y = self.var_y
             cov_xy = self.cov_xy
-            n_total = self.n_total
-        return _weighted_pearson_corrcoef_compute(var_x, var_y, cov_xy, n_total)
+            weights_sum = self.weights_sum
+
+        return _weighted_pearson_corrcoef_compute(var_x, var_y, cov_xy, weights_sum)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

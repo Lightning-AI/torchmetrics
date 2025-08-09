@@ -13,6 +13,7 @@
 # limitations under the License.
 from functools import partial
 
+import numpy as np
 import pytest
 import torch
 from scipy.stats import pearsonr
@@ -54,20 +55,21 @@ _weights = torch.rand(NUM_BATCHES, BATCH_SIZE)
 
 def _reference_scipy_pearson(preds, target):
     if preds.ndim == 2:
-        return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
+        return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T, strict=True)]
     return pearsonr(target.numpy(), preds.numpy())[0]
 
 
 def _reference_weighted_pearson(preds, target, weights):
     if preds.ndim == 2:
-        return [_reference_weighted_pearson(p, t, weights) for p, t in zip(preds.T, target.T)]
+        return [_reference_weighted_pearson(p, t, weights) for p, t in zip(preds.T, target.T, strict=True)]
 
+    preds, target, weights = preds.numpy(), target.numpy(), weights.numpy()
     mx = (weights * preds).sum() / weights.sum()
     my = (weights * target).sum() / weights.sum()
     var_x = (weights * (preds - mx) ** 2).sum()
     var_y = (weights * (target - my) ** 2).sum()
     cov_xy = (weights * (preds - mx) * (target - my)).sum()
-    return cov_xy / (var_x * var_y).sqrt()
+    return cov_xy / np.sqrt(var_x * var_y)
 
 
 @pytest.mark.parametrize(
@@ -143,7 +145,7 @@ class TestWeightedPearsonCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_pearson_corrcoef(self, preds, target, weights, compute_on_cpu, ddp):
+    def test_weighted_pearson_corrcoef(self, preds, target, weights, compute_on_cpu, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
@@ -156,7 +158,7 @@ class TestWeightedPearsonCorrCoef(MetricTester):
             weights=weights,
         )
 
-    def test_pearson_corrcoef_functional(self, preds, target, weights):
+    def test_weighted_pearson_corrcoef_functional(self, preds, target, weights):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
@@ -166,7 +168,7 @@ class TestWeightedPearsonCorrCoef(MetricTester):
             weights=weights,
         )
 
-    def test_pearson_corrcoef_differentiability(self, preds, target, weights):
+    def test_weighted_pearson_corrcoef_differentiability(self, preds, target, weights):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
@@ -178,7 +180,7 @@ class TestWeightedPearsonCorrCoef(MetricTester):
         )
 
     @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_5, reason="Requires torch>=2.5.0")
-    def test_pearson_corrcoef_half_cpu(self, preds, target, weights):
+    def test_weighted_pearson_corrcoef_half_cpu(self, preds, target, weights):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(
@@ -190,7 +192,7 @@ class TestWeightedPearsonCorrCoef(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pearson_corrcoef_half_gpu(self, preds, target, weights):
+    def test_weighted_pearson_corrcoef_half_gpu(self, preds, target, weights):
         """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(
