@@ -346,8 +346,10 @@ def _functional_test(
         atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
-        kwargs_update: Additional keyword arguments that will be passed with preds and
-            target when running update on the metric.
+        kwargs_update: Additional keyword arguments that will be passed with `preds` and
+            `target` when running update on the metric. If values are torch.Tensor objects, tests
+            will iterate over the first dimension of the Tensor with each batch.
+            Otherwise, the same value will be used for all batches.
 
     """
     p_size = preds.shape[0] if isinstance(preds, Tensor) else len(preds)
@@ -375,7 +377,7 @@ def _functional_test(
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         tm_result = metric(preds[i], target[i], **extra_kwargs)
         extra_kwargs = {
-            k: v.cpu() if isinstance(v, Tensor) else v
+            k: v[i].cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
         ref_result = _reference_cachier(reference_metric)(
