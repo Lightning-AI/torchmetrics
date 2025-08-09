@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 
 import pytest
 import torch
@@ -22,7 +21,7 @@ from pytorch_msssim import ms_ssim
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure
 from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, _Input
-from unittests._helpers import seed_all
+from unittests._helpers import _IS_WINDOWS, seed_all
 from unittests._helpers.testers import MetricTester
 from unittests.image import cleanup_ddp, setup_ddp
 from unittests.utilities.test_utilities import find_free_port
@@ -129,7 +128,7 @@ def _run_ms_ssim_ddp(rank: int, world_size: int, free_port: int):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-@pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on Windows")
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not supported on Windows")
 def test_ms_ssim_reduction_none_ddp():
     """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP.
 

@@ -107,6 +107,9 @@ class BinaryPrecisionRecallCurve(Metric):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        normalization:
+            Specifies a normalization method that is used for batch-wise update regarding negative logits.
+            Set to ``None`` if negative logits are desired in evaluation.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -139,6 +142,7 @@ class BinaryPrecisionRecallCurve(Metric):
         thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        normalization: Optional[Literal["sigmoid", "softmax"]] = "sigmoid",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -147,6 +151,7 @@ class BinaryPrecisionRecallCurve(Metric):
 
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.normalization = normalization
 
         thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
@@ -163,7 +168,13 @@ class BinaryPrecisionRecallCurve(Metric):
         """Update metric states."""
         if self.validate_args:
             _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index)
-        preds, target, _ = _binary_precision_recall_curve_format(preds, target, self.thresholds, self.ignore_index)
+        preds, target, _ = _binary_precision_recall_curve_format(
+            preds,
+            target,
+            self.thresholds,
+            self.ignore_index,
+            self.normalization,
+        )
         state = _binary_precision_recall_curve_update(preds, target, self.thresholds)
         if isinstance(state, Tensor):
             self.confmat += state
