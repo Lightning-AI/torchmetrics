@@ -65,10 +65,11 @@ def _weighted_pearson_corrcoef_update(
         weights = weights.unsqueeze(1)  # singleton dimension for broadcasting
 
     weights_sum = weights.sum()
+    weights_new = weights_prior + weights_sum
 
     if weights_prior > 0:  # True if prior observations exist
-        mx_new = (weights_prior * mean_x + (weights * preds).sum(0)) / (weights_prior + weights_sum)
-        my_new = (weights_prior * mean_y + (weights * target).sum(0)) / (weights_prior + weights_sum)
+        mx_new = mean_x + (weights * (preds - mean_x)).sum(0) / weights_new
+        my_new = mean_y + (weights * (target - mean_y)).sum(0) / weights_new
 
         var_x += (weights * (preds - mx_new) * (preds - mean_x)).sum(0)
         var_y += (weights * (target - my_new) * (target - mean_y)).sum(0)
@@ -79,9 +80,10 @@ def _weighted_pearson_corrcoef_update(
         var_x = (weights * (preds - mx_new) ** 2).sum(0)
         var_y = (weights * (target - my_new) ** 2).sum(0)
 
-    cov_xy += (weights * (preds - mx_new) * (target - my_new)).sum(0)
+    # cov_xy += (weights * (preds - mx_new) * (target - my_new)).sum(0)
+    cov_xy += (weights * (preds - mx_new) * (target - mean_y)).sum(0)
 
-    return mx_new, my_new, var_x, var_y, cov_xy, weights_prior + weights_sum
+    return mx_new, my_new, var_x, var_y, cov_xy, weights_new
 
 
 def _weighted_pearson_corrcoef_compute(
