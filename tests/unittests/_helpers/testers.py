@@ -662,7 +662,8 @@ class MetricTester:
         metric = metric_module(**metric_args)
         if preds.is_floating_point():
             preds.requires_grad = True
-            out = metric(preds[0, :2], target[0, :2], **kwargs_update)
+            kwargs_update = {k: v[0, :4] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+            out = metric(preds[0, :4], target[0, :4], **kwargs_update)
 
             # Check if requires_grad matches is_differentiable attribute
             _assert_requires_grad(metric, out)
@@ -670,7 +671,7 @@ class MetricTester:
             if metric.is_differentiable and metric_functional is not None:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
-                    partial(metric_functional, **metric_args), (preds[0, :2].double(), target[0, :2])
+                    partial(metric_functional, **kwargs_update), (preds[0, :4].double(), target[0, :4])
                 )
 
             # reset as else it will carry over to other tests
