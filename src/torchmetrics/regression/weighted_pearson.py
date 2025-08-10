@@ -60,22 +60,22 @@ class WeightedPearsonCorrCoef(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (single output weighted regression):
-        >>> from torchmetrics.regression import PearsonCorrCoef
+        >>> from torchmetrics.regression import WeightedPearsonCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> weights = torch.tensor([0.1, 0.2, 0.5])
-        >>> pearson = PearsonCorrCoef()
+        >>> weights = torch.tensor([0.1, 0.2, 0.5, 0.1])
+        >>> pearson = WeightedPearsonCorrCoef()
         >>> pearson(preds, target, weights)
-        tensor(0.9849)
+        tensor(0.9837)
 
     Example (multi output weighted regression):
-        >>> from torchmetrics.regression import PearsonCorrCoef
+        >>> from torchmetrics.regression import WeightedPearsonCorrCoef
         >>> target = torch.tensor([[3, -0.5], [2, 7], [-1, 1.5]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8], [0.0, 1.3]])
         >>> weights = torch.tensor([0.3, 0.2, 0.5])
-        >>> pearson = PearsonCorrCoef(num_outputs=2)
+        >>> pearson = WeightedPearsonCorrCoef(num_outputs=2)
         >>> pearson(preds, target, weights)
-        tensor([1., 1., 0.1])
+        tensor([0.9992, 0.9902])
 
     """
 
@@ -108,7 +108,7 @@ class WeightedPearsonCorrCoef(Metric):
         self.add_state("var_x", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
         self.add_state("var_y", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
         self.add_state("cov_xy", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
-        self.add_state("weights_sum", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("weights_sum", default=torch.tensor(0.0), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor, weights: Tensor) -> None:
         """Update state with predictions and targets."""
