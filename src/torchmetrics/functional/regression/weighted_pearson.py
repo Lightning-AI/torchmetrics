@@ -149,17 +149,17 @@ def weighted_pearson_corrcoef(preds: Tensor, target: Tensor, weights: Tensor) ->
         >>> from torchmetrics.functional.regression import weighted_pearson_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
-        >>> weights = torch.tensor([0.2, 0.3, 0.5])
+        >>> weights = torch.tensor([0.1, 0.2, 0.5, 0.1])
         >>> weighted_pearson_corrcoef(preds, target, weights)
-        tensor(0.9849)
+        tensor(0.9837)
 
     Example (multi output weighted regression):
         >>> from torchmetrics.functional.regression import weighted_pearson_corrcoef
-        >>> target = torch.tensor([[3, -0.5], [2, 7]])
-        >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
-        >>> weights = torch.tensor([0.4, 0.6])
+        >>> target = torch.tensor([[3, -0.5], [2, 7], [-1, 1.5]])
+        >>> preds = torch.tensor([[2.5, 0.0], [2, 8], [0.0, 1.3]])
+        >>> weights = torch.tensor([0.3, 0.2, 0.5])
         >>> weighted_pearson_corrcoef(preds, target, weights)
-        tensor([1., 1.])
+        tensor([0.9992, 0.9902])
 
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
