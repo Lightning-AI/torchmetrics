@@ -44,8 +44,8 @@ def use_deterministic_algorithms():
 
 def get_free_port():
     """Find an available free port on localhost with better reservation."""
-    import time
     import random
+    import time
 
     # Try multiple times with different base ports to avoid conflicts
     for _ in range(10):
