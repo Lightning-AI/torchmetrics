@@ -42,12 +42,21 @@ def use_deterministic_algorithms():
     torch.use_deterministic_algorithms(False)
 
 
-def get_free_port():
-    """Find an available free port on localhost."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("localhost", 0))  # Bind to a free port provided by the OS
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return s.getsockname()[1]
+def get_free_port(max_tries=10):
+    """Find an available free port on localhost, retrying if necessary."""
+    for _ in range(max_tries):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("localhost", 0))
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            port = s.getsockname()[1]
+        # Try to bind again to check if port is still free
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as test_sock:
+                test_sock.bind(("localhost", port))
+                return port
+        except OSError:
+            continue
+    raise RuntimeError("Could not find a free port after several attempts")
 
 
 def setup_ddp(rank, world_size, master_port):
