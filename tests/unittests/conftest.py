@@ -48,7 +48,7 @@ def get_free_port() -> int:
         s.bind(("localhost", 0))  # Bind to a free port provided by the OS
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         port = s.getsockname()[1]
-        return port
+        return int(port)
 
 
 def setup_ddp(rank: int, world_size: int, port: int) -> None:
@@ -61,6 +61,7 @@ def setup_ddp(rank: int, world_size: int, port: int) -> None:
     Args:
         rank: the rank of the process
         world_size: the number of processes
+        port: the port to use for communication
 
     """
     os.environ["MASTER_ADDR"] = "localhost"
