@@ -86,7 +86,7 @@ def pytest_sessionstart():
         return
     port = get_free_port()
     pool = Pool(processes=NUM_PROCESSES)
-    pool.starmap(setup_ddp, [(rank, NUM_PROCESSES, port + i) for i, rank in enumerate(range(NUM_PROCESSES))])
+    pool.starmap(setup_ddp, [(rank, NUM_PROCESSES, port) for rank in range(NUM_PROCESSES)])
     pytest.pool = pool
 
 
