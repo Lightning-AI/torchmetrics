@@ -54,7 +54,7 @@ def get_free_port() -> int:
         return port
 
 
-def setup_ddp(rank: int, world_size: int) -> None:
+def setup_ddp(rank: int, world_size: int, port: int) -> None:
     """Initialize ddp environment.
 
     If a particular test relies on the order of the processes in the pool to be [0, 1, 2, ...], then this function
@@ -67,7 +67,7 @@ def setup_ddp(rank: int, world_size: int) -> None:
 
     """
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(get_free_port())
+    os.environ["MASTER_PORT"] = str(port)
 
     if torch.distributed.group.WORLD is not None:  # if already initialized, destroy the process group
         torch.distributed.destroy_process_group()
@@ -86,8 +86,9 @@ def pytest_sessionstart():
     """Global initialization of multiprocessing pool; runs before any test."""
     if not USE_PYTEST_POOL:
         return
+    port = get_free_port()
     pool = Pool(processes=NUM_PROCESSES)
-    pool.starmap(setup_ddp, [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)])
+    pool.starmap(setup_ddp, [(rank, NUM_PROCESSES, port + i) for i, rank in enumerate(range(NUM_PROCESSES))])
     pytest.pool = pool
 
 
