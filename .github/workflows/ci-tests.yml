@@ -91,7 +91,7 @@ jobs:
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that macOS jobs take much more than orger OS
-    timeout-minutes: 120
+    timeout-minutes: 70
 
     steps:
       - uses: actions/checkout@v4
