@@ -42,31 +42,15 @@ def use_deterministic_algorithms():
     torch.use_deterministic_algorithms(False)
 
 
-def get_free_port():
-    """Find an available free port on localhost with better reservation."""
-    import random
-    import time
-
-    # Try multiple times with different base ports to avoid conflicts
-    for _ in range(10):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                # Use a random port in a higher range to avoid common conflicts
-                base_port = random.randint(20000, 30000)
-                s.bind(("localhost", base_port))
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                port = s.getsockname()[1]
-                # Brief delay to reduce race conditions
-                time.sleep(0.1)
-                return port
-        except OSError:
-            continue
-
-    # Fallback to original method
+def get_free_port() -> int:
+    """Find an available free port on localhost and keep it reserved."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("localhost", 0))
+        s.bind(("localhost", 0))  # Bind to a free port provided by the OS
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return s.getsockname()[1]
+        port = s.getsockname()[1]
+        # Keep socket open longer to prevent immediate reuse
+        s.listen(1)
+        return port
 
 
 def setup_ddp(rank, world_size, master_port):
@@ -102,9 +86,8 @@ def pytest_sessionstart():
     """Global initialization of multiprocessing pool; runs before any test."""
     if not USE_PYTEST_POOL:
         return
-    port = get_free_port()
     pool = Pool(processes=NUM_PROCESSES)
-    pool.starmap(setup_ddp, [(rank, NUM_PROCESSES, port) for rank in range(NUM_PROCESSES)])
+    pool.starmap(setup_ddp, [(rank, NUM_PROCESSES, get_free_port()) for rank in range(NUM_PROCESSES)])
     pytest.pool = pool
 
 
