@@ -45,12 +45,9 @@ def use_deterministic_algorithms():
 def get_free_port() -> int:
     """Find an available free port on localhost and keep it reserved."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(5)  # Set a timeout of 5 seconds
         s.bind(("localhost", 0))  # Bind to a free port provided by the OS
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         port = s.getsockname()[1]
-        # Keep socket open longer to prevent immediate reuse
-        s.listen(1)
         return port
 
 
