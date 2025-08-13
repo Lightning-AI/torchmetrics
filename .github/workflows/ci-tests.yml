@@ -194,8 +194,6 @@ jobs:
             $TEST_DIRS \
             --cov=torchmetrics \
             --durations=50 \
-            --reruns 3 \
-            --reruns-delay 1 \
             -m "not DDP" \
             -n auto \
             --dist=load \
@@ -213,8 +211,6 @@ jobs:
             --cov=torchmetrics \
             --durations=50 \
             -m DDP \
-            --reruns 3 \
-            --reruns-delay 1 \
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Statistics
