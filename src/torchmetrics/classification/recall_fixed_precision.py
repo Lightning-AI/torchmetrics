@@ -240,10 +240,10 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassRecallAtFixedPrecision(num_classes=5, min_precision=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, nan, nan, nan]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, nan, nan, nan]))
         >>> mcrafp = MulticlassRecallAtFixedPrecision(num_classes=5, min_precision=0.5, thresholds=5)
         >>> mcrafp(preds, target)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, nan, nan, nan]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, nan, nan, nan]))
 
     """
 
