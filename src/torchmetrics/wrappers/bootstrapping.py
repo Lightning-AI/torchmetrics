@@ -107,7 +107,7 @@ class BootStrapper(WrapperMetric):
                 f"Expected base metric to be an instance of torchmetrics.Metric but received {base_metric}"
             )
 
-        self.metrics: ModuleList[Metric] = ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
+        self.metrics = ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
         self.num_bootstraps = num_bootstraps
 
         self.mean = mean
