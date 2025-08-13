@@ -71,7 +71,7 @@ def _recall_at_precision(
         idx = _lexargmax(zipped_masked)[0]
         max_recall, _, best_threshold = zipped_masked[idx]
     if max_recall == 0.0:
-        best_threshold = torch.tensor(1e6, device=thresholds.device, dtype=thresholds.dtype)
+        best_threshold = torch.tensor(float("nan"), device=thresholds.device, dtype=thresholds.dtype)
 
     return max_recall, best_threshold
 
