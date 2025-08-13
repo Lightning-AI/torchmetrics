@@ -267,9 +267,9 @@ def multiclass_recall_at_fixed_precision(
         ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> multiclass_recall_at_fixed_precision(preds, target, num_classes=5, min_precision=0.5, thresholds=None)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, nan, nan, nan]))
         >>> multiclass_recall_at_fixed_precision(preds, target, num_classes=5, min_precision=0.5, thresholds=5)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, nan, nan, nan]))
 
     """
     if validate_args:
