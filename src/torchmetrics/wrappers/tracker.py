@@ -214,7 +214,6 @@ class MetricTracker(ModuleList):
                 return {k: torch.stack([cast(Tensor, r[k]) for r in res], dim=0) for k in keys}
 
             if isinstance(res[0], list):
-                # Here each r should be a list[Tensor]
                 return torch.stack([torch.stack(cast(list[Tensor], r), dim=0) for r in res], dim=0)
 
             return torch.stack(cast(list[Tensor], res), dim=0)
