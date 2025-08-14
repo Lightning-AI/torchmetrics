@@ -200,7 +200,15 @@ class MetricTracker(ModuleList):
         """
         self._check_for_increment("compute_all")
         # The i!=0 accounts for the self._base_metric should be ignored
-        res = [metric.compute() for i, metric in enumerate(self) if i != 0]
+        res = []
+        for i, metric in enumerate(self):
+            if i == 0:
+                continue
+            if not isinstance(metric, (Metric, MetricCollection)):
+                raise TypeError(
+                    f"Expected the item to be a Metric or MetricCollection, but got {type(metric)}."
+                )
+            res.append(metric.compute())
         try:
             if isinstance(res[0], dict):
                 keys = res[0].keys()
