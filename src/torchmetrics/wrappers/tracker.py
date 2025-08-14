@@ -135,7 +135,7 @@ class MetricTracker(ModuleList):
                     if isinstance(m, ClasswiseWrapper) and isinstance(m.metric.num_classes, int):
                         m_higher_is_better = [m.higher_is_better for _ in range(int(m.metric.num_classes))]
                     else:
-                        m_higher_is_better = [m.higher_is_better]
+                        m_higher_is_better = [cast(bool | None, m.higher_is_better)]
                     self.maximize.extend(m_higher_is_better)  # type: ignore[arg-type]  # this is false alarm
         else:
             # The default value for `maximize` has be changed from `True` to `None` in v1.7.0 of TorchMetrics,
