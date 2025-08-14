@@ -13,9 +13,9 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
-from collections.abc import Hashable, Iterable, Iterator, Mapping, Sequence
+from collections.abc import Hashable, ItemsView, Iterable, Iterator, KeysView, Mapping, Sequence, ValuesView
 from copy import deepcopy
-from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing import Any, ClassVar, Dict, List, Optional, Union, overload
 
 import torch
 from torch import Tensor
@@ -56,7 +56,7 @@ def _remove_suffix(string: str, suffix: str) -> str:
     return string[: -len(suffix)] if string.endswith(suffix) else string
 
 
-class MetricCollection:
+class MetricCollection(ModuleDict):
     """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
     Args:
@@ -211,7 +211,6 @@ class MetricCollection:
     ) -> None:
         super().__init__()
 
-        self._modules = ModuleDict()
         self.prefix = self._check_arg(prefix, "prefix")
         self.postfix = self._check_arg(postfix, "postfix")
         self._enable_compute_groups = compute_groups
@@ -563,12 +562,18 @@ class MetricCollection:
             dict_modules[self._set_name(k)] = v
         return dict_modules
 
-    def __iter__(self) -> Iterator[Hashable]:
+    def __iter__(self) -> Iterator[str]:
         """Return an iterator over the keys of the MetricDict."""
         return iter(self.keys())
 
     # TODO: redefine this as native python dict
-    def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
+    @overload
+    def keys(self) -> KeysView[str]: ...
+
+    @overload
+    def keys(self, keep_base: bool) -> Iterable[Hashable]: ...
+
+    def keys(self, keep_base: bool = False) -> Union[KeysView[str], Iterable[Hashable]]:
         r"""Return an iterable of the ModuleDict key.
 
         Args:
@@ -579,7 +584,15 @@ class MetricCollection:
             return self._modules.keys()
         return self._to_renamed_dict().keys()
 
-    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[tuple[str, Metric]]:
+    @overload
+    def items(self) -> ItemsView[str, torch.nn.Module]: ...
+
+    @overload
+    def items(self, keep_base: bool, copy_state: bool = True) -> Iterable[tuple[str, Metric]]: ...
+
+    def items(
+        self, keep_base: bool = False, copy_state: bool = True
+    ) -> Union[ItemsView[str, torch.nn.Module], Iterable[tuple[str, Metric]]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
 
         Args:
@@ -593,7 +606,13 @@ class MetricCollection:
             return self._modules.items()
         return self._to_renamed_dict().items()
 
-    def values(self, copy_state: bool = True) -> Iterable[Metric]:
+    @overload
+    def values(self) -> ValuesView[torch.nn.Module]: ...
+
+    @overload
+    def values(self, copy_state: bool) -> Iterable[Metric]: ...
+
+    def values(self, copy_state: bool = True) -> Union[ValuesView[torch.nn.Module], Iterable[Metric]]:
         """Return an iterable of the ModuleDict values.
 
         Args:
