@@ -377,9 +377,9 @@ class MultitaskWrapper(WrapperMetric):
                     f"Found a metric of type {type(task_metric)}"
                 )
             if isinstance(val, dict):
-                //f, a = task_metric.plot(val[task_name], ax=ax)
+                f, a = task_metric.plot(val[task_name], ax=ax)
             elif isinstance(val, Sequence):
-               // f, a = task_metric.plot([v[task_name] for v in val], ax=ax)
+                f, a = task_metric.plot([v[task_name] for v in val], ax=ax)
             else:
                 raise TypeError(
                     "Expected argument `val` to be None or of type Dict or Sequence[Dict]. "
