@@ -153,7 +153,12 @@ class BootStrapper(WrapperMetric):
         ``raw`` depending on how the class was initialized.
 
         """
-        computed_vals = torch.stack([cast(Tensor, m.compute()) for m in self.metrics], dim=0)
+        computed_vals = []
+        for m in self.metrics:
+            if not isinstance(m, Metric):
+                raise TypeError(f"Expected the item to be a Metric, but got {type(m)}.")
+            computed_vals.append(m.compute())
+        computed_vals = torch.stack(computed_vals, dim=0)
         output_dict = {}
         if self.mean:
             output_dict["mean"] = computed_vals.mean(dim=0)
