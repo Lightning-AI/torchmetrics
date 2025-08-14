@@ -1,4 +1,3 @@
-
 # Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -208,6 +207,8 @@ class MetricTracker(ModuleList):
             if not isinstance(metric, (Metric, MetricCollection)):
                 raise TypeError(f"Expected the item to be a Metric or MetricCollection, but got {type(metric)}.")
             res.append(metric.compute())
+
+
 def compute_all(self) -> Any:
     """Compute the metric value for all tracked metrics."""
     self._check_for_increment("compute_all")
@@ -217,23 +218,18 @@ def compute_all(self) -> Any:
         if i == 0:
             continue
         if not isinstance(metric, (Metric, MetricCollection)):
-            raise TypeError(
-                f"Expected the item to be a Metric or MetricCollection, but got {type(metric)}."
-            )
+            raise TypeError(f"Expected the item to be a Metric or MetricCollection, but got {type(metric)}.")
         res.append(metric.compute())
 
         try:
             if isinstance(res[0], dict):
                 keys = res[0].keys()
                 return {k: torch.stack([cast(torch.Tensor, r[k]) for r in res], dim=0) for k in keys}
-    
+
             if isinstance(res[0], list):
                 # Here each r should be a list[Tensor]
-                return torch.stack(
-                    [torch.stack(cast(list[torch.Tensor], r), dim=0) for r in res],
-                    dim=0
-                )
-    
+                return torch.stack([torch.stack(cast(list[torch.Tensor], r), dim=0) for r in res], dim=0)
+
             return torch.stack(cast(list[torch.Tensor], res), dim=0)
 
         except TypeError:  # fallback solution to just return as it is if we cannot successfully stack
