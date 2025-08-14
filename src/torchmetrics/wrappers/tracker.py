@@ -205,9 +205,7 @@ class MetricTracker(ModuleList):
             if i == 0:
                 continue
             if not isinstance(metric, (Metric, MetricCollection)):
-                raise TypeError(
-                    f"Expected the item to be a Metric or MetricCollection, but got {type(metric)}."
-                )
+                raise TypeError(f"Expected the item to be a Metric or MetricCollection, but got {type(metric)}.")
             res.append(metric.compute())
         try:
             if isinstance(res[0], dict):
