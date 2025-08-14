@@ -56,7 +56,7 @@ def _remove_suffix(string: str, suffix: str) -> str:
     return string[: -len(suffix)] if string.endswith(suffix) else string
 
 
-class MetricCollection(ModuleDict):
+class MetricCollection:
     """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
     Args:
@@ -211,6 +211,7 @@ class MetricCollection(ModuleDict):
     ) -> None:
         super().__init__()
 
+        self._modules = ModuleDict()
         self.prefix = self._check_arg(prefix, "prefix")
         self.postfix = self._check_arg(postfix, "postfix")
         self._enable_compute_groups = compute_groups
