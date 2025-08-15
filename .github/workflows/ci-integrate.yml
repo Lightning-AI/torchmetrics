@@ -60,7 +60,7 @@ jobs:
         run: |
           python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
           # disable error on deprecation warnings
-          sed -i.bak '/"error::DeprecationWarning",' pyproject.toml
+          sed -i.bak '/"error::DeprecationWarning",/d' pyproject.toml
       - name: Install all dependencies
         run: |
           # this was updated in `source cashing` by optional oldest
