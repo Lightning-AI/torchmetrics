@@ -134,7 +134,9 @@ markers = [
   "DDP: mark a test as Distributed Data Parallel",
 ]
 filterwarnings = [
+  "error::DeprecationWarning",
   "ignore::FutureWarning",
+  "ignore::pytest.PytestRemovedIn9Warning",
   "default:::torchmetrics",
 ]
 xfail_strict = true
