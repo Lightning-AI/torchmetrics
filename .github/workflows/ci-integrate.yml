@@ -57,8 +57,10 @@ jobs:
           requires: ${{ matrix.requires }}
       - name: set oldest if/only for integrations
         if: matrix.requires == 'oldest'
-        run: python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
-
+        run: |
+          python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
+          # disable error on deprecation warnings
+          sed -i.bak '/"error::DeprecationWarning",' pyproject.toml
       - name: Install all dependencies
         run: |
           # this was updated in `source cashing` by optional oldest
