@@ -38,8 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed unintended `sigmoid` normalization in `BinaryPrecisionRecallCurve` ([#3182](https://github.com/Lightning-AI/torchmetrics/pull/3182))
 
-
----
+- `BinaryPrecisionRecallCurve` now returns `NaN` for precision when no predictions meet a threshold ([#3227](https://github.com/Lightning-AI/torchmetrics/pull/3227))
 
 ## [1.8.0] - 2025-07-23
 
