@@ -136,7 +136,7 @@ markers = [
 filterwarnings = [
   "error::DeprecationWarning",
   "ignore::FutureWarning",
-  "ignore::DeprecationWarning:pytest",
+  "ignore::pytest.PytestRemovedIn9Warning",
   "default:::torchmetrics",
 ]
 xfail_strict = true
