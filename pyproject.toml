@@ -134,6 +134,7 @@ markers = [
   "DDP: mark a test as Distributed Data Parallel",
 ]
 filterwarnings = [
+  "error::DeprecationWarning",
   "ignore::FutureWarning",
   "default:::torchmetrics",
 ]
