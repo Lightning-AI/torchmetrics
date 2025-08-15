@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased] - YYYY-MM-DD
+
+### Added
+
+-
+
+
+### Changed
+
+-
+
+
+### Deprecated
+
+-
+
+
+### Removed
+
+-
+
+
+### Fixed
+
+-
+
+- Fixed `precision_at_fixed_recall` and `recall_at_fixed_precision` to correctly return `NaN` thresholds when recall/precision conditions are not met  ([#3226](https://github.com/Lightning-AI/torchmetrics/pull/3226))
+
+
+---
+
 ## [1.8.1] - 2025-08-07
 
 ### Changed
