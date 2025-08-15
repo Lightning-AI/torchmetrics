@@ -471,3 +471,21 @@ def test_wrapper_class(metric, kwargs, base_metric=PrecisionRecallCurve):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+@pytest.mark.parametrize("thresholds", [5, 10])
+def test_precision_nan_when_no_preds_meet_threshold(thresholds):
+    """If threshold > max(preds), precision should be NaN, recall should be 0.0."""
+    preds = torch.tensor([0.1, 0.2, 0.3, 0.4])
+    targets = torch.tensor([0, 1, 1, 0])
+    metric = BinaryPrecisionRecallCurve(thresholds=thresholds)
+    precision, recall, thres = metric(preds, targets)
+
+    mask = thres > preds.max()
+
+    precision_bins = precision[:-1]
+    recall_bins = recall[:-1]
+
+    assert torch.isnan(precision_bins[mask]).all(), f"Precision not NaN for thresholds {thres[mask]}"
+
+    assert torch.all(recall_bins[mask] == 0.0), f"Recall not zero for thresholds {thres[mask]}"
