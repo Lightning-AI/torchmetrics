@@ -13,9 +13,9 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
-from collections.abc import Hashable, ItemsView, Iterable, Iterator, KeysView, Mapping, Sequence, ValuesView
+from collections.abc import Hashable, Iterable, Iterator, Mapping, Sequence
 from copy import deepcopy
-from typing import Any, ClassVar, Dict, List, Optional, Union, overload
+from typing import Any, ClassVar, Dict, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -567,13 +567,7 @@ class MetricCollection(ModuleDict):
         return iter(self.keys())
 
     # TODO: redefine this as native python dict
-    @overload
-    def keys(self) -> KeysView[str]: ...
-
-    @overload
-    def keys(self, keep_base: bool) -> Iterable[Hashable]: ...
-
-    def keys(self, keep_base: bool = False) -> Union[KeysView[str], Iterable[Hashable]]:
+    def keys(self, keep_base: bool = False) -> Iterable[Hashable]:  # type: ignore[override]
         r"""Return an iterable of the ModuleDict key.
 
         Args:
@@ -584,15 +578,7 @@ class MetricCollection(ModuleDict):
             return self._modules.keys()
         return self._to_renamed_dict().keys()
 
-    @overload
-    def items(self) -> ItemsView[str, torch.nn.Module]: ...
-
-    @overload
-    def items(self, keep_base: bool, copy_state: bool = True) -> Iterable[tuple[str, Metric]]: ...
-
-    def items(
-        self, keep_base: bool = False, copy_state: bool = True
-    ) -> Union[ItemsView[str, torch.nn.Module], Iterable[tuple[str, Metric]]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[tuple[str, Metric]]:  # type: ignore[override]
         r"""Return an iterable of the ModuleDict key/value pairs.
 
         Args:
@@ -606,13 +592,7 @@ class MetricCollection(ModuleDict):
             return self._modules.items()
         return self._to_renamed_dict().items()
 
-    @overload
-    def values(self) -> ValuesView[torch.nn.Module]: ...
-
-    @overload
-    def values(self, copy_state: bool) -> Iterable[Metric]: ...
-
-    def values(self, copy_state: bool = True) -> Union[ValuesView[torch.nn.Module], Iterable[Metric]]:
+    def values(self, copy_state: bool = True) -> Iterable[Metric]:  # type: ignore[override]
         """Return an iterable of the ModuleDict values.
 
         Args:
