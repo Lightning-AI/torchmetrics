@@ -13,7 +13,7 @@
 # limitations under the License.
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, cast
 
 import torch
 from torch import Tensor
@@ -200,16 +200,27 @@ class MetricTracker(ModuleList):
         """
         self._check_for_increment("compute_all")
         # The i!=0 accounts for the self._base_metric should be ignored
-        res = [metric.compute() for i, metric in enumerate(self) if i != 0]
+        res: list[Any] = []
+        for i, metric in enumerate(self):
+            if i == 0:
+                continue
+            if not isinstance(metric, (Metric, MetricCollection)):
+                raise TypeError(f"Expected the item to be a Metric or MetricCollection, but got {type(metric)}.")
+            res.append(metric.compute())
+
         try:
             if isinstance(res[0], dict):
                 keys = res[0].keys()
-                return {k: torch.stack([r[k] for r in res], dim=0) for k in keys}
+                return {k: torch.stack([cast(Tensor, r[k]) for r in res], dim=0) for k in keys}
+
             if isinstance(res[0], list):
-                return torch.stack([torch.stack(r, dim=0) for r in res], 0)
-            return torch.stack(res, dim=0)
+                return torch.stack([torch.stack(cast(list[Tensor], r), dim=0) for r in res], dim=0)
+
+            return torch.stack(cast(list[Tensor], res), dim=0)
+
         except TypeError:  # fallback solution to just return as it is if we cannot successfully stack
             return res
+        return res
 
     def reset(self) -> None:
         """Reset the current metric being tracked."""

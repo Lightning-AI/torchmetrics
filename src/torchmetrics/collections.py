@@ -562,12 +562,12 @@ class MetricCollection(ModuleDict):
             dict_modules[self._set_name(k)] = v
         return dict_modules
 
-    def __iter__(self) -> Iterator[Hashable]:
+    def __iter__(self) -> Iterator[Hashable]:  # type: ignore[override]
         """Return an iterator over the keys of the MetricDict."""
         return iter(self.keys())
 
     # TODO: redefine this as native python dict
-    def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
+    def keys(self, keep_base: bool = False) -> Iterable[Hashable]:  # type: ignore[override]
         r"""Return an iterable of the ModuleDict key.
 
         Args:
@@ -578,7 +578,7 @@ class MetricCollection(ModuleDict):
             return self._modules.keys()
         return self._to_renamed_dict().keys()
 
-    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[tuple[str, Metric]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[tuple[str, Metric]]:  # type: ignore[override]
         r"""Return an iterable of the ModuleDict key/value pairs.
 
         Args:
@@ -592,7 +592,7 @@ class MetricCollection(ModuleDict):
             return self._modules.items()
         return self._to_renamed_dict().items()
 
-    def values(self, copy_state: bool = True) -> Iterable[Metric]:
+    def values(self, copy_state: bool = True) -> Iterable[Metric]:  # type: ignore[override]
         """Return an iterable of the ModuleDict values.
 
         Args:

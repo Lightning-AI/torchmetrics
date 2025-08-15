@@ -222,6 +222,11 @@ class MultitaskWrapper(WrapperMetric):
         for task_name, metric in self.task_metrics.items():
             pred = task_preds[task_name]
             target = task_targets[task_name]
+            if not (isinstance(metric, (Metric, MetricCollection))):
+                raise TypeError(
+                    "Expected each task's metric to be a Metric or a MetricCollection. "
+                    f"Found a metric of type {type(metric)}"
+                )
             metric.update(pred, target)
 
     def _convert_output(self, output: dict[str, Any]) -> dict[str, Any]:
@@ -230,7 +235,15 @@ class MultitaskWrapper(WrapperMetric):
 
     def compute(self) -> dict[str, Any]:
         """Compute metrics for all tasks."""
-        return self._convert_output({task_name: metric.compute() for task_name, metric in self.task_metrics.items()})
+        output: dict[str, Any] = {}
+        for task_name, metric in self.task_metrics.items():
+            if not isinstance(metric, (Metric, MetricCollection)):
+                raise TypeError(
+                    "Expected each task's metric to be a Metric or a MetricCollection. "
+                    f"Found a metric of type {type(metric)}"
+                )
+            output[task_name] = metric.compute()
+        return self._convert_output(output)
 
     def forward(self, task_preds: dict[str, Tensor], task_targets: dict[str, Tensor]) -> dict[str, Any]:
         """Call underlying forward methods for all tasks and return the result as a dictionary."""
@@ -246,6 +259,11 @@ class MultitaskWrapper(WrapperMetric):
     def reset(self) -> None:
         """Reset all underlying metrics."""
         for metric in self.task_metrics.values():
+            if not isinstance(metric, (Metric, MetricCollection)):
+                raise TypeError(
+                    "Expected each task's metric to be a Metric or a MetricCollection. "
+                    f"Found a metric of type {type(metric)}"
+                )
             metric.reset()
         super().reset()
 
@@ -353,6 +371,11 @@ class MultitaskWrapper(WrapperMetric):
         fig_axs = []
         for i, (task_name, task_metric) in enumerate(self.task_metrics.items()):
             ax = axes[i] if axes is not None else None
+            if not isinstance(task_metric, (Metric, MetricCollection)):
+                raise TypeError(
+                    "Expected each task's metric to be a Metric or a MetricCollection. "
+                    f"Found a metric of type {type(task_metric)}"
+                )
             if isinstance(val, dict):
                 f, a = task_metric.plot(val[task_name], ax=ax)
             elif isinstance(val, Sequence):

@@ -13,7 +13,7 @@
 # limitations under the License.
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, cast
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -153,7 +153,7 @@ class BootStrapper(WrapperMetric):
         ``raw`` depending on how the class was initialized.
 
         """
-        computed_vals = torch.stack([m.compute() for m in self.metrics], dim=0)
+        computed_vals = torch.stack([cast(Metric, m).compute() for m in self.metrics], dim=0)
         output_dict = {}
         if self.mean:
             output_dict["mean"] = computed_vals.mean(dim=0)
@@ -172,6 +172,7 @@ class BootStrapper(WrapperMetric):
     def reset(self) -> None:
         """Reset the state of the base metric."""
         for m in self.metrics:
+            m = cast(Metric, m)
             m.reset()
         super().reset()
 
