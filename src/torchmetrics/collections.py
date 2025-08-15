@@ -562,7 +562,7 @@ class MetricCollection(ModuleDict):
             dict_modules[self._set_name(k)] = v
         return dict_modules
 
-    def __iter__(self) -> Iterator[Hashable]:
+    def __iter__(self) -> Iterator[Hashable]:  # type: ignore[override]
         """Return an iterator over the keys of the MetricDict."""
         return iter(self.keys())
 
