@@ -11,8 +11,6 @@ parametrize:
     image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
       - "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
       - "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
-  include: []
-  exclude: []
 
 run: |
   whereis nvidia
