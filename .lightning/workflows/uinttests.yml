@@ -1,0 +1,109 @@
+trigger:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+timeout: "300" # minutes
+machine: "L4_X_2"
+parametrize:
+  matrix:
+    image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
+      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
+      - "pytorchlightning/torchmetrics:ubuntu24.04-cuda12.6.3-py3.12-torch2.8"
+    # testing: ["doctest", "common", "distributed"] # todo
+  include: []
+  exclude: []
+
+env:
+  TOKENIZERS_PARALLELISM: "false"
+  MKL_SERVICE_FORCE_INTEL: 1
+  TEST_DIRS: "unittests"
+  FREEZE_REQUIREMENTS: 1
+  SKIP_SLOW_DOCTEST: 1
+
+run: |
+  whereis nvidia
+  nvidia-smi
+  python --version
+  pip --version
+  pip install -q fire wget packaging
+  set -ex
+
+  image_tmp="${image##*cuda}" # Remove everything up to and including "cuda"
+  CUDA_VERSION="${image_tmp%%-*}" # Extract the CUDA version up to the first hyphen
+  echo "Using CUDA version: ${CUDA_VERSION}"
+  CUDA_VERSION_M_M="${cuda_version%.*}" # Get major.minor by removing the last dot and everything after
+  CUDA_VERSION_MM="${CUDA_VERSION_M_M//'.'/''}"
+  TORCH_VER="${image##*torch}" # Extract the torch version from the image name
+  echo "Using Torch version: ${TORCH_VER}"
+  TORCH_URL="https://download.pytorch.org/whl/cu${CUDA_VERSION_MM}/torch_stable.html"
+  echo ${TORCH_URL}
+
+  # TODO: this requires PR number and event type to be shared
+  #  pip install -q fire pyGithub
+  #  printf "PR: $PR_NUMBER \n"
+  #  TEST_DIRS=$(python .github/assistant.py changed-domains $PR_NUMBER)
+  #  echo "focus: $TEST_DIRS"
+
+  pip install -q packaging
+  wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
+  for fpath in `ls requirements/*.txt`; do
+      # torch version shall be sourced based on the used docker
+      python adjust-torch-versions.py $fpath
+  done
+
+  if [ "${TORCH_VER}" == "2.0" ]; then
+    # Set oldest versions
+    python .github/assistant.py set-oldest-versions
+  fi
+
+  pip install . -U -r ./requirements/_devel.txt --upgrade-strategy=eager --prefer-binary --find-links=${TORCH_URL}
+  pip list
+
+  if [ "$testing" == "distributed" ]; then min_gpus=2; else min_gpus=1; fi
+  python -c "import torch ; mgpu = torch.cuda.device_count() ; assert mgpu >= ${min_gpus}, f'found GPUs: {mgpu}'"
+  python -c "from torch import __version__ as ver ; assert '.'.join(str(ver).split('.')[:2]) == '${TORCH_VER}', f'PyTorch: installed {ver} but expected ${TORCH_VER}'"
+
+  # DocTesting
+  cd src/
+  python -m pytest torchmetrics --cov=torchmetrics \
+    --timeout=240 --durations=50 \
+    --reruns 2 --reruns-delay 1
+  cd ..
+
+  cd tests/
+  # Pull testing data from S3
+  wget https://pl-public-data.s3.amazonaws.com/metrics/data.zip
+  unzip -o data.zip
+  ls -l _data/*
+  #du -h --max-depth=1 .
+  # UnitTesting common
+  #if [ "$testing" == "common" ]; then
+  python -m pytest ${TEST_DIRS} -v \
+    -m "not DDP" --numprocesses=6 --dist=loadfile \
+    --cov=torchmetrics --timeout=360 --durations=100 \
+    --reruns 3 --reruns-delay 1
+  # UnitTesting DDP
+  #elif [ "$testing" == "distributed" ]; then
+  export USE_PYTEST_POOL="1"
+  python -m pytest ${TEST_DIRS} -v \
+    --cov=torchmetrics -m "DDP" \
+    --timeout=360 --durations=100
+  #fi
+  cd ..
+
+  #  python -m coverage report
+  #  python -m coverage xml
+  #  python -m codecov --token=$(CODECOV_TOKEN) --name="GPU-coverage" \
+  #    --commit=$(Build.SourceVersion) --flags=gpu,unittest --env=linux,azure
+
+  # Examples
+  cd _samples/
+  FILES="*.py"
+  for fn in $FILES
+  do
+    echo "Processing $fn example..."
+    python $fn
+  done
+  cd ..
