@@ -71,7 +71,7 @@ def _recall_at_precision(
         idx = _lexargmax(zipped_masked)[0]
         max_recall, _, best_threshold = zipped_masked[idx]
     if max_recall == 0.0:
-        best_threshold = torch.tensor(1e6, device=thresholds.device, dtype=thresholds.dtype)
+        best_threshold = torch.tensor(float("nan"), device=thresholds.device, dtype=thresholds.dtype)
 
     return max_recall, best_threshold
 
@@ -267,9 +267,9 @@ def multiclass_recall_at_fixed_precision(
         ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> multiclass_recall_at_fixed_precision(preds, target, num_classes=5, min_precision=0.5, thresholds=None)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, nan, nan, nan]))
         >>> multiclass_recall_at_fixed_precision(preds, target, num_classes=5, min_precision=0.5, thresholds=5)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, nan, nan, nan]))
 
     """
     if validate_args:
