@@ -48,6 +48,8 @@ def _reduce_average_precision(
 ) -> Tensor:
     """Reduce multiple average precision score into one number."""
     if isinstance(precision, Tensor) and isinstance(recall, Tensor):
+        precision = torch.where(torch.isnan(precision), torch.zeros_like(precision), precision)
+        recall = torch.where(torch.isnan(recall), torch.zeros_like(recall), recall)
         res = -torch.sum((recall[:, 1:] - recall[:, :-1]) * precision[:, :-1], 1)
     else:
         res = torch.stack([-torch.sum((r[1:] - r[:-1]) * p[:-1]) for p, r in zip(precision, recall)])
@@ -72,6 +74,8 @@ def _binary_average_precision_compute(
     thresholds: Optional[Tensor],
 ) -> Tensor:
     precision, recall, _ = _binary_precision_recall_curve_compute(state, thresholds)
+    precision = torch.where(torch.isnan(precision), torch.zeros_like(precision), precision)
+    recall = torch.where(torch.isnan(recall), torch.zeros_like(recall), recall)
     return -torch.sum((recall[1:] - recall[:-1]) * precision[:-1])
 
 

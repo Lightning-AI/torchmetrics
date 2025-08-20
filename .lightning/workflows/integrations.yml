@@ -1,0 +1,52 @@
+trigger:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+machine: "L4"
+timeout: "35" # minutes
+parametrize:
+  matrix:
+    image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
+      - "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
+      - "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
+
+run: |
+  whereis nvidia
+  nvidia-smi
+  python --version
+  pip --version
+  pip install -q fire wget packaging
+  set -ex
+
+  image_tmp="${image##*cuda}" # Remove everything up to and including "cuda"
+  CUDA_VERSION="${image_tmp%%-*}" # Extract the CUDA version up to the first hyphen
+  CUDA_VERSION_MM="${CUDA_VERSION//'.'/''}"
+  image_tmp="${image##*:}" # Remove everything up to and including ":"
+  TORCH_VERSION="${image_tmp%%-*}" # Extract the torch version from the image name
+  TORCH_VER_M_M="${TORCH_VERSION%.*}" # Get major.minor by removing the last dot and everything after
+  TORCH_URL="https://download.pytorch.org/whl/cu${CUDA_VERSION_MM}/torch_stable.html"
+  echo ${TORCH_URL}
+
+  if [ "${TORCH_VER_M_M}" == "2.0" ]; then
+    pip install -q 'lightning-utilities[cli]'
+    python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
+    cat requirements/_integrate.txt
+  fi
+
+  python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
+  for fpath in `ls requirements/*.txt`; do
+      # torch version shall be sourced based on the used docker
+      python adjust-torch-versions.py $fpath
+  done
+
+  pip install -q -r requirements/_integrate.txt
+  # force reinstall TM as it could be overwritten by integration's dependencies
+  pip install . -U -r requirements/_tests.txt --find-links ${TORCH_URL}
+
+  pip list
+  python -c "from torch import __version__ as ver ; assert '.'.join(str(ver).split('.')[:2]) == '${TORCH_VER_M_M}', f'PyTorch: {ver}'"
+  python -c "import torch ; mgpu = torch.cuda.device_count() ; assert mgpu >= 1, f'found GPUs: {mgpu}'"
+
+  pytest tests/integrations/ -v --durations=50 --timeout=360
