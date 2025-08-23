@@ -13,11 +13,11 @@
 
 ## 🧰 Key Functions
 
-| Function                    | Description                                                   |
-|-----------------------------|---------------------------------------------------------------|
-| `plot_single_or_multi_val`  | Plots scalar or multi-value metric output w/ bounds/optimum   |
-| `plot_confusion_matrix`     | Draws task-specific confusion matrices                        |
-| `plot_curve`                | Renders ROC, precision-recall, and similar curves             |
+| Function                   | Description                                                 |
+| -------------------------- | ----------------------------------------------------------- |
+| `plot_single_or_multi_val` | Plots scalar or multi-value metric output w/ bounds/optimum |
+| `plot_confusion_matrix`    | Draws task-specific confusion matrices                      |
+| `plot_curve`               | Renders ROC, precision-recall, and similar curves           |
 
 ## 🧑‍💻 Usage & Extension
 
@@ -35,4 +35,3 @@
 - Docstrings: Google or NumPy preferred
 - Follow lint: `black`, `isort`, `flake8`
 - Name all functions with action-oriented verbs (`plot_*`)
-

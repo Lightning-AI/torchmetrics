@@ -28,4 +28,3 @@
 
 - Test naming: `test_<function>_<aspect>`
 - Follow lint: `black`, `isort`, `flake8`
-

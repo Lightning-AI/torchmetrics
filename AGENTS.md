@@ -9,7 +9,7 @@
 - MAY install optional domains via:
   - Audio: `pip install torchmetrics[audio]`
   - Image: `pip install torchmetrics[image]`
-  - Text:  `pip install torchmetrics[text]`
+  - Text: `pip install torchmetrics[text]`
   - Visual/Plotting: `pip install torchmetrics[visual]`
 
 ## ⚡ Development Environment

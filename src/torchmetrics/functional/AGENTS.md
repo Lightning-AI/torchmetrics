@@ -24,4 +24,3 @@
 
 - Place new functional metrics in: `torchmetrics/functional/<domain>/<new_metric>.py`
 - DO NOT cross-import module-based logic; retain separation
-
