@@ -1,10 +1,12 @@
 # AGENTS.md — Classification Metrics
 
 ## Scope
+
 - Implements classification metrics for binary, multiclass, and multilabel tasks.
 - Provides both functional APIs (torchmetrics/functional/classification/) and Metric modules (torchmetrics/classification/).
 
 ## Implementation Guidelines
+
 - Task API: expose a "task" parameter with values: "binary", "multiclass", "multilabel" where applicable.
 - Inputs:
   - binary: preds shape [N] or [N, ...], target same; threshold default 0.5 for probabilities/logits.
@@ -20,18 +22,22 @@
   - Match module numerics and docstrings.
 
 ## File Layout
+
 - Module: src/torchmetrics/classification/<metric>.py
 - Functional: src/torchmetrics/functional/classification/<metric>.py
-- Tests: tests/classification/test_<metric>.py
+- Tests: tests/classification/test\_<metric>.py
 
 ## Testing
+
 - Compare against known references (e.g., scikit-learn) when applicable.
 - Parametrize over tasks, threshold, average, top_k, device, dtype, shape.
 - DDP/single-device via pytest markers per repo conventions.
 
 ## Dependencies
+
 - Base install covers most use; for developers, consider: pip install torchmetrics[all]
 
 ## Lint & Style
+
 - ruff check --fix ., black .
 - Numpy/Google docstring; clear examples; state shapes and dtypes explicitly.
