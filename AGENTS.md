@@ -5,7 +5,7 @@
 - MUST install TorchMetrics via pip or conda unless project requirements explicitly override.
   - pip: `pip install torchmetrics`
   - conda: `conda install -c conda-forge torchmetrics`
-- SHOULD use PyTorch >=1.8 for full compatibility.
+- SHOULD use PyTorch >=2.0.0 for full compatibility (per requirements/base.txt).
 - MAY install optional domains via:
   - Audio: `pip install torchmetrics[audio]`
   - Image: `pip install torchmetrics[image]`
@@ -28,10 +28,10 @@
 ## 🧹 Linting & Formatting
 
 - MUST run all of:
+  - `ruff check --fix .` (lint + import sorting)
   - `black .` (autoformatting)
-  - `isort .` (imports)
-  - `flake8 .` (PEP8 compliance)
   - `pre-commit run --all-files`
+- Optional: `isort .` if used separately (Ruff already sorts imports).
 - Agents MAY reference `.pre-commit-config.yaml` for hook settings.
 
 ## 🔁 Continuous Integration (CI)

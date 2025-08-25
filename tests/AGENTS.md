@@ -7,7 +7,7 @@
 
 ## 🚥 Test Class Patterns
 
-- Use shared class: `from tests.helpers import MetricTester`
+- Prefer shared helpers (e.g., MetricTester) from `tests/helpers` when available
 - Parametrize tests for all relevant cases: dtypes, device, batch size, input shape
 - Use `@pytest.mark.parametrize("ddp", [True, False])` for DDP/single-device
 
@@ -27,4 +27,4 @@
 ## 📄 Naming and Lint Rules
 
 - Test naming: `test_<function>_<aspect>`
-- Follow lint: `black`, `isort`, `flake8`
+- Follow lint: `ruff check --fix`, `black`
