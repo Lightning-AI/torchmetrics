@@ -120,17 +120,19 @@ class TestNDCG(RetrievalMetricTester):
         )
 
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments_with_non_binary_target)
+    @pytest.mark.parametrize("empty_target_action", ["skip", "pos", "neg"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    def test_functional_metric(self, preds: Tensor, target: Tensor, k: int):
+    def test_functional_metric(self, preds: Tensor, target: Tensor, empty_target_action: str, k: int):
         """Test functional implementation of metric."""
+        metric_args = {"empty_target_action": empty_target_action, "top_k": k}
+
         target = target if target.min() >= 0 else target - target.min()
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=retrieval_normalized_dcg,
             reference_metric=_ndcg_at_k,
-            metric_args={},
-            top_k=k,
+            metric_args=metric_args,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_with_non_binary_target)
