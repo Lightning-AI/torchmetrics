@@ -9,7 +9,7 @@ sphinx-autodoc-typehints ==1.23.0
 sphinx-paramlinks ==0.6.0
 sphinx-togglebutton ==0.3.2
 sphinx-copybutton ==0.5.2
-sphinx-autobuild ==2024.10.3
+sphinx-autobuild ==2025.8.25
 sphinx-gallery ==0.19.0
 ipython >8.0, <10.0
 
