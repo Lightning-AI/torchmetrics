@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import socket
 import sys
 
 import numpy as np
@@ -20,7 +19,6 @@ import torch
 from lightning_utilities.test.warning import no_warning_call
 from torch import tensor
 from unittests._helpers import _IS_WINDOWS
-from unittests.conftest import MAX_PORT, START_PORT
 
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
@@ -240,15 +238,3 @@ def test_half_precision_top_k_cpu_raises_error():
     x = torch.randn(100, 10, dtype=torch.half)
     with pytest.raises(RuntimeError, match="\"topk_cpu\" not implemented for 'Half'"):
         torch.topk(x, k=3, dim=1)
-
-
-def find_free_port(start=START_PORT, end=MAX_PORT):
-    """Returns an available localhost port in the given range or returns -1 if no port available."""
-    for port in range(start, end + 1):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(("localhost", port))
-                return port
-            except OSError:
-                continue
-    return -1
