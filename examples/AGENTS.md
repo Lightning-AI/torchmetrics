@@ -23,6 +23,7 @@ Examples that call `.plot()` require matplotlib. Ensure it’s installed.
 ## 🧼 Formatting
 
 Use Ruff on the examples:
+
 - `ruff format examples/`
 - `ruff check examples/ --fix`
 
