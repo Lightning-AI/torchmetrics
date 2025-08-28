@@ -10,11 +10,11 @@ This folder contains runnable demos of TorchMetrics in action. Agents can use th
 
 ## 🚀 How to Run
 
-- Install all extras and plotting:
-  pip install torchmetrics[all] matplotlib
+- Install all extras (includes plotting dependencies):
+  pip install torchmetrics[all]
 
 - Run any example script:
-  python examples/classification.py
+  python examples/<script>.py
 
 ## 📊 Plotting
 

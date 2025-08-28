@@ -5,7 +5,7 @@
 - MUST install TorchMetrics via pip or conda unless project requirements explicitly override.
   - pip: `pip install torchmetrics`
   - conda: `conda install -c conda-forge torchmetrics`
-- SHOULD use PyTorch >=1.8 for full compatibility.
+- SHOULD use PyTorch >=2.0.0 for full compatibility (per requirements/base.txt).
 - MAY install optional domains via:
   - Audio: `pip install torchmetrics[audio]`
   - Image: `pip install torchmetrics[image]`

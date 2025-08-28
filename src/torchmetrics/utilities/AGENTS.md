@@ -7,7 +7,7 @@
 
 ## 📦 Dependencies
 
-- MUST install: `pip install matplotlib scienceplots`
+- MUST install: `pip install torchmetrics[visual]` (installs matplotlib and SciencePlots)
 - SciencePlots styles are used for publication-quality output
 - Optional: LaTeX is recommended for advanced plots (see docs for installer script)
 

@@ -13,7 +13,7 @@
 ## ✅ Aggregation & Arithmetic
 
 - For batch-wise or accumulation over multiple batches, aggregate manually, or use module-based version instead
-- Some metrics support composition via arithmetic, e.g., `Combined = accuracy + precision`
+- Arithmetic composition is supported on Metric modules (e.g., combining torchmetrics.Metric instances), not on functional calls
 
 ## 🚦 Distributed Data Parallel (DDP)
 
