@@ -22,9 +22,9 @@ Examples that call `.plot()` require matplotlib. Ensure it’s installed.
 
 ## 🧼 Formatting
 
-Use Black and Ruff on the examples:
-black examples/
-ruff examples/
+Use Ruff on the examples:
+- `ruff format examples/`
+- `ruff check examples/ --fix`
 
 ## 🧠 Agent Tips
 

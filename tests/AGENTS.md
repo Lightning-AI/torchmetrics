@@ -27,4 +27,4 @@
 ## 📄 Naming and Lint Rules
 
 - Test naming: `test_<function>_<aspect>`
-- Follow lint: `black`, `isort`, `flake8`
+- Follow lint: `ruff`

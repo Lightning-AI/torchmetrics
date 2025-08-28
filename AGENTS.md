@@ -28,9 +28,8 @@
 ## 🧹 Linting & Formatting
 
 - MUST run all of:
-  - `black .` (autoformatting)
-  - `isort .` (imports)
-  - `flake8 .` (PEP8 compliance)
+  - `ruff format .` (autoformatting)
+  - `ruff check . --fix` (linting)
   - `pre-commit run --all-files`
 - Agents MAY reference `.pre-commit-config.yaml` for hook settings.
 

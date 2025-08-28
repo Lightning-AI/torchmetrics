@@ -33,5 +33,5 @@
 ## 🖌️ Style
 
 - Docstrings: Google or NumPy preferred
-- Follow lint: `black`, `isort`, `flake8`
+- Follow lint: `ruff`
 - Name all functions with action-oriented verbs (`plot_*`)
