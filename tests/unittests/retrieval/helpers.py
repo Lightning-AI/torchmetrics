@@ -104,15 +104,16 @@ def _compute_sklearn_metric(
     ignore_index: Optional[int] = None,
     reverse: bool = False,
     aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+    metric_name: Optional[str] = None,
     **kwargs: Any,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
     if indexes is None:
-        if len(preds.shape) == 1:
-            indexes = np.full_like(preds, fill_value=0, dtype=np.int64)
-        elif len(preds.shape) == 2:
+        if metric_name == "ndcg" and preds.ndim == 2:
             row_indexes = np.arange(preds.shape[0], dtype=np.int64)[:, None]
             indexes = np.tile(row_indexes, (1, preds.shape[1]))
+        else:
+            indexes = np.zeros_like(preds, dtype=np.int64)
     if isinstance(indexes, Tensor):
         indexes = indexes.cpu().numpy()
     if isinstance(preds, Tensor):
@@ -500,11 +501,14 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
         reference_metric: Callable,
         metric_args: dict,
+        metric_name: Optional[str] = None,
         reverse: bool = False,
         **kwargs: Any,
     ):
         """Test functional implementation of metric."""
-        _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
+        _ref_metric_adapted = partial(
+            _compute_sklearn_metric, metric=reference_metric, reverse=reverse, metric_name=metric_name, **metric_args
+        )
 
         super().run_functional_metric_test(
             preds=preds,
