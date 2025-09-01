@@ -2,11 +2,11 @@
 
 ## Build Locally
 
-- Install docs dependencies: pip install -r requirements/\_docs.txt
-- Optional full dev: pip install -e .[dev]
+- Install docs dependencies: `pip install -r requirements/_docs.txt`
+- Optional full dev: `pip install -e .[dev]`
 - Build:
-  - From repo root: make -C docs html
-  - Or: sphinx-build -b html docs/source docs/build/html
+  - From repo root: `make -C docs html`
+  - Or: `sphinx-build -b html docs/source docs/build/html`
 
 ## Style & Content
 

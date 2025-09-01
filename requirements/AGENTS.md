@@ -2,10 +2,9 @@
 
 ## Files-to-Extras Mapping
 
-- Each \*.txt here (without leading underscore) becomes an installable extra via setup.py.
+- Each *.txt here (without leading underscore) becomes an installable extra via setup.py.
   - Example: requirements/image.txt -> pip install torchmetrics[image]
-- Files ending with \_test.txt are aggregated into the internal "\_tests" extra (not exposed directly).
-- Files starting with "\_" are internal (not exposed as extras).
+- Files starting with "_" are internal (not exposed as extras).
 
 ## Base Requirements
 
