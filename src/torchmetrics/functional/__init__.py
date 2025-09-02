@@ -74,8 +74,7 @@ from torchmetrics.functional.image._deprecated import (
 )
 from torchmetrics.functional.image._deprecated import _total_variation as total_variation
 from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
-from torchmetrics.functional.multimodal import lip_vertex_error
-from torchmetrics.functional.multimodal import upper_face_dynamics_deviation
+from torchmetrics.functional.multimodal import lip_vertex_error, upper_face_dynamics_deviation
 from torchmetrics.functional.nominal import (
     cramers_v,
     cramers_v_matrix,
@@ -247,6 +246,7 @@ __all__ = [
     "tschuprows_t_matrix",
     "tweedie_deviance_score",
     "universal_image_quality_index",
+    "upper_face_dynamics_deviation",
     "weighted_mean_absolute_percentage_error",
     "word_error_rate",
     "word_information_lost",

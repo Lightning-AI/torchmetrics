@@ -31,7 +31,7 @@ def upper_face_dynamics_deviation(
     The metric is defined as:
 
     .. math::
-        \text{FDD} = \frac{1}{N-1} \sum_{i=1}^{N-1} \frac{1}{M} \sum_{v \in \text{upper}} 
+        \text{FDD} = \frac{1}{N-1} \sum_{i=1}^{N-1} \frac{1}{M} \sum_{v \in \text{upper}}
         \big\| (x_{i+1,v} - x_{i,v}) - (\hat{x}_{i+1,v} - \hat{x}_{i,v}) \big\|_2^2
 
     where :math:`N` is the number of frames, :math:`M` is the number of vertices in the upper face region,
@@ -87,17 +87,15 @@ def upper_face_dynamics_deviation(
         raise ValueError("Need at least 2 frames to compute dynamics deviation.")
 
     pred = vertices_pred[:, upper_face_map, :]  # (T, M, 3)
-    gt = vertices_gt[:, upper_face_map, :]    
+    gt = vertices_gt[:, upper_face_map, :]
 
     pred_disp = pred[1:] - pred[:-1]  # (T-1, M, 3)
-    gt_disp = gt[1:] - gt[:-1]       
+    gt_disp = gt[1:] - gt[:-1]
 
-    pred_norm = torch.linalg.norm(pred_disp ** 2, dim=-1)  # (T-1, M)
-    gt_norm = torch.linalg.norm(gt_disp ** 2, dim=-1)     
+    pred_norm = torch.linalg.norm(pred_disp**2, dim=-1)  # (T-1, M)
+    gt_norm = torch.linalg.norm(gt_disp**2, dim=-1)
 
     pred_dyn = torch.std(pred_norm, dim=0, unbiased=False)  # (M,)
-    gt_dyn = torch.std(gt_norm, dim=0, unbiased=False)      
+    gt_dyn = torch.std(gt_norm, dim=0, unbiased=False)
 
-    score = torch.mean(gt_dyn - pred_dyn)  # scalar
-    
-    return score   
+    return torch.mean(gt_dyn - pred_dyn)  # scalar

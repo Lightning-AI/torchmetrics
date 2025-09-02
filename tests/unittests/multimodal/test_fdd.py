@@ -44,20 +44,19 @@ def _generate_vertices(batch_size: int = 1) -> _InputVertices:
 
 def _reference_fdd(vertices_pred, vertices_gt, upper_face_map):
     """Reference implementation for FDD metric using numpy."""
-
     pred = vertices_pred[:, upper_face_map, :].numpy()  # (T, M, 3)
-    gt = vertices_gt[:, upper_face_map, :].numpy()      # (T, M, 3)
+    gt = vertices_gt[:, upper_face_map, :].numpy()  # (T, M, 3)
 
     displacements_gt = gt[1:] - gt[:-1]  # (T-1, V, 3)
     displacements_pred = pred[1:] - pred[:-1]
 
-    l2_gt = np.linalg.norm(displacements_gt ** 2, axis=-1)  # (T-1, M)
-    l2_pred = np.linalg.norm(displacements_pred ** 2, axis=-1)
+    l2_gt = np.linalg.norm(displacements_gt**2, axis=-1)  # (T-1, M)
+    l2_pred = np.linalg.norm(displacements_pred**2, axis=-1)
 
     std_diff = np.std(l2_gt, axis=0) - np.std(l2_pred, axis=0)  # (M,)
 
     fdd = np.mean(std_diff)
-    
+
     return torch.tensor(fdd)
 
 

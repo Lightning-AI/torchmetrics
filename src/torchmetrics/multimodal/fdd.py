@@ -38,21 +38,21 @@ class UpperFaceDynamicsDeviation(Metric):
         \text{FDD} = \frac{1}{|\text{SU}|} \sum_{v \in \text{SU}} \Big( \text{std}(\|x_{1:T,v} - x_{0:T-1,v}\|_2) -
         \text{std}(\|\hat{x}_{1:T,v} - \hat{x}_{0:T-1,v}\|_2) \Big)
 
-    where :math:`\text{SU}` is the set of upper-face vertex indices, 
-    :math:`x_{t,v}` denotes the 3D coordinates of vertex :math:`v` in frame :math:`t` of the ground truth mesh, 
+    where :math:`\text{SU}` is the set of upper-face vertex indices,
+    :math:`x_{t,v}` denotes the 3D coordinates of vertex :math:`v` in frame :math:`t` of the ground truth mesh,
     :math:`\hat{x}_{t,v}` denotes the corresponding vertex in the predicted mesh, and :math:`\text{std}` is the
-    standard deviation along the temporal axis.  
+    standard deviation along the temporal axis.
 
-    The metric computes the standard deviation of the frame-to-frame L2 displacements of each upper-face vertex 
-    for both predicted and ground truth sequences, then averages the differences over all upper-face vertices. 
+    The metric computes the standard deviation of the frame-to-frame L2 displacements of each upper-face vertex
+    for both predicted and ground truth sequences, then averages the differences over all upper-face vertices.
     A lower FDD value indicates better temporal consistency of facial motion.
 
     As input to ``forward`` and ``update``, the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): Predicted vertices tensor of shape (T, V, 3) where T is the number of frames,
       V is the number of vertices, and 3 represents XYZ coordinates.
-    - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (T, V, 3) where T is the number of frames,
-      V is the number of vertices, and 3 represents XYZ coordinates.
+    - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (T, V, 3) where T is the number of
+    frames, V is the number of vertices, and 3 represents XYZ coordinates.
     - ``upper_face_map`` (:class:`list`): List of vertex indices corresponding to the upper-face region.
 
     As output of ``forward`` and ``compute``, the metric returns the following output:
@@ -78,6 +78,7 @@ class UpperFaceDynamicsDeviation(Metric):
         >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
         >>> metric(vertices_pred, vertices_gt)
         tensor(-0.3668)
+
     """
 
     is_differentiable: bool = True
