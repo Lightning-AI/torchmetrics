@@ -54,25 +54,26 @@ class MeanIoU(Metric):
 
     Args:
         num_classes: The number of classes in the segmentation problem. Required when input_format="index",
-            optional when input_format="one-hot".
+            optional when input_format="one-hot" or "mixed".
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately. If set to ``False``, the metric will
             compute the mean IoU over all classes.
-        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
-            or ``"index"`` for index tensors
+        input_format: What kind of input the function receives.
+            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
+            or ``"mixed"`` for one one-hot encoded and one index tensor
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
             If ``num_classes`` is not ``None`` or a positive integer
         ValueError:
-            If ``num_classes`` is not provided when ``input_format="index"``
+            If ``num_classes`` is not provided when ``input_format`` is ``"index"``
         ValueError:
             If ``include_background`` is not a boolean
         ValueError:
             If ``per_class`` is not a boolean
         ValueError:
-            If ``input_format`` is not one of ``"one-hot"`` or ``"index"``
+            If ``input_format`` is not one of ``"one-hot"``, ``"index"`` or ``"mixed"``
 
     Example:
         >>> import torch
@@ -108,7 +109,7 @@ class MeanIoU(Metric):
         num_classes: Optional[int] = None,
         include_background: bool = True,
         per_class: bool = False,
-        input_format: Literal["one-hot", "index"] = "one-hot",
+        input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -131,7 +132,20 @@ class MeanIoU(Metric):
         """Update the state with the new data."""
         if not self._is_initialized:
             try:
-                self.num_classes = preds.shape[1]
+                if self.input_format == "one-hot":
+                    self.num_classes = preds.shape[1]
+                elif self.input_format == "mixed":
+                    if preds.dim() == (target.dim() + 1):
+                        self.num_classes = preds.shape[1]
+                    elif (preds.dim() + 1) == target.dim():
+                        self.num_classes = target.shape[1]
+                    else:
+                        raise ValueError(
+                            "Predictions and targets are expected to have the same shape,",
+                            f"got {preds.shape} and {target.shape}.",
+                        )
+                else:
+                    raise ValueError("Argument `num_classes` must be provided when `input_format` is 'index'.")
             except IndexError as err:
                 raise IndexError(f"Cannot determine `num_classes` from `preds` tensor: {preds}.") from err
 

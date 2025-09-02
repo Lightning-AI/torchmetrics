@@ -23,3 +23,7 @@
 -r regression_test.txt
 -r segmentation_test.txt
 -r text_test.txt
+
+# hotfix for latest safetensors breaking change to older Torch versions
+# placing this req. freeze here as it is likely used by many packages which has accelerate as dependency
+safetensors <0.7.0

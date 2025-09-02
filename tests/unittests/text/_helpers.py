@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
-import sys
 from collections.abc import Sequence
 from functools import partial
 from typing import Any, Callable, Optional, Union
@@ -24,7 +23,7 @@ from torch import Tensor
 
 from torchmetrics import Metric
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL, _reference_cachier
-from unittests._helpers import seed_all
+from unittests._helpers import _IS_WINDOWS, seed_all
 from unittests._helpers.testers import (
     MetricTester,
     _assert_allclose,
@@ -368,7 +367,7 @@ class TextTester(MetricTester):
             "key": key,
         }
         if ddp:
-            if sys.platform == "win32":
+            if _IS_WINDOWS:
                 pytest.skip("DDP not supported on windows")
             if not USE_PYTEST_POOL:
                 pytest.skip("DDP pool is not available.")

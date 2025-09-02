@@ -81,7 +81,7 @@
 .. _chrF++ score: https://aclanthology.org/W17-4770
 .. _TER: https://aclanthology.org/2006.amta-papers.25
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359
-.. _MultiScaleSSIM: https://ieeexplore.ieee.org/document/1292216
+.. _MultiScaleSSIM: https://ieeexplore.ieee.org/abstract/document/1292216
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/abstract/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
 .. _SpatialDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
@@ -129,7 +129,7 @@
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Spectral Distortion Index: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
-.. _Error relative global dimensionless synthesis: https://minesparis-psl.hal.science/hal-00464703/document
+.. _Error relative global dimensionless synthesis: https://minesparis-psl.hal.science/hal-00464703
 .. _fid ref1: https://arxiv.org/abs/1512.00567
 .. _fid ref2: https://arxiv.org/abs/1706.08500
 .. _inception ref1: https://arxiv.org/abs/1606.03498
@@ -143,7 +143,7 @@
 .. _Peak Signal to Noise Ratio With Blocked Effect: https://ieeexplore.ieee.org/abstract/document/5535179
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
 .. _Demographic parity: http://www.fairmlbook.org/
-.. _Equal opportunity: https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
+.. _Equal opportunity: https://arxiv.org/abs/1610.02413
 .. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220
 .. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816

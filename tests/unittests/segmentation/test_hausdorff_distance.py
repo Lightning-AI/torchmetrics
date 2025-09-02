@@ -36,6 +36,19 @@ _inputs2 = _Input(
     preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
     target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
 )
+_inputs3 = _Input(
+    preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 16, 16)),
+    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16, 16)),
+)
+_inputs4 = _Input(
+    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16, 16)),
+    target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 16, 16)),
+)
+
+_inputs5 = _Input(
+    preds=(torch.rand((NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16, 16)) * 12 - 6),
+    target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 16, 16)),
+)
 
 
 def reference_metric(preds, target, input_format, reduce, **kwargs: Any):
@@ -43,11 +56,25 @@ def reference_metric(preds, target, input_format, reduce, **kwargs: Any):
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
+    elif input_format == "mixed":
+        if preds.dim() == (target.dim() + 1):
+            if torch.is_floating_point(preds):
+                preds = preds.argmax(dim=1)
+                preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
+            target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
+        elif (preds.dim() + 1) == target.dim():
+            if torch.is_floating_point(target):
+                target = target.argmax(dim=1)
+                target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
+            preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
     score = monai_hausdorff_distance(preds, target, **kwargs)
     return score.mean() if reduce else score
 
 
-@pytest.mark.parametrize(("inputs", "input_format"), [(_inputs1, "one-hot"), (_inputs2, "index")])
+@pytest.mark.parametrize(
+    ("inputs", "input_format"),
+    [(_inputs1, "one-hot"), (_inputs2, "index"), (_inputs3, "mixed"), (_inputs4, "mixed"), (_inputs5, "mixed")],
+)
 @pytest.mark.parametrize("distance_metric", ["euclidean", "chessboard", "taxicab"])
 @pytest.mark.parametrize("directed", [True, False])
 @pytest.mark.parametrize("spacing", [None, [2, 2]])

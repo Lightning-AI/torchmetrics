@@ -107,6 +107,9 @@ class BinaryPrecisionRecallCurve(Metric):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        normalization:
+            Specifies a normalization method that is used for batch-wise update regarding negative logits.
+            Set to ``None`` if negative logits are desired in evaluation.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -120,7 +123,7 @@ class BinaryPrecisionRecallCurve(Metric):
          tensor([0.0000, 0.5000, 0.7000, 0.8000]))
         >>> bprc = BinaryPrecisionRecallCurve(thresholds=5)
         >>> bprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000]),
+        (tensor([0.5000, 0.6667, 0.6667, 0.0000,    nan, 1.0000]),
          tensor([1., 1., 1., 0., 0., 0.]),
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
@@ -139,6 +142,7 @@ class BinaryPrecisionRecallCurve(Metric):
         thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        normalization: Optional[Literal["sigmoid", "softmax"]] = "sigmoid",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -147,6 +151,7 @@ class BinaryPrecisionRecallCurve(Metric):
 
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.normalization = normalization
 
         thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
@@ -163,7 +168,13 @@ class BinaryPrecisionRecallCurve(Metric):
         """Update metric states."""
         if self.validate_args:
             _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index)
-        preds, target, _ = _binary_precision_recall_curve_format(preds, target, self.thresholds, self.ignore_index)
+        preds, target, _ = _binary_precision_recall_curve_format(
+            preds,
+            target,
+            self.thresholds,
+            self.ignore_index,
+            self.normalization,
+        )
         state = _binary_precision_recall_curve_update(preds, target, self.thresholds)
         if isinstance(state, Tensor):
             self.confmat += state
@@ -305,16 +316,16 @@ class MulticlassPrecisionRecallCurve(Metric):
          tensor(0.0500)]
         >>> mcprc = MulticlassPrecisionRecallCurve(num_classes=5, thresholds=5)
         >>> mcprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([[0.2500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000],
-                 [0.2500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000],
-                 [0.2500, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
-                 [0.2500, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
-                 [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000]]),
+        (tensor([[0.2500, 1.0000, 1.0000, 1.0000,    nan, 1.0000],
+                 [0.2500, 1.0000, 1.0000, 1.0000,    nan, 1.0000],
+                 [0.2500, 0.0000, 0.0000, 0.0000,    nan, 1.0000],
+                 [0.2500, 0.0000, 0.0000, 0.0000,    nan, 1.0000],
+                 [0.0000,    nan,    nan,    nan,    nan, 1.0000]]),
          tensor([[1., 1., 1., 1., 0., 0.],
                  [1., 1., 1., 1., 0., 0.],
                  [1., 0., 0., 0., 0., 0.],
                  [1., 0., 0., 0., 0., 0.],
-                 [0., 0., 0., 0., 0., 0.]]),
+                 [nan, nan, nan, nan, nan, 0.]]),
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
     """
@@ -509,9 +520,9 @@ class MultilabelPrecisionRecallCurve(Metric):
         [tensor([0.0500, 0.4500, 0.7500]), tensor([0.0500, 0.5500, 0.6500, 0.7500]), tensor([0.0500, 0.3500, 0.7500])]
         >>> mlprc = MultilabelPrecisionRecallCurve(num_labels=3, thresholds=5)
         >>> mlprc(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([[0.5000, 0.5000, 1.0000, 1.0000, 0.0000, 1.0000],
-                 [0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000],
-                 [0.7500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000]]),
+        (tensor([[0.5000, 0.5000, 1.0000, 1.0000,    nan, 1.0000],
+                 [0.5000, 0.6667, 0.6667, 0.0000,    nan, 1.0000],
+                 [0.7500, 1.0000, 1.0000, 1.0000,    nan, 1.0000]]),
          tensor([[1.0000, 0.5000, 0.5000, 0.5000, 0.0000, 0.0000],
                  [1.0000, 1.0000, 1.0000, 0.0000, 0.0000, 0.0000],
                  [1.0000, 0.6667, 0.3333, 0.3333, 0.0000, 0.0000]]),

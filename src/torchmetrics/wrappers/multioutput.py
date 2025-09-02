@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from copy import deepcopy
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, cast
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -130,11 +130,11 @@ class MultioutputWrapper(WrapperMetric):
         """Update each underlying metric with the corresponding output."""
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
-            metric.update(*selected_args, **selected_kwargs)
+            cast(Metric, metric).update(*selected_args, **cast(Mapping, selected_kwargs))
 
     def compute(self) -> Tensor:
         """Compute metrics."""
-        return torch.stack([m.compute() for m in self.metrics], 0)
+        return torch.stack([cast(Metric, m).compute() for m in self.metrics], 0)
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
@@ -145,7 +145,7 @@ class MultioutputWrapper(WrapperMetric):
         """
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         results = [
-            metric(*selected_args, **selected_kwargs)
+            metric(*selected_args, **cast(Mapping, selected_kwargs))
             for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs)
         ]
         if results[0] is None:
@@ -155,7 +155,7 @@ class MultioutputWrapper(WrapperMetric):
     def reset(self) -> None:
         """Reset all underlying metrics."""
         for metric in self.metrics:
-            metric.reset()
+            cast(Metric, metric).reset()
         super().reset()
 
     def plot(

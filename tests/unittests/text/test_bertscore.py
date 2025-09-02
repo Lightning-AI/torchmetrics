@@ -23,7 +23,13 @@ from typing_extensions import Literal
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
-from unittests._helpers import _TORCH_LESS_THAN_2_1, _TRANSFORMERS_RANGE_LT_4_50_LE_4_52, skip_on_connection_issues
+from unittests._helpers import (
+    _IS_WINDOWS,
+    _TORCH_LESS_THAN_2_1,
+    _TRANSFORMERS_GREATER_EQUAL_4_54,
+    _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
+    skip_on_connection_issues,
+)
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import (
     _inputs_multiple_references,
@@ -96,14 +102,19 @@ def _reference_bert_score(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
 )
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
+)
+@skip_on_connection_issues()
 class TestBERTScore(TextTester):
     """Tests for BERTScore."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    @skip_on_connection_issues()
     def test_bertscore_class(self, ddp, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key):
         """Test the bert score class."""
         metric_args = {
@@ -134,7 +145,6 @@ class TestBERTScore(TextTester):
             ignore_order=ddp,  # ignore order of predictions when DDP is used
         )
 
-    @skip_on_connection_issues()
     def test_bertscore_functional(self, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key):
         """Test the bertscore functional."""
         metric_args = {
@@ -162,7 +172,6 @@ class TestBERTScore(TextTester):
             key=metric_key,
         )
 
-    @skip_on_connection_issues()
     def test_bertscore_differentiability(
         self, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key
     ):
@@ -191,8 +200,13 @@ class TestBERTScore(TextTester):
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
+)
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
 )
 @pytest.mark.parametrize("idf", [True, False])
 def test_bertscore_sorting(idf: bool):
@@ -216,8 +230,13 @@ def test_bertscore_sorting(idf: bool):
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
+)
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
 )
 @pytest.mark.parametrize("truncation", [True, False])
 def test_bertscore_truncation(truncation: bool):
@@ -240,8 +259,13 @@ def test_bertscore_truncation(truncation: bool):
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
+)
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
 )
 def test_bertscore_single_str_input():
     """Test if BERTScore works with single string preds and target."""
@@ -291,8 +315,13 @@ def test_bertscore_single_str_input():
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
     #  consider bumping also torch min versions in the metrics implementations
-    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_LT_4_50_LE_4_52,
+    condition=_TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
     reason="could be due to torch compatibility issues with transformers",
+)
+@pytest.mark.xfail(
+    ImportError,
+    condition=_TORCH_LESS_THAN_2_1 and _IS_WINDOWS and _TRANSFORMERS_GREATER_EQUAL_4_54,
+    reason="another strange behaviour of transformers on windows",
 )
 def test_bertscore_multiple_references(preds, target, expected):
     """Test both functional and class APIs with multiple references."""

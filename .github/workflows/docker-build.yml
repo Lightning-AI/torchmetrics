@@ -12,6 +12,7 @@ on: # Trigger the workflow on push or pull request, but only for the master bran
       - "setup.py"
   pull_request:
     branches: [master]
+    types: [opened, reopened, ready_for_review, synchronize]
     paths:
       - "requirements/*"
       - "requirements.txt"
@@ -37,7 +38,7 @@ jobs:
         python: ["3.9", "3.10", "3.11"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Login to DockerHub
         if: env.PUSH_DOCKERHUB == 'true' && github.repository_owner == 'Lightning-AI'
@@ -75,8 +76,11 @@ jobs:
           - { python: "3.11", pytorch: "2.5.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.6.0", cuda: "12.4.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "22.04" }
+          - { python: "3.12", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "24.04" }
+          - { python: "3.12", pytorch: "2.8.0", cuda: "12.6.3", ubuntu: "24.04" }
+          #- { python: "3.13", pytorch: "2.8.0", cuda: "12.6.3", ubuntu: "24.04" }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Login to DockerHub
         uses: docker/login-action@v3

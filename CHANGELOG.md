@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -6,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
+---
 
 ## [Unreleased] - YYYY-MM-DD
 
@@ -14,30 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ClassificationReport` with support for binary, multiclass, and multilabel classification tasks ([#3116](https://github.com/Lightning-AI/torchmetrics/pull/3116))
 
 
-- Added `VMAF` metric to new video domain ([#2991](https://github.com/Lightning-AI/torchmetrics/pull/2991))
-
-
-- Added CRPS in regression domain ([#3024](https://github.com/Lightning-AI/torchmetrics/pull/3024))
-
-
-- Added `aggregation_level` argument to `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
-
-
-- Added support for `reduction="none"` to `LearnedPerceptualImagePatchSimilarity` ([#3053](https://github.com/Lightning-AI/torchmetrics/pull/3053))
-
-
-- Added support single `str` input for functional interface of `bert_score` ([#3056](https://github.com/Lightning-AI/torchmetrics/pull/3056))
-
-
-- Enhance: `BERTScore` to evaluate hypotheses against multiple references ([#3069](https://github.com/Lightning-AI/torchmetrics/pull/3069))
-
-
-- Added `Lip Vertex Error (LVE)` in multimodal domain ([3090](https://github.com/Lightning-AI/torchmetrics/pull/3090))
+-
 
 
 ### Changed
 
-- Improved numerical stability of pearson's correlation coefficient ([#3152](https://github.com/Lightning-AI/torchmetrics/pull/3152))
+- Defaulting Dice score `average="macro"` ([#3042](https://github.com/Lightning-AI/torchmetrics/pull/3042))
 
 
 ### Deprecated
@@ -47,15 +31,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed `zero_division` argument from `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
+-
 
 
 ### Fixed
 
 -
 
+- Fixed `BinaryPrecisionRecallCurve` now returns `NaN` for precision when no predictions meet a threshold ([#3227](https://github.com/Lightning-AI/torchmetrics/pull/3227))
+
+
+- Fixed `precision_at_fixed_recall` and `recall_at_fixed_precision` to correctly return `NaN` thresholds when recall/precision conditions are not met ([#3226](https://github.com/Lightning-AI/torchmetrics/pull/3226))
 
 ---
+
+## [1.8.1] - 2025-08-07
+
+### Changed
+
+- Added `reduction='none'` to `vif` metric ([#3196](https://github.com/Lightning-AI/torchmetrics/pull/3196))
+- Float input support for segmentation metrics ([#3198](https://github.com/Lightning-AI/torchmetrics/pull/3198))
+
+### Fixed
+
+- Fixed unintended `sigmoid` normalization in `BinaryPrecisionRecallCurve` ([#3182](https://github.com/Lightning-AI/torchmetrics/pull/3182))
+
+
+## [1.8.0] - 2025-07-23
+
+### Added
+
+- Added `VMAF` metric to new video domain ([#2991](https://github.com/Lightning-AI/torchmetrics/pull/2991))
+- Added `CRPS` in regression domain ([#3024](https://github.com/Lightning-AI/torchmetrics/pull/3024))
+- Added `aggregation_level` argument to `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
+- Added support for `reduction="none"` to `LearnedPerceptualImagePatchSimilarity` ([#3053](https://github.com/Lightning-AI/torchmetrics/pull/3053))
+- Added support single `str` input for functional interface of `bert_score` ([#3056](https://github.com/Lightning-AI/torchmetrics/pull/3056))
+- Enhance: `BERTScore` to evaluate hypotheses against multiple references ([#3069](https://github.com/Lightning-AI/torchmetrics/pull/3069))
+- Added `Lip Vertex Error (LVE)` in multimodal domain ([#3090](https://github.com/Lightning-AI/torchmetrics/pull/3090))
+- Added `antialias` argument to `FID` metric ([#3177](https://github.com/Lightning-AI/torchmetrics/pull/3177))
+- Added `mixed` input format to segmentation metrics ([#3176](https://github.com/Lightning-AI/torchmetrics/pull/3176))
+
+### Changed
+
+- Changed `data_range` argument in `PSNR` metric to be a required argument ([#3178](https://github.com/Lightning-AI/torchmetrics/pull/3178))
+
+### Removed
+
+- Removed `zero_division` argument from `DiceScore` ([#3018](https://github.com/Lightning-AI/torchmetrics/pull/3018))
+
+
+---
+
+## [1.7.4] - 2025-07-03
+
+### Changed
+
+- Improved numerical stability of pearson's correlation coefficient ([#3152](https://github.com/Lightning-AI/torchmetrics/pull/3152))
+
+### Fixed
+
+- Fixed: Ignore zero and negative predictions in retrieval metrics ([#3160](https://github.com/Lightning-AI/torchmetrics/pull/3160))
+- Fixed SSIM `dist_reduce_fx` when `reduction=None` for distributed training (
+    [#3162](https://github.com/Lightning-AI/torchmetrics/pull/3162), [#3166](https://github.com/Lightning-AI/torchmetrics/pull/3166))
+- Fixed attribute error ([#3154](https://github.com/Lightning-AI/torchmetrics/pull/3154))
+- Fixed incorrect shape in `_pearson_corrcoef_update` ([#3168](https://github.com/Lightning-AI/torchmetrics/pull/3168))
+
 
 ## [1.7.3] - 2025-06-13
 

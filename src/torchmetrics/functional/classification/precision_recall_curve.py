@@ -166,6 +166,7 @@ def _binary_precision_recall_curve_format(
     target: Tensor,
     thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    normalization: Optional[Literal["sigmoid", "softmax"]] = "sigmoid",
 ) -> tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
@@ -182,7 +183,7 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    preds = normalize_logits_if_needed(preds, "sigmoid")
+    preds = normalize_logits_if_needed(preds, normalization)
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     return preds, target, thresholds
@@ -266,8 +267,8 @@ def _binary_precision_recall_curve_compute(
         tps = state[:, 1, 1]
         fps = state[:, 0, 1]
         fns = state[:, 1, 0]
-        precision = _safe_divide(tps, tps + fps)
-        recall = _safe_divide(tps, tps + fns)
+        precision = _safe_divide(tps, tps + fps, zero_division="nan")
+        recall = _safe_divide(tps, tps + fns, zero_division="nan")
         precision = torch.cat([precision, torch.ones(1, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, dtype=recall.dtype, device=recall.device)])
         return precision, recall, thresholds
@@ -353,7 +354,7 @@ def binary_precision_recall_curve(
          tensor([1.0000, 1.0000, 0.5000, 0.0000, 0.0000]),
          tensor([0.0000, 0.5000, 0.7000, 0.8000]))
         >>> binary_precision_recall_curve(preds, target, thresholds=5)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000]),
+        (tensor([0.5000, 0.6667, 0.6667, 0.0000, nan, 1.0000]),
          tensor([1., 1., 1., 0., 0., 0.]),
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
@@ -552,8 +553,8 @@ def _multiclass_precision_recall_curve_compute(
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
         fns = state[:, :, 1, 0]
-        precision = _safe_divide(tps, tps + fps)
-        recall = _safe_divide(tps, tps + fns)
+        precision = _safe_divide(tps, tps + fps, zero_division="nan")
+        recall = _safe_divide(tps, tps + fns, zero_division="nan")
         precision = torch.cat([precision, torch.ones(1, num_classes, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, num_classes, dtype=recall.dtype, device=recall.device)])
         precision = precision.T
@@ -680,16 +681,16 @@ def multiclass_precision_recall_curve(
         >>> multiclass_precision_recall_curve(
         ...     preds, target, num_classes=5, thresholds=5
         ... )  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([[0.2500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000],
-                 [0.2500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000],
-                 [0.2500, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
-                 [0.2500, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
-                 [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000]]),
+        (tensor([[0.2500, 1.0000, 1.0000, 1.0000,    nan, 1.0000],
+                 [0.2500, 1.0000, 1.0000, 1.0000,    nan, 1.0000],
+                 [0.2500, 0.0000, 0.0000, 0.0000,    nan, 1.0000],
+                 [0.2500, 0.0000, 0.0000, 0.0000,    nan, 1.0000],
+                 [0.0000,    nan,    nan,    nan,    nan, 1.0000]]),
          tensor([[1., 1., 1., 1., 0., 0.],
                  [1., 1., 1., 1., 0., 0.],
                  [1., 0., 0., 0., 0., 0.],
                  [1., 0., 0., 0., 0., 0.],
-                 [0., 0., 0., 0., 0., 0.]]),
+                 [nan, nan, nan, nan, nan, 0.]]),
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
     """
@@ -815,8 +816,8 @@ def _multilabel_precision_recall_curve_compute(
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
         fns = state[:, :, 1, 0]
-        precision = _safe_divide(tps, tps + fps)
-        recall = _safe_divide(tps, tps + fns)
+        precision = _safe_divide(tps, tps + fps, zero_division="nan")
+        recall = _safe_divide(tps, tps + fns, zero_division="nan")
         precision = torch.cat([precision, torch.ones(1, num_labels, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, num_labels, dtype=recall.dtype, device=recall.device)])
         return precision.T, recall.T, thresholds
@@ -922,9 +923,9 @@ def multilabel_precision_recall_curve(
         >>> multilabel_precision_recall_curve(
         ...     preds, target, num_labels=3, thresholds=5
         ... )  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([[0.5000, 0.5000, 1.0000, 1.0000, 0.0000, 1.0000],
-                 [0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000],
-                 [0.7500, 1.0000, 1.0000, 1.0000, 0.0000, 1.0000]]),
+        (tensor([[0.5000, 0.5000, 1.0000, 1.0000,    nan, 1.0000],
+                 [0.5000, 0.6667, 0.6667, 0.0000,    nan, 1.0000],
+                 [0.7500, 1.0000, 1.0000, 1.0000,    nan, 1.0000]]),
          tensor([[1.0000, 0.5000, 0.5000, 0.5000, 0.0000, 0.0000],
                  [1.0000, 1.0000, 1.0000, 0.0000, 0.0000, 0.0000],
                  [1.0000, 0.6667, 0.3333, 0.3333, 0.0000, 0.0000]]),

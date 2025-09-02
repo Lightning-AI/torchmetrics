@@ -24,7 +24,7 @@ env:
   TOKENIZERS_PARALLELISM: false
   SPHINX_MOCK_REQUIREMENTS: 0
   SPHINX_FETCH_ASSETS: 0
-  SPHINX_PIN_RELEASE_VERSIONS: 1
+  SPHINX_PIN_RELEASE_VERSIONS: 0
 
 jobs:
   docs-make:
@@ -36,7 +36,7 @@ jobs:
         target: [html, doctest, linkcheck]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -56,15 +56,16 @@ jobs:
       - run: pip list
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
-        run: echo "SPHINX_FETCH_ASSETS=1" >> $GITHUB_ENV
+        run: |
+          echo "SPHINX_FETCH_ASSETS=1" >> $GITHUB_ENV
+          echo "SPHINX_PIN_RELEASE_VERSIONS=1" >> $GITHUB_ENV
       - name: Disable Gallery build
         if: matrix.target != 'html'
         run: echo "SPHINX_ENABLE_GALLERY=0" >> $GITHUB_ENV
       - name: make ${{ matrix.target }}
         working-directory: ./docs
         run: |
-          pwd
-          ls -la
+          pwd && ls -la
           make ${{ matrix.target }} --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
 
       - name: Upload built docs
@@ -89,17 +90,17 @@ jobs:
     env:
       GCP_TARGET: "gs://lightning-docs-metrics"
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: docs-html-${{ github.sha }}
           path: docs/build/
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GCS_SA_KEY }}
       - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
         with:
           project_id: ${{ secrets.GCS_PROJECT }}
 
