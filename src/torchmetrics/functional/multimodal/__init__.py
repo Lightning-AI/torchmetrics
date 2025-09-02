@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.multimodal.lve import lip_vertex_error
+from torchmetrics.functional.multimodal.fdd import upper_face_dynamics_deviation
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
 __all__ = ["lip_vertex_error"]
