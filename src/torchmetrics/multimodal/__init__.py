@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.multimodal.lve import LipVertexError
+from torchmetrics.multimodal.fdd import UpperFaceDynamicsDeviation
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
-__all__ = ["LipVertexError"]
+__all__ = ["LipVertexError", "UpperFaceDynamicsDeviation"]
 
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment

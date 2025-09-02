@@ -75,6 +75,7 @@ from torchmetrics.functional.image._deprecated import (
 from torchmetrics.functional.image._deprecated import _total_variation as total_variation
 from torchmetrics.functional.image._deprecated import _universal_image_quality_index as universal_image_quality_index
 from torchmetrics.functional.multimodal import lip_vertex_error
+from torchmetrics.functional.multimodal import upper_face_dynamics_deviation
 from torchmetrics.functional.nominal import (
     cramers_v,
     cramers_v_matrix,
