@@ -92,8 +92,8 @@ def upper_face_dynamics_deviation(
     pred_disp = pred[1:] - pred[:-1]  # (T-1, M, 3)
     gt_disp = gt[1:] - gt[:-1]
 
-    pred_norm = torch.linalg.norm(pred_disp**2, dim=-1)  # (T-1, M)
-    gt_norm = torch.linalg.norm(gt_disp**2, dim=-1)
+    pred_norm = torch.linalg.norm(pred_disp, dim=-1)  # (T-1, M)
+    gt_norm = torch.linalg.norm(gt_disp, dim=-1)
 
     pred_dyn = torch.std(pred_norm, dim=0, unbiased=False)  # (M,)
     gt_dyn = torch.std(gt_norm, dim=0, unbiased=False)
