@@ -50,8 +50,8 @@ def _reference_fdd(vertices_pred, vertices_gt, upper_face_map):
     displacements_gt = gt[1:] - gt[:-1]  # (T-1, V, 3)
     displacements_pred = pred[1:] - pred[:-1]
 
-    l2_gt = np.linalg.norm(displacements_gt**2, axis=-1)  # (T-1, M)
-    l2_pred = np.linalg.norm(displacements_pred**2, axis=-1)
+    l2_gt = np.linalg.norm(displacements_gt, axis=-1)  # (T-1, M)
+    l2_pred = np.linalg.norm(displacements_pred, axis=-1)
 
     std_diff = np.std(l2_gt, axis=0) - np.std(l2_pred, axis=0)  # (M,)
 

@@ -50,15 +50,15 @@ class UpperFaceDynamicsDeviation(Metric):
     As input to ``forward`` and ``update``, the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): Predicted vertices tensor of shape (T, V, 3) where T is the number of frames,
-      V is the number of vertices, and 3 represents XYZ coordinates.
+        V is the number of vertices, and 3 represents XYZ coordinates.
     - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (T, V, 3) where T is the number of
-    frames, V is the number of vertices, and 3 represents XYZ coordinates.
+        frames, V is the number of vertices, and 3 represents XYZ coordinates.
     - ``upper_face_map`` (:class:`list`): List of vertex indices corresponding to the upper-face region.
 
     As output of ``forward`` and ``compute``, the metric returns the following output:
 
     - ``fdd_score`` (:class:`~torch.Tensor`): A scalar tensor containing the mean Face Dynamics Deviation
-      across all upper-face vertices.
+        across all upper-face vertices.
 
     Args:
         upper_face_map: List of vertex indices for the upper-face region.
