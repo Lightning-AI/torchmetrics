@@ -12,7 +12,7 @@ Upper Face Dynamic Deviation (FDD)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.multimodal.fdd.UpperFaceDynamicDeviation
+.. autoclass:: torchmetrics.multimodal.fdd.UpperFaceDynamicsDeviation
 
 Functional Interface
 ____________________
