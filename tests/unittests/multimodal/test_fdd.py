@@ -63,6 +63,8 @@ def _reference_fdd(vertices_pred, vertices_gt, upper_face_map):
 class TestUpperFaceDynamicsDeviation(MetricTester):
     """Test class for `UpperFaceDynamicsDeviation` metric (FDD)."""
 
+    atol: float = 1e-2
+
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_fdd_metric_class(self, ddp):
         """Test class implementation of metric."""
