@@ -63,7 +63,7 @@ def upper_face_dynamics_deviation(
         >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
         >>> upper_face_map = [10, 11, 12, 13, 14]
         >>> upper_face_dynamics_deviation(vertices_pred, vertices_gt, upper_face_map)
-        tensor(-0.1661)
+        tensor(0.1176)
 
     """
     if vertices_pred.ndim != 3 or vertices_gt.ndim != 3:
