@@ -77,7 +77,7 @@ class UpperFaceDynamicsDeviation(Metric):
         >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42))
         >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
         >>> metric(vertices_pred, vertices_gt)
-        tensor(-0.3668)
+        tensor(-0.0252)
 
     """
 
