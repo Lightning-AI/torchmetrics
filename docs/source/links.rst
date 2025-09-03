@@ -1,6 +1,6 @@
 
-.. _scikit-learn's implementation of SMAPE: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
-.. _scikit-learn's implementation of MAPE: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
+.. _scikit-learn's implementation of SMAPE: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
+.. _scikit-learn's implementation of MAPE: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
 .. _Mean Average Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision
 .. _Fall-out: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out
 .. _Normalized Discounted Cumulative Gain: https://en.wikipedia.org/wiki/Discounted_cumulative_gain
@@ -12,8 +12,8 @@
 .. _SNR: https://en.wikipedia.org/wiki/Signal-to-noise_ratio
 .. _ROC AUC: https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Further_interpretations
 .. _Cohen's kappa score: https://en.wikipedia.org/wiki/Cohen%27s_kappa
-.. _scikit-learn's implementation of confusion matrix: https://scikit-learn.org/stable/modules/model_evaluation.html#confusion-matrix
-.. _confusion matrix gets calculated per label: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html
+.. _scikit-learn's implementation of confusion matrix: https://scikit-learn.org/1.7/modules/model_evaluation.html#confusion-matrix
+.. _confusion matrix gets calculated per label: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.multilabel_confusion_matrix.html
 .. _F-score: https://en.wikipedia.org/wiki/F-score
 .. _Hamming distance: https://en.wikipedia.org/wiki/Hamming_distance
 .. _Hinge loss: https://en.wikipedia.org/wiki/Hinge_loss
@@ -26,7 +26,7 @@
 .. _Specificity: https://en.wikipedia.org/wiki/Sensitivity_and_specificity
 .. _Type I and Type II errors: https://en.wikipedia.org/wiki/Type_I_and_type_II_errors
 .. _confusion matrix: https://en.wikipedia.org/wiki/Confusion_matrix#Table_of_confusion
-.. _sklearn averaging methods: https://scikit-learn.org/stable/modules/model_evaluation.html#multiclass-and-multilabel-classification
+.. _sklearn averaging methods: https://scikit-learn.org/1.7/modules/model_evaluation.html#multiclass-and-multilabel-classification
 .. _Cosine Similarity: https://en.wikipedia.org/wiki/Cosine_similarity
 .. _spearmans rank correlation coefficient: https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient
 .. _WordErrorRate: https://en.wikipedia.org/wiki/Word_error_rate
@@ -37,8 +37,8 @@
 .. _explained variance: https://en.wikipedia.org/wiki/Explained_variation
 .. _IR Average precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Average_precision
 .. _IR Fall-out: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out
-.. _MAPE implementation returns: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
-.. _mean squared logarithmic error: https://scikit-learn.org/stable/modules/model_evaluation.html#mean-squared-log-error
+.. _MAPE implementation returns: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
+.. _mean squared logarithmic error: https://scikit-learn.org/1.7/modules/model_evaluation.html#mean-squared-log-error
 .. _LPIPS: https://arxiv.org/abs/1801.03924
 .. _Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR): https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
@@ -156,8 +156,8 @@
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
 .. _GIOU: https://arxiv.org/abs/1902.09630
 .. _Mutual Information Score: https://en.wikipedia.org/wiki/Mutual_information
-.. _Normalized Mutual Information Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.normalized_mutual_info_score.html
-.. _Adjusted Mutual Information Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_mutual_info_score.html#sklearn.metrics.adjusted_mutual_info_score
+.. _Normalized Mutual Information Score: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.normalized_mutual_info_score.html
+.. _Adjusted Mutual Information Score: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.adjusted_mutual_info_score.html#sklearn.metrics.adjusted_mutual_info_score
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
 .. _Rand Score: https://link.springer.com/article/10.1007/BF01908075
 .. _faster-coco-eval: https://github.com/MiXaiLL76/faster_coco_eval
@@ -165,18 +165,18 @@
 .. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
 .. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
 .. _V-Measure Score: https://www.semanticscholar.org/paper/V-Measure%3A-A-Conditional-Entropy-Based-External-Rosenberg-Hirschberg/5421dbcb7e14766eb3d951910ae8d7892d735a01
-.. _Homogeneity Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html
-.. _Completeness Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html
+.. _Homogeneity Score: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.homogeneity_score.html
+.. _Completeness Score: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.completeness_score.html
 .. _Davies-Bouldin Score: https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index
-.. _Fowlkes-Mallows Index: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fowlkes_mallows_score.html#sklearn.metrics.fowlkes_mallows_score
+.. _Fowlkes-Mallows Index: https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.fowlkes_mallows_score.html#sklearn.metrics.fowlkes_mallows_score
 .. _FLORES-101: https://arxiv.org/abs/2106.03193
 .. _FLORES-200: https://arxiv.org/abs/2207.04672
-.. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
+.. _averaging curve objects: https://scikit-learn.org/1.7/auto_examples/model_selection/plot_roc.html
 .. _SCC: https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013
 .. _Normalized Root Mean Squared Error: https://onlinelibrary.wiley.com/doi/abs/10.1111/1365-2478.12109
 .. _Generalized Dice Score: https://arxiv.org/abs/1707.03237
 .. _Hausdorff Distance: https://en.wikipedia.org/wiki/Hausdorff_distance
-.. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
+.. _averaging curve objects: https://scikit-learn.org/1.7/auto_examples/model_selection/plot_roc.html
 .. _Procrustes Disparity: https://en.wikipedia.org/wiki/Procrustes_analysis
 .. _Cluster Accuracy: https://arxiv.org/abs/2206.07579
 .. _Log AUC: https://pubmed.ncbi.nlm.nih.gov/20735049/
