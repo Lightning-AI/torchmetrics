@@ -40,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `precision_at_fixed_recall` and `recall_at_fixed_precision` to correctly return `NaN` thresholds when recall/precision conditions are not met ([#3226](https://github.com/Lightning-AI/torchmetrics/pull/3226))
 
+
+- Fixed `GeneralizedDiceScore` to yield `NaN` if there are missing classes ([#2846](https://github.com/Lightning-AI/torchmetrics/issues/2846))
+
 ---
 
 ## [1.8.1] - 2025-08-07
