@@ -106,9 +106,10 @@ jobs:
       - name: Switch to PT test URL
         if: ${{ matrix.pytorch-version == '2.8.0' }}
         run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
-      - name: Install pkg
+
+      - name: Install package
         run: |
-          uv pip install . -U "setuptools==69.5.1" -r requirements/_doctest.txt \
+          uv pip install . -U setuptools -r requirements/_doctest.txt \
             $PIP_EXTRA_INDEX_URL
           uv pip list
         timeout-minutes: 25
