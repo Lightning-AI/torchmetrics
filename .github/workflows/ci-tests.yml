@@ -103,14 +103,6 @@ jobs:
         if: ${{ runner.os == 'windows' }}
         run: choco install ffmpeg
 
-      - name: source cashing
-        uses: ./.github/actions/pull-caches
-        with:
-          requires: ${{ matrix.requires }}
-          pytorch-version: ${{ matrix.pytorch-version }}
-          pypi-dir: ${{ env.PYPI_CACHE_DIR }}
-          cache-references: true
-
       - name: Switch to PT test URL
         if: ${{ matrix.pytorch-version == '2.8.0' }}
         run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
@@ -222,15 +214,6 @@ jobs:
           env_vars: OS,PYTHON
           name: codecov-umbrella
           fail_ci_if_error: false
-
-      - name: update cashing
-        if: github.event_name != 'pull_request'
-        continue-on-error: true
-        uses: ./.github/actions/push-caches
-        with:
-          pypi-dir: ${{ env.PYPI_CACHE_DIR }}
-          cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
-          cache-references: true
 
       - name: Minimize uv cache
         run: uv cache prune --ci
