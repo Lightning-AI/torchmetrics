@@ -109,6 +109,7 @@ class GeneralizedDiceScore(Metric):
 
     score: Tensor
     samples: Tensor
+    class_present: Tensor
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -135,6 +136,7 @@ class GeneralizedDiceScore(Metric):
         num_classes = num_classes - 1 if not include_background else num_classes
         self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
         self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("class_present", default=torch.zeros(num_classes, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with new data."""
@@ -144,9 +146,15 @@ class GeneralizedDiceScore(Metric):
         self.score += _generalized_dice_compute(numerator, denominator, self.per_class).sum(dim=0)
         self.samples += preds.shape[0]
 
+        if self.per_class:
+            class_mask = target.sum(dim=(0, *range(2, target.ndim))) > 0
+            self.class_present += class_mask[1:] if not self.include_background else class_mask
+
     def compute(self) -> Tensor:
         """Compute the final generalized dice score."""
-        return self.score / self.samples
+        if not self.per_class:
+            return self.score / self.samples
+        return torch.where(self.class_present > 0, self.score, torch.tensor(float("nan")))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
