@@ -67,7 +67,7 @@ jobs:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       TOKENIZERS_PARALLELISM: false
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
-      PIP_EXTRA_INDEX_URL: "--extra-index-url=https://download.pytorch.org/whl/cpu/"
+      PIP_EXTRA_URL: "--find-links=https://download.pytorch.org/whl/cpu/torch_stable.html"
       UNITTEST_TIMEOUT: "" # by default, it is not set
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -103,14 +103,14 @@ jobs:
         if: ${{ runner.os == 'windows' }}
         run: choco install ffmpeg
 
-      - name: Switch to PT test URL
-        if: ${{ matrix.pytorch-version == '2.8.0' }}
-        run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
+      #- name: Switch to PT test URL
+      #  if: ${{ matrix.pytorch-version == '2.9.0' }}
+      #  run: echo 'PIP_EXTRA_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
 
       - name: Install package
         run: |
           uv pip install . -U setuptools -r requirements/_doctest.txt \
-            $PIP_EXTRA_INDEX_URL
+            $PIP_EXTRA_URL
           uv pip list
         timeout-minutes: 25
 
@@ -130,10 +130,8 @@ jobs:
           for fpath in `ls requirements/*.txt`; do
               python adjust-torch-versions.py $fpath
           done
-          uv pip install --requirement requirements/clustering.txt -U \
-            $PIP_EXTRA_INDEX_URL || true # separate install to avoid conflicts and ignore failures
-          uv pip install --requirement requirements/_devel.txt -U \
-            $PIP_EXTRA_INDEX_URL
+          uv pip install --requirement requirements/clustering.txt -U $PIP_EXTRA_URL
+          uv pip install --requirement requirements/_devel.txt -U $PIP_EXTRA_URL
           uv pip list
         timeout-minutes: 25
 
