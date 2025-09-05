@@ -103,6 +103,15 @@ jobs:
         if: ${{ runner.os == 'windows' }}
         run: choco install ffmpeg
 
+      - name: Set PyTorch version
+        run: |
+          pip install wget
+          python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
+          python adjust-torch-versions.py requirements/base.txt ${{ matrix.pytorch-version }}
+      - name: Set min. dependencies
+        if: matrix.requires == 'oldest'
+        run: python .github/assistant.py set-oldest-versions
+
       #- name: Switch to PT test URL
       #  if: ${{ matrix.pytorch-version == '2.9.0' }}
       #  run: echo 'PIP_EXTRA_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
