@@ -37,7 +37,7 @@ runs:
     - name: Freeze local emv.
       if: inputs.cache-artifact-appendix != ''
       run: |
-        pip freeze > requirements.dump
+        pip freeze > requiremets.dump
         cat requirements.dump
       shell: bash
 
@@ -80,7 +80,7 @@ runs:
     - name: Cache Torch & HF
       if: inputs.cache-torch-HF == 'true' # since the input is string
       continue-on-error: true
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         enableCrossOsArchive: true
         path: ${{ env.CACHES_DIR }}
@@ -89,7 +89,7 @@ runs:
     - name: Cache references
       if: inputs.cache-references == 'true' # since the input is string
       continue-on-error: true
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         #enableCrossOsArchive: true
         path: tests/_cache-references
