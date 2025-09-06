@@ -61,7 +61,7 @@ runs:
 
     - name: Cache pip packages
       continue-on-error: true
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         enableCrossOsArchive: true
         path: ${{ inputs.pypi-dir }}
@@ -77,7 +77,7 @@ runs:
     - name: Cache Torch & HF
       if: inputs.cache-torch-HF == 'true' # since the input is string
       continue-on-error: true
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         enableCrossOsArchive: true
         path: ${{ env.CACHES_DIR }}
@@ -95,7 +95,7 @@ runs:
       # do not use this cache for dispatch and crone, to enable rebuild caches if needed
       if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule' && inputs.cache-references == 'true'
       continue-on-error: true
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: tests/_cache-references
         key: cache-references
