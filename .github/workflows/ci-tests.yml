@@ -113,7 +113,7 @@ jobs:
 
       - name: Set PyTorch version
         run: |
-          pip install wget
+          uv pip install wget
           python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
           python adjust-torch-versions.py requirements/base.txt ${{ matrix.pytorch-version }}
       - name: Set min. dependencies
