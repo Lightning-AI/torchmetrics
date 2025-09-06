@@ -103,6 +103,14 @@ jobs:
         if: ${{ runner.os == 'windows' }}
         run: choco install ffmpeg
 
+      - name: source caching
+        uses: ./.github/actions/pull-caches
+        with:
+          requires: ${{ matrix.requires }}
+          pytorch-version: ${{ matrix.pytorch-version }}
+          pypi-dir: ${{ env.PYPI_CACHE_DIR }}
+          cache-references: true
+
       - name: Set PyTorch version
         run: |
           pip install wget
@@ -221,6 +229,15 @@ jobs:
           env_vars: OS,PYTHON
           name: codecov-umbrella
           fail_ci_if_error: false
+
+      - name: update cashing
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: ./.github/actions/push-caches
+        with:
+          pypi-dir: ${{ env.PYPI_CACHE_DIR }}
+          cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
+          cache-references: true
 
       - name: Minimize uv cache
         run: uv cache prune --ci
