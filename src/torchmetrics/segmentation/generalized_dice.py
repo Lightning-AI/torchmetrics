@@ -100,10 +100,10 @@ class GeneralizedDiceScore(Metric):
         tensor(0.4992)
         >>> gds = GeneralizedDiceScore(num_classes=3, per_class=True)
         >>> gds(preds, target)
-        tensor([5.0008, 4.9930, 4.9825])
+        tensor([0.5000, 0.4993, 0.4983])
         >>> gds = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=False)
         >>> gds(preds, target)
-        tensor([4.9930, 4.9825])
+        tensor([0.4993, 0.4983])
 
     """
 
