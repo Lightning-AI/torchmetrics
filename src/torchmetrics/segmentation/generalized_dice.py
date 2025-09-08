@@ -107,9 +107,9 @@ class GeneralizedDiceScore(Metric):
 
     """
 
-    score: Tensor
-    samples: Tensor
     class_present: Tensor
+    numerator: Tensor
+    denominator: Tensor
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -134,27 +134,29 @@ class GeneralizedDiceScore(Metric):
         self.input_format = input_format
 
         num_classes = num_classes - 1 if not include_background else num_classes
-        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
-        self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
         self.add_state("class_present", default=torch.zeros(num_classes, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("numerator", default=torch.zeros((0, num_classes)), dist_reduce_fx="cat")
+        self.add_state("denominator", default=torch.zeros((0, num_classes)), dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with new data."""
         numerator, denominator = _generalized_dice_update(
             preds, target, self.num_classes, self.include_background, self.weight_type, self.input_format
         )
-        self.score += _generalized_dice_compute(numerator, denominator, self.per_class).sum(dim=0)
-        self.samples += preds.shape[0]
-
+        self.numerator = torch.cat([self.numerator, numerator], dim=0)
+        self.denominator = torch.cat([self.denominator, denominator], dim=0)
         if self.per_class:
             class_mask = target.sum(dim=(0, *range(2, target.ndim))) > 0
             self.class_present += class_mask[1:] if not self.include_background else class_mask
+            self.numerator = torch.sum(self.numerator, dim=0, keepdim=True)
+            self.denominator = torch.sum(self.denominator, dim=0, keepdim=True)
 
     def compute(self) -> Tensor:
         """Compute the final generalized dice score."""
+        score = _generalized_dice_compute(self.numerator, self.denominator, self.per_class)
         if not self.per_class:
-            return self.score / self.samples
-        return torch.where(self.class_present > 0, self.score, torch.tensor(float("nan")))
+            return score.mean()
+        return torch.where(self.class_present > 0, score, torch.tensor(float("nan"))).squeeze()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
