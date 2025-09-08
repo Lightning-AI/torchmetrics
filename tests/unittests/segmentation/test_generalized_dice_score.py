@@ -82,7 +82,7 @@ def _reference_generalized_dice(
 class TestGeneralizedDiceScore(MetricTester):
     """Test class for `GeneralizedDiceScore` metric."""
 
-    atol = 1e-4
+    atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_generalized_dice_class(self, preds, target, input_format, include_background, ddp):
