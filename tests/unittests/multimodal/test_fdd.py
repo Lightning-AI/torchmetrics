@@ -32,6 +32,7 @@ seed_all(42)
 class _InputVertices(NamedTuple):
     vertices_pred: Tensor
     vertices_gt: Tensor
+    template: Tensor
 
 
 def _generate_vertices(batch_size: int = 1) -> _InputVertices:
@@ -39,19 +40,21 @@ def _generate_vertices(batch_size: int = 1) -> _InputVertices:
     return _InputVertices(
         vertices_pred=torch.randn(batch_size, 10, 100, 3),
         vertices_gt=torch.randn(batch_size, 10, 100, 3),
+        template=torch.randn(100, 3),
     )
 
 
-def _reference_fdd(vertices_pred, vertices_gt, upper_face_map):
+def _reference_fdd(vertices_pred, vertices_gt, template, upper_face_map):
     """Reference implementation for FDD metric using numpy."""
     pred = vertices_pred[:, upper_face_map, :].numpy()  # (T, M, 3)
     gt = vertices_gt[:, upper_face_map, :].numpy()  # (T, M, 3)
+    template = template[upper_face_map, :].numpy()  # (M, 3)
 
-    displacements_gt = gt[1:] - gt[:-1]  # (T-1, V, 3)
-    displacements_pred = pred[1:] - pred[:-1]
+    displacements_gt = gt - template  # (T, V, 3)
+    displacements_pred = pred - template
 
-    l2_gt = np.linalg.norm(displacements_gt, axis=-1)  # (T-1, M)
-    l2_pred = np.linalg.norm(displacements_pred, axis=-1)
+    l2_gt = np.sum(displacements_gt**2, axis=-1)  # (T, M), squared L2 norm
+    l2_pred = np.sum(displacements_pred**2, axis=-1)
 
     std_diff = np.std(l2_gt, axis=0) - np.std(l2_pred, axis=0)  # (M,)
 
@@ -69,69 +72,69 @@ class TestUpperFaceDynamicsDeviation(MetricTester):
     def test_fdd_metric_class(self, ddp):
         """Test class implementation of metric."""
         upper_face_map = [0, 1, 2, 3, 4]
-        vertices_pred, vertices_gt = _generate_vertices(batch_size=4)
+        vertices_pred, vertices_gt, template = _generate_vertices(batch_size=4)
 
         self.run_class_metric_test(
             ddp=ddp,
             preds=vertices_pred,
             target=vertices_gt,
             metric_class=UpperFaceDynamicsDeviation,
-            reference_metric=partial(_reference_fdd, upper_face_map=upper_face_map),
-            metric_args={"upper_face_map": upper_face_map},
+            reference_metric=partial(_reference_fdd, template=template, upper_face_map=upper_face_map),
+            metric_args={"template": template, "upper_face_map": upper_face_map},
         )
 
     def test_fdd_functional(self):
         """Test functional implementation of metric."""
         upper_face_map = [0, 1, 2, 3, 4]
-        vertices_pred, vertices_gt = _generate_vertices(batch_size=4)
+        vertices_pred, vertices_gt, template = _generate_vertices(batch_size=4)
 
         self.run_functional_metric_test(
             preds=vertices_pred,
             target=vertices_gt,
             metric_functional=upper_face_dynamics_deviation,
-            reference_metric=partial(_reference_fdd, upper_face_map=upper_face_map),
-            metric_args={"upper_face_map": upper_face_map},
+            reference_metric=partial(_reference_fdd, template=template, upper_face_map=upper_face_map),
+            metric_args={"template": template, "upper_face_map": upper_face_map},
         )
 
     def test_fdd_differentiability(self):
         """Test differentiability of FDD metric."""
         upper_face_map = [0, 1, 2, 3, 4]
-        vertices_pred, vertices_gt = _generate_vertices(batch_size=4)
+        vertices_pred, vertices_gt, template = _generate_vertices(batch_size=4)
 
         self.run_differentiability_test(
             preds=vertices_pred,
             target=vertices_gt,
             metric_module=UpperFaceDynamicsDeviation,
             metric_functional=upper_face_dynamics_deviation,
-            metric_args={"upper_face_map": upper_face_map},
+            metric_args={"template": template, "upper_face_map": upper_face_map},
         )
 
     def test_error_on_wrong_dimensions(self):
         """Test that an error is raised for wrong input dimensions."""
-        metric = UpperFaceDynamicsDeviation(upper_face_map=[0, 1, 2, 3, 4])
+        metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
         with pytest.raises(ValueError, match="Expected both vertices_pred and vertices_gt to have 3 dimensions.*"):
             metric(torch.randn(10, 100), torch.randn(10, 100, 3))
 
     def test_error_on_mismatched_dimensions(self):
         """Test that an error is raised for mismatched vertex dimensions."""
-        metric = UpperFaceDynamicsDeviation(upper_face_map=[0, 1, 2, 3, 4])
+        metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
         with pytest.raises(ValueError, match="Expected vertices_pred and vertices_gt to have same vertex.*"):
             metric(torch.randn(10, 80, 3), torch.randn(10, 100, 3))
 
     def test_error_on_empty_upper_face_map(self):
         """Test that an error is raised if upper_face_map is empty."""
         with pytest.raises(ValueError, match="upper_face_map cannot be empty."):
-            UpperFaceDynamicsDeviation(upper_face_map=[])
+            UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[])
 
     def test_error_on_invalid_upper_face_indices(self):
         """Test that an error is raised if upper_face_map has invalid indices."""
-        metric = UpperFaceDynamicsDeviation(upper_face_map=[98, 99, 100])
+        metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[98, 99, 100])
         with pytest.raises(ValueError, match="upper_face_map contains invalid vertex indices.*"):
             metric(torch.randn(10, 50, 3), torch.randn(10, 50, 3))
 
     def test_different_sequence_lengths(self):
         """Test that the metric handles sequences of different lengths correctly."""
-        metric = UpperFaceDynamicsDeviation(upper_face_map=[0, 1, 2])
+        metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2])
         pred = torch.randn(10, 50, 3)
         target = torch.randn(8, 50, 3)
         with pytest.raises(ValueError, match="Expected vertices_pred and vertices_gt to have same vertex.*"):
@@ -139,8 +142,8 @@ class TestUpperFaceDynamicsDeviation(MetricTester):
 
     def test_plot_method(self):
         """Test the plot method of FDD."""
-        metric = UpperFaceDynamicsDeviation(upper_face_map=[0, 1, 2, 3, 4])
-        vertices_pred, vertices_gt = _generate_vertices()
+        vertices_pred, vertices_gt, template = _generate_vertices()
+        metric = UpperFaceDynamicsDeviation(template=template, upper_face_map=[0, 1, 2, 3, 4])
         metric.update(vertices_pred[0], vertices_gt[0])
         fig, ax = metric.plot()
         assert isinstance(fig, plt.Figure)

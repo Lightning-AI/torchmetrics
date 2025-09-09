@@ -20,6 +20,7 @@ from torch import Tensor
 def upper_face_dynamics_deviation(
     vertices_pred: Tensor,
     vertices_gt: Tensor,
+    template: Tensor,
     upper_face_map: List[int],
 ) -> Tensor:
     r"""Compute Upper Face Dynamics Deviation (FDD) for 3D talking head evaluation.
@@ -31,19 +32,22 @@ def upper_face_dynamics_deviation(
     The metric is defined as:
 
     .. math::
-        \text{FDD} = \frac{1}{N-1} \sum_{i=1}^{N-1} \frac{1}{M} \sum_{v \in \text{upper}}
-        \big\| (x_{i+1,v} - x_{i,v}) - (\hat{x}_{i+1,v} - \hat{x}_{i,v}) \big\|_2^2
+        \text{FDD} = \frac{1}{|\text{SU}|} \sum_{v \in \text{SU}} \Big( \text{std}(\| x_{1:T,v} -
+        \text{template}_v \|_2^2) - \text{std}(\| \hat{x}_{1:T,v} - \text{template}_v \|_2^2) \Big)
 
-    where :math:`N` is the number of frames, :math:`M` is the number of vertices in the upper face region,
-    :math:`x_{i,v}` are the 3D coordinates of vertex :math:`v` at frame :math:`i` in the ground truth sequence,
-    and :math:`\hat{x}_{i,v}` are the corresponding predicted vertices. The metric measures the mean squared L2
-    deviation of inter-frame motion dynamics. Lower values indicate closer alignment of facial dynamics.
+    where :math:`T` is the number of frames, :math:`M = |\text{SU}|` is the number of vertices in the upper-face region,
+    :math:`x_{t,v}` are the 3D coordinates of vertex :math:`v` at frame :math:`t` in the ground truth sequence,
+    and :math:`\hat{x}_{t,v}` are the corresponding predicted vertices. The metric computes the mean squared L2
+    deviation of per-vertex motion dynamics relative to the neutral template. Lower values indicate closer alignment of
+    facial dynamics.
+    :math:`\text{template}_v` is the 3D coordinate of vertex :math:`v` in the neutral template mesh.
 
     Args:
         vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
             V is number of vertices, and 3 represents XYZ coordinates.
         vertices_gt: Ground truth vertices tensor of shape (T, V, 3) where T is number of frames,
             V is number of vertices, and 3 represents XYZ coordinates.
+        template: Template mesh tensor of shape (V, 3) representing the neutral face.
         upper_face_map: List of vertex indices corresponding to the upper face region.
 
     Returns:
@@ -59,11 +63,12 @@ def upper_face_dynamics_deviation(
     Example:
         >>> import torch
         >>> from torchmetrics.functional.multimodal import upper_face_dynamics_deviation
-        >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42))
-        >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
+        >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(41))
+        >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(42))
         >>> upper_face_map = [10, 11, 12, 13, 14]
-        >>> upper_face_dynamics_deviation(vertices_pred, vertices_gt, upper_face_map)
-        tensor(0.1176)
+        >>> template = torch.randn(100, 3, generator=torch.manual_seed(43))
+        >>> upper_face_dynamics_deviation(vertices_pred, vertices_gt, template, upper_face_map)
+        tensor(1.0385)
 
     """
     if vertices_pred.ndim != 3 or vertices_gt.ndim != 3:
@@ -71,6 +76,8 @@ def upper_face_dynamics_deviation(
             f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
             f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
         )
+    if template.ndim != 2 or template.shape[1] != 3:
+        raise ValueError(f"Expected template to have shape (V, 3) but got {template.shape}.")
     if vertices_pred.shape != vertices_gt.shape:
         raise ValueError(
             f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
@@ -88,14 +95,15 @@ def upper_face_dynamics_deviation(
 
     pred = vertices_pred[:, upper_face_map, :]  # (T, M, 3)
     gt = vertices_gt[:, upper_face_map, :]
+    template = template.to(pred.device)[upper_face_map, :]  # (M, 3)
 
-    pred_disp = pred[1:] - pred[:-1]  # (T-1, M, 3)
-    gt_disp = gt[1:] - gt[:-1]
+    pred_disp = pred - template  # (T, M, 3)
+    gt_disp = gt - template
 
-    pred_norm = torch.linalg.norm(pred_disp, dim=-1)  # (T-1, M)
-    gt_norm = torch.linalg.norm(gt_disp, dim=-1)
+    pred_norm_sq = torch.sum(pred_disp**2, dim=-1)  # (T, M)
+    gt_norm_sq = torch.sum(gt_disp**2, dim=-1)  # (T, M)
 
-    pred_dyn = torch.std(pred_norm, dim=0, unbiased=False)  # (M,)
-    gt_dyn = torch.std(gt_norm, dim=0, unbiased=False)
+    pred_dyn = torch.std(pred_norm_sq, dim=0, unbiased=False)  # (M,)
+    gt_dyn = torch.std(gt_norm_sq, dim=0, unbiased=False)
 
     return torch.mean(gt_dyn - pred_dyn)  # scalar

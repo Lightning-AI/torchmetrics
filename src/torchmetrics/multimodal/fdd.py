@@ -35,13 +35,15 @@ class UpperFaceDynamicsDeviation(Metric):
     The metric is defined as:
 
     .. math::
-        \text{FDD} = \frac{1}{|\text{SU}|} \sum_{v \in \text{SU}} \Big( \text{std}(\|x_{1:T,v} - x_{0:T-1,v}\|_2) -
-        \text{std}(\|\hat{x}_{1:T,v} - \hat{x}_{0:T-1,v}\|_2) \Big)
+        \text{FDD} = \frac{1}{|\text{SU}|} \sum_{v \in \text{SU}} \Big( \text{std}(\| x_{1:T,v} -
+        \text{template}_v \|_2^2) - \text{std}(\| \hat{x}_{1:T,v} - \text{template}_v \|_2^2) \Big)
 
-    where :math:`\text{SU}` is the set of upper-face vertex indices,
-    :math:`x_{t,v}` denotes the 3D coordinates of vertex :math:`v` in frame :math:`t` of the ground truth mesh,
-    :math:`\hat{x}_{t,v}` denotes the corresponding vertex in the predicted mesh, and :math:`\text{std}` is the
-    standard deviation along the temporal axis.
+    where :math:`T` is the number of frames, :math:`M = |\text{SU}|` is the number of vertices in the upper-face region,
+    :math:`x_{t,v}` are the 3D coordinates of vertex :math:`v` at frame :math:`t` in the ground truth sequence,
+    and :math:`\hat{x}_{t,v}` are the corresponding predicted vertices. The metric computes the mean squared L2
+    deviation of per-vertex motion dynamics relative to the neutral template. Lower values indicate closer alignment of
+    facial dynamics.
+    :math:`\text{template}_v` is the 3D coordinate of vertex :math:`v` in the neutral template mesh.
 
     The metric computes the standard deviation of the frame-to-frame L2 displacements of each upper-face vertex
     for both predicted and ground truth sequences, then averages the differences over all upper-face vertices.
@@ -54,6 +56,7 @@ class UpperFaceDynamicsDeviation(Metric):
     - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (T, V, 3) where T is the number of
         frames, V is the number of vertices, and 3 represents XYZ coordinates.
     - ``upper_face_map`` (:class:`list`): List of vertex indices corresponding to the upper-face region.
+    - ``template`` (:class:`~torch.Tensor`): Template mesh tensor of shape (V, 3) representing the neutral face.
 
     As output of ``forward`` and ``compute``, the metric returns the following output:
 
@@ -73,11 +76,12 @@ class UpperFaceDynamicsDeviation(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.multimodal.fdd import UpperFaceDynamicsDeviation
-        >>> metric = UpperFaceDynamicsDeviation(upper_face_map=[0, 1, 2, 3, 4])
+        >>> template = torch.randn(100, 3, generator=torch.manual_seed(41))
+        >>> metric = UpperFaceDynamicsDeviation(template=template, upper_face_map=[0, 1, 2, 3, 4])
         >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42))
         >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
         >>> metric(vertices_pred, vertices_gt)
-        tensor(-0.0252)
+        tensor(0.2131)
 
     """
 
@@ -91,11 +95,13 @@ class UpperFaceDynamicsDeviation(Metric):
 
     def __init__(
         self,
+        template: Tensor,
         upper_face_map: List[int],
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.upper_face_map = upper_face_map
+        self.template = template
 
         if not self.upper_face_map:
             raise ValueError("upper_face_map cannot be empty.")
@@ -141,7 +147,7 @@ class UpperFaceDynamicsDeviation(Metric):
         """
         vertices_pred = dim_zero_cat(self.vertices_pred_list)
         vertices_gt = dim_zero_cat(self.vertices_gt_list)
-        return upper_face_dynamics_deviation(vertices_pred, vertices_gt, self.upper_face_map)
+        return upper_face_dynamics_deviation(vertices_pred, vertices_gt, self.template, self.upper_face_map)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -166,7 +172,7 @@ class UpperFaceDynamicsDeviation(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.multimodal.fdd import UpperFaceDynamicsDeviation
-            >>> metric = UpperFaceDynamicsDeviation(upper_face_map=[0, 1, 2, 3, 4])
+            >>> metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
             >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42))
             >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
             >>> metric.update(vertices_pred, vertices_gt)
@@ -178,7 +184,7 @@ class UpperFaceDynamicsDeviation(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.multimodal.fdd import UpperFaceDynamicsDeviation
-            >>> metric = UpperFaceDynamicsDeviation(upper_face_map=[0, 1, 2, 3, 4])
+            >>> metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
             >>> values = []
             >>> for _ in range(10):
             ...     vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42+_))
