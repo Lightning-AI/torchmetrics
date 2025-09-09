@@ -1,4 +1,5 @@
 py-tree
+pkg_resources
 packaging
 fire
 wget
