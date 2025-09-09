@@ -5,9 +5,9 @@ codecov ==2.1.13
 coverage ==7.10.6
 codecov ==2.1.13
 pytest ==8.4.1
-pytest-cov ==6.2.1
+pytest-cov ==6.3.0
 pytest-doctestplus ==1.4.0
-pytest-rerunfailures ==15.1
+pytest-rerunfailures ==16.0.1
 pytest-timeout ==2.4.0
 pytest-xdist ==3.8.0
 phmdoctest ==1.4.0
