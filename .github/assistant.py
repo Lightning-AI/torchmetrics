@@ -54,22 +54,45 @@ class AssistantCLI:
 
     @staticmethod
     def set_min_torch_by_python(fpath: str = "requirements/base.txt") -> None:
-        """Set minimal torch version according to Python actual version.
+        """Set the minimal torch version according to a Python actual version.
 
         >>> AssistantCLI.set_min_torch_by_python("../requirements/base.txt")
 
         """
-        # ToDo: `pkg_resources` is deprecates and shall be updated
-        from pkg_resources import parse_requirements
+        # Use packaging instead of deprecated/unavailable pkg_resources
+        from packaging.requirements import Requirement
 
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
         if py_ver not in LUT_PYTHON_TORCH:
             return
+
+        # Parse requirements file and extract the 'torch' requirement
         with open(fpath) as fp:
-            reqs = parse_requirements(fp.readlines())
+            lines = fp.readlines()
+        reqs = []
+        for ln in lines:
+            ln = ln.strip()
+            # skip empty lines, comments, and include directives
+            if not ln or ln.startswith("#") or ln.startswith("-r") or ln.startswith("--"):
+                continue
+            try:
+                reqs.append(Requirement(ln))
+            except Exception:
+                # skip lines that are not standard requirement specs
+                continue
+
         pkg_ver = next(p for p in reqs if p.name == "torch")
-        pt_ver = min([parse(v[1]) for v in pkg_ver.specs])
+
+        # Determine the minimal specified version from lower-bound-like specifiers
+        versions = []
+        for spec in pkg_ver.specifier:
+            if spec.operator in (">=", "==", "~=", ">"):
+                versions.append(parse(spec.version))
+        pt_ver = min(versions) if versions else parse("0")
+
+        # Enforce minimal torch version required by current Python
         pt_ver = max(parse(LUT_PYTHON_TORCH[py_ver]), pt_ver)
+
         with open(fpath) as fp:
             requires = fp.read()
         requires = re.sub(r"torch>=[\d\.]+", f"torch>={pt_ver}", requires)
