@@ -14,25 +14,15 @@
 import glob
 import logging
 import os
-import re
-import sys
 from pathlib import Path
 from typing import Optional, Union
 
 import fire
-from packaging.version import parse
-from sympy import python
 
 _REQUEST_TIMEOUT = 10
 _PATH_REPO_ROOT = Path(__file__).resolve().parent.parent
 _PATH_DIR_TESTS = _PATH_REPO_ROOT / "tests"
 _PKG_WIDE_SUBPACKAGES = ("utilities", "helpers")
-LUT_PYTHON_TORCH = {
-    "3.8": "1.4",
-    "3.9": "1.7.1",
-    "3.10": "1.11",
-    "3.11": "1.13",
-}
 _path_root = lambda *ds: os.path.join(_PATH_REPO_ROOT, *ds)
 REQUIREMENTS_FILES = (*glob.glob(_path_root("requirements", "*.txt")), _path_root("requirements.txt"))
 
@@ -52,54 +42,6 @@ class AssistantCLI:
 
         with open(req_file, "w", encoding="utf-8") as fp:
             fp.writelines(lines)
-
-    @staticmethod
-    def set_min_torch_for_each_python(fpath: str = "requirements/base.txt", python_ver: str = "") -> None:
-        """Set the minimal torch version according to a Python actual version.
-
-        >>> AssistantCLI.set_min_torch_for_each_python("../requirements/base.txt")
-
-        """
-        # Use packaging instead of deprecated/unavailable pkg_resources
-        from packaging.requirements import Requirement
-
-        if not python_ver:
-            python_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
-        if python_ver not in LUT_PYTHON_TORCH:
-            return
-
-        # Parse requirements file and extract the 'torch' requirement
-        with open(fpath) as fp:
-            lines = fp.readlines()
-        reqs = []
-        for ln in lines:
-            ln = ln.strip()
-            # skip empty lines, comments, and include directives
-            if not ln or ln.startswith("#") or ln.startswith("-r") or ln.startswith("--"):
-                continue
-            try:
-                reqs.append(Requirement(ln))
-            except Exception:
-                # skip lines that are not standard requirement specs
-                continue
-
-        pkg_ver = next(p for p in reqs if p.name == "torch")
-
-        # Determine the minimal specified version from lower-bound-like specifiers
-        versions = []
-        for spec in pkg_ver.specifier:
-            if spec.operator in (">=", "==", "~=", ">"):
-                versions.append(parse(spec.version))
-        pt_ver = min(versions) if versions else parse("0")
-
-        # Enforce minimal torch version required by current Python
-        pt_ver = max(parse(LUT_PYTHON_TORCH[python_ver]), pt_ver)
-
-        with open(fpath) as fp:
-            requires = fp.read()
-        requires = re.sub(r"torch>=[\d\.]+", f"torch>={pt_ver}", requires)
-        with open(fpath, "w", encoding="utf-8") as fp:
-            fp.write(requires)
 
     @staticmethod
     def _replace_requirement(fpath: str, old_str: str = "", new_str: str = "") -> None:
@@ -127,7 +69,6 @@ class AssistantCLI:
     @staticmethod
     def set_oldest_versions(req_files: list[str] = REQUIREMENTS_FILES) -> None:
         """Set the oldest version for requirements."""
-        AssistantCLI.set_min_torch_for_each_python()
         if isinstance(req_files, str):
             req_files = [req_files]
         for fpath in req_files:
