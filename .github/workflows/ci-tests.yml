@@ -86,6 +86,8 @@ jobs:
           activate-environment: true
           enable-cache: true
 
+      - run: uv pip install -r requirements/_ci.txt
+
       # GitHub Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
       - name: Setup macOS
         if: ${{ runner.os == 'macOS' }}
@@ -113,7 +115,6 @@ jobs:
 
       - name: Set PyTorch version
         run: |
-          uv pip install wget
           python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
           python adjust-torch-versions.py requirements/base.txt ${{ matrix.pytorch-version }}
       - name: Set min. dependencies
