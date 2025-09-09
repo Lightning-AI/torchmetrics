@@ -21,6 +21,7 @@ from typing import Optional, Union
 
 import fire
 from packaging.version import parse
+from sympy import python
 
 _REQUEST_TIMEOUT = 10
 _PATH_REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -53,7 +54,7 @@ class AssistantCLI:
             fp.writelines(lines)
 
     @staticmethod
-    def set_min_torch_for_each_python(fpath: str = "requirements/base.txt") -> None:
+    def set_min_torch_for_each_python(fpath: str = "requirements/base.txt", python_ver: str = "") -> None:
         """Set the minimal torch version according to a Python actual version.
 
         >>> AssistantCLI.set_min_torch_for_each_python("../requirements/base.txt")
@@ -62,8 +63,9 @@ class AssistantCLI:
         # Use packaging instead of deprecated/unavailable pkg_resources
         from packaging.requirements import Requirement
 
-        py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
-        if py_ver not in LUT_PYTHON_TORCH:
+        if not python_ver:
+            python_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
+        if python_ver not in LUT_PYTHON_TORCH:
             return
 
         # Parse requirements file and extract the 'torch' requirement
@@ -91,7 +93,7 @@ class AssistantCLI:
         pt_ver = min(versions) if versions else parse("0")
 
         # Enforce minimal torch version required by current Python
-        pt_ver = max(parse(LUT_PYTHON_TORCH[py_ver]), pt_ver)
+        pt_ver = max(parse(LUT_PYTHON_TORCH[python_ver]), pt_ver)
 
         with open(fpath) as fp:
             requires = fp.read()
