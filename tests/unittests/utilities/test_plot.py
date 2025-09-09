@@ -693,7 +693,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="lip vertex error",
         ),
         pytest.param(
-            partial(UpperFaceDynamicsDeviation, upper_face_map=[0, 1, 2, 3, 4]),
+            partial(UpperFaceDynamicsDeviation, template = torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4]),
             lambda: torch.randn(10, 100, 3),
             lambda: torch.randn(10, 100, 3),
             id="upper face dynamic deviation",
