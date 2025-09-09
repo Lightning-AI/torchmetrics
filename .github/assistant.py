@@ -53,10 +53,10 @@ class AssistantCLI:
             fp.writelines(lines)
 
     @staticmethod
-    def set_min_torch_by_python(fpath: str = "requirements/base.txt") -> None:
+    def set_min_torch_for_each_python(fpath: str = "requirements/base.txt") -> None:
         """Set the minimal torch version according to a Python actual version.
 
-        >>> AssistantCLI.set_min_torch_by_python("../requirements/base.txt")
+        >>> AssistantCLI.set_min_torch_for_each_python("../requirements/base.txt")
 
         """
         # Use packaging instead of deprecated/unavailable pkg_resources
@@ -125,7 +125,7 @@ class AssistantCLI:
     @staticmethod
     def set_oldest_versions(req_files: list[str] = REQUIREMENTS_FILES) -> None:
         """Set the oldest version for requirements."""
-        AssistantCLI.set_min_torch_by_python()
+        AssistantCLI.set_min_torch_for_each_python()
         if isinstance(req_files, str):
             req_files = [req_files]
         for fpath in req_files:
