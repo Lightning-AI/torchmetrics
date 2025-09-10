@@ -36,9 +36,8 @@ jobs:
           - { python-version: "3.10", requires: "latest", os: "ubuntu-22.04" }
           # - { python-version: "3.10", requires: "latest", os: "macOS-14" } # M1 machine # todo: crashing for MPS out of memory
     env:
-      PYTORCH_URL: "https://download.pytorch.org/whl/cpu/"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
-      PYPI_CACHE: "_ci-cache_PyPI"
+      UV_TORCH_BACKEND: "cpu"
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
@@ -46,10 +45,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+
+      - name: Install uv and set Python version
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python-version }}
+          # TODO: Avoid activating environment like this
+          # see: https://github.com/astral-sh/setup-uv/tree/v6/?tab=readme-ov-file#activate-environment
+          activate-environment: true
+          enable-cache: true
+
+      - run: uv pip install -r requirements/_ci.txt
 
       - name: source cashing
         uses: ./.github/actions/pull-caches
@@ -64,21 +70,24 @@ jobs:
           # this was updated in `source cashing` by optional oldest
           cat requirements/_integrate.txt
           # to have install pyTorch
-          pip install -e . "setuptools==69.5.1" --extra-index-url=${PYTORCH_URL}
+          uv pip install -e . "setuptools==69.5.1" --extra-index-url=${PYTORCH_URL}
 
           # adjust version to PT ecosystem based on installed TM
           python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
-          python adjust-torch-versions.py requirements/base.txt
-          python adjust-torch-versions.py requirements/image.txt
+          # make it as a loop over all files in `requirements`
+          for req in requirements/*.txt; do
+            python adjust-torch-versions.py "$req"
+          done
 
           # install package and dependencies
-          pip install -e . -r requirements/_tests.txt -r requirements/_integrate.txt \
-            --extra-index-url="${PYTORCH_URL}" --find-links="${PYPI_CACHE}" \
-            --upgrade-strategy eager
-          pip list
+          uv pip install -e . -r requirements/_tests.txt -r requirements/_integrate.txt
+          uv pip list
 
       - name: Integrations
         working-directory: ./tests
         env:
           PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
         run: python -m pytest integrations -v --durations=25 --reruns 3 --reruns-delay 2
+
+      - name: Minimize uv cache
+        run: uv cache prune --ci

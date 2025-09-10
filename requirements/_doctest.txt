@@ -3,4 +3,4 @@
 
 pytest >=8.0, <9.0
 pytest-doctestplus >=1.0, <1.5
-pytest-rerunfailures >=13.0, <16.0
+pytest-rerunfailures >=13.0, <17.0

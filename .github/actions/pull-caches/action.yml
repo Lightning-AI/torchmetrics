@@ -10,14 +10,6 @@ inputs:
     description: define oldest or latest
     required: false
     default: ""
-  pypi-dir:
-    description: location of local PyPI cache
-    required: false
-    default: "_ci-cache_PyPI"
-  pypi-key:
-    description: cache restore/dump key
-    required: false
-    default: "pypi-packages"
   cache-torch-HF:
     description: "cache torch and HF"
     required: false
@@ -30,14 +22,9 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: install assistant's deps
-      run: pip install -q packaging fire wget
-      shell: bash
-
     - name: Set PyTorch version
       if: inputs.pytorch-version != ''
       run: |
-        pip install wget
         python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
         python adjust-torch-versions.py requirements/base.txt ${{ inputs.pytorch-version }}
       shell: bash
@@ -59,25 +46,10 @@ runs:
         echo "HF_HUB_CACHE=${cache_dir}${dir_sep}hf-hub" >> $GITHUB_ENV
       shell: bash
 
-    - name: Cache pip packages
-      continue-on-error: true
-      uses: actions/cache/restore@v3
-      with:
-        enableCrossOsArchive: true
-        path: ${{ inputs.pypi-dir }}
-        key: ${{ inputs.pypi-key }}
-
-    - name: Restored Packages
-      run: |
-        mkdir -p ${{ inputs.pypi-dir }}
-        printf "list ${{ inputs.pypi-dir }}:\n"
-        ls -lh ${{ inputs.pypi-dir }}
-      shell: bash
-
     - name: Cache Torch & HF
       if: inputs.cache-torch-HF == 'true' # since the input is string
       continue-on-error: true
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         enableCrossOsArchive: true
         path: ${{ env.CACHES_DIR }}
@@ -87,15 +59,14 @@ runs:
       if: inputs.cache-torch-HF == 'true' # since the input is string
       run: |
         mkdir -p $CACHES_DIR
-        pip install -q py-tree
-        py-tree $CACHES_DIR
+        python -m py_tree $CACHES_DIR
       shell: bash
 
     - name: Cache References
       # do not use this cache for dispatch and crone, to enable rebuild caches if needed
       if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule' && inputs.cache-references == 'true'
       continue-on-error: true
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: tests/_cache-references
         key: cache-references
