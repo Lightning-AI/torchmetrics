@@ -1,7 +1,7 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-pandas >1.4.0, <=2.3.1 # cannot pin version due to numpy version incompatibility
+pandas >1.4.0, <=2.3.2 # cannot pin version due to numpy version incompatibility
 dython ==0.7.9
 scipy >1.0.0, <1.17.0 # cannot pin version due to some version conflicts with `oldest` CI configuration
 statsmodels >0.13.5, <0.15.0

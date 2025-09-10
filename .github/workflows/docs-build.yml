@@ -36,10 +36,18 @@ jobs:
         target: [html, doctest, linkcheck]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+
+      - name: Install uv and set Python version
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.10"
+          # TODO: Avoid activating environment like this
+          # see: https://github.com/astral-sh/setup-uv/tree/v6/?tab=readme-ov-file#activate-environment
+          activate-environment: true
+          enable-cache: true
+
+      - run: uv pip install -r requirements/_ci.txt
 
       - name: source cashing
         uses: ./.github/actions/pull-caches
@@ -48,12 +56,13 @@ jobs:
           pypi-dir: ${{ env.PYPI_CACHE }}
 
       - name: Install package & dependencies
+        env:
+          USE_UV: "1"
         run: |
           make get-sphinx-template
           # install with -e so the path to source link comes from this project not from the installed package
-          pip install -e . -U -r requirements/_docs.txt \
-            --find-links="${PYPI_CACHE}" --extra-index-url="${TORCH_URL}"
-      - run: pip list
+          uv pip install -e . -U -r requirements/_docs.txt -f dist/
+      - run: uv pip list
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
         run: |
@@ -83,6 +92,9 @@ jobs:
         with:
           pypi-dir: ${{ env.PYPI_CACHE }}
 
+      - name: Minimize uv cache
+        run: uv cache prune --ci
+
   deploy-docs:
     needs: docs-make
     if: github.repository_owner == 'Lightning-AI' && github.event_name == 'push'
@@ -90,17 +102,17 @@ jobs:
     env:
       GCP_TARGET: "gs://lightning-docs-metrics"
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: docs-html-${{ github.sha }}
           path: docs/build/
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GCS_SA_KEY }}
       - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
         with:
           project_id: ${{ secrets.GCS_PROJECT }}
 
