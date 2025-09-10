@@ -237,8 +237,6 @@ jobs:
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
-          pypi-dir: ${{ env.PYPI_CACHE_DIR }}
-          cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
           cache-references: true
 
       - name: Minimize uv cache
@@ -257,11 +255,3 @@ jobs:
         if: contains(fromJSON('["cancelled", "skipped"]'), needs.pytester.result)
         timeout-minutes: 1
         run: sleep 90
-
-  merge-pkg-artifacts:
-    needs: pytester
-    if: success()
-    uses: ./.github/workflows/_merge_cache.yml
-    with:
-      pypi-dir: "_ci-cache_PyPI"
-      cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
