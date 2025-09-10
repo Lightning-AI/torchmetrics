@@ -59,7 +59,7 @@ jobs:
         run: |
           make get-sphinx-template
           # install with -e so the path to source link comes from this project not from the installed package
-          uv pip install -e . -U -r requirements/_docs.txt
+          uv pip install -e . -U -r requirements/_docs.txt -f dist/
       - run: uv pip list
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
