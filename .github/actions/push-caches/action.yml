@@ -2,22 +2,6 @@ name: Update caches & artifacts
 description: some more complex push-caches - pip & hf
 
 inputs:
-  pypi-dir:
-    description: location of local PyPI cache
-    required: false
-    default: "_ci-cache_PyPI"
-  pypi-key:
-    description: cache restore/dump key
-    required: false
-    default: "pypi-packages"
-  torch-url:
-    description: location to pull PyTorch from
-    required: false
-    default: "https://download.pytorch.org/whl/cpu/torch_stable.html"
-  cache-artifact-appendix:
-    description: "unique name or running index"
-    required: false
-    default: ""
   cache-torch-HF:
     description: "cache torch and HF"
     required: false
@@ -30,49 +14,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: install dev. env
-      run: pip install -q setuptools wheel
-      shell: bash
-
-    - name: Freeze local emv.
-      if: inputs.cache-artifact-appendix != ''
-      run: |
-        pip freeze > requirements.dump
-        cat requirements.dump
-      shell: bash
-
-    - name: Dump wheels
-      if: inputs.cache-artifact-appendix != ''
-      run: |
-        pip wheel -r requirements/_devel.txt --prefer-binary \
-          --wheel-dir=_pip-wheels \
-          -f ${{ inputs.torch-url }} -f ${{ inputs.pypi-dir }}
-        ls -lh _pip-wheels
-      shell: bash
-
-    - name: Move new packages to staging
-      if: inputs.cache-artifact-appendix != ''
-      run: |
-        mkdir -p _pip-staging
-        python .github/assistant.py move_new_packages \
-          --dir-cache="${{ inputs.pypi-dir }}" \
-          --dir_local="_pip-wheels" \
-          --dir_staging="_pip-staging"
-        ls -lh _pip-staging/
-        # count files in the staging dir
-        file_count=$(ls -1 "_pip-staging/" | wc -l)
-        echo "NUM_PACKAGES=$file_count" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Upload new packages
-      if: inputs.cache-artifact-appendix != '' && env.NUM_PACKAGES != 0
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ inputs.pypi-key }}-run-${{ inputs.cache-artifact-appendix }}
-        path: _pip-staging
-        retention-days: 1
-
-    - name: Post Torch & HF
+    - name: Show Torch & HF
       if: inputs.cache-torch-HF == 'true' # since the input is string
       run: py-tree $CACHES_DIR
       shell: bash

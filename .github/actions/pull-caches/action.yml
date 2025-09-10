@@ -10,14 +10,6 @@ inputs:
     description: define oldest or latest
     required: false
     default: ""
-  pypi-dir:
-    description: location of local PyPI cache
-    required: false
-    default: "_ci-cache_PyPI"
-  pypi-key:
-    description: cache restore/dump key
-    required: false
-    default: "pypi-packages"
   cache-torch-HF:
     description: "cache torch and HF"
     required: false
@@ -52,21 +44,6 @@ runs:
         echo "TRANSFORMERS_CACHE=${cache_dir}${dir_sep}transformers" >> $GITHUB_ENV
         echo "HF_HOME=${cache_dir}${dir_sep}hf-home" >> $GITHUB_ENV
         echo "HF_HUB_CACHE=${cache_dir}${dir_sep}hf-hub" >> $GITHUB_ENV
-      shell: bash
-
-    #- name: Cache pip packages
-    #  continue-on-error: true
-    #  uses: actions/cache/restore@v4
-    #  with:
-    #    enableCrossOsArchive: true
-    #    path: ${{ inputs.pypi-dir }}
-    #    key: ${{ inputs.pypi-key }}
-
-    - name: Restored Packages
-      run: |
-        mkdir -p ${{ inputs.pypi-dir }}
-        printf "list ${{ inputs.pypi-dir }}:\n"
-        ls -lh ${{ inputs.pypi-dir }}
       shell: bash
 
     - name: Cache Torch & HF
