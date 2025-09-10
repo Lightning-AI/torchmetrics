@@ -37,7 +37,7 @@ runs:
     - name: Freeze local emv.
       if: inputs.cache-artifact-appendix != ''
       run: |
-        pip freeze > requiremets.dump
+        pip freeze > requirements.dump
         cat requirements.dump
       shell: bash
 
