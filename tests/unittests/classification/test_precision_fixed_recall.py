@@ -49,7 +49,7 @@ def _precision_at_recall_x_multilabel(predictions, targets, min_recall):
         tuple_all = [(p, r, t) for p, r, t in zip(precision, recall, thresholds) if r >= min_recall]
         max_precision, _, best_threshold = max(tuple_all)
     except ValueError:
-        max_precision, best_threshold = 0, 1e6
+        max_precision, best_threshold = 0, float("nan")
 
     return float(max_precision), float(best_threshold)
 
@@ -451,3 +451,15 @@ def test_wrapper_class(metric, kwargs, base_metric=PrecisionAtFixedRecall):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+def test_binary_precision_at_fixed_recall_nan_threshold():
+    """If no threshold meets the min_recall condition, threshold should be NaN."""
+    preds = torch.tensor([0.1, 0.4, 0.9, 0.8])
+    target = torch.tensor([0, 0, 0, 0])
+
+    metric = BinaryPrecisionAtFixedRecall(min_recall=0.5)
+    precision, threshold = metric(preds, target)
+
+    assert precision == 0.0
+    assert torch.isnan(threshold), "Expected NaN when no recall condition is met"

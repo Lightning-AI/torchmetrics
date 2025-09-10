@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: pypi-packages-${{ github.sha }}
           path: dist
@@ -60,14 +60,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: pypi-packages-${{ github.sha }}
           path: dist
       - run: ls -lh dist/
       # We do this, since failures on test.pypi aren't that bad
       - name: Publish to Test PyPI
-        uses: pypa/gh-action-pypi-publish@v1.12.4
+        uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
           user: __token__
           password: ${{ secrets.test_pypi_password }}
@@ -88,13 +88,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: pypi-packages-${{ github.sha }}
           path: dist
       - run: ls -lh dist/
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.12.4
+        uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
           user: __token__
           password: ${{ secrets.pypi_password }}
