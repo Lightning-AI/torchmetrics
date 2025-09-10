@@ -80,8 +80,7 @@ jobs:
           done
 
           # install package and dependencies
-          uv pip install -e . -r requirements/_tests.txt -r requirements/_integrate.txt \
-            --upgrade-strategy eager
+          uv pip install -e . -r requirements/_tests.txt -r requirements/_integrate.txt
           uv pip list
 
       - name: Integrations
