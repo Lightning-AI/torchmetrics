@@ -37,9 +37,17 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
+
+      - name: Install uv and set Python version
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.10"
+          # TODO: Avoid activating environment like this
+          # see: https://github.com/astral-sh/setup-uv/tree/v6/?tab=readme-ov-file#activate-environment
+          activate-environment: true
+          enable-cache: true
+
+      - run: uv pip install -r requirements/_ci.txt
 
       - name: source cashing
         uses: ./.github/actions/pull-caches
@@ -48,12 +56,13 @@ jobs:
           pypi-dir: ${{ env.PYPI_CACHE }}
 
       - name: Install package & dependencies
+        env:
+          USE_UV: "1"
         run: |
           make get-sphinx-template
           # install with -e so the path to source link comes from this project not from the installed package
-          pip install -e . -U -r requirements/_docs.txt \
-            --find-links="${PYPI_CACHE}" --extra-index-url="${TORCH_URL}"
-      - run: pip list
+          uv pip install -e . -U -r requirements/_docs.txt -f dist/
+      - run: uv pip list
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
         run: |
@@ -82,6 +91,9 @@ jobs:
         uses: ./.github/actions/push-caches
         with:
           pypi-dir: ${{ env.PYPI_CACHE }}
+
+      - name: Minimize uv cache
+        run: uv cache prune --ci
 
   deploy-docs:
     needs: docs-make
