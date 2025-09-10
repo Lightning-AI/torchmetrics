@@ -266,7 +266,7 @@ def _class_test(
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
-                k: v.cpu() if isinstance(v, Tensor) else v
+                k: v[i].cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
             preds_ = preds[i].cpu() if isinstance(preds, Tensor) else preds[i]
@@ -346,8 +346,10 @@ def _functional_test(
         atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
-        kwargs_update: Additional keyword arguments that will be passed with preds and
-            target when running update on the metric.
+        kwargs_update: Additional keyword arguments that will be passed with `preds` and
+            `target` when running update on the metric. If values are torch.Tensor objects, tests
+            will iterate over the first dimension of the Tensor with each batch.
+            Otherwise, the same value will be used for all batches.
 
     """
     p_size = preds.shape[0] if isinstance(preds, Tensor) else len(preds)
@@ -375,7 +377,7 @@ def _functional_test(
         extra_kwargs = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
         tm_result = metric(preds[i], target[i], **extra_kwargs)
         extra_kwargs = {
-            k: v.cpu() if isinstance(v, Tensor) else v
+            k: v[i].cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
         ref_result = _reference_cachier(reference_metric)(
@@ -641,6 +643,7 @@ class MetricTester:
         metric_module: Metric,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
+        **kwargs_update: Any,
     ) -> None:
         """Test if a metric is differentiable or not.
 
@@ -650,14 +653,17 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: functional version of the metric
             metric_args: dict with additional arguments used for class initialization
+            kwargs_update: dict with additional arguments for metric update
 
         """
         metric_args = metric_args or {}
+
         # only floating point tensors can require grad
         metric = metric_module(**metric_args)
         if preds.is_floating_point():
             preds.requires_grad = True
-            out = metric(preds[0, :2], target[0, :2])
+            kwargs_update = {k: v[0, :4] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
+            out = metric(preds[0, :4], target[0, :4], **kwargs_update)
 
             # Check if requires_grad matches is_differentiable attribute
             _assert_requires_grad(metric, out)
@@ -665,7 +671,7 @@ class MetricTester:
             if metric.is_differentiable and metric_functional is not None:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
-                    partial(metric_functional, **metric_args), (preds[0, :2].double(), target[0, :2])
+                    partial(metric_functional, **kwargs_update), (preds[0, :4].double(), target[0, :4])
                 )
 
             # reset as else it will carry over to other tests
