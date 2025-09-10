@@ -67,7 +67,8 @@ jobs:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       TOKENIZERS_PARALLELISM: false
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
-      PIP_EXTRA_INDEX_URL: "--extra-index-url=https://download.pytorch.org/whl/cpu/"
+      # PIP_EXTRA_URL: "--find-links=https://download.pytorch.org/whl/cpu/torch_stable.html"
+      UV_TORCH_BACKEND: "cpu"
       UNITTEST_TIMEOUT: "" # by default, it is not set
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
@@ -76,10 +77,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+
+      - name: Install uv and set Python version
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python-version }}
+          # TODO: Avoid activating environment like this
+          # see: https://github.com/astral-sh/setup-uv/tree/v6/?tab=readme-ov-file#activate-environment
+          activate-environment: true
+          enable-cache: true
+
+      - run: uv pip install -r requirements/_ci.txt
 
       # GitHub Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
       - name: Setup macOS
@@ -98,7 +106,7 @@ jobs:
         if: ${{ runner.os == 'windows' }}
         run: choco install ffmpeg
 
-      - name: source cashing
+      - name: source caching
         uses: ./.github/actions/pull-caches
         with:
           requires: ${{ matrix.requires }}
@@ -106,15 +114,23 @@ jobs:
           pypi-dir: ${{ env.PYPI_CACHE_DIR }}
           cache-references: true
 
-      - name: Switch to PT test URL
-        if: ${{ matrix.pytorch-version == '2.8.0' }}
-        run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
-      - name: Install pkg
+      - name: Set PyTorch version
         run: |
-          pip --version
-          pip install -e . -U "setuptools==69.5.1" -r requirements/_doctest.txt \
-            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
-          pip list
+          python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
+          python adjust-torch-versions.py requirements/base.txt ${{ matrix.pytorch-version }}
+      - name: Set min. dependencies
+        if: matrix.requires == 'oldest'
+        run: python .github/assistant.py set-oldest-versions
+
+      #- name: Switch to PT test URL
+      #  if: ${{ matrix.pytorch-version == '2.9.0' }}
+      #  run: echo 'PIP_EXTRA_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
+
+      - name: Install package
+        run: |
+          uv pip install . -U setuptools -r requirements/_doctest.txt \
+            $PIP_EXTRA_URL
+          uv pip list
         timeout-minutes: 25
 
       - name: DocTests
@@ -129,15 +145,13 @@ jobs:
         run: |
           set -ex
           curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
-          pip install -q cython  # needed for installing `pycocotools` in latest config
+          uv pip install -q cython  # needed for installing `pycocotools` in latest config
           for fpath in `ls requirements/*.txt`; do
               python adjust-torch-versions.py $fpath
           done
-          pip install --requirement requirements/clustering.txt -U \
-            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR" || true # separate install to avoid conflicts and ignore failures
-          pip install --requirement requirements/_devel.txt -U --upgrade-strategy=eager \
-            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
-          pip list
+          uv pip install --requirement requirements/clustering.txt -U $PIP_EXTRA_URL
+          uv pip install --requirement requirements/_devel.txt -U $PIP_EXTRA_URL
+          uv pip list
         timeout-minutes: 25
 
       - name: set special vars for PR
@@ -157,7 +171,7 @@ jobs:
         env:
           S3_DATA: "https://pl-public-data.s3.amazonaws.com/metrics/data.zip"
         run: |
-          pip install -q "urllib3>1.0"
+          uv pip install -q "urllib3>1.0"
           # wget is simpler but does not work on Windows
           python -c "from urllib.request import urlretrieve ; urlretrieve('$S3_DATA', 'data.zip')"
           unzip -o data.zip
@@ -223,9 +237,10 @@ jobs:
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
-          pypi-dir: ${{ env.PYPI_CACHE_DIR }}
-          cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
           cache-references: true
+
+      - name: Minimize uv cache
+        run: uv cache prune --ci
 
   testing-guardian:
     runs-on: ubuntu-latest
@@ -240,11 +255,3 @@ jobs:
         if: contains(fromJSON('["cancelled", "skipped"]'), needs.pytester.result)
         timeout-minutes: 1
         run: sleep 90
-
-  merge-pkg-artifacts:
-    needs: pytester
-    if: success()
-    uses: ./.github/workflows/_merge_cache.yml
-    with:
-      pypi-dir: "_ci-cache_PyPI"
-      cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}

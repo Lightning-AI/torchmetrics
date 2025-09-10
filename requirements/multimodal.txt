@@ -2,7 +2,7 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 # transformers==4.52 and 4.53 has a bug with the clip model loading
-transformers >=4.43.0,<4.56
+transformers >=4.43.0,<4.57
 piq <=0.8.0
 einops >=0.7.0, <=0.8.1  # CLIP dependency
 timm >=0.9.0, <1.1.0  # CLIP: needed for transformers/models--jinaai--jina-clip-implementation
