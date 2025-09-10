@@ -50,6 +50,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - run: pip install -r requirements/_ci.txt
 
       - name: source cashing
         uses: ./.github/actions/pull-caches
