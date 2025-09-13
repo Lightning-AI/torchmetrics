@@ -137,8 +137,9 @@ class UpperFaceDynamicsDeviation(Metric):
                 f"number of vertices {vertices_pred.shape[1]}."
             )
 
-        self.vertices_pred_list.append(vertices_pred)
-        self.vertices_gt_list.append(vertices_gt)
+        min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
+        self.vertices_pred_list.append(vertices_pred[:min_frames])
+        self.vertices_gt_list.append(vertices_gt[:min_frames])
 
     def compute(self) -> Tensor:
         """Compute the Upper Face Dynamics Deviation over all accumulated states.
