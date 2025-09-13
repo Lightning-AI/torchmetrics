@@ -78,7 +78,7 @@ def upper_face_dynamics_deviation(
         )
     if template.ndim != 2 or template.shape[1] != 3:
         raise ValueError(f"Expected template to have shape (V, 3) but got {template.shape}.")
-    if vertices_pred.shape != vertices_gt.shape:
+    if vertices_pred.shape[1:] != vertices_gt.shape[1:]:
         raise ValueError(
             f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
             f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
