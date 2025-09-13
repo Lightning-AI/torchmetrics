@@ -126,7 +126,7 @@ class UpperFaceDynamicsDeviation(Metric):
                 f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
                 f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
             )
-        if vertices_pred.shape != vertices_gt.shape:
+        if vertices_pred.shape[1:] != vertices_gt.shape[1:]:
             raise ValueError(
                 f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
                 f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
