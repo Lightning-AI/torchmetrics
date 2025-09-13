@@ -91,7 +91,8 @@ def upper_face_dynamics_deviation(
             f"number of vertices {vertices_pred.shape[1]}."
         )
 
-    pred = vertices_pred[:, upper_face_map, :]  # (T, M, 3)
+    min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
+    pred = vertices_pred[:min_frames, upper_face_map, :]  # (T, M, 3)
     gt = vertices_gt[:, upper_face_map, :]
     template = template.to(pred.device)[upper_face_map, :]  # (M, 3)
 
