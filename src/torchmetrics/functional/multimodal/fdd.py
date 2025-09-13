@@ -90,8 +90,6 @@ def upper_face_dynamics_deviation(
             f"upper_face_map contains invalid vertex indices. Max index {max(upper_face_map)} is larger than "
             f"number of vertices {vertices_pred.shape[1]}."
         )
-    if vertices_pred.shape[0] < 2:
-        raise ValueError("Need at least 2 frames to compute dynamics deviation.")
 
     pred = vertices_pred[:, upper_face_map, :]  # (T, M, 3)
     gt = vertices_gt[:, upper_face_map, :]
