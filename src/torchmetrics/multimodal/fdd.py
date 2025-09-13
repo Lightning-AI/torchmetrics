@@ -103,8 +103,8 @@ class UpperFaceDynamicsDeviation(Metric):
         self.upper_face_map = upper_face_map
         self.template = template
 
-        if not self.template:
-            raise ValueError("template cannot be empty.")
+        if self.template.ndim != 2 or self.template.shape[1] != 3:
+            raise ValueError(f"Expected template to have shape (V, 3) but got {template.shape}.")
         if not self.upper_face_map:
             raise ValueError("upper_face_map cannot be empty.")
 
