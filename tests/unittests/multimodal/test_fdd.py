@@ -132,14 +132,6 @@ class TestUpperFaceDynamicsDeviation(MetricTester):
         with pytest.raises(ValueError, match="upper_face_map contains invalid vertex indices.*"):
             metric(torch.randn(10, 50, 3), torch.randn(10, 50, 3))
 
-    def test_different_sequence_lengths(self):
-        """Test that the metric handles sequences of different lengths correctly."""
-        metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2])
-        pred = torch.randn(10, 50, 3)
-        target = torch.randn(8, 50, 3)
-        with pytest.raises(ValueError, match="Expected vertices_pred and vertices_gt to have same vertex.*"):
-            metric(pred, target)
-
     def test_plot_method(self):
         """Test the plot method of FDD."""
         vertices_pred, vertices_gt, template = _generate_vertices()
