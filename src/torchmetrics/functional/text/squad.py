@@ -87,7 +87,7 @@ def _metric_max_over_ground_truths(
     metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: list[str]
 ) -> Tensor:
     """Calculate maximum score for a predicted answer with all reference answers."""
-    return max(metric_fn(prediction, truth) for truth in ground_truths)  
+    return max(metric_fn(prediction, truth) for truth in ground_truths)
 
 
 def _squad_input_check(
