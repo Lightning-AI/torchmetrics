@@ -112,6 +112,34 @@ _binary_cases = (
 )
 
 
+_masked_binary_cases = (
+    pytest.param(
+        _GroupInput(
+            preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
+        ),
+        id="input[single_dim-labels]",
+    ),
+    pytest.param(
+        _GroupInput(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
+        ),
+        id="input[single_dim-probs]",
+    ),
+    pytest.param(
+        _GroupInput(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
+        ),
+        id="input[single_dim-logits]",
+    ),
+)
+
+
 def _multiclass_with_missing_class(*shape: Any, num_classes=NUM_CLASSES):
     """Generate multiclass input where a class is missing.
 

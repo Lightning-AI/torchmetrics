@@ -166,7 +166,120 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         """
         return self._plot(val, ax)
 
+class MaskedBinaryAUROC(BinaryAUROC):
+    r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks with masking.
 
+    The Masked AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
+    multiple thresholds at the same time with an output mask. 
+    Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for
+      each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the
+      positive class.
+    - ``mask`` (:class:`~torch.Tensor`): A boolean tensor of shape ``(N, ...)`` indicating which elements to include
+      in the metric computation. Elements with a value of `True` will be included, while elements with a value of
+      `False` will be ignored.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``b_auroc`` (:class:`~torch.Tensor`): A single scalar with the auroc score of unmasked elements.
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a
+    binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+    activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+    `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        max_fpr: If not ``None``, calculates standardized partial AUC over the range ``[0, max_fpr]``.
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> import torch
+        >>> from torch import tensor
+        >>> from torchmetrics.classification import MaskedBinaryAUROC
+        >>> preds = tensor([0, 0.5, 0.7, 0.8])
+        >>> target = tensor([0, 1, 1, 0])
+        >>> mask = tensor([1, 1, 0, 1], dtype=torch.bool)
+        >>> metric = MaskedBinaryAUROC(thresholds=None)
+        >>> metric(preds, target, mask)
+        tensor(0.5000)
+        >>> b_auroc = MaskedBinaryAUROC(thresholds=5)
+        >>> b_auroc(preds, target, mask)
+        tensor(0.5000)
+
+    """
+
+    def update(self, preds: Tensor, target: Tensor, mask: Tensor = None) -> None:
+        if mask is not None:
+            if mask.shape != preds.shape:
+                raise ValueError(f"Mask shape {mask.shape} must match preds/target shape {preds.shape}")
+            preds = preds[mask]
+            target = target[mask]
+        super().update(preds, target)  # call the original BinaryAUROC update
+
+    def plot(  # type: ignore[override]
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single
+            >>> import torch
+            >>> from torchmetrics.classification import MaskedBinaryAUROC
+            >>> metric = MaskedBinaryAUROC()
+            >>> metric.update(torch.rand(20,), torch.randint(2, (20,)), mask=torch.rand(20,) > 0.5)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.classification import MaskedBinaryAUROC
+            >>> metric = MaskedBinaryAUROC()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(20,), torch.randint(2, (20,)), mask=torch.rand(20,) > 0.5))
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)
+    
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks.
 
