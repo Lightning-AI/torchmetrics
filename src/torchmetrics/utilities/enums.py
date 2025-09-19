@@ -117,6 +117,7 @@ class ClassificationTask(EnumStr):
         return "Classification"
 
     BINARY = "binary"
+    MASKEDBINARY = "maskedbinary"
     MULTICLASS = "multiclass"
     MULTILABEL = "multilabel"
 
