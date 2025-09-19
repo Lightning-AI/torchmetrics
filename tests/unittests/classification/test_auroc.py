@@ -284,6 +284,20 @@ class TestMaskedBinaryAUROC(MaskedBinaryAUROCTester):
             mask=mask,
         )
 
+    def test_mask_error_on_wrong_dtype_and_shape(self, inputs):
+        """Test that errors are raised on wrong mask dtype and shape."""
+        preds, target, mask = inputs
+
+        # wrong dtype: mask should be boolean
+        mask_wrong_dtype = torch.randint(high=2, size=preds.shape, dtype=torch.int32)
+        with pytest.raises(ValueError, match="Mask must be boolean, got "):
+            MaskedBinaryAUROC()(preds, target, mask=mask_wrong_dtype)
+
+        # wrong shape: mask must match preds/target shape
+        mask_wrong_shape = torch.randint(high=2, size=(preds.shape[0],), dtype=torch.bool)
+        with pytest.raises(ValueError, match="Mask shape "):
+            MaskedBinaryAUROC()(preds, target, mask=mask_wrong_shape)
+
 
 def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
