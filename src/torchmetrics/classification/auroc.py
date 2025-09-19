@@ -39,7 +39,7 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["BinaryAUROC.plot", "MulticlassAUROC.plot", "MultilabelAUROC.plot"]
+    __doctest_skip__ = ["BinaryAUROC.plot", "MaskedBinaryAUROC.plot", "MulticlassAUROC.plot", "MultilabelAUROC.plot"]
 
 
 class BinaryAUROC(BinaryPrecisionRecallCurve):
@@ -601,10 +601,11 @@ class AUROC(_ClassificationTaskWrapper):
     corresponds to random guessing.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
-    :class:`~torchmetrics.classification.BinaryAUROC`, :class:`~torchmetrics.classification.MulticlassAUROC` and
-    :class:`~torchmetrics.classification.MultilabelAUROC` for the specific details of each argument influence and
-    examples.
+    ``task`` argument to either ``'binary'``, ``'maskedbinary'``, ``'multiclass'`` or ``'multilabel'``.
+    See the documentation of
+    :class:`~torchmetrics.classification.BinaryAUROC`, :class:`~torchmetrics.classification.MaskedBinaryAUROC`,
+    :class:`~torchmetrics.classification.MulticlassAUROC` and :class:`~torchmetrics.classification.MultilabelAUROC`
+    for the specific details of each argument influence and examples.
 
     Legacy Example:
         >>> from torch import tensor
@@ -628,7 +629,7 @@ class AUROC(_ClassificationTaskWrapper):
 
     def __new__(  # type: ignore[misc]
         cls: type["AUROC"],
-        task: Literal["binary", "multiclass", "multilabel"],
+        task: Literal["binary", "maskedbinary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
@@ -643,6 +644,8 @@ class AUROC(_ClassificationTaskWrapper):
         kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTask.BINARY:
             return BinaryAUROC(max_fpr, **kwargs)
+        if task == ClassificationTask.MASKEDBINARY:
+            return MaskedBinaryAUROC(max_fpr, **kwargs)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
