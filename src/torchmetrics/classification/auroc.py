@@ -166,11 +166,12 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         """
         return self._plot(val, ax)
 
+
 class MaskedBinaryAUROC(BinaryAUROC):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks with masking.
 
     The Masked AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
-    multiple thresholds at the same time with an output mask. 
+    multiple thresholds at the same time with an output mask.
     Notably, an AUROC score of 1 is a perfect score and an AUROC score of 0.5 corresponds to random guessing.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -231,6 +232,7 @@ class MaskedBinaryAUROC(BinaryAUROC):
     """
 
     def update(self, preds: Tensor, target: Tensor, mask: Tensor = None) -> None:
+        """Update the state with the new data."""
         if mask is not None:
             if mask.shape != preds.shape:
                 raise ValueError(f"Mask shape {mask.shape} must match preds/target shape {preds.shape}")
@@ -279,7 +281,8 @@ class MaskedBinaryAUROC(BinaryAUROC):
 
         """
         return self._plot(val, ax)
-    
+
+
 class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks.
 
