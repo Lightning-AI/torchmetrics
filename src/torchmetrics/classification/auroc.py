@@ -232,7 +232,7 @@ class MaskedBinaryAUROC(BinaryAUROC):
 
     """
 
-    def update(self, preds: Tensor, target: Tensor, mask: Tensor = None) -> None:
+    def update(self, preds: Tensor, target: Tensor, mask: Optional[Tensor] = None) -> None:
         """Update the state with the new data."""
         if mask is not None:
             if mask.dtype != torch.bool:
