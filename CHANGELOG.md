@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Defaulting Dice score `average="macro"` ([#3042](https://github.com/Lightning-AI/torchmetrics/pull/3042))
 
 
-- Added `ignore_index` to Segmentation IOC metric ([#2747](https://github.com/Lightning-AI/torchmetrics/issues/2747))
+- Added `ignore_index` to Segmentation IoU metric ([#2747](https://github.com/Lightning-AI/torchmetrics/issues/2747))
 
 
 ### Deprecated
