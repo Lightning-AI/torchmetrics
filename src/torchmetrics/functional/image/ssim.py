@@ -117,8 +117,8 @@ def _ssim_update(
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
         data_range = data_range[1] - data_range[0]
 
-    c1 = pow(k1 * data_range, 2)  
-    c2 = pow(k2 * data_range, 2)  
+    c1 = pow(k1 * data_range, 2)
+    c2 = pow(k2 * data_range, 2)
     device = preds.device
 
     channel = preds.size(1)
