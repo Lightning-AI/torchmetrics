@@ -35,7 +35,11 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
-from torchmetrics.functional.classification.brier import _mean_brier_score_and_decomposition, _brier_binary_format
+from torchmetrics.functional.classification.brier import (
+    _mean_brier_score_and_decomposition,
+    _binary_brier_format,
+    _multiclass_brier_format,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -147,7 +151,7 @@ class BinaryBrier(Metric):
 
         self.confmat += confmat
 
-        preds_br, target_br = _brier_binary_format(preds, target, self.ignore_index)
+        preds_br, target_br = _binary_brier_format(preds, target, self.ignore_index)
         self.preds.append(preds_br)
         self.target.append(target_br)
 
@@ -288,18 +292,26 @@ class MulticlassBrier(Metric):
         self.validate_args = validate_args
 
         self.add_state("confmat", torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multiclass_confusion_matrix_tensor_validation(preds, target, self.num_classes, self.ignore_index)
-        preds, target = _multiclass_confusion_matrix_format(preds, target, self.ignore_index)
-        confmat = _multiclass_confusion_matrix_update(preds, target, self.num_classes)
+        preds_conf, target_conf = _multiclass_confusion_matrix_format(preds, target, self.ignore_index)
+        confmat = _multiclass_confusion_matrix_update(preds_conf, target_conf, self.num_classes)
         self.confmat += confmat
 
-    def compute(self) -> Tensor:
+        preds_br, target_br = _multiclass_brier_format(preds, target, self.num_classes, self.ignore_index)
+        self.preds.append(preds_br)
+        self.target.append(target_br)
+
+    def compute(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Compute confusion matrix."""
-        return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
+        return _mean_brier_score_and_decomposition(
+            dim_zero_cat(self.target), dim_zero_cat(self.preds), self.confmat.float()
+        )
 
     def plot(
         self,

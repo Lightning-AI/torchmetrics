@@ -142,7 +142,7 @@ def _adjust_threshold_arg(
     return thresholds
 
 
-def _brier_binary_format(
+def _binary_brier_format(
     preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
@@ -167,6 +167,33 @@ def _brier_binary_format(
 
     probs_zero_class = torch.ones(preds.shape) - preds
     preds = torch.cat([probs_zero_class.unsqueeze(dim=-1), preds.unsqueeze(dim=-1)], dim=-1)
+
+    return preds, target
+
+
+def _multiclass_brier_format(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    ignore_index: Optional[int] = None,
+) -> tuple[Tensor, Tensor]:
+    """Convert all input to the right format.
+
+    - flattens additional dimensions
+    - Remove all datapoints that should be ignored
+    - Applies softmax if pred tensor not in [0,1] range
+    - Format thresholds arg to be a tensor
+
+    """
+    preds = preds.transpose(0, 1).reshape(num_classes, -1).T
+    target = target.flatten()
+
+    if ignore_index is not None:
+        idx = target != ignore_index
+        preds = preds[idx]
+        target = target[idx]
+
+    preds = normalize_logits_if_needed(preds, "softmax")
 
     return preds, target
 

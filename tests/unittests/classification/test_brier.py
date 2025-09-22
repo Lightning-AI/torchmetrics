@@ -51,5 +51,27 @@ class TestBinaryBrier(MetricTester):
         target = tensor([0, 1, 0, 1, 0, 1])
         preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         metric = BinaryBrier()
-        print("BinaryBrier: \n")
+        print("\n")
+        print("BinaryBrier:")
         print(metric(preds, target))
+        print("\n")
+
+
+class TestMulticlassBrier(MetricTester):
+    """Test class for `BinaryBrier` metric."""
+
+    def test_multiclass_brier(self):
+        """Test class implementation of metric."""
+        target = tensor([1, 5, 3, 0, 0, 3])
+        preds = tensor([
+            [0.9, 0.05, 0.02, 0.01, 0.01, 0.01],
+            [0.01, 0.01, 0.01, 0.01, 0.01, 0.95],
+            [0.85, 0.05, 0.05, 0.02, 0.02, 0.01],
+            [0.01, 0.01, 0.9, 0.05, 0.02, 0.01],
+            [0.8, 0.1, 0.05, 0.03, 0.01, 0.01],
+            [0.01, 0.01, 0.01, 0.9, 0.05, 0.02],
+        ])
+        metric = MulticlassBrier(num_classes=6)
+        print("MulticlassBrier:")
+        print(metric(preds, target))
+        print("\n")
