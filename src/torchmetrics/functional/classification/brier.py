@@ -126,11 +126,16 @@ def _mean_brier_score_and_decomposition(
     labels: torch.Tensor,
     probabilities: torch.Tensor = None,
     confusion_matrix: torch.Tensor = None,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     mean_brier = _mean_brier_score(labels, probabilities)
     uncertainty, resolution, reliability = _brier_decomposition(probabilities, confusion_matrix)
 
-    return mean_brier, uncertainty, resolution, reliability
+    return {
+        "MeanBrier": mean_brier,
+        "Uncertainty": uncertainty,
+        "Resolution": resolution,
+        "Reliability": reliability,
+    }
 
 
 def _adjust_threshold_arg(

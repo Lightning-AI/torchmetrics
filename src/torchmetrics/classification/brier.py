@@ -155,7 +155,7 @@ class BinaryBrier(Metric):
         self.preds.append(preds_br)
         self.target.append(target_br)
 
-    def compute(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+    def compute(self) -> dict[str, torch.Tensor]:
         """Compute confusion matrix."""
         return _mean_brier_score_and_decomposition(
             dim_zero_cat(self.target), dim_zero_cat(self.preds), self.confmat.float()
@@ -307,7 +307,7 @@ class MulticlassBrier(Metric):
         self.preds.append(preds_br)
         self.target.append(target_br)
 
-    def compute(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+    def compute(self) -> dict[str, torch.Tensor]:
         """Compute confusion matrix."""
         return _mean_brier_score_and_decomposition(
             dim_zero_cat(self.target), dim_zero_cat(self.preds), self.confmat.float()
