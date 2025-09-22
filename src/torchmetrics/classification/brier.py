@@ -18,14 +18,17 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification.base import _ClassificationTaskWrapper
+from torchmetrics.functional.classification.brier import (
+    _binary_brier_format,
+    _mean_brier_score_and_decomposition,
+    _multiclass_brier_format,
+)
 from torchmetrics.functional.classification.confusion_matrix import (
     _binary_confusion_matrix_arg_validation,
-    _binary_confusion_matrix_compute,
     _binary_confusion_matrix_format,
     _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
-    _multiclass_confusion_matrix_compute,
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
     _multiclass_confusion_matrix_update,
@@ -35,16 +38,11 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
-from torchmetrics.functional.classification.brier import (
-    _mean_brier_score_and_decomposition,
-    _binary_brier_format,
-    _multiclass_brier_format,
-)
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _CMAP_TYPE, _PLOT_OUT_TYPE, plot_confusion_matrix
-from torchmetrics.utilities.data import dim_zero_cat
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = [

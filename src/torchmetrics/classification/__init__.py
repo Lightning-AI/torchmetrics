@@ -20,8 +20,8 @@ from torchmetrics.classification.average_precision import (
     MultilabelAveragePrecision,
 )
 from torchmetrics.classification.brier import (
-    Brier,
     BinaryBrier,
+    Brier,
     MulticlassBrier,
     MultilabelBrier,
 )

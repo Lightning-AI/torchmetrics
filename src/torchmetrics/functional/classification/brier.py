@@ -12,21 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections.abc import Sequence
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import torch
-from torch import Tensor, tensor
-from torch.nn import functional as F  # noqa: N812
+from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.compute import _safe_divide, interp, normalize_logits_if_needed
-from torchmetrics.utilities.data import _bincount, _cumsum
-from torchmetrics.utilities.enums import ClassificationTask
-from torchmetrics.utilities.prints import rank_zero_warn
-import torch
-import torch.nn.functional as F
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 
 
 def _brier_decomposition(
@@ -62,6 +54,7 @@ def _brier_decomposition(
       resolution: Tensor, scalar, the resolution component of the decomposition.
       reliability: Tensor, scalar, the reliability component of the
         decomposition.
+
     """
     n, nlabels = probabilities.shape  # Implicit rank check.
 
@@ -109,8 +102,8 @@ def _mean_brier_score(labels: torch.Tensor, probabilities: torch.Tensor = None) 
     Returns:
         torch.Tensor: Tensor of shape [N1, N2, ...] consisting of the Brier score contribution
         from each element. The full-dataset Brier score is the average of these values.
-    """
 
+    """
     nlabels = probabilities.shape[-1]
     flat_probabilities = probabilities.view(-1, nlabels)
     flat_labels = labels.view(-1)
