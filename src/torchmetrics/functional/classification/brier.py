@@ -77,7 +77,7 @@ def _brier_decomposition(
     dist_mean = confusion_matrix / (confusion_matrix.sum(dim=1, keepdim=True) + 1.0e-7)
 
     # Uncertainty: quadratic entropy of the average label distribution
-    uncertainty = -torch.sum(pbar**2)
+    uncertainty = torch.sum(pbar**2)
 
     # Resolution: expected quadratic divergence of predictive to mean
     resolution = (pbar.unsqueeze(1) - dist_mean) ** 2
@@ -115,7 +115,7 @@ def _mean_brier_score(labels: torch.Tensor, probabilities: torch.Tensor = None) 
 
     # Gather the probabilities corresponding to the true labels
     plabel = flat_probabilities[torch.arange(len(flat_labels)), flat_labels]
-    out = torch.sum(flat_probabilities**2, dim=-1) - 2 * plabel
+    out = torch.sum(flat_probabilities**2, dim=-1) - 2 * plabel + 1
 
     return out.view(labels.shape).mean()
 
