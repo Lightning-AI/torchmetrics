@@ -65,6 +65,8 @@ def _brier_decomposition(
     """
     n, nlabels = probabilities.shape  # Implicit rank check.
 
+    confusion_matrix = confusion_matrix.T
+
     # Compute pbar, the average distribution
     pred_class = torch.argmax(probabilities, dim=1)
     dist_weights = confusion_matrix.sum(dim=1)
@@ -77,7 +79,7 @@ def _brier_decomposition(
     dist_mean = confusion_matrix / (confusion_matrix.sum(dim=1, keepdim=True) + 1.0e-7)
 
     # Uncertainty: quadratic entropy of the average label distribution
-    uncertainty = torch.sum(pbar**2)
+    uncertainty = torch.sum(pbar - pbar**2)
 
     # Resolution: expected quadratic divergence of predictive to mean
     resolution = (pbar.unsqueeze(1) - dist_mean) ** 2
