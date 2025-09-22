@@ -27,7 +27,7 @@ def upper_face_dynamics_deviation(
 
     The Upper Face Dynamics Deviation (FDD) metric evaluates the quality of facial expressions in the upper
     face region for 3D talking head models. It quantifies the deviation in vertex motion dynamics between the
-    predicted and ground truth sequences by comparing the frame-to-frame displacement of vertices.
+    predicted and ground truth sequences by comparing the temporal variation (standard deviation) of per-vertex squared displacements from the neutral template.
 
     The metric is defined as:
 
@@ -51,7 +51,7 @@ def upper_face_dynamics_deviation(
         upper_face_map: List of vertex indices corresponding to the upper face region.
 
     Returns:
-        torch.Tensor: Scalar tensor containing the mean FDD value across all frames.
+        torch.Tensor: Scalar tensor containing the mean FDD value across upper-face vertices.
 
     Raises:
         ValueError:

@@ -45,7 +45,7 @@ class UpperFaceDynamicsDeviation(Metric):
     facial dynamics.
     :math:`\text{template}_v` is the 3D coordinate of vertex :math:`v` in the neutral template mesh.
 
-    The metric computes the standard deviation of the frame-to-frame L2 displacements of each upper-face vertex
+    The metric computes the standard deviation over time of per-vertex squared displacement from the neutral template
     for both predicted and ground truth sequences, then averages the differences over all upper-face vertices.
     A lower FDD value indicates better temporal consistency of facial motion.
 
@@ -64,6 +64,7 @@ class UpperFaceDynamicsDeviation(Metric):
         across all upper-face vertices.
 
     Args:
+        template: Template mesh tensor of shape (V, 3) representing the neutral face.
         upper_face_map: List of vertex indices for the upper-face region.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 

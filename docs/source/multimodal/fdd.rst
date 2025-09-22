@@ -1,12 +1,12 @@
 .. customcarditem::
-   :header: Upper Face Dynamic Deviation (FDD)
+   :header: Upper Face Dynamics Deviation (FDD)
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/image_classification.svg
    :tags: Multimodal
 
 .. include:: ../links.rst
 
 ##################################
-Upper Face Dynamic Deviation (FDD)
+Upper Face Dynamics Deviation (FDD)
 ##################################
 
 Module Interface
