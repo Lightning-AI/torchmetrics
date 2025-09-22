@@ -19,6 +19,12 @@ from torchmetrics.classification.average_precision import (
     MulticlassAveragePrecision,
     MultilabelAveragePrecision,
 )
+from torchmetrics.classification.brier import (
+    Brier,
+    BinaryBrier,
+    MulticlassBrier,
+    MultilabelBrier,
+)
 from torchmetrics.classification.calibration_error import (
     BinaryCalibrationError,
     CalibrationError,
