@@ -55,8 +55,6 @@ class UpperFaceDynamicsDeviation(Metric):
         V is the number of vertices, and 3 represents XYZ coordinates.
     - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (T, V, 3) where T is the number of
         frames, V is the number of vertices, and 3 represents XYZ coordinates.
-    - ``upper_face_map`` (:class:`list`): List of vertex indices corresponding to the upper-face region.
-    - ``template`` (:class:`~torch.Tensor`): Template mesh tensor of shape (V, 3) representing the neutral face.
 
     As output of ``forward`` and ``compute``, the metric returns the following output:
 
@@ -89,7 +87,6 @@ class UpperFaceDynamicsDeviation(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
-    plot_lower_bound: float = 0.0
 
     vertices_pred_list: List[Tensor]
     vertices_gt_list: List[Tensor]
@@ -108,7 +105,12 @@ class UpperFaceDynamicsDeviation(Metric):
             raise ValueError(f"Expected template to have shape (V, 3) but got {template.shape}.")
         if not self.upper_face_map:
             raise ValueError("upper_face_map cannot be empty.")
-
+        if min(self.upper_face_map) < 0 or max(self.upper_face_map) >= self.template.shape[0]:
+            raise ValueError(
+                f"upper_face_map contains invalid vertex indices. "
+                f"Valid indices are between 0 and {self.template.shape[0] - 1}, "
+                f"but got min index {min(self.upper_face_map)}, max index {max(self.upper_face_map)}."
+            )
         self.add_state("vertices_pred_list", default=[], dist_reduce_fx=None)
         self.add_state("vertices_gt_list", default=[], dist_reduce_fx=None)
 

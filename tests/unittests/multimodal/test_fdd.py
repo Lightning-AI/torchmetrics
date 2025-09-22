@@ -46,9 +46,9 @@ def _generate_vertices(batch_size: int = 1) -> _InputVertices:
 
 def _reference_fdd(vertices_pred, vertices_gt, template, upper_face_map):
     """Reference implementation for FDD metric using numpy."""
-    pred = vertices_pred[:, upper_face_map, :].numpy()  # (T, M, 3)
-    gt = vertices_gt[:, upper_face_map, :].numpy()  # (T, M, 3)
-    template = template[upper_face_map, :].numpy()  # (M, 3)
+    pred = vertices_pred[:, upper_face_map, :].detach().cpu().numpy()  # (T, M, 3)
+    gt = vertices_gt[:, upper_face_map, :].detach().cpu().numpy()  # (T, M, 3)
+    template = template[upper_face_map, :].detach().cpu().numpy()  # (M, 3)
 
     displacements_gt = gt - template  # (T, V, 3)
     displacements_pred = pred - template
@@ -128,9 +128,8 @@ class TestUpperFaceDynamicsDeviation(MetricTester):
 
     def test_error_on_invalid_upper_face_indices(self):
         """Test that an error is raised if upper_face_map has invalid indices."""
-        metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[98, 99, 100])
         with pytest.raises(ValueError, match="upper_face_map contains invalid vertex indices.*"):
-            metric(torch.randn(10, 50, 3), torch.randn(10, 50, 3))
+            UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[98, 99, 100])
 
     def test_plot_method(self):
         """Test the plot method of FDD."""

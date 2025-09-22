@@ -27,7 +27,8 @@ def upper_face_dynamics_deviation(
 
     The Upper Face Dynamics Deviation (FDD) metric evaluates the quality of facial expressions in the upper
     face region for 3D talking head models. It quantifies the deviation in vertex motion dynamics between the
-    predicted and ground truth sequences by comparing the temporal variation (standard deviation) of per-vertex squared displacements from the neutral template.
+    predicted and ground truth sequences by comparing the temporal variation (standard deviation) of per-vertex
+    squared displacements from the neutral template.
 
     The metric is defined as:
 
@@ -58,7 +59,7 @@ def upper_face_dynamics_deviation(
             If the number of dimensions of `vertices_pred` or `vertices_gt` is not 3.
             If vertex dimensions (V) or coordinate dimensions (3) don't match.
             If ``upper_face_map`` is empty or contains invalid indices.
-            If there are at least two frames to compute face dynamics deviation.
+            If there are fewer than two frames to compute face dynamics deviation.
 
     Example:
         >>> import torch
@@ -90,7 +91,6 @@ def upper_face_dynamics_deviation(
             f"upper_face_map contains invalid vertex indices. Max index {max(upper_face_map)} is larger than "
             f"number of vertices {vertices_pred.shape[1]}."
         )
-
     min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
     pred = vertices_pred[:min_frames, upper_face_map, :]  # (T, M, 3)
     gt = vertices_gt[:min_frames, upper_face_map, :]
