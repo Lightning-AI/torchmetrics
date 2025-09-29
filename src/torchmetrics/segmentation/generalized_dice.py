@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -24,6 +24,7 @@ from torchmetrics.functional.segmentation.generalized_dice import (
     _generalized_dice_validate_args,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -108,8 +109,8 @@ class GeneralizedDiceScore(Metric):
     """
 
     class_present: Tensor
-    numerator: Tensor
-    denominator: Tensor
+    numerator: List[Tensor]
+    denominator: List[Tensor]
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -135,28 +136,31 @@ class GeneralizedDiceScore(Metric):
 
         num_classes = num_classes - 1 if not include_background else num_classes
         self.add_state("class_present", default=torch.zeros(num_classes, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("numerator", default=torch.zeros((0, num_classes)), dist_reduce_fx="cat")
-        self.add_state("denominator", default=torch.zeros((0, num_classes)), dist_reduce_fx="cat")
+        self.add_state("numerator", default=[], dist_reduce_fx="cat")
+        self.add_state("denominator", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with new data."""
         numerator, denominator = _generalized_dice_update(
             preds, target, self.num_classes, self.include_background, self.weight_type, self.input_format
         )
-        self.numerator = torch.cat([self.numerator, numerator], dim=0)
-        self.denominator = torch.cat([self.denominator, denominator], dim=0)
+        self.numerator.append(numerator)
+        self.denominator.append(denominator)
         if self.per_class:
             class_mask = target.sum(dim=(0, *range(2, target.ndim))) > 0
             self.class_present += class_mask[1:] if not self.include_background else class_mask
-            self.numerator = torch.sum(self.numerator, dim=0, keepdim=True)
-            self.denominator = torch.sum(self.denominator, dim=0, keepdim=True)
 
     def compute(self) -> Tensor:
         """Compute the final generalized dice score."""
-        score = _generalized_dice_compute(self.numerator, self.denominator, self.per_class)
+        numerator = dim_zero_cat(self.numerator)
+        denominator = dim_zero_cat(self.denominator)
         if not self.per_class:
+            score = _generalized_dice_compute(numerator, denominator, self.per_class)
             return score.mean()
-        return torch.where(self.class_present > 0, score, torch.tensor(float("nan"))).squeeze()
+        score = _generalized_dice_compute(
+            torch.sum(numerator, dim=0, keepdim=True), torch.sum(denominator, dim=0, keepdim=True), self.per_class
+        )
+        return torch.where(self.class_present > 0, score.mean(dim=0), torch.tensor(float("nan"))).squeeze()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
