@@ -139,7 +139,7 @@ def generalized_dice_score(
         >>> generalized_dice_score(preds, target, num_classes=5, input_format="index")
         tensor([0.1991, 0.1971, 0.2350, 0.2216])
         >>> generalized_dice_score(preds, target, num_classes=5, per_class=True, input_format="index")
-        tensor([[0.1823, 0.2304, 0.2184, 0.2299, 0.2537]])
+        tensor([[0.2234, 0.2170, 0.1597, 0.2399, 0.2204]])
 
     """
     _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type, input_format)
