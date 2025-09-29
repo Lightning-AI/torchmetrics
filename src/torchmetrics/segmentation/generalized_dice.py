@@ -14,7 +14,6 @@
 from collections.abc import Sequence
 from typing import Any, List, Optional, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -135,7 +134,6 @@ class GeneralizedDiceScore(Metric):
         self.input_format = input_format
 
         num_classes = num_classes - 1 if not include_background else num_classes
-        self.add_state("class_present", default=torch.zeros(num_classes, dtype=torch.int), dist_reduce_fx="sum")
         self.add_state("numerator", default=[], dist_reduce_fx="cat")
         self.add_state("denominator", default=[], dist_reduce_fx="cat")
 
@@ -146,21 +144,11 @@ class GeneralizedDiceScore(Metric):
         )
         self.numerator.append(numerator)
         self.denominator.append(denominator)
-        if self.per_class:
-            class_mask = target.sum(dim=(0, *range(2, target.ndim))) > 0
-            self.class_present += class_mask[1:] if not self.include_background else class_mask
 
     def compute(self) -> Tensor:
         """Compute the final generalized dice score."""
-        numerator = dim_zero_cat(self.numerator)
-        denominator = dim_zero_cat(self.denominator)
-        if not self.per_class:
-            score = _generalized_dice_compute(numerator, denominator, self.per_class)
-            return score.mean()
-        score = _generalized_dice_compute(
-            torch.sum(numerator, dim=0, keepdim=True), torch.sum(denominator, dim=0, keepdim=True), self.per_class
-        )
-        return torch.where(self.class_present > 0, score.mean(dim=0), torch.tensor(float("nan"))).squeeze()
+        score = _generalized_dice_compute(dim_zero_cat(self.numerator), dim_zero_cat(self.denominator), self.per_class)
+        return score.mean(dim=0)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

@@ -90,8 +90,10 @@ def _generalized_dice_compute(numerator: Tensor, denominator: Tensor, per_class:
     if not per_class:
         numerator = torch.sum(numerator, 1)
         denominator = torch.sum(denominator, 1)
-        return _safe_divide(numerator, denominator, "nan")
-    return _safe_divide(numerator, denominator)
+    else:
+        numerator = torch.sum(numerator, 0, keepdim=True)
+        denominator = torch.sum(denominator, 0, keepdim=True)
+    return _safe_divide(numerator, denominator, "nan")
 
 
 def generalized_dice_score(
