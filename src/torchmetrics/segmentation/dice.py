@@ -140,7 +140,9 @@ class DiceScore(Metric):
                 " If you've explicitly set this parameter, you can ignore this warning.",
                 UserWarning,
             )
-        _dice_score_validate_args(num_classes, include_background, average, input_format, aggregation_level, zero_division)
+        _dice_score_validate_args(
+            num_classes, include_background, average, input_format, aggregation_level, zero_division
+        )
         self.num_classes = num_classes
         self.include_background = include_background
         self.average = average
