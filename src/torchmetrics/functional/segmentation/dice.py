@@ -191,10 +191,10 @@ def dice_score(
         >>> preds = zeros(2, 3, 16, 16)  # Empty predictions
         >>> target = zeros(2, 3, 16, 16)  # Empty targets
         >>> # Using zero_division=1.0
-        >>> dice_score(preds, target, num_classes=3, zero_division=1.0)
+        >>> dice_score(preds, target, num_classes=3, zero_division=1.0, average="micro")
         tensor([1., 1.])
-        >>> # Using zero_division=0.0
-        >>> dice_score(preds, target, num_classes=3, zero_division=0.0)
+        >>> # Using zero_division=0.0  
+        >>> dice_score(preds, target, num_classes=3, zero_division=0.0, average="micro")
         tensor([0., 0.])
 
     """
