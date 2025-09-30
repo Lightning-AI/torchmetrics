@@ -254,6 +254,7 @@ _group_cases = (
     ),
 )
 
+
 class _MaskInput(NamedTuple):
     preds: Tensor
     target: Tensor
