@@ -112,32 +112,6 @@ _binary_cases = (
 )
 
 
-class _MaskInput(NamedTuple):
-    preds: Tensor
-    target: Tensor
-    mask: Tensor
-
-
-_masked_binary_cases = (
-    pytest.param(
-        _MaskInput(
-            preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
-            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
-            mask=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
-        ),
-        id="input[single_dim-probs]",
-    ),
-    pytest.param(
-        _MaskInput(
-            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
-            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
-            mask=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
-        ),
-        id="input[single_dim-logits]",
-    ),
-)
-
-
 def _multiclass_with_missing_class(*shape: Any, num_classes=NUM_CLASSES):
     """Generate multiclass input where a class is missing.
 
@@ -275,6 +249,31 @@ _group_cases = (
             preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
             groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single_dim-logits]",
+    ),
+)
+
+class _MaskInput(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    mask: Tensor
+
+
+_masked_binary_cases = (
+    pytest.param(
+        _MaskInput(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            mask=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
+        ),
+        id="input[single_dim-probs]",
+    ),
+    pytest.param(
+        _MaskInput(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            mask=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
         ),
         id="input[single_dim-logits]",
     ),
