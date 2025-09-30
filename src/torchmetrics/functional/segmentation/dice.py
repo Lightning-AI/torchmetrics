@@ -208,5 +208,10 @@ def dice_score(
     _dice_score_validate_args(num_classes, include_background, average, input_format, aggregation_level, zero_division)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
     return _dice_score_compute(
-        numerator, denominator, average, aggregation_level=aggregation_level, support=support, zero_division=zero_division
+        numerator,
+        denominator,
+        average,
+        aggregation_level=aggregation_level,
+        support=support,
+        zero_division=zero_division,
     )
