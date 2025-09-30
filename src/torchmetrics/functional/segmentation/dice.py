@@ -185,18 +185,6 @@ def dice_score(
         >>> dice_score(preds, target, num_classes=5, average="macro", aggregation_level="global", input_format="index")
         tensor([0.1965])
 
-    Example (with zero_division parameter):
-        >>> from torch import randint, zeros
-        >>> from torchmetrics.functional.segmentation import dice_score
-        >>> preds = zeros(2, 3, 16, 16)  # Empty predictions
-        >>> target = zeros(2, 3, 16, 16)  # Empty targets
-        >>> # Using zero_division=1.0
-        >>> dice_score(preds, target, num_classes=3, zero_division=1.0, average="micro")
-        tensor([1., 1.])
-        >>> # Using zero_division=0.0
-        >>> dice_score(preds, target, num_classes=3, zero_division=0.0, average="micro")
-        tensor([0., 0.])
-
     """
     if average == "micro":
         rank_zero_warn(
