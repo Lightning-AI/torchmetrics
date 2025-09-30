@@ -108,7 +108,7 @@ class DiceScore(Metric):
         >>> target = zeros(2, 3, 16, 16)  # Empty targets
         >>> dice_score = DiceScore(num_classes=3, zero_division=1.0)
         >>> dice_score(preds, target)
-        tensor(1.0000)
+        tensor(1.0)
 
     """
 
