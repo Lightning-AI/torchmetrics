@@ -14,6 +14,7 @@
 from collections.abc import Sequence
 from typing import Any, List, Optional, Union
 
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -147,7 +148,12 @@ class GeneralizedDiceScore(Metric):
 
     def compute(self) -> Tensor:
         """Compute the final generalized dice score."""
-        score = _generalized_dice_compute(dim_zero_cat(self.numerator), dim_zero_cat(self.denominator), self.per_class)
+        numerator = dim_zero_cat(self.numerator)
+        denominator = dim_zero_cat(self.denominator)
+        if self.per_class:
+            numerator = torch.sum(numerator, 0, keepdim=True)
+            denominator = torch.sum(denominator, 0, keepdim=True)
+        score = _generalized_dice_compute(dim_zero_cat(numerator), dim_zero_cat(denominator), self.per_class)
         return score.mean(dim=0)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
