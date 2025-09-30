@@ -193,7 +193,7 @@ def dice_score(
         >>> # Using zero_division=1.0
         >>> dice_score(preds, target, num_classes=3, zero_division=1.0, average="micro")
         tensor([1., 1.])
-        >>> # Using zero_division=0.0  
+        >>> # Using zero_division=0.0
         >>> dice_score(preds, target, num_classes=3, zero_division=0.0, average="micro")
         tensor([0., 0.])
 
