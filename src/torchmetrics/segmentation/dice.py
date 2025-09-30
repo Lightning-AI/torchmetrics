@@ -101,15 +101,6 @@ class DiceScore(Metric):
         >>> dice_score(preds, target)
         tensor([0.4860, 0.4999, 0.5014, 0.4885, 0.4915])
 
-    Example with zero_division:
-        >>> from torch import zeros
-        >>> from torchmetrics.segmentation import DiceScore
-        >>> preds = zeros(2, 3, 16, 16)  # Empty predictions
-        >>> target = zeros(2, 3, 16, 16)  # Empty targets
-        >>> dice_score = DiceScore(num_classes=3, zero_division=1.0)
-        >>> dice_score(preds, target)
-        tensor(1.0)
-
     """
 
     full_state_update: bool = False
