@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -28,7 +28,6 @@ def _dice_score_validate_args(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
     aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
-    zero_division: Union[float, Literal["warn", "nan"]] = "nan",
 ) -> None:
     """Validate the arguments of the metric."""
     if not isinstance(num_classes, int) or num_classes <= 0:
@@ -45,10 +44,6 @@ def _dice_score_validate_args(
     if aggregation_level not in ("samplewise", "global"):
         raise ValueError(
             f"Expected argument `aggregation_level` to be one of `samplewise`, `global`, but got {aggregation_level}"
-        )
-    if zero_division not in (0.0, 1.0, "warn", "nan"):
-        raise ValueError(
-            f"Expected argument `zero_division` to be one of 0.0, 1.0, 'warn', or 'nan', but got {zero_division}."
         )
 
 
@@ -79,7 +74,6 @@ def _dice_score_compute(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
     support: Optional[Tensor] = None,
-    zero_division: Union[float, Literal["warn", "nan"]] = "nan",
 ) -> Tensor:
     """Compute the Dice score from the numerator and denominator."""
     if aggregation_level == "global":
@@ -87,26 +81,18 @@ def _dice_score_compute(
         denominator = torch.sum(denominator, dim=0).unsqueeze(0)
         support = torch.sum(support, dim=0) if support is not None else None
 
-    # Determine the zero_division value to use
-    if zero_division == "warn":
-        zero_div_value = "warn"
-    elif zero_division == "nan":
-        zero_div_value = "nan"
-    else:
-        zero_div_value = float(zero_division)
-
     if average == "micro":
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
-        return _safe_divide(numerator, denominator, zero_division=zero_div_value)
+        return _safe_divide(numerator, denominator, zero_division="nan")
 
-    dice = _safe_divide(numerator, denominator, zero_division=zero_div_value)
+    dice = _safe_divide(numerator, denominator, zero_division="nan")
     if average == "macro":
         return torch.nanmean(dice, dim=-1)
     if average == "weighted":
         if not isinstance(support, torch.Tensor):
             raise ValueError(f"Expected argument `support` to be a tensor, got: {type(support)}.")
-        weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division=zero_div_value)
+        weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division="nan")
         nan_mask = dice.isnan().all(dim=-1)
         dice = torch.nansum(dice * weights, dim=-1)
         dice[nan_mask] = torch.nan
@@ -124,7 +110,6 @@ def dice_score(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
     aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
-    zero_division: Union[float, Literal["warn", "nan"]] = "nan",
 ) -> Tensor:
     """Compute the Dice score for semantic segmentation.
 
@@ -141,8 +126,6 @@ def dice_score(
         aggregation_level: The level at which to aggregate the dice score. Options are ``"samplewise"`` or ``"global"``.
             For ``"samplewise"`` the dice score is computed for each sample and then averaged. For ``"global"`` the dice
             score is computed globally over all samples.
-        zero_division: The value to return when there is a division by zero. Options are 1.0, 0.0, "warn" or "nan".
-            Setting it to "warn" behaves like 0.0 but will also create a warning.
 
     Returns:
         The Dice score.
@@ -193,13 +176,6 @@ def dice_score(
             " If you've explicitly set this parameter, you can ignore this warning.",
             UserWarning,
         )
-    _dice_score_validate_args(num_classes, include_background, average, input_format, aggregation_level, zero_division)
+    _dice_score_validate_args(num_classes, include_background, average, input_format, aggregation_level)
     numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
-    return _dice_score_compute(
-        numerator,
-        denominator,
-        average,
-        aggregation_level=aggregation_level,
-        support=support,
-        zero_division=zero_division,
-    )
+    return _dice_score_compute(numerator, denominator, average, aggregation_level=aggregation_level, support=support)
