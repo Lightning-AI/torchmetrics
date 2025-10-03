@@ -65,9 +65,11 @@ class UpperFaceDynamicsDeviation(Metric):
 
     Raises:
         ValueError:
-            If the number of dimensions of `preds` or `target` is not 3.
-            If vertex dimensions (V) or coordinate dimensions (3) do not match.
-            If ``upper_face_map`` is empty or contains invalid indices.
+            If the number of dimensions of `vertices_pred` or `vertices_gt` is not 3.
+            If `template` does not have shape (No_of_vertices, 3).
+            If `vertices_pred` and `vertices_gt` do not have the same vertex and coordinate dimensions.
+            If `template` shape does not match the vertex-coordinate dimensions of `vertices_pred` (and `vertices_gt`).
+            If ``upper_face_map`` is empty or contains invalid vertex indices.
 
     Example:
         >>> import torch
@@ -104,9 +106,9 @@ class UpperFaceDynamicsDeviation(Metric):
             raise ValueError("upper_face_map cannot be empty.")
         if min(self.upper_face_map) < 0 or max(self.upper_face_map) >= self.template.shape[0]:
             raise ValueError(
-                f"upper_face_map contains invalid vertex indices. "
-                f"Valid indices are between 0 and {self.template.shape[0] - 1}, "
-                f"but got min index {min(self.upper_face_map)}, max index {max(self.upper_face_map)}."
+                f"upper_face_map contains out-of-range vertex indices. "
+                f"Valid index range is [0, {self.template.shape[0] - 1}], "
+                f"but received indices in range [{min(self.upper_face_map)}, {max(self.upper_face_map)}]."
             )
         self.add_state("vertices_pred_list", default=[], dist_reduce_fx=None)
         self.add_state("vertices_gt_list", default=[], dist_reduce_fx=None)
@@ -131,10 +133,11 @@ class UpperFaceDynamicsDeviation(Metric):
                 f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
                 f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
             )
-        if max(self.upper_face_map) >= vertices_pred.shape[1]:
+        if vertices_pred.shape[1:] != template.shape:
             raise ValueError(
-                f"upper_face_map contains invalid vertex indices. Max index {max(self.upper_face_map)} is larger than "
-                f"number of vertices {vertices_pred.shape[1]}."
+                f"Shape mismatch: expected template shape {template.shape} to match "
+                f"vertex-coordinate dimensions of predictions {vertices_pred.shape[1:]}, "
+                f"but got template shape {template.shape} instead."
             )
 
         min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
