@@ -28,18 +28,18 @@ def upper_face_dynamics_deviation(
     The Upper Face Dynamics Deviation (FDD) metric evaluates the quality of facial expressions in the upper
     face region for 3D talking head models. It quantifies the deviation in vertex motion dynamics between the
     predicted and ground truth sequences by comparing the temporal variation (standard deviation) of per-vertex
-    squared displacements relative to a neutral template. Lower values of FDD indicate closer alignment of the 
+    squared displacements relative to a neutral template. Lower values of FDD indicate closer alignment of the
     predicted upper-face motion dynamics with the ground truth.
 
     The metric is defined as:
 
-   .. math::
+    .. math::
         \text{FDD} = \frac{1}{|S_U|} \sum_{v \in S_U} \Big( \text{std}(\| x_{1:T,v} -
         \text{template}_v \|_2^2) - \text{std}(\| \hat{x}_{1:T,v} - \text{template}_v \|_2^2) \Big)
 
     where :math:`T` is the number of frames, :math:`S_U` is the set of upper-face vertices with :math:`M = |S_U|`,
     :math:`x_{t,v}` are the 3D coordinates of vertex :math:`v` at frame :math:`t` in the ground truth sequence,
-    and :math:`\hat{x}_{t,v} \in \mathbb{R}^3` are the corresponding predicted vertices. The neutral template coordinate 
+    and :math:`\hat{x}_{t,v} \in \mathbb{R}^3` are the corresponding predicted vertices. The neutral template coordinate
     of vertex :math:`v` is denoted as :math:`\text{template}_v \in \mathbb{R}^3`. The operator :math:`\text{std}(\cdot)`
     computes the standard deviation of the temporal sequence.
 
