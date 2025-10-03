@@ -113,14 +113,20 @@ class TestUpperFaceDynamicsDeviation(MetricTester):
     def test_error_on_wrong_dimensions(self):
         """Test that an error is raised for wrong input dimensions."""
         metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
-        with pytest.raises(ValueError, match="Expected both vertices_pred and vertices_gt to have 3 dimensions.*"):
+        with pytest.raises(ValueError, match="Expected both vertices_pred and vertices_gt to have 3 dimensions but got.*"):
             metric(torch.randn(10, 100), torch.randn(10, 100, 3))
 
     def test_error_on_mismatched_dimensions(self):
         """Test that an error is raised for mismatched vertex dimensions."""
         metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
-        with pytest.raises(ValueError, match="Expected vertices_pred and vertices_gt to have same vertex.*"):
+        with pytest.raises(ValueError, match="Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got.*"):
             metric(torch.randn(10, 80, 3), torch.randn(10, 100, 3))
+            
+    def test_error_on_template_shape_mismatch(self):
+        """Test that an error is raised when template shape does not match vertex-coordinate dimensions."""
+        metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
+        with pytest.raises(ValueError, match="Shape mismatch: expected template shape.*to match.*"):
+            metric(torch.randn(10, 120, 3), torch.randn(10, 120, 3))
 
     def test_error_on_empty_upper_face_map(self):
         """Test that an error is raised if upper_face_map is empty."""
