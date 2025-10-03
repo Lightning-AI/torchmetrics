@@ -59,7 +59,6 @@ def upper_face_dynamics_deviation(
             If the number of dimensions of `vertices_pred` or `vertices_gt` is not 3.
             If vertex dimensions (V) or coordinate dimensions (3) don't match.
             If ``upper_face_map`` is empty or contains invalid indices.
-            If there are fewer than two frames to compute face dynamics deviation.
 
     Example:
         >>> import torch
