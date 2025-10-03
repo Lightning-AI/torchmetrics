@@ -57,8 +57,10 @@ def upper_face_dynamics_deviation(
     Raises:
         ValueError:
             If the number of dimensions of `vertices_pred` or `vertices_gt` is not 3.
-            If vertex dimensions (V) or coordinate dimensions (3) don't match.
-            If ``upper_face_map`` is empty or contains invalid indices.
+            If `template` does not have shape (No_of_vertices, 3).
+            If `vertices_pred` and `vertices_gt` do not have the same vertex and coordinate dimensions.
+            If `template` shape does not match the vertex-coordinate dimensions of `vertices_pred` (and `vertices_gt`).
+            If ``upper_face_map`` is empty or contains invalid vertex indices.
 
     Example:
         >>> import torch
@@ -82,6 +84,12 @@ def upper_face_dynamics_deviation(
         raise ValueError(
             f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
             f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
+        )
+    if min(self.upper_face_map) < 0 or max(self.upper_face_map) >= self.template.shape[0]:
+        raise ValueError(
+            f"upper_face_map contains out-of-range vertex indices. "
+            f"Valid index range is [0, {self.template.shape[0] - 1}], "
+            f"but received indices in range [{min(self.upper_face_map)}, {max(self.upper_face_map)}]."
         )
     if not upper_face_map:
         raise ValueError("upper_face_map cannot be empty.")
