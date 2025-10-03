@@ -128,8 +128,6 @@ class UpperFaceDynamicsDeviation(Metric):
                 f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
                 f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
             )
-        if self.template.ndim != 2 or self.template.shape[1] != 3:
-            raise ValueError(f"Expected template to have shape (V, 3) but got {self.template.shape}.")
         if vertices_pred.shape[1:] != vertices_gt.shape[1:]:
             raise ValueError(
                 f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
