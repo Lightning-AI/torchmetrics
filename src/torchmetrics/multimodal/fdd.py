@@ -28,26 +28,23 @@ if not _MATPLOTLIB_AVAILABLE:
 class UpperFaceDynamicsDeviation(Metric):
     r"""Implements the Upper Facial Dynamics Deviation (FDD) metric for 3D talking head evaluation.
 
-    The FDD metric evaluates the quality of facial dynamics in 3D facial animations by measuring the deviation
-    in the motion magnitude of upper-face vertices between the generated and ground truth meshes. It quantifies
-    how well the predicted motion dynamics match the ground truth over time.
+    The Upper Face Dynamics Deviation (FDD) metric evaluates the quality of facial expressions in the upper
+    face region for 3D talking head models. It quantifies the deviation in vertex motion dynamics between the
+    predicted and ground truth sequences by comparing the temporal variation (standard deviation) of per-vertex
+    squared displacements relative to a neutral template. Lower values of FDD indicate closer alignment of the 
+    predicted upper-face motion dynamics with the ground truth.
 
     The metric is defined as:
 
-    .. math::
-        \text{FDD} = \frac{1}{|\text{SU}|} \sum_{v \in \text{SU}} \Big( \text{std}(\| x_{1:T,v} -
+   .. math::
+        \text{FDD} = \frac{1}{|S_U|} \sum_{v \in S_U} \Big( \text{std}(\| x_{1:T,v} -
         \text{template}_v \|_2^2) - \text{std}(\| \hat{x}_{1:T,v} - \text{template}_v \|_2^2) \Big)
 
-    where :math:`T` is the number of frames, :math:`M = |\text{SU}|` is the number of vertices in the upper-face region,
+    where :math:`T` is the number of frames, :math:`S_U` is the set of upper-face vertices with :math:`M = |S_U|`,
     :math:`x_{t,v}` are the 3D coordinates of vertex :math:`v` at frame :math:`t` in the ground truth sequence,
-    and :math:`\hat{x}_{t,v}` are the corresponding predicted vertices. The metric computes the mean squared L2
-    deviation of per-vertex motion dynamics relative to the neutral template. Lower values indicate closer alignment of
-    facial dynamics.
-    :math:`\text{template}_v` is the 3D coordinate of vertex :math:`v` in the neutral template mesh.
-
-    The metric computes the standard deviation over time of per-vertex squared displacement from the neutral template
-    for both predicted and ground truth sequences, then averages the differences over all upper-face vertices.
-    A lower FDD value indicates better temporal consistency of facial motion.
+    and :math:`\hat{x}_{t,v} \in \mathbb{R}^3` are the corresponding predicted vertices. The neutral template coordinate 
+    of vertex :math:`v` is denoted as :math:`\text{template}_v \in \mathbb{R}^3`. The operator :math:`\text{std}(\cdot)`
+    computes the standard deviation of the temporal sequence.
 
     As input to ``forward`` and ``update``, the metric accepts the following input:
 
