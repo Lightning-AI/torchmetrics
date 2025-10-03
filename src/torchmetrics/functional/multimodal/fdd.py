@@ -33,19 +33,19 @@ def upper_face_dynamics_deviation(
     The metric is defined as:
 
     .. math::
-        \text{FDD} = \frac{1}{|S_U|} \sum_{v \in S_U} 
-        \Big( \text{std}\big(\| x_{1:T,v} - \text{template}_v \|_2^2\big) \;-\; 
+        \text{FDD} = \frac{1}{|S_U|} \sum_{v \in S_U}
+        \Big( \text{std}\big(\| x_{1:T,v} - \text{template}_v \|_2^2\big) \;-\;
         \text{std}\big(\| \hat{x}_{1:T,v} - \text{template}_v \|_2^2\big) \Big)
-    
-    where :math:`T` is the number of frames, :math:`S_U` is the set of upper-face vertices with 
-    :math:`M = |S_U|`, :math:`x_{t,v} \in \mathbb{R}^3` are the 3D coordinates of vertex 
-    :math:`v` at frame :math:`t` in the ground truth sequence, and 
-    :math:`\hat{x}_{t,v} \in \mathbb{R}^3` are the corresponding predicted vertices. 
-    The neutral template coordinate of vertex :math:`v` is denoted as 
-    :math:`\text{template}_v \in \mathbb{R}^3`. The operator :math:`\text{std}(\cdot)` 
-    computes the standard deviation of the temporal sequence. 
-    
-    Lower values of FDD indicate closer alignment of the predicted upper-face motion dynamics 
+
+    where :math:`T` is the number of frames, :math:`S_U` is the set of upper-face vertices with
+    :math:`M = |S_U|`, :math:`x_{t,v} \in \mathbb{R}^3` are the 3D coordinates of vertex
+    :math:`v` at frame :math:`t` in the ground truth sequence, and
+    :math:`\hat{x}_{t,v} \in \mathbb{R}^3` are the corresponding predicted vertices.
+    The neutral template coordinate of vertex :math:`v` is denoted as
+    :math:`\text{template}_v \in \mathbb{R}^3`. The operator :math:`\text{std}(\cdot)`
+    computes the standard deviation of the temporal sequence.
+
+    Lower values of FDD indicate closer alignment of the predicted upper-face motion dynamics
     with the ground truth.
 
     Args:
