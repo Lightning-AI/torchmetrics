@@ -129,7 +129,7 @@ class TestUpperFaceDynamicsDeviation(MetricTester):
 
     def test_error_on_invalid_upper_face_indices(self):
         """Test that an error is raised if upper_face_map has invalid indices."""
-        with pytest.raises(ValueError, match="upper_face_map contains invalid vertex indices.*"):
+        with pytest.raises(ValueError, match="upper_face_map contains out-of-range vertex indices.*"):
             UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[98, 99, 100])
 
     def test_different_sequence_lengths(self):
