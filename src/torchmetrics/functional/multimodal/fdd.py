@@ -85,11 +85,17 @@ def upper_face_dynamics_deviation(
             f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
             f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
         )
-    if min(self.upper_face_map) < 0 or max(self.upper_face_map) >= self.template.shape[0]:
+    if vertices_pred.shape[1:] != template.shape:
+        raise ValueError(
+            f"Shape mismatch: expected template shape {template.shape} to match "
+            f"vertex-coordinate dimensions of predictions {vertices_pred.shape[1:]}, "
+            f"but got template shape {template.shape} instead."
+        )
+    if min(upper_face_map) < 0 or max(upper_face_map) >= template.shape[0]:
         raise ValueError(
             f"upper_face_map contains out-of-range vertex indices. "
-            f"Valid index range is [0, {self.template.shape[0] - 1}], "
-            f"but received indices in range [{min(self.upper_face_map)}, {max(self.upper_face_map)}]."
+            f"Valid index range is [0, {template.shape[0] - 1}], "
+            f"but received indices in range [{min(upper_face_map)}, {max(upper_face_map)}]."
         )
     if not upper_face_map:
         raise ValueError("upper_face_map cannot be empty.")
