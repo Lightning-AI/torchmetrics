@@ -84,8 +84,6 @@ class DiceScore(Metric):
             If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"`` or ``None``
         ValueError:
             If ``input_format`` is not one of ``"one-hot"``, ``"index"`` or ``"mixed"``
-        ValueError:
-            If ``zero_division`` is not one of 0.0, 1.0, "warn", or "nan"
 
     Example:
         >>> from torch import randint
@@ -118,7 +116,6 @@ class DiceScore(Metric):
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
         input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
-        zero_division: Union[float, Literal["warn", "nan"]] = "nan",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -130,14 +127,13 @@ class DiceScore(Metric):
                 UserWarning,
             )
         _dice_score_validate_args(
-            num_classes, include_background, average, input_format, aggregation_level, zero_division
+            num_classes, include_background, average, input_format, aggregation_level
         )
         self.num_classes = num_classes
         self.include_background = include_background
         self.average = average
         self.aggregation_level = aggregation_level
         self.input_format = input_format
-        self.zero_division = zero_division
 
         num_classes = num_classes - 1 if not include_background else num_classes
         self.add_state("numerator", [], dist_reduce_fx="cat")
@@ -161,7 +157,6 @@ class DiceScore(Metric):
             self.average,
             self.aggregation_level,
             support=dim_zero_cat(self.support) if self.average == "weighted" else None,
-            zero_division=self.zero_division,
         ).nanmean(dim=0)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
