@@ -128,16 +128,18 @@ class UpperFaceDynamicsDeviation(Metric):
                 f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
                 f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
             )
+        if template.ndim != 2 or template.shape[1] != 3:
+            raise ValueError(f"Expected template to have shape (V, 3) but got {template.shape}.")
         if vertices_pred.shape[1:] != vertices_gt.shape[1:]:
             raise ValueError(
                 f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
                 f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
             )
-        if vertices_pred.shape[1:] != template.shape:
+        if vertices_pred.shape[1:] != self.template.shape:
             raise ValueError(
-                f"Shape mismatch: expected template shape {template.shape} to match "
+                f"Shape mismatch: expected template shape {self.template.shape} to match "
                 f"vertex-coordinate dimensions of predictions {vertices_pred.shape[1:]}, "
-                f"but got template shape {template.shape} instead."
+                f"but got template shape {self.template.shape} instead."
             )
 
         min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
