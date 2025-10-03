@@ -91,18 +91,13 @@ def upper_face_dynamics_deviation(
             f"vertex-coordinate dimensions of predictions {vertices_pred.shape[1:]}, "
             f"but got template shape {template.shape} instead."
         )
+    if not upper_face_map:
+        raise ValueError("upper_face_map cannot be empty.")
     if min(upper_face_map) < 0 or max(upper_face_map) >= template.shape[0]:
         raise ValueError(
             f"upper_face_map contains out-of-range vertex indices. "
             f"Valid index range is [0, {template.shape[0] - 1}], "
             f"but received indices in range [{min(upper_face_map)}, {max(upper_face_map)}]."
-        )
-    if not upper_face_map:
-        raise ValueError("upper_face_map cannot be empty.")
-    if max(upper_face_map) >= vertices_pred.shape[1]:
-        raise ValueError(
-            f"upper_face_map contains invalid vertex indices. Max index {max(upper_face_map)} is larger than "
-            f"number of vertices {vertices_pred.shape[1]}."
         )
     min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
     pred = vertices_pred[:min_frames, upper_face_map, :]  # (T, M, 3)
