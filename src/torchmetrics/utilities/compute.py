@@ -237,9 +237,11 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
             if normalization == "sigmoid":
                 # Apply numerically stable sigmoid by subtracting max to prevent overflow
                 # For large positive logits (>16.7 for float32, >36.7 for float64), sigmoid(x) overflows to 1.0
-                # Only apply stabilization when max value is large enough to cause issues
+                # Only apply stabilization when min value is also large (indicating all values will overflow)
+                # This avoids the issue where subtracting max creates artificial ties for widely spread values
+                min_val = tensor.min()
                 max_val = tensor.max()
-                if max_val > 15:  # Conservative threshold for float32
+                if min_val > 15:  # All values are large enough to potentially overflow
                     tensor = (tensor - max_val).sigmoid()
                 else:
                     tensor = tensor.sigmoid()
@@ -251,10 +253,11 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
     condition = ((tensor < 0) | (tensor > 1)).any()
     if normalization == "sigmoid":
         # Apply numerically stable sigmoid by subtracting max to prevent overflow
-        # Only stabilize when necessary to avoid changing behavior for normal logits
+        # Only stabilize when all values are large to avoid creating artificial ties
+        min_val = tensor.min()
         max_val = tensor.max()
-        # Use stable sigmoid when max value is large enough to cause overflow
-        needs_stabilization = max_val > 15
+        # Use stable sigmoid only when minimum value is also large (all values will overflow)
+        needs_stabilization = min_val > 15
         if needs_stabilization:
             tensor_stable = tensor - max_val
             return torch.where(condition, tensor_stable.sigmoid(), tensor)

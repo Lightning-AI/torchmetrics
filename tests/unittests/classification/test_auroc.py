@@ -143,11 +143,11 @@ class TestBinaryAUROC(MetricTester):
 def test_binary_auroc_large_logits():
     """Test that large logits don't cause numerical overflow in sigmoid.
     
-    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/XXXX
-    When logits are very large (>16.7 for float32, >36.7 for float64), naive sigmoid
-    overflows to 1.0 for all values, losing ranking information needed for AUROC.
+    Regression test for issue where very large logits (>16.7 for float32) cause
+    naive sigmoid to overflow to 1.0 for all values, losing ranking information
+    needed for AUROC.
     """
-    # Test case from the issue
+    # Test case from the issue: all logits in range 97-100
     preds = torch.tensor([98.0950, 98.4612, 98.1145, 98.1506, 97.6037, 98.9425, 99.2644,
                           99.5014, 99.7280, 99.6595, 99.6931, 99.4667, 99.9623, 99.8949, 99.8768])
     target = torch.tensor([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
@@ -156,12 +156,23 @@ def test_binary_auroc_large_logits():
     
     # Expected AUROC is 0.9286 (as computed by sklearn)
     # The ranking is preserved: lowest value (97.6037) corresponds to label 0,
-    # all others are higher and correspond to label 1, giving 14/14 correct rankings
-    expected = torch.tensor(14.0 / 14.0)  # Perfect ranking except for ties
-    
-    # Use sklearn as reference
+    # all others are higher and correspond to label 1
     expected_sklearn = sk_roc_auc_score(target.numpy(), preds.numpy())
     assert torch.allclose(result, torch.tensor(expected_sklearn), atol=1e-4)
+    
+    # Test with even larger logits
+    preds_huge = torch.tensor([200.0, 201.0, 202.0, 203.0])
+    target_huge = torch.tensor([0, 0, 1, 1])
+    result_huge = binary_auroc(preds_huge, target_huge, thresholds=None)
+    expected_huge = sk_roc_auc_score(target_huge.numpy(), preds_huge.numpy())
+    assert torch.allclose(result_huge, torch.tensor(expected_huge), atol=1e-4)
+    
+    # Test with mixed large and normal logits
+    preds_mixed = torch.tensor([-5.0, 0.0, 5.0, 50.0, 100.0])
+    target_mixed = torch.tensor([0, 0, 1, 1, 1])
+    result_mixed = binary_auroc(preds_mixed, target_mixed, thresholds=None)
+    expected_mixed = sk_roc_auc_score(target_mixed.numpy(), preds_mixed.numpy())
+    assert torch.allclose(result_mixed, torch.tensor(expected_mixed), atol=1e-4)
 
 
 def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
