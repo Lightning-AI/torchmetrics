@@ -236,9 +236,13 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
         if not torch.all((tensor >= 0) * (tensor <= 1)):
             if normalization == "sigmoid":
                 # Apply numerically stable sigmoid by subtracting max to prevent overflow
-                # For large positive logits (>16.7 for float32), sigmoid(x) would overflow to 1.0
-                # Subtracting the max preserves relative ordering while avoiding overflow
-                tensor = (tensor - tensor.max()).sigmoid()
+                # For large positive logits (>16.7 for float32, >36.7 for float64), sigmoid(x) overflows to 1.0
+                # Only apply stabilization when max value is large enough to cause issues
+                max_val = tensor.max()
+                if max_val > 15:  # Conservative threshold for float32
+                    tensor = (tensor - max_val).sigmoid()
+                else:
+                    tensor = tensor.sigmoid()
             else:
                 tensor = torch.softmax(tensor, dim=1)
         return tensor
@@ -247,9 +251,14 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
     condition = ((tensor < 0) | (tensor > 1)).any()
     if normalization == "sigmoid":
         # Apply numerically stable sigmoid by subtracting max to prevent overflow
-        # Use torch.where to maintain conditional application without device-host sync
+        # Only stabilize when necessary to avoid changing behavior for normal logits
         max_val = tensor.max()
-        tensor_stable = tensor - max_val
-        return torch.where(condition, tensor_stable.sigmoid(), tensor)
+        # Use stable sigmoid when max value is large enough to cause overflow
+        needs_stabilization = max_val > 15
+        if needs_stabilization:
+            tensor_stable = tensor - max_val
+            return torch.where(condition, tensor_stable.sigmoid(), tensor)
+        else:
+            return torch.where(condition, tensor.sigmoid(), tensor)
     else:
         return torch.where(condition, torch.softmax(tensor, dim=1), tensor)
