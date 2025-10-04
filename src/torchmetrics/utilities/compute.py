@@ -234,13 +234,22 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
     # decrease sigmoid on cpu .
     if tensor.device == torch.device("cpu"):
         if not torch.all((tensor >= 0) * (tensor <= 1)):
-            tensor = tensor.sigmoid() if normalization == "sigmoid" else torch.softmax(tensor, dim=1)
+            if normalization == "sigmoid":
+                # Apply numerically stable sigmoid by subtracting max to prevent overflow
+                # For large positive logits (>16.7 for float32), sigmoid(x) would overflow to 1.0
+                # Subtracting the max preserves relative ordering while avoiding overflow
+                tensor = (tensor - tensor.max()).sigmoid()
+            else:
+                tensor = torch.softmax(tensor, dim=1)
         return tensor
 
     # decrease device-host sync on device .
     condition = ((tensor < 0) | (tensor > 1)).any()
-    return torch.where(
-        condition,
-        torch.sigmoid(tensor) if normalization == "sigmoid" else torch.softmax(tensor, dim=1),
-        tensor,
-    )
+    if normalization == "sigmoid":
+        # Apply numerically stable sigmoid by subtracting max to prevent overflow
+        # Use torch.where to maintain conditional application without device-host sync
+        max_val = tensor.max()
+        tensor_stable = tensor - max_val
+        return torch.where(condition, tensor_stable.sigmoid(), tensor)
+    else:
+        return torch.where(condition, torch.softmax(tensor, dim=1), tensor)

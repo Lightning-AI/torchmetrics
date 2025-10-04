@@ -140,6 +140,30 @@ class TestBinaryAUROC(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
+def test_binary_auroc_large_logits():
+    """Test that large logits don't cause numerical overflow in sigmoid.
+    
+    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/XXXX
+    When logits are very large (>16.7 for float32, >36.7 for float64), naive sigmoid
+    overflows to 1.0 for all values, losing ranking information needed for AUROC.
+    """
+    # Test case from the issue
+    preds = torch.tensor([98.0950, 98.4612, 98.1145, 98.1506, 97.6037, 98.9425, 99.2644,
+                          99.5014, 99.7280, 99.6595, 99.6931, 99.4667, 99.9623, 99.8949, 99.8768])
+    target = torch.tensor([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+    
+    result = binary_auroc(preds, target, thresholds=None)
+    
+    # Expected AUROC is 0.9286 (as computed by sklearn)
+    # The ranking is preserved: lowest value (97.6037) corresponds to label 0,
+    # all others are higher and correspond to label 1, giving 14/14 correct rankings
+    expected = torch.tensor(14.0 / 14.0)  # Perfect ranking except for ties
+    
+    # Use sklearn as reference
+    expected_sklearn = sk_roc_auc_score(target.numpy(), preds.numpy())
+    assert torch.allclose(result, torch.tensor(expected_sklearn), atol=1e-4)
+
+
 def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
