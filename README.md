@@ -38,7 +38,16 @@ ______________________________________________________________________
 
 </div>
 
-## Installation
+# Looking for GPUs?
+Over 340,000 developers use [Lightning Cloud](https://lightning.ai/?utm_source=ptl_readme&utm_medium=referral&utm_campaign=ptl_readme) - purpose-built for PyTorch and PyTorch Lightning. 
+- [GPUs](https://lightning.ai/pricing?utm_source=ptl_readme&utm_medium=referral&utm_campaign=ptl_readme) from $0.19.   
+- [Clusters](https://lightning.ai/clusters?utm_source=ptl_readme&utm_medium=referral&utm_campaign=ptl_readme): frontier-grade training/inference clusters.   
+- [AI Studio (vibe train)](https://lightning.ai/studios?utm_source=ptl_readme&utm_medium=referral&utm_campaign=ptl_readme): workspaces where AI helps you debug, tune and vibe train.
+- [AI Studio (vibe deploy)](https://lightning.ai/studios?utm_source=ptl_readme&utm_medium=referral&utm_campaign=ptl_readme): workspaces where AI helps you optimize, and deploy models.     
+- [Notebooks](https://lightning.ai/notebooks?utm_source=ptl_readme&utm_medium=referral&utm_campaign=ptl_readme): Persistent GPU workspaces where AI helps you code and analyze.
+- [Inference](https://lightning.ai/deploy?utm_source=ptl_readme&utm_medium=referral&utm_campaign=ptl_readme): Deploy models as inference APIs.   
+
+# Installation
 
 Simple installation from PyPI
 
@@ -93,7 +102,7 @@ pip install https://github.com/Lightning-AI/torchmetrics/archive/master.zip
 
 ______________________________________________________________________
 
-## What is TorchMetrics
+# What is TorchMetrics
 
 TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
@@ -108,7 +117,7 @@ You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](http
 - Module metrics are automatically placed on the correct device.
 - Native support for logging metrics in Lightning to reduce even more boilerplate.
 
-## Using TorchMetrics
+# Using TorchMetrics
 
 ### Module metrics
 
@@ -343,7 +352,7 @@ fig3, ax3 = acc.plot(values)
 
 For examples of plotting different metrics try running [this example file](_samples/plotting.py).
 
-## Contribute!
+# Contribute!
 
 The lightning + TorchMetrics team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
@@ -351,18 +360,18 @@ and improve existing ones!
 
 Join our [Discord](https://discord.com/invite/tfXFetEZxv) to get help with becoming a contributor!
 
-## Community
+# Community
 
 For help or questions, join our huge community on [Discord](https://discord.com/invite/tfXFetEZxv)!
 
-## Citation
+# Citation
 
 We’re excited to continue the strong legacy of open source software and have been inspired
 over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
 
 If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/Lightning-AI/torchmetrics/blob/master/CITATION.cff) (but only if you loved it 😊).
 
-## License
+# License
 
 Please observe the Apache 2.0 license that is listed in this repository.
 In addition, the Lightning framework is Patent Pending.
