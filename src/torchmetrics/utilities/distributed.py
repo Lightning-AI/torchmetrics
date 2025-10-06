@@ -19,7 +19,7 @@ from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 
-def reduce(x: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None]) -> Tensor:
+def reduce(x: Tensor, reduction: Optional[Literal["elementwise_mean", "sum", "none"]]) -> Tensor:
     """Reduces a given tensor by a given reduction method.
 
     Args:
@@ -46,7 +46,7 @@ def class_reduce(
     num: Tensor,
     denom: Tensor,
     weights: Tensor,
-    class_reduction: Literal["micro", "macro", "weighted", "none", None] = "none",
+    class_reduction: Optional[Literal["micro", "macro", "weighted", "none"]] = "none",
 ) -> Tensor:
     """Reduce classification metrics of the form ``num / denom * weights``.
 
