@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union, Callable, List
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics import Metric
 from torchmetrics.functional.timeseries.softdtw import soft_dtw
@@ -67,6 +66,7 @@ class SoftDTW(Metric):
         >>> y = randn(10, 60, 2)
         >>> metric(x, y)
         tensor(43.2051)
+
     """
 
     full_state_update: bool = False
@@ -78,10 +78,7 @@ class SoftDTW(Metric):
     pred_list: List[Tensor]
     gt_list: List[Tensor]
 
-    def __init__(self, 
-                distance_fn: Optional[Callable] = None,
-                gamma: float = 1.0,
-                **kwargs: Any) -> None:
+    def __init__(self, distance_fn: Optional[Callable] = None, gamma: float = 1.0, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.distance_fn = distance_fn
         if gamma <= 0:
