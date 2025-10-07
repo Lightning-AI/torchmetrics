@@ -70,7 +70,7 @@ class SoftDTW(Metric):
     """
 
     full_state_update: bool = False
-    is_differentiable: bool = False
+    is_differentiable: bool = True
     higher_is_better: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -103,7 +103,7 @@ class SoftDTW(Metric):
             torch.cat(self.gt_list, dim=0),
             gamma=self.gamma,
             distance_fn=self.distance_fn,
-        ).mean()
+        )
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

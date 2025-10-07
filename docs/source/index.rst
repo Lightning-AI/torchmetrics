@@ -253,6 +253,14 @@ Or directly from conda
    :caption: Video
    :glob:
 
+   timeseries/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: timeseries
+   :caption: Time Series
+   :glob:
+
    video/*
 
 .. toctree::
