@@ -17,28 +17,31 @@ import math
 import torch
 from torch import Tensor
 
-def _soft_dtw_validate_args(x: Tensor, y: Tensor, gamma: float) -> None:
+def _soft_dtw_validate_args(preds: Tensor, target: Tensor, gamma: float) -> None:
     """Validate the input arguments for the soft_dtw function."""
-    if x.ndim != 3 or y.ndim != 3:
-        raise ValueError("Inputs x and y must be 3-dimensional tensors of shape [B, N, D] and [B, M, D].")
-    if x.shape[0] != y.shape[0]:
-        raise ValueError("Batch size of x and y must be the same.")
-    if x.shape[2] != y.shape[2]:
-        raise ValueError("Feature dimension of x and y must be the same.")
+    if preds.ndim != 3 or target.ndim != 3:
+        raise ValueError("Inputs preds and target must be 3-dimensional tensors of shape [B, N, D] and [B, M, D].")
+    if preds.shape[0] != target.shape[0]:
+        raise ValueError("Batch size of preds and target must be the same.")
+    if preds.shape[2] != target.shape[2]:
+        raise ValueError("Feature dimension of preds and target must be the same.")
     if not isinstance(gamma, float) or gamma <= 0:
         raise ValueError("Gamma must be a positive float.")
 
-def _soft_dtw_compute(x: Tensor, y: Tensor, gamma: float, distance_fn: Optional[Callable] = None) -> Tensor:
+def _soft_dtw_compute(preds: Tensor, target: Tensor, gamma: float, distance_fn: Optional[Callable] = None) -> Tensor:
     """Compute the Soft-DTW distance between two batched sequences."""
-    B, N, D = x.shape
-    _, M, _ = y.shape
-    device, dtype = x.device, x.dtype
+
+    B, N, D = preds.shape
+    _, M, _ = target.shape
+    device, dtype = target.device, target.dtype
+    if preds.dtype != target.dtype:
+        target = target.to(preds.dtype)
 
     if distance_fn is None:
         def distance_fn(a, b):
             return torch.cdist(a, b, p=2).pow(2)
 
-    D = distance_fn(x, y)  # [B, N, M]
+    D = distance_fn(preds, target)  # [B, N, M]
 
     R = torch.ones((B, N + 2, M + 2), device=device, dtype=dtype) * math.inf
     R[:, 0, 0] = 0.0
@@ -47,18 +50,35 @@ def _soft_dtw_compute(x: Tensor, y: Tensor, gamma: float, distance_fn: Optional[
         vals = torch.stack([a, b, c], dim=-1)
         return -gamma * torch.logsumexp(-vals / gamma, dim=-1)
 
-    for i in range(1, N + 1):
-        for j in range(1, M + 1):
-            r1 = R[:, i-1, j-1]
-            r2 = R[:, i-1, j]
-            r3 = R[:, i, j-1]
-            R[:, i, j] = D[:, i-1, j-1] + softmin(r1, r2, r3, gamma)
+    # Loop based implementation
+    # for i in range(1, N + 1):
+    #     for j in range(1, M + 1):
+    #         r1 = R[:, i-1, j-1]
+    #         r2 = R[:, i-1, j]
+    #         r3 = R[:, i, j-1]
+    #         R[:, i, j] = D[:, i-1, j-1] + softmin(r1, r2, r3, gamma)
+
+    # Anti-diagonal implementation
+    for k in range(2, N+M+1):
+        i_vals = torch.arange(1, N+1, device=device)
+        j_vals = k - i_vals
+        mask = (j_vals >= 1) & (j_vals <= M)
+        i_vals = i_vals[mask]
+        j_vals = j_vals[mask]
+
+        if len(i_vals) == 0:
+            continue
+
+        r1 = R[:, i_vals-1, j_vals-1]
+        r2 = R[:, i_vals-1, j_vals]
+        r3 = R[:, i_vals, j_vals-1]
+        R[:, i_vals, j_vals] = D[:, i_vals-1, j_vals-1] + softmin(r1, r2, r3, gamma)
 
     return R[:, N, M]
 
 def soft_dtw(
-    x: Tensor,
-    y: Tensor,
+    preds: Tensor,
+    target: Tensor,
     gamma: float = 1.0,
     distance_fn=None,
 ) -> Tensor:
@@ -112,5 +132,5 @@ def soft_dtw(
         >>> soft_dtw(x, y, gamma=0.5, distance_fn=cosine_dist)
         tensor([2.8301, 3.0128])
     """
-    _soft_dtw_validate_args(x, y, gamma)
-    return _soft_dtw_compute(x, y, gamma, distance_fn)
+    _soft_dtw_validate_args(preds, target, gamma)
+    return _soft_dtw_compute(preds, target, gamma, distance_fn)
