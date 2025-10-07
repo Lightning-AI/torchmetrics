@@ -14,4 +14,3 @@
 from torchmetrics.functional.timeseries.softdtw import soft_dtw
 
 __all__ = ["soft_dtw"]
-

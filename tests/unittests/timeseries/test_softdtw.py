@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
+
+import pysdtw
 import pytest
 import torch
-import pysdtw
-from torchmetrics.functional.timeseries.softdtw import soft_dtw
-from torchmetrics.timeseries.softdtw import SoftDTW
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
+from torchmetrics.functional.timeseries.softdtw import soft_dtw
+from torchmetrics.timeseries.softdtw import SoftDTW
 
 seed_all(42)
 
@@ -31,6 +32,7 @@ _inputs = _Input(
     target=torch.randn(num_batches, batch_size, 14, 3, dtype=torch.float64),
 )
 
+
 def _reference_softdtw(preds: torch.Tensor, target: torch.Tensor, gamma: float = 1.0, distance_fn=None) -> torch.Tensor:
     """Reference implementation using tslearn's soft-DTW."""
     preds = preds.to("cuda" if torch.cuda.is_available() else "cpu")
@@ -38,21 +40,25 @@ def _reference_softdtw(preds: torch.Tensor, target: torch.Tensor, gamma: float =
     sdtw = pysdtw.SoftDTW(gamma=gamma, dist_func=distance_fn, use_cuda=True if torch.cuda.is_available() else False)
     return sdtw(preds, target)
 
+
 def euclidean_distance(x, y):
     return torch.cdist(x, y, p=2)
 
+
 def manhattan_distance(x, y):
     return torch.cdist(x, y, p=1)
+
 
 def cosine_distance(x, y):
     x_norm = x / x.norm(dim=-1, keepdim=True)
     y_norm = y / y.norm(dim=-1, keepdim=True)
     return 1 - torch.matmul(x_norm, y_norm.transpose(-1, -2))
 
+
 @pytest.mark.parametrize("preds, target", [(_inputs.preds, _inputs.target)])
 class TestSoftDTW(MetricTester):
     """Test class for `SoftDTW` metric."""
-    
+
     @pytest.mark.parametrize("gamma", [0.1, 0.5, 1.0])
     @pytest.mark.parametrize("distance_fn", [euclidean_distance, manhattan_distance, cosine_distance])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
