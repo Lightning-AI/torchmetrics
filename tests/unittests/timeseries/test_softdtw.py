@@ -37,25 +37,28 @@ def _reference_softdtw(preds: torch.Tensor, target: torch.Tensor, gamma: float =
     """Reference implementation using tslearn's soft-DTW."""
     preds = preds.to("cuda" if torch.cuda.is_available() else "cpu")
     target = target.to("cuda" if torch.cuda.is_available() else "cpu")
-    sdtw = pysdtw.SoftDTW(gamma=gamma, dist_func=distance_fn, use_cuda=True if torch.cuda.is_available() else False)
+    sdtw = pysdtw.SoftDTW(gamma=gamma, dist_func=distance_fn, use_cuda=bool(torch.cuda.is_available()))
     return sdtw(preds, target)
 
 
 def euclidean_distance(x, y):
+    """Squared Euclidean distance."""
     return torch.cdist(x, y, p=2)
 
 
 def manhattan_distance(x, y):
+    """L1 (Manhattan) distance."""
     return torch.cdist(x, y, p=1)
 
 
 def cosine_distance(x, y):
+    """Cosine distance."""
     x_norm = x / x.norm(dim=-1, keepdim=True)
     y_norm = y / y.norm(dim=-1, keepdim=True)
     return 1 - torch.matmul(x_norm, y_norm.transpose(-1, -2))
 
 
-@pytest.mark.parametrize("preds, target", [(_inputs.preds, _inputs.target)])
+@pytest.mark.parametrize(("preds", "target"), [(_inputs.preds, _inputs.target)])
 class TestSoftDTW(MetricTester):
     """Test class for `SoftDTW` metric."""
 

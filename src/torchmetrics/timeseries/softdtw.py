@@ -48,7 +48,8 @@ class SoftDTW(Metric):
     The final Soft-DTW distance is :math:`R_{N,M}`.
 
     Args:
-        gamma: Smoothing parameter (:math:`\gamma > 0`). Smaller values make the loss closer to standard DTW (hard minimum),
+        gamma: Smoothing parameter (:math:`\gamma > 0`).
+            Smaller values make the loss closer to standard DTW (hard minimum),
             while larger values produce a smoother and more differentiable surface.
         distance_fn: Optional callable ``(x, y) -> [B, N, M]`` defining the pairwise distance matrix.
             If ``None``, defaults to **squared Euclidean distance**.
