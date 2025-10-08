@@ -13,11 +13,9 @@
 # limitations under the License.
 import math
 from typing import Callable, Optional
-from typing import Callable, Optional
 
 import torch
 from torch import Tensor
-
 
 
 def _soft_dtw_validate_args(preds: Tensor, target: Tensor, gamma: float) -> None:
@@ -30,7 +28,6 @@ def _soft_dtw_validate_args(preds: Tensor, target: Tensor, gamma: float) -> None
         raise ValueError("Feature dimension of preds and target must be the same.")
     if not isinstance(gamma, float) or gamma <= 0:
         raise ValueError("Gamma must be a positive float.")
-
 
 
 def _soft_dtw_compute(preds: Tensor, target: Tensor, gamma: float, distance_fn: Optional[Callable] = None) -> Tensor:
@@ -141,8 +138,6 @@ def soft_dtw(
         >>> soft_dtw(x, y, gamma=0.5, distance_fn=cosine_dist)
         tensor([2.8301, 3.0128])
 
-
     """
     _soft_dtw_validate_args(preds, target, gamma)
     return _soft_dtw_compute(preds, target, gamma, distance_fn)
-
