@@ -13,9 +13,11 @@
 # limitations under the License.
 import math
 from typing import Callable, Optional
+from typing import Callable, Optional
 
 import torch
 from torch import Tensor
+
 
 
 def _soft_dtw_validate_args(preds: Tensor, target: Tensor, gamma: float) -> None:
@@ -30,25 +32,28 @@ def _soft_dtw_validate_args(preds: Tensor, target: Tensor, gamma: float) -> None
         raise ValueError("Gamma must be a positive float.")
 
 
+
 def _soft_dtw_compute(preds: Tensor, target: Tensor, gamma: float, distance_fn: Optional[Callable] = None) -> Tensor:
     """Compute the Soft-DTW distance between two batched sequences."""
-    B, N, D = preds.shape
-    _, M, _ = target.shape
+    b, n, d = preds.shape
+    _, m, _ = target.shape
     device, dtype = target.device, target.dtype
     if preds.dtype != target.dtype:
         target = target.to(preds.dtype)
 
     if distance_fn is None:
 
-        def distance_fn(a, b):
-            return torch.cdist(a, b, p=2).pow(2)
+        def distance_fn(x: Tensor, y: Tensor) -> Tensor:
+            """Default to squared Euclidean distance."""
+            return torch.cdist(x, y, p=2).pow(2)
 
-    D = distance_fn(preds, target)  # [B, N, M]
+    distances = distance_fn(preds, target)  # [B, N, M]
 
-    R = torch.ones((B, N + 2, M + 2), device=device, dtype=dtype) * math.inf
-    R[:, 0, 0] = 0.0
+    r = torch.ones((b, n + 2, m + 2), device=device, dtype=dtype) * math.inf
+    r[:, 0, 0] = 0.0
 
-    def softmin(a, b, c, gamma):
+    def softmin(a: Tensor, b: Tensor, c: Tensor, gamma: float) -> Tensor:
+        """Compute the soft minimum of three tensors."""
         vals = torch.stack([a, b, c], dim=-1)
         return -gamma * torch.logsumexp(-vals / gamma, dim=-1)
 
@@ -61,29 +66,29 @@ def _soft_dtw_compute(preds: Tensor, target: Tensor, gamma: float, distance_fn: 
     #         R[:, i, j] = D[:, i-1, j-1] + softmin(r1, r2, r3, gamma)
 
     # Anti-diagonal implementation
-    for k in range(2, N + M + 1):
-        i_vals = torch.arange(1, N + 1, device=device)
+    for k in range(2, n + m + 1):
+        i_vals = torch.arange(1, n + 1, device=device)
         j_vals = k - i_vals
-        mask = (j_vals >= 1) & (j_vals <= M)
+        mask = (j_vals >= 1) & (j_vals <= m)
         i_vals = i_vals[mask]
         j_vals = j_vals[mask]
 
         if len(i_vals) == 0:
             continue
 
-        r1 = R[:, i_vals - 1, j_vals - 1]
-        r2 = R[:, i_vals - 1, j_vals]
-        r3 = R[:, i_vals, j_vals - 1]
-        R[:, i_vals, j_vals] = D[:, i_vals - 1, j_vals - 1] + softmin(r1, r2, r3, gamma)
+        r1 = r[:, i_vals - 1, j_vals - 1]
+        r2 = r[:, i_vals - 1, j_vals]
+        r3 = r[:, i_vals, j_vals - 1]
+        r[:, i_vals, j_vals] = distances[:, i_vals - 1, j_vals - 1] + softmin(r1, r2, r3, gamma)
 
-    return R[:, N, M]
+    return r[:, n, m]
 
 
 def soft_dtw(
     preds: Tensor,
     target: Tensor,
     gamma: float = 1.0,
-    distance_fn=None,
+    distance_fn: Optional[Callable] = None,
 ) -> Tensor:
     r"""Compute the **Soft Dynamic Time Warping (Soft-DTW)** distance between two batched sequences.
 
@@ -104,9 +109,10 @@ def soft_dtw(
     The final Soft-DTW distance is :math:`R_{N,M}`.
 
     Args:
-        x: Tensor of shape ``[B, N, D]`` — batch of input sequences.
-        y: Tensor of shape ``[B, M, D]`` — batch of target sequences.
-        gamma: Smoothing parameter (:math:`\gamma > 0`). Smaller values make the loss closer to standard DTW (hard minimum),
+        preds: Tensor of shape ``[B, N, D]`` — batch of input sequences.
+        target: Tensor of shape ``[B, M, D]`` — batch of target sequences.
+        gamma: Smoothing parameter (:math:`\gamma > 0`).
+            Smaller values make the loss closer to standard DTW (hard minimum),
             while larger values produce a smoother and more differentiable surface.
         distance_fn: Optional callable ``(x, y) -> [B, N, M]`` defining the pairwise distance matrix.
             If ``None``, defaults to **squared Euclidean distance**.
@@ -123,6 +129,7 @@ def soft_dtw(
         >>> soft_dtw(x, y, gamma=0.1)
         tensor([0.4003])
 
+
     Example (custom distance function)::
         >>> def cosine_dist(a, b):
         ...     a = torch.nn.functional.normalize(a, dim=-1)
@@ -134,6 +141,8 @@ def soft_dtw(
         >>> soft_dtw(x, y, gamma=0.5, distance_fn=cosine_dist)
         tensor([2.8301, 3.0128])
 
+
     """
     _soft_dtw_validate_args(preds, target, gamma)
     return _soft_dtw_compute(preds, target, gamma, distance_fn)
+
