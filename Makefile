@@ -7,7 +7,7 @@ export SPHINX_MOCK_REQUIREMENTS=1
 export SPHINX_FETCH_ASSETS=0
 export SPHINX_PIN_RELEASE_VERSIONS=1
 
-# some comment2
+# some comment23
 USE_UV ?= 0
 HAS_UV := $(shell command -v uv >/dev/null 2>&1 && echo 1 || echo 0)
 
