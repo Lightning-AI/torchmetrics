@@ -16,7 +16,7 @@ from functools import partial
 import pysdtw
 import pytest
 import torch
-from unittests import _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
@@ -25,11 +25,9 @@ from torchmetrics.timeseries.softdtw import SoftDTW
 
 seed_all(42)
 
-num_batches = 1
-batch_size = 1
 _inputs = _Input(
-    preds=torch.randn(num_batches, batch_size, 15, 3, dtype=torch.float64),
-    target=torch.randn(num_batches, batch_size, 14, 3, dtype=torch.float64),
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, 20, 3, dtype=torch.float64),
+    target=torch.randn(NUM_BATCHES, BATCH_SIZE, 30, 3, dtype=torch.float64),
 )
 
 
@@ -88,7 +86,7 @@ class TestSoftDTW(MetricTester):
             metric_args={"gamma": gamma, "distance_fn": distance_fn},
         )
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
     def test_softdtw_differentiability(self, preds, target):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
@@ -96,5 +94,40 @@ class TestSoftDTW(MetricTester):
             target=target,
             metric_module=SoftDTW,
             metric_functional=soft_dtw,
-            metric_args={"gamma": 0.1},
+            metric_args={"gamma": 1.0},
         )
+
+
+def test_wrong_dimensions():
+    """Test that an error is raised if input tensors have wrong dimensions."""
+    metric = SoftDTW()
+    with pytest.raises(ValueError, match="Inputs preds and target must be 3-dimensional tensors of shape*"):
+        metric(torch.randn(10, 100), torch.randn(10, 100, 3))
+
+
+def test_mismatched_dimensions():
+    """Test that an error is raised if input dimensions don't match."""
+    metric = SoftDTW()
+    with pytest.raises(ValueError, match="Batch size of preds and target must be the same.*"):
+        metric(torch.randn(10, 80, 3), torch.randn(12, 100, 3))
+
+
+def test_mismatched_feature_dimensions():
+    """Test that an error is raised if input feature dimensions don't match."""
+    metric = SoftDTW()
+    with pytest.raises(ValueError, match="Feature dimension of preds and target must be the same.*"):
+        metric(torch.randn(10, 80, 3), torch.randn(10, 100, 4))
+
+
+def test_invalid_gamma():
+    """Test that an error is raised if gamma is not a positive float."""
+    with pytest.raises(ValueError, match="Argument `gamma` must be a positive float, got -1.0*"):
+        SoftDTW(gamma=-1.0)
+
+
+def test_warning_on_cpu():
+    """Test that a warning is raised if SoftDTW is used on CPU."""
+    if torch.cuda.is_available():
+        pytest.skip("Test only runs on CPU.")
+    with pytest.warns(UserWarning, match="SoftDTW is slow on CPU. Consider using a GPU.*"):
+        SoftDTW()

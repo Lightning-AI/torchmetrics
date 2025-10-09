@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import warnings
 from collections.abc import Sequence
 from typing import Any, Callable, List, Optional, Union
 
@@ -85,6 +86,9 @@ class SoftDTW(Metric):
         if gamma <= 0:
             raise ValueError(f"Argument `gamma` must be a positive float, got {gamma}")
         self.gamma = gamma
+
+        if self.device.type == "cpu":  # warn on cpu
+            warnings.warn("SoftDTW is slow on CPU. Consider using a GPU.", stacklevel=2)
 
         self.add_state("pred_list", default=[], dist_reduce_fx="cat")
         self.add_state("gt_list", default=[], dist_reduce_fx="cat")
