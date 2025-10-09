@@ -13,7 +13,7 @@
 # limitations under the License.
 import warnings
 from collections.abc import Sequence
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -28,13 +28,11 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class SoftDTW(Metric):
-    r"""Compute the **Soft Dynamic Time Warping (Soft-DTW)** distance between two batched sequences.
-
-    Compute the **Soft Dynamic Time Warping (Soft-DTW)** distance between two batched sequences.
+    r"""Compute the Soft Dynamic Time Warping (Soft-DTW) distance between two batched sequences.
 
     This is a differentiable relaxation of the classic Dynamic Time Warping (DTW) algorithm, introduced by
     Marco Cuturi and Mathieu Blondel (2017).
-    It replaces the hard minimum in DTW recursion with a *soft-minimum* using a log-sum-exp formulation:
+    It replaces the hard minimum in DTW recursion with a soft-minimum using a log-sum-exp formulation:
 
     .. math::
         \text{softmin}_\gamma(a,b,c) = -\gamma \log \left( e^{-a/\gamma} + e^{-b/\gamma} + e^{-c/\gamma} \right)
@@ -44,7 +42,8 @@ class SoftDTW(Metric):
     .. math::
         R_{i,j} = D_{i,j} + \text{softmin}_\gamma(R_{i-1,j}, R_{i,j-1}, R_{i-1,j-1})
 
-    where :math:`D_{i,j}` is the pairwise distance between sequence elements :math:`x_i` and :math:`y_j`.
+    where :math:`D_{i,j}` is the pairwise distance between sequence elements :math:`x_i` and :math:`y_j`. It could be
+    computed using any differentiable distance function, such as squared Euclidean distance or cosine distance.
 
     The final Soft-DTW distance is :math:`R_{N,M}`.
 
@@ -53,12 +52,17 @@ class SoftDTW(Metric):
             Smaller values make the loss closer to standard DTW (hard minimum),
             while larger values produce a smoother and more differentiable surface.
         distance_fn: Optional callable ``(x, y) -> [B, N, M]`` defining the pairwise distance matrix.
-            If ``None``, defaults to **squared Euclidean distance**.
+            If ``None``, defaults to squared Euclidean distance.
+        reduction: indicates how to reduce over the batch dimension. Choose between [``sum``, ``mean``, ``none``].
 
     Raises:
         ValueError:
+            If ``reduction`` is not one of [``sum``, ``mean``, ``none``].
+        ValueError:
             If ``gamma`` is not a positive float.
-            If input tensors to ``update`` are not 3-dimensional with the same batch size and feature dimension.
+        ValueError:
+            If input tensors to ``update`` are not 3-dimensional
+            with the same batch size and feature dimension.
 
     Example:
         >>> from torch import randn
@@ -80,12 +84,22 @@ class SoftDTW(Metric):
     pred_list: List[Tensor]
     gt_list: List[Tensor]
 
-    def __init__(self, distance_fn: Optional[Callable] = None, gamma: float = 1.0, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        distance_fn: Optional[Callable] = None,
+        gamma: float = 1.0,
+        reduction: Literal["sum", "mean", "none"] = "mean",
+        **kwargs: Any,
+    ) -> None:
         super().__init__(**kwargs)
         self.distance_fn = distance_fn
+        valid_reduction = ("mean", "sum", "none")
+        if reduction not in valid_reduction:
+            raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
         if gamma <= 0:
             raise ValueError(f"Argument `gamma` must be a positive float, got {gamma}")
         self.gamma = gamma
+        self.reduction = reduction
 
         if self.device.type == "cpu":  # warn on cpu
             warnings.warn("SoftDTW is slow on CPU. Consider using a GPU.", stacklevel=2)
@@ -105,6 +119,7 @@ class SoftDTW(Metric):
             torch.cat(self.gt_list, dim=0),
             gamma=self.gamma,
             distance_fn=self.distance_fn,
+            reduction=self.reduction,
         )
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
