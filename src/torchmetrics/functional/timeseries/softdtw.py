@@ -12,14 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Callable, Optional
+from typing import Callable, Literal, Optional
 
 import torch
 from torch import Tensor
 
 
-def _soft_dtw_validate_args(preds: Tensor, target: Tensor, gamma: float) -> None:
+def _soft_dtw_validate_args(
+    preds: Tensor, target: Tensor, gamma: float, reduction: Literal["mean", "sum", "none"]
+) -> None:
     """Validate the input arguments for the soft_dtw function."""
+    valid_reduction = ("mean", "sum", "none")
+    if reduction not in valid_reduction:
+        raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
     if preds.ndim != 3 or target.ndim != 3:
         raise ValueError("Inputs preds and target must be 3-dimensional tensors of shape [B, N, D] and [B, M, D].")
     if preds.shape[0] != target.shape[0]:
@@ -30,7 +35,7 @@ def _soft_dtw_validate_args(preds: Tensor, target: Tensor, gamma: float) -> None
         raise ValueError("Gamma must be a positive float.")
 
 
-def _soft_dtw_compute(preds: Tensor, target: Tensor, gamma: float, distance_fn: Optional[Callable] = None) -> Tensor:
+def _soft_dtw_update(preds: Tensor, target: Tensor, gamma: float, distance_fn: Optional[Callable] = None) -> Tensor:
     """Compute the Soft-DTW distance between two batched sequences."""
     b, n, d = preds.shape
     _, m, _ = target.shape
@@ -73,17 +78,27 @@ def _soft_dtw_compute(preds: Tensor, target: Tensor, gamma: float, distance_fn: 
     return r[:, n, m]
 
 
+def _soft_dtw_compute(scores: Tensor, reduction: Literal["sum", "mean", "none"] = "mean") -> Tensor:
+    """Aggregate the computed Soft-DTW distances based on the specified reduction method."""
+    if reduction == "none":
+        return scores
+    if reduction == "mean":
+        return scores.mean()
+    return scores.sum()
+
+
 def soft_dtw(
     preds: Tensor,
     target: Tensor,
     gamma: float = 1.0,
     distance_fn: Optional[Callable] = None,
+    reduction: Literal["sum", "mean", "none"] = "mean",
 ) -> Tensor:
-    r"""Compute the **Soft Dynamic Time Warping (Soft-DTW)** distance between two batched sequences.
+    r"""Compute the Soft Dynamic Time Warping (Soft-DTW) distance between two batched sequences.
 
     This is a differentiable relaxation of the classic Dynamic Time Warping (DTW) algorithm, introduced by
     Marco Cuturi and Mathieu Blondel (2017).
-    It replaces the hard minimum in DTW recursion with a *soft-minimum* using a log-sum-exp formulation:
+    It replaces the hard minimum in DTW recursion with a soft-minimum using a log-sum-exp formulation:
 
     .. math::
         \text{softmin}_\gamma(a,b,c) = -\gamma \log \left( e^{-a/\gamma} + e^{-b/\gamma} + e^{-c/\gamma} \right)
@@ -93,7 +108,8 @@ def soft_dtw(
     .. math::
         R_{i,j} = D_{i,j} + \text{softmin}_\gamma(R_{i-1,j}, R_{i,j-1}, R_{i-1,j-1})
 
-    where :math:`D_{i,j}` is the pairwise distance between sequence elements :math:`x_i` and :math:`y_j`.
+    where :math:`D_{i,j}` is the pairwise distance between sequence elements :math:`x_i` and :math:`y_j`. It could be
+    computed using any differentiable distance function, such as squared Euclidean distance or cosine distance.
 
     The final Soft-DTW distance is :math:`R_{N,M}`.
 
@@ -104,10 +120,21 @@ def soft_dtw(
             Smaller values make the loss closer to standard DTW (hard minimum),
             while larger values produce a smoother and more differentiable surface.
         distance_fn: Optional callable ``(x, y) -> [B, N, M]`` defining the pairwise distance matrix.
-            If ``None``, defaults to **squared Euclidean distance**.
+            If ``None``, defaults to squared Euclidean distance.
+        reduction: indicates how to reduce over the batch dimension. Choose between [``sum``, ``mean``, ``none``].
+            Defaults to ``mean``.
 
     Returns:
         A tensor of shape ``[B]`` containing the Soft-DTW distance for each sequence pair in the batch.
+
+    Raises:
+        ValueError:
+            If ``reduction`` is not one of [``sum``, ``mean``, ``none``].
+        ValueError:
+            If ``gamma`` is not a positive float.
+        ValueError:
+            If input tensors to ``preds`` and ``target`` are not 3-dimensional
+            with the same batch size and feature dimension.
 
     Example::
         >>> import torch
@@ -131,5 +158,6 @@ def soft_dtw(
         tensor([2.8301, 3.0128])
 
     """
-    _soft_dtw_validate_args(preds, target, gamma)
-    return _soft_dtw_compute(preds, target, gamma, distance_fn)
+    _soft_dtw_validate_args(preds, target, gamma, reduction)
+    scores = _soft_dtw_update(preds, target, gamma, distance_fn)
+    return _soft_dtw_compute(scores, reduction)

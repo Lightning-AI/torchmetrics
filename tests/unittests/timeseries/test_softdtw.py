@@ -31,11 +31,17 @@ _inputs = _Input(
 )
 
 
-def _reference_softdtw(preds: torch.Tensor, target: torch.Tensor, gamma: float = 1.0, distance_fn=None) -> torch.Tensor:
+def _reference_softdtw(
+    preds: torch.Tensor, target: torch.Tensor, gamma: float = 1.0, distance_fn=None, reduction: str = "mean"
+) -> torch.Tensor:
     """Reference implementation using tslearn's soft-DTW."""
     preds = preds.to("cuda" if torch.cuda.is_available() else "cpu")
     target = target.to("cuda" if torch.cuda.is_available() else "cpu")
     sdtw = pysdtw.SoftDTW(gamma=gamma, dist_func=distance_fn, use_cuda=bool(torch.cuda.is_available()))
+    if reduction == "mean":
+        return sdtw(preds, target).mean()
+    if reduction == "sum":
+        return sdtw(preds, target).sum()
     return sdtw(preds, target)
 
 
@@ -62,28 +68,30 @@ class TestSoftDTW(MetricTester):
 
     @pytest.mark.parametrize("gamma", [0.1, 0.5, 1.0])
     @pytest.mark.parametrize("distance_fn", [euclidean_distance, manhattan_distance, cosine_distance])
+    @pytest.mark.parametrize("reduction", ["mean", "sum", "none"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_softdtw_class(self, gamma, preds, target, distance_fn, ddp):
+    def test_softdtw_class(self, gamma, preds, target, distance_fn, reduction, ddp):
         """Test class implementation of SoftDTW."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SoftDTW,
-            partial(_reference_softdtw, gamma=gamma, distance_fn=distance_fn),
-            metric_args={"gamma": gamma, "distance_fn": distance_fn},
+            partial(_reference_softdtw, gamma=gamma, distance_fn=distance_fn, reduction=reduction),
+            metric_args={"gamma": gamma, "distance_fn": distance_fn, "reduction": reduction},
         )
 
     @pytest.mark.parametrize("gamma", [0.1, 0.5, 1.0])
     @pytest.mark.parametrize("distance_fn", [euclidean_distance, manhattan_distance, cosine_distance])
-    def test_softdtw_functional(self, preds, target, gamma, distance_fn):
+    @pytest.mark.parametrize("reduction", ["mean", "sum", "none"])
+    def test_softdtw_functional(self, preds, target, gamma, distance_fn, reduction):
         """Test functional implementation of SoftDTW."""
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=soft_dtw,
-            reference_metric=partial(_reference_softdtw, gamma=gamma, distance_fn=distance_fn),
-            metric_args={"gamma": gamma, "distance_fn": distance_fn},
+            reference_metric=partial(_reference_softdtw, gamma=gamma, distance_fn=distance_fn, reduction=reduction),
+            metric_args={"gamma": gamma, "distance_fn": distance_fn, "reduction": reduction},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
@@ -131,3 +139,9 @@ def test_warning_on_cpu():
         pytest.skip("Test only runs on CPU.")
     with pytest.warns(UserWarning, match="SoftDTW is slow on CPU. Consider using a GPU.*"):
         SoftDTW()
+
+
+def test_invalid_reduction():
+    """Test that an error is raised if reduction is not one of [``sum``, ``mean``, ``none``]."""
+    with pytest.raises(ValueError, match="Argument `reduction` must be one of .*"):
+        SoftDTW(reduction="invalid")
