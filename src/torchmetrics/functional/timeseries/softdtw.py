@@ -54,15 +54,7 @@ def _soft_dtw_compute(preds: Tensor, target: Tensor, gamma: float, distance_fn: 
         vals = torch.stack([a, b, c], dim=-1)
         return -gamma * torch.logsumexp(-vals / gamma, dim=-1)
 
-    # Loop based implementation
-    # for i in range(1, N + 1):
-    #     for j in range(1, M + 1):
-    #         r1 = R[:, i-1, j-1]
-    #         r2 = R[:, i-1, j]
-    #         r3 = R[:, i, j-1]
-    #         R[:, i, j] = D[:, i-1, j-1] + softmin(r1, r2, r3, gamma)
-
-    # Anti-diagonal implementation
+    # Anti-diagonal approach inspired from https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8400444
     for k in range(2, n + m + 1):
         i_vals = torch.arange(1, n + 1, device=device)
         j_vals = k - i_vals
