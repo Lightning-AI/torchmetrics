@@ -144,7 +144,7 @@ def soft_dtw(
         >>> x = torch.tensor([[[0.0], [1.0], [2.0]]])  # [B, N, D]
         >>> y = torch.tensor([[[0.0], [2.0], [3.0]]])  # [B, M, D]
         >>> soft_dtw(x, y, gamma=0.1)
-        tensor([0.4003])
+        tensor(1.8901)
 
 
     Example (custom distance function)::
