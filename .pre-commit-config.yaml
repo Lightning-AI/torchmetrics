@@ -50,7 +50,11 @@ repos:
     hooks:
       - id: typos
         args: [] # empty to do not write fixes
-        exclude: pyproject.toml
+        exclude: |
+          (?x)^(
+              pyproject.toml
+              *.py
+          )$
 
   - repo: https://github.com/PyCQA/docformatter
     rev: v1.7.7
