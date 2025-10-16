@@ -34,7 +34,11 @@ def _soft_dtw_validate_args(
     if gamma <= 0:
         raise ValueError("Gamma must be greater than 0.")
 
-
+def softmin(a: Tensor, b: Tensor, c: Tensor, gamma: float) -> Tensor:
+    """Compute the soft minimum of three tensors."""
+    vals = torch.stack([a, b, c], dim=-1)
+    return -gamma * torch.logsumexp(-vals / gamma, dim=-1)
+    
 def _soft_dtw_update(preds: Tensor, target: Tensor, gamma: float, distance_fn: Optional[Callable] = None) -> Tensor:
     """Compute the Soft-DTW distance between two batched sequences."""
     b, n, d = preds.shape
@@ -53,11 +57,6 @@ def _soft_dtw_update(preds: Tensor, target: Tensor, gamma: float, distance_fn: O
 
     r = torch.ones((b, n + 2, m + 2), device=device, dtype=dtype) * math.inf
     r[:, 0, 0] = 0.0
-
-    def softmin(a: Tensor, b: Tensor, c: Tensor, gamma: float) -> Tensor:
-        """Compute the soft minimum of three tensors."""
-        vals = torch.stack([a, b, c], dim=-1)
-        return -gamma * torch.logsumexp(-vals / gamma, dim=-1)
 
     # Anti-diagonal approach inspired from https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8400444
     for k in range(2, n + m + 1):
