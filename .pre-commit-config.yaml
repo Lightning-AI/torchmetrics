@@ -45,17 +45,6 @@ repos:
         args: ["--write-changes"]
         exclude: pyproject.toml
 
-  - repo: https://github.com/crate-ci/typos
-    rev: v1
-    hooks:
-      - id: typos
-        args: [] # empty to do not write fixes
-        exclude: |
-          (?x)^(
-              pyproject.toml
-              *.py
-          )$
-
   - repo: https://github.com/PyCQA/docformatter
     rev: v1.7.7
     hooks:
