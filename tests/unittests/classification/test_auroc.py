@@ -175,10 +175,10 @@ class MaskedBinaryAUROCTester(MetricTester):
     def run_differentiability_test(
         preds: Tensor,
         target: Tensor,
+        mask: Tensor,
         metric_module: Metric,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
-        mask: Optional[Tensor] = None,
     ) -> None:
         """Test if a metric is differentiable or not.
 
@@ -196,7 +196,7 @@ class MaskedBinaryAUROCTester(MetricTester):
         metric = metric_module(**metric_args)
         if preds.is_floating_point():
             preds.requires_grad = True
-            out = metric(preds[0, :2], target[0, :2], mask[0, :2] if mask is not None else None)
+            out = metric(preds[0, :2], target[0, :2], mask[0, :2])
 
             # Check if requires_grad matches is_differentiable attribute
             _assert_requires_grad(metric, out)
@@ -286,7 +286,7 @@ class TestMaskedBinaryAUROC(MaskedBinaryAUROCTester):
 
     def test_mask_error_on_wrong_dtype_and_shape(self, inputs):
         """Test that errors are raised on wrong mask dtype and shape."""
-        preds, target, mask = inputs
+        preds, target, _ = inputs
 
         # wrong dtype: mask should be boolean
         mask_wrong_dtype = torch.randint(high=2, size=preds.shape, dtype=torch.int32)

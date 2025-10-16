@@ -232,15 +232,14 @@ class MaskedBinaryAUROC(BinaryAUROC):
 
     """
 
-    def update(self, preds: Tensor, target: Tensor, mask: Optional[Tensor] = None) -> None:
+    def update(self, preds: Tensor, target: Tensor, mask: Tensor) -> None:
         """Update the state with the new data."""
-        if mask is not None:
-            if mask.dtype != torch.bool:
-                raise ValueError(f"Mask must be boolean, got {mask.dtype}")
-            if mask.shape != preds.shape:
-                raise ValueError(f"Mask shape {mask.shape} must match preds/target shape {preds.shape}")
-            preds = preds[mask]
-            target = target[mask]
+        if mask.dtype != torch.bool:
+            raise ValueError(f"Mask must be boolean, got {mask.dtype}")
+        if mask.shape != preds.shape:
+            raise ValueError(f"Mask shape {mask.shape} must match preds/target shape {preds.shape}")
+        preds = preds[mask]
+        target = target[mask]
         super().update(preds, target)  # call the original BinaryAUROC update
 
     def plot(  # type: ignore[override]
