@@ -151,7 +151,7 @@ Additionally, we highly recommend that the two ways of logging are not mixed as 
                 logits = self(x)
                 ...
                 self.valid_acc.update(logits, y)
-                self.log('valid_acc', self.valid_acc, on_step=True, on_epoch=True)
+                self.log('valid_acc', self.valid_acc, on_step=False, on_epoch=True)
 
 In general if you are logging multiple metrics we highly recommend that you combine them into a single metric object
 using the :class:`~torchmetrics.MetricCollection` class and then replacing the ``self.log`` calls with ``self.log_dict``,
