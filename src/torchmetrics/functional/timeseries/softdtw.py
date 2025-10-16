@@ -31,8 +31,8 @@ def _soft_dtw_validate_args(
         raise ValueError("Batch size of preds and target must be the same.")
     if preds.shape[2] != target.shape[2]:
         raise ValueError("Feature dimension of preds and target must be the same.")
-    if not isinstance(gamma, float) or gamma <= 0:
-        raise ValueError("Gamma must be a positive float.")
+    if gamma <= 0:
+        raise ValueError("Gamma must be greater than 0.")
 
 
 def _soft_dtw_update(preds: Tensor, target: Tensor, gamma: float, distance_fn: Optional[Callable] = None) -> Tensor:
