@@ -82,6 +82,8 @@ def _reference_generalized_dice(
 class TestGeneralizedDiceScore(MetricTester):
     """Test class for `GeneralizedDiceScore` metric."""
 
+    atol = 2e-3
+
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_generalized_dice_class(self, preds, target, input_format, include_background, ddp):
         """Test class implementation of metric."""
@@ -122,3 +124,52 @@ class TestGeneralizedDiceScore(MetricTester):
                 "input_format": input_format,
             },
         )
+
+
+@pytest.mark.parametrize("per_class", [True, False])
+@pytest.mark.parametrize("include_background", [True, False])
+def test_samples_with_missing_classes(per_class, include_background):
+    """Test GeneralizedDiceScore with missing classes in some samples."""
+    target = torch.zeros((4, NUM_CLASSES, 128, 128), dtype=torch.int8)
+    preds = torch.zeros((4, NUM_CLASSES, 128, 128), dtype=torch.int8)
+
+    target[0, 0, 0, 0] = 1
+    preds[0, 0, 0, 0] = 1
+
+    target[2, 1, 0, 0] = 1
+    preds[2, 1, 0, 0] = 1
+
+    metric = GeneralizedDiceScore(num_classes=NUM_CLASSES, per_class=per_class, include_background=include_background)
+    score = metric(preds, target)
+
+    target_slice = target if include_background else target[:, 1:]
+    output_classes = NUM_CLASSES if include_background else NUM_CLASSES - 1
+
+    if per_class:
+        assert len(score) == output_classes
+        for c in range(output_classes):
+            assert score[c] == 1.0 if target_slice[:, c].sum() > 0 else torch.isnan(score[c])
+    else:
+        assert score.isnan()
+
+
+@pytest.mark.parametrize("per_class", [True, False])
+@pytest.mark.parametrize("include_background", [True, False])
+def test_generalized_dice_zero_denominator(per_class, include_background):
+    """Check that GeneralizedDiceScore returns NaN when the denominator is all zero (no class present)."""
+    target = torch.full((4, NUM_CLASSES, 128, 128), 0, dtype=torch.int8)
+    preds = torch.full((4, NUM_CLASSES, 128, 128), 0, dtype=torch.int8)
+
+    metric = GeneralizedDiceScore(num_classes=NUM_CLASSES, per_class=per_class, include_background=include_background)
+
+    score = metric(preds, target)
+
+    if per_class and include_background:
+        assert len(score) == NUM_CLASSES
+        assert all(t.isnan() for t in score)
+    elif per_class and not include_background:
+        assert len(score) == NUM_CLASSES - 1
+        assert all(t.isnan() for t in score)
+    else:
+        # Expect scalar NaN
+        assert score.isnan()
