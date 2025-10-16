@@ -71,7 +71,7 @@ class SoftDTW(Metric):
         >>> x = randn(10, 50, 2)
         >>> y = randn(10, 60, 2)
         >>> metric(x, y)
-        tensor(43.2051)
+        tensor(110.8406)
 
     """
 
