@@ -76,8 +76,8 @@ def _mean_iou_update(
 ) -> tuple[Tensor, Tensor]:
     """Update the intersection and union counts for the mean IoU computation."""
     if ignore_index is not None and input_format == "index":
-        idx = target == ignore_index
-        target, preds = target[~idx], preds[~idx]
+        idx = target != ignore_index
+        target, preds = target[idx], preds[idx]
 
     preds, target = _mean_iou_reshape_args(preds, target, input_format)
 
