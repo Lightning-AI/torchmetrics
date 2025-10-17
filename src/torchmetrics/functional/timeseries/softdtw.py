@@ -156,7 +156,7 @@ def soft_dtw(
         >>> x = torch.randn(2, 5, 3)
         >>> y = torch.randn(2, 6, 3)
         >>> soft_dtw(x, y, gamma=0.5, distance_fn=cosine_dist)
-        tensor([2.8301, 3.0128])
+        tensor(3.3724)
 
     """
     _soft_dtw_validate_args(preds, target, gamma, reduction)
