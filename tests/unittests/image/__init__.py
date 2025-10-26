@@ -15,6 +15,8 @@ import os
 
 import torch
 import torch.distributed as dist
+from torchmetrics.image import StructuralSimilarityIndexMeasure
+from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 
 from unittests import _PATH_ALL_TESTS
 
@@ -33,3 +35,35 @@ def cleanup_ddp():
     """Clean up the DDP process group if initialized."""
     if dist.is_initialized():
         dist.destroy_process_group()
+
+def _run_ssim_ddp(rank: int, world_size: int, free_port: int):
+    """Run SSIM metric computation in a DDP setup."""
+    try:
+        setup_ddp(rank, world_size, free_port)
+        device = torch.device(f"cuda:{rank}")
+        metric = StructuralSimilarityIndexMeasure(reduction="none").to(device)
+
+        for _ in range(3):
+            x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
+            metric.update(x, y)
+
+        result = metric.compute()
+        assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
+    finally:
+        cleanup_ddp()
+
+def _run_ms_ssim_ddp(rank: int, world_size: int, free_port: int):
+    """Run MSSSIM metric computation in a DDP setup."""
+    try:
+        setup_ddp(rank, world_size, free_port)
+        device = torch.device(f"cuda:{rank}")
+        metric = MultiScaleStructuralSimilarityIndexMeasure(reduction="none").to(device)
+
+        for _ in range(3):
+            x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
+            metric.update(x, y)
+
+        result = metric.compute()
+        assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
+    finally:
+        cleanup_ddp()
