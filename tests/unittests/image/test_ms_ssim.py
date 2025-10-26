@@ -139,4 +139,14 @@ def test_ms_ssim_reduction_none_ddp():
     free_port = find_free_port()
     if free_port == -1:
         pytest.skip("No free port available for DDP test.")
-    mp.spawn(_run_ms_ssim_ddp, args=(world_size, free_port), nprocs=world_size, join=True)
+    # Use spawn context to avoid module reimport issues
+    ctx = mp.get_context('spawn')
+    processes = []
+    for rank in range(world_size):
+        p = ctx.Process(target=_run_ms_ssim_ddp, args=(rank, world_size, free_port))
+        p.start()
+        processes.append(p)
+    
+    for p in processes:
+        p.join()
+        assert p.exitcode == 0, f"Process failed with exit code {p.exitcode}"
