@@ -15,9 +15,9 @@ import os
 
 import torch
 import torch.distributed as dist
+
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
-
 from unittests import _PATH_ALL_TESTS
 
 _SAMPLE_IMAGE = os.path.join(_PATH_ALL_TESTS, "_data", "image", "i01_01_5.bmp")
@@ -36,6 +36,7 @@ def cleanup_ddp():
     if dist.is_initialized():
         dist.destroy_process_group()
 
+
 def _run_ssim_ddp(rank: int, world_size: int, free_port: int):
     """Run SSIM metric computation in a DDP setup."""
     try:
@@ -51,6 +52,7 @@ def _run_ssim_ddp(rank: int, world_size: int, free_port: int):
         assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
     finally:
         cleanup_ddp()
+
 
 def _run_ms_ssim_ddp(rank: int, world_size: int, free_port: int):
     """Run MSSSIM metric computation in a DDP setup."""
