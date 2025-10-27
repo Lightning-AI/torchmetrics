@@ -5,27 +5,23 @@
 # the repo. Unless a later match takes precedence,
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
-* @SkafteNicki @borda @justusschock
+* @SkafteNicki @justusschock @lantiga
 
 # owners
-/.github/CODEOWNERS   @williamFalcon @lantiga
+/.github/CODEOWNERS   @williamFalcon
 # main
-/README.md            @borda @SkafteNicki @lantiga
+/README.md            @lantiga @williamFalcon
 # installation
-/setup.py             @borda @SkafteNicki @justusschock
+/setup.py             @SkafteNicki @justusschock
 
 # Base API
-/src/torchmetrics/metric.py        @SkafteNicki @justusschock @borda @lantiga
-/src/torchmetrics/collections.py   @SkafteNicki @justusschock @borda
+/src/torchmetrics/metric.py        @SkafteNicki @justusschock @lantiga
+/src/torchmetrics/collections.py   @SkafteNicki @justusschock
 
 # CI/CD
-/.github/workflows/   @borda @justusschock @ethanwharris
+/.github/workflows/   @justusschock @ethanwharris
 # configs in root
-/*.yml                @borda @justusschock @ethanwharris
+/*.yml                @justusschock @ethanwharris
 
 # Docs
-/docs/                          @lantiga @SkafteNicki @borda
-/.github/*.md                   @lantiga @SkafteNicki @borda
-/.github/ISSUE_TEMPLATE/*.md    @lantiga @borda @SkafteNicki
-/docs/source/conf.py            @borda @awaelchli @justusschock
 /docs/paper_JOSS/               @SkafteNicki @borda @justusschock @williamFalcon
