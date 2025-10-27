@@ -26,7 +26,7 @@ from torchmetrics.image import StructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, _Input
 from unittests._helpers import _IS_WINDOWS, seed_all
 from unittests._helpers.testers import MetricTester
-from unittests.image import cleanup_ddp, setup_ddp
+from unittests.image import _run_ssim_ddp
 from unittests.utilities.test_utilities import find_free_port
 
 seed_all(42)
@@ -365,23 +365,6 @@ def test_ssim_for_correct_padding():
     assert structural_similarity_index_measure(preds, target) < 1.0
 
 
-def _run_ssim_ddp(rank: int, world_size: int, free_port: int):
-    """Run SSIM metric computation in a DDP setup."""
-    try:
-        setup_ddp(rank, world_size, free_port)
-        device = torch.device(f"cuda:{rank}")
-        metric = StructuralSimilarityIndexMeasure(reduction="none").to(device)
-
-        for _ in range(3):
-            x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
-            metric.update(x, y)
-
-        result = metric.compute()
-        assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
-    finally:
-        cleanup_ddp()
-
-
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.skipif(_IS_WINDOWS, reason="DDP not supported on Windows")
 def test_ssim_reduction_none_ddp():
@@ -394,4 +377,14 @@ def test_ssim_reduction_none_ddp():
     free_port = find_free_port()
     if free_port == -1:
         pytest.skip("No free port available for DDP test.")
-    mp.spawn(_run_ssim_ddp, args=(world_size, free_port), nprocs=world_size, join=True)
+    # Use spawn context to avoid module reimport issues
+    ctx = mp.get_context("spawn")
+    processes = []
+    for rank in range(world_size):
+        p = ctx.Process(target=_run_ssim_ddp, args=(rank, world_size, free_port))
+        p.start()
+        processes.append(p)
+
+    for p in processes:
+        p.join()
+        assert p.exitcode == 0, f"Process failed with exit code {p.exitcode}"
