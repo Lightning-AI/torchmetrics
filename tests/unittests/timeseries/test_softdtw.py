@@ -35,9 +35,9 @@ def _reference_softdtw(
     preds: torch.Tensor, target: torch.Tensor, gamma: float = 1.0, distance_fn=None, reduction: str = "mean"
 ) -> torch.Tensor:
     """Reference implementation using tslearn's soft-DTW."""
-    preds = preds.to("cuda" if torch.cuda.is_available() else "cpu")
-    target = target.to("cuda" if torch.cuda.is_available() else "cpu")
-    sdtw = pysdtw.SoftDTW(gamma=gamma, dist_func=distance_fn, use_cuda=bool(torch.cuda.is_available()))
+    preds = preds.to("cpu")
+    target = target.to("cpu")
+    sdtw = pysdtw.SoftDTW(gamma=gamma, dist_func=distance_fn, use_cuda=False)
     if reduction == "mean":
         return sdtw(preds, target).mean()
     if reduction == "sum":
