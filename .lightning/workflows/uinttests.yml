@@ -27,7 +27,7 @@ run: |
   nvidia-smi
   python --version
   pip --version
-  pip install -q fire wget packaging numba[cuda]
+  pip install -q fire wget packaging
   set -ex
 
   image_tmp="${image##*cuda}" # Remove everything up to and including "cuda"
