@@ -460,4 +460,6 @@ linkcheck_ignore = [
     # todo: these links seems to be unstable, referring to .devcontainer
     "https://code.visualstudio.com",
     "https://code.visualstudio.com/.*",
+    # Ignore Medium articles which return 403 to automated clients
+    "https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173",
 ]
