@@ -311,7 +311,6 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
         Bool indicating if the function finished within the specified timeout
 
     """
-
     # source: https://stackoverflow.com/a/14924210/4521646
     proc = multiprocessing.Process(target=fn)
 
