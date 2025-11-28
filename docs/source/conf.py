@@ -457,7 +457,6 @@ linkcheck_ignore = [
     "https://onlinelibrary.wiley.com/doi/abs/10.1111/1365-2478.12109",
     # Multiscale structural similarity for image quality assessment
     "https://ieeexplore.ieee.org/abstract/document/1292216",
-    # ignore temporarily - due to site down
     # todo: these links seems to be unstable, referring to .devcontainer
     "https://code.visualstudio.com",
     "https://code.visualstudio.com/.*",
