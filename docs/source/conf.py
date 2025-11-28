@@ -458,11 +458,9 @@ linkcheck_ignore = [
     # Multiscale structural similarity for image quality assessment
     "https://ieeexplore.ieee.org/abstract/document/1292216",
     # ignore temporarily - due to site down
-    # Word Error Rate & Character Error Rate - How to evaluate a model
-    # "https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model",
     # todo: these links seems to be unstable, referring to .devcontainer
     "https://code.visualstudio.com",
     "https://code.visualstudio.com/.*",
     # Ignore Medium articles which return 403 to automated clients
-    "https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173",
+    # "https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173",
 ]
