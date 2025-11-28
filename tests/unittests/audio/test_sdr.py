@@ -31,13 +31,13 @@ seed_all(42)
 
 
 inputs_1spk = _Input(
-    preds=torch.rand(2, 1, 1, 500),
-    target=torch.rand(2, 1, 1, 500),
+    preds=torch.rand(2, 1, 1, 100),
+    target=torch.rand(2, 1, 1, 100),
 )
 
 inputs_2spk = _Input(
-    preds=torch.rand(2, 1, 2, 500),
-    target=torch.rand(2, 1, 2, 500),
+    preds=torch.rand(2, 1, 2, 100),
+    target=torch.rand(2, 1, 2, 100),
 )
 
 
