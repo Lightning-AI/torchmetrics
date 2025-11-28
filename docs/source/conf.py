@@ -459,7 +459,7 @@ linkcheck_ignore = [
     "https://ieeexplore.ieee.org/abstract/document/1292216",
     # ignore temporarily - due to site down
     # Word Error Rate & Character Error Rate - How to evaluate a model
-    "https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model",
+    # "https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model",
     # todo: these links seems to be unstable, referring to .devcontainer
     "https://code.visualstudio.com",
     "https://code.visualstudio.com/.*",
