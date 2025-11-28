@@ -305,11 +305,9 @@ intersphinx_mapping = {
 }
 nitpicky = True
 
-nitpicky_ignore = [
+nitpick_ignore = [
     ("py:class", "typing.Self"),
-    ("py:class", "typing.Union"),
     ("py:data", "typing.Union"),
-    ("py:obj", "typing.Union"),
 ]
 
 # -- Options for to-do extension ----------------------------------------------
