@@ -127,6 +127,7 @@ def _run_ms_ssim_ddp(rank: int, world_size: int, free_port: int):
         cleanup_ddp()
 
 
+@pytest.mark.DDP
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.skipif(_IS_WINDOWS, reason="DDP not supported on Windows")
 def test_ms_ssim_reduction_none_ddp():
