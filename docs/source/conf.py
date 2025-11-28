@@ -307,6 +307,7 @@ nitpicky = True
 
 
 nitpicky_ignore = [
+    ("py:class", "typing.Self"),
     ("py:data", "typing.Union"),
 ]
 
