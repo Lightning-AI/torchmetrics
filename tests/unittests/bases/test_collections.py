@@ -33,6 +33,7 @@ from torchmetrics.classification import (
     MultilabelAUROC,
     MultilabelAveragePrecision,
 )
+from torchmetrics.detection import MeanAveragePrecision
 from torchmetrics.regression import PearsonCorrCoef
 from torchmetrics.text import BLEUScore
 from torchmetrics.utilities.checks import _allclose_recursive
@@ -855,3 +856,57 @@ def test_collection_state_being_re_established_after_copy():
     assert not m12._state_is_copy
     assert m12.m1.mean_x.data_ptr() == m12.m2.mean_x.data_ptr(), "States should point to the same location"
     assert m12._equal_metric_states(m12.m1, m12.m2)
+
+
+def test_indexed_metric_in_collection():
+    """Test that a metric can be indexed and recombined in a MetricCollection."""
+    preds = [
+        {
+            "boxes": torch.tensor([[258.0, 41.0, 606.0, 285.0]]),
+            "scores": torch.tensor([0.536]),
+            "labels": torch.tensor([0]),
+        }
+    ]
+    target = [
+        {
+            "boxes": torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
+            "labels": torch.tensor([0]),
+        }
+    ]
+    metric = MeanAveragePrecision(iou_type="bbox")
+    metric1 = metric["map"]
+    metric2 = metric["map_50"]
+    state1 = metric1.metric_state
+    state2 = metric2.metric_state
+    assert isinstance(state1, dict)
+    assert isinstance(state2, dict)
+
+    # Create a collection with the indexed metrics
+    collection = MetricCollection({"mAP": metric1, "mAP_50": metric2})
+    collection.update(preds, target)
+
+    # Compute and verify results
+    results = collection.compute()
+    assert "mAP" in results
+    assert "mAP_50" in results
+    assert isinstance(results["mAP"], torch.Tensor)
+    assert isinstance(results["mAP_50"], torch.Tensor)
+
+    assert len(collection.compute_groups) == 1, (
+        f"Expected 1 compute group for indexed metrics from same base, got {len(collection.compute_groups)}"
+    )
+    assert set(collection.compute_groups[0]) == {"mAP", "mAP_50"}, (
+        "Both indexed metrics should be in the same compute group"
+    )
+    assert metric1.metric_a is metric2.metric_a, "Both indexed metrics should share the same base metric"
+
+    # Check that the states are equal
+    for key in state1:
+        if key in state2:
+            if isinstance(state1[key], list):
+                assert len(state1[key]) == len(state2[key]), f"State list length mismatch for key {key}"
+                for s1, s2 in zip(state1[key], state2[key]):
+                    if isinstance(s1, torch.Tensor) and isinstance(s2, torch.Tensor):
+                        assert torch.equal(s1, s2), f"State mismatch for key {key}"
+            elif isinstance(state1[key], torch.Tensor) and isinstance(state2[key], torch.Tensor):
+                assert torch.equal(state1[key], state2[key]), f"State mismatch for key {key}"
