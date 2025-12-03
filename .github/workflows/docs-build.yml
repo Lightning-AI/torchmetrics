@@ -19,7 +19,6 @@ defaults:
 env:
   FREEZE_REQUIREMENTS: "1"
   TORCH_URL: "https://download.pytorch.org/whl/cpu/"
-  PYPI_CACHE: "_ci-cache_PyPI"
   PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
   TOKENIZERS_PARALLELISM: false
   SPHINX_MOCK_REQUIREMENTS: 0
@@ -38,6 +37,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Free up disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: true
+
       - name: Install uv and set Python version
         uses: astral-sh/setup-uv@v6
         with:
@@ -53,7 +63,6 @@ jobs:
         uses: ./.github/actions/pull-caches
         with:
           pytorch-version: ${{ matrix.pytorch-version }}
-          pypi-dir: ${{ env.PYPI_CACHE }}
 
       - name: Install package & dependencies
         env:
@@ -89,8 +98,6 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && matrix.target == 'html' }}
         continue-on-error: true
         uses: ./.github/actions/push-caches
-        with:
-          pypi-dir: ${{ env.PYPI_CACHE }}
 
       - name: Minimize uv cache
         run: uv cache prune --ci
