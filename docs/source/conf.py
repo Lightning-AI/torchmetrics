@@ -461,6 +461,6 @@ linkcheck_ignore = [
     "https://code.visualstudio.com",
     "https://code.visualstudio.com/.*",
     # Ignore Medium articles which return 403 to automated clients
-    # Mean-Average-Precision (mAP) and Mean-Average-Recall  (mAR)
+    # Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)
     "https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173",
 ]
