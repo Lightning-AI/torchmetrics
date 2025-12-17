@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "macOS-13", "windows-2022"]
+        os: ["ubuntu-22.04", "macOS-14", "windows-2022"]
         python-version: ["3.9", "3.11"]
         requires: ["oldest", "latest"]
         exclude:
@@ -38,6 +38,8 @@ jobs:
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       UV_TORCH_BACKEND: "cpu"
+      # TODO: Remove this - Enable running MPS tests on this platform
+      DISABLE_MPS: ${{ startsWith(matrix.os, 'macOS') && '1' || '0' }}
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
