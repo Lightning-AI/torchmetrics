@@ -261,7 +261,5 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
         if needs_stabilization:
             tensor_stable = tensor - max_val
             return torch.where(condition, tensor_stable.sigmoid(), tensor)
-        else:
-            return torch.where(condition, tensor.sigmoid(), tensor)
-    else:
-        return torch.where(condition, torch.softmax(tensor, dim=1), tensor)
+        return torch.where(condition, tensor.sigmoid(), tensor)
+    return torch.where(condition, torch.softmax(tensor, dim=1), tensor)
