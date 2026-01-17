@@ -229,7 +229,7 @@ metric it is being loaded into by using the `map_location` argument.
 Metrics in Distributed Data Parallel (DDP) mode
 ***********************************************
 
-When using metrics in `Distributed Data Parallel (DDP) <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`_
+When using metrics in `Distributed Data Parallel (DDP) <https://pytorch.org/docs/2.7/generated/torch.nn.parallel.DistributedDataParallel.html>`_
 mode, one should be aware that DDP will add additional samples to your dataset if the size of your dataset is
 not equally divisible by ``batch_size * num_processors``. The added samples will always be replicates of datapoints
 already in your dataset. This is done to secure an equal load for all processes. However, this has the consequence
