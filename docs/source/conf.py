@@ -305,6 +305,11 @@ intersphinx_mapping = {
 }
 nitpicky = True
 
+nitpick_ignore = [
+    ("py:class", "typing.Self"),
+    ("py:data", "typing.Union"),
+]
+
 # -- Options for to-do extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
@@ -455,4 +460,7 @@ linkcheck_ignore = [
     # todo: these links seems to be unstable, referring to .devcontainer
     "https://code.visualstudio.com",
     "https://code.visualstudio.com/.*",
+    # Ignore Medium articles which return 403 to automated clients
+    # Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)
+    "https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173",
 ]
