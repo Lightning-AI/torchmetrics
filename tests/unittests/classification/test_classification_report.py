@@ -205,9 +205,7 @@ class TestMulticlassClassificationReport:
         target = torch.tensor([0, 1, 2, 2, 2])
         preds = torch.tensor([0, 0, 2, 2, 1])
 
-        report = MulticlassClassificationReport(
-            num_classes=3, metrics=["precision", "specificity"], output_dict=True
-        )
+        report = MulticlassClassificationReport(num_classes=3, metrics=["precision", "specificity"], output_dict=True)
         report.update(preds, target)
         result = report.compute()
 
@@ -298,9 +296,7 @@ class TestMultilabelClassificationReport:
         target = torch.tensor([[1, 0, 1], [0, 1, 0]])
         preds = torch.tensor([[1, 0, 1], [0, 1, 1]])
 
-        report = MultilabelClassificationReport(
-            num_labels=3, metrics=["precision", "accuracy"], output_dict=True
-        )
+        report = MultilabelClassificationReport(num_labels=3, metrics=["precision", "accuracy"], output_dict=True)
         report.update(preds, target)
         result = report.compute()
 

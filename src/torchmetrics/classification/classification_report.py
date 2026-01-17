@@ -121,7 +121,11 @@ class _BaseClassificationReportCollection(Metric):
         self._stat_scores.update(preds_processed, target_processed)
 
     def _preprocess(self, preds: Tensor, target: Tensor) -> tuple:
-        """Preprocess predictions and targets. Override in subclasses if needed."""
+        """Preprocess predictions and targets.
+
+        Override in subclasses if needed.
+
+        """
         return preds, target
 
     def compute(self) -> Union[Dict[str, Union[float, Dict[str, Union[float, int]]]], str]:
@@ -248,7 +252,8 @@ class MulticlassClassificationReport(_BaseClassificationReportCollection):
         - :math:`C` is the number of classes
         - :math:`N` is the total number of samples
         - :math:`c` is the class index
-        - :math:`\text{TP}_c, \text{FP}_c, \text{FN}_c` are true positives, false positives, and false negatives for class :math:`c`
+        - :math:`\text{TP}_c, \text{FP}_c, \text{FN}_c` are true positives, false positives,
+          and false negatives for class :math:`c`
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -384,7 +389,6 @@ class MulticlassClassificationReport(_BaseClassificationReportCollection):
         # Per-class metrics
         for i, name in enumerate(self.target_names):
             class_metrics: Dict[str, Union[float, int]] = {}
-
             if "precision_none" in results:
                 class_metrics["precision"] = float(results["precision_none"][i].item())
             if "recall_none" in results:
@@ -557,12 +561,13 @@ class MultilabelClassificationReport(_BaseClassificationReportCollection):
         \text{Micro Recall} = \frac{\sum_l \text{TP}_l}{\sum_l (\text{TP}_l + \text{FN}_l)}
 
     .. math::
-        \text{Micro F1} = 2 \cdot \frac{\text{Micro Precision} \cdot \text{Micro Recall}}{\text{Micro Precision} + \text{Micro Recall}}
+        \text{Micro F1} = \frac{2 \cdot P_{micro} \cdot R_{micro}}{P_{micro} + R_{micro}}
 
     Where:
         - :math:`L` is the number of labels
         - :math:`l` is the label index
-        - :math:`\text{TP}_l, \text{FP}_l, \text{FN}_l` are true positives, false positives, and false negatives for label :math:`l`
+        - :math:`\text{TP}_l, \text{FP}_l, \text{FN}_l` are true positives, false positives,
+          and false negatives for label :math:`l`
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -788,7 +793,8 @@ class ClassificationReport(_ClassificationTaskWrapper):
 
     Where:
         - :math:`c` is the class/label index
-        - :math:`\text{TP}_c, \text{FP}_c, \text{FN}_c` are true positives, false positives, and false negatives for class :math:`c`
+        - :math:`\text{TP}_c, \text{FP}_c, \text{FN}_c` are true positives, false positives,
+          and false negatives for class :math:`c`
 
     Args:
         task: The classification task type. One of ``'binary'``, ``'multiclass'``, or ``'multilabel'``.
