@@ -12,6 +12,9 @@ Classification Report
 Module Interface
 ________________
 
+ClassificationReport
+^^^^^^^^^^^^^^^^^^^^
+
 .. autoclass:: torchmetrics.ClassificationReport
     :exclude-members: update, compute
     :special-members: __new__
@@ -33,23 +36,3 @@ MultilabelClassificationReport
 
 .. autoclass:: torchmetrics.classification.MultilabelClassificationReport
     :exclude-members: update, compute
-
-Functional Interface
-____________________
-
-.. autofunction:: torchmetrics.functional.classification.classification_report
-
-binary_classification_report
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: torchmetrics.functional.classification.binary_classification_report
-
-multiclass_classification_report
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: torchmetrics.functional.classification.multiclass_classification_report
-
-multilabel_classification_report
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: torchmetrics.functional.classification.multilabel_classification_report
