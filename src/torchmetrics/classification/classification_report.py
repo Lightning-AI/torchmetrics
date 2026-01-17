@@ -77,9 +77,7 @@ def _normalize_metric_names(metrics: Optional[List[str]]) -> List[str]:
     for m in metrics:
         m_lower = m.lower()
         if m_lower not in _METRIC_ALIASES:
-            raise ValueError(
-                f"Unknown metric '{m}'. Supported metrics: {list(_METRIC_ALIASES.keys())}"
-            )
+            raise ValueError(f"Unknown metric '{m}'. Supported metrics: {list(_METRIC_ALIASES.keys())}")
         canonical = _METRIC_ALIASES[m_lower]
         if canonical not in normalized:
             normalized.append(canonical)
@@ -225,6 +223,32 @@ class MulticlassClassificationReport(_BaseClassificationReportCollection):
 
     This metric wraps a configurable set of classification metrics (precision, recall, F1-score, etc.)
     into a single report similar to sklearn's classification_report.
+
+    .. math::
+        \text{Precision}_c = \frac{\text{TP}_c}{\text{TP}_c + \text{FP}_c}
+
+    .. math::
+        \text{Recall}_c = \frac{\text{TP}_c}{\text{TP}_c + \text{FN}_c}
+
+    .. math::
+        \text{F1}_c = 2 \cdot \frac{\text{Precision}_c \cdot \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
+
+    .. math::
+        \text{Support}_c = \text{TP}_c + \text{FN}_c
+
+    For average metrics:
+
+    .. math::
+        \text{Macro F1} = \frac{1}{C} \sum_{c=1}^{C} \text{F1}_c
+
+    .. math::
+        \text{Weighted F1} = \sum_{c=1}^{C} \frac{\text{Support}_c}{N} \cdot \text{F1}_c
+
+    Where:
+        - :math:`C` is the number of classes
+        - :math:`N` is the total number of samples
+        - :math:`c` is the class index
+        - :math:`\text{TP}_c, \text{FP}_c, \text{FN}_c` are true positives, false positives, and false negatives for class :math:`c`
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -415,6 +439,21 @@ class BinaryClassificationReport(MulticlassClassificationReport):
     Internally, binary classification is treated as a 2-class multiclass problem to provide
     per-class metrics for both class 0 and class 1.
 
+    .. math::
+        \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
+
+    .. math::
+        \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
+
+    .. math::
+        \text{F1} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+
+    .. math::
+        \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+
+    Where :math:`\text{TP}`, :math:`\text{FP}`, :math:`\text{TN}` and :math:`\text{FN}` represent the number of true
+    positives, false positives, true negatives and false negatives respectively.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
         - ``preds`` (:class:`~torch.Tensor`): A tensor of predictions of shape ``(N, ...)``. If preds is a
@@ -499,6 +538,31 @@ class MultilabelClassificationReport(_BaseClassificationReportCollection):
 
     This metric wraps a configurable set of classification metrics (precision, recall, F1-score, etc.)
     into a single report similar to sklearn's classification_report.
+
+    .. math::
+        \text{Precision}_l = \frac{\text{TP}_l}{\text{TP}_l + \text{FP}_l}
+
+    .. math::
+        \text{Recall}_l = \frac{\text{TP}_l}{\text{TP}_l + \text{FN}_l}
+
+    .. math::
+        \text{F1}_l = 2 \cdot \frac{\text{Precision}_l \cdot \text{Recall}_l}{\text{Precision}_l + \text{Recall}_l}
+
+    For micro-averaged metrics:
+
+    .. math::
+        \text{Micro Precision} = \frac{\sum_l \text{TP}_l}{\sum_l (\text{TP}_l + \text{FP}_l)}
+
+    .. math::
+        \text{Micro Recall} = \frac{\sum_l \text{TP}_l}{\sum_l (\text{TP}_l + \text{FN}_l)}
+
+    .. math::
+        \text{Micro F1} = 2 \cdot \frac{\text{Micro Precision} \cdot \text{Micro Recall}}{\text{Micro Precision} + \text{Micro Recall}}
+
+    Where:
+        - :math:`L` is the number of labels
+        - :math:`l` is the label index
+        - :math:`\text{TP}_l, \text{FP}_l, \text{FN}_l` are true positives, false positives, and false negatives for label :math:`l`
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -713,6 +777,19 @@ class ClassificationReport(_ClassificationTaskWrapper):
     argument. It uses a collection of existing TorchMetrics classification metrics internally, allowing
     you to customize which metrics are included in the report.
 
+    .. math::
+        \text{Precision}_c = \frac{\text{TP}_c}{\text{TP}_c + \text{FP}_c}
+
+    .. math::
+        \text{Recall}_c = \frac{\text{TP}_c}{\text{TP}_c + \text{FN}_c}
+
+    .. math::
+        \text{F1}_c = 2 \cdot \frac{\text{Precision}_c \cdot \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
+
+    Where:
+        - :math:`c` is the class/label index
+        - :math:`\text{TP}_c, \text{FP}_c, \text{FN}_c` are true positives, false positives, and false negatives for class :math:`c`
+
     Args:
         task: The classification task type. One of ``'binary'``, ``'multiclass'``, or ``'multilabel'``.
         threshold: Threshold for transforming probability to binary (0,1) predictions (for binary/multilabel)
@@ -789,17 +866,13 @@ class ClassificationReport(_ClassificationTaskWrapper):
                 raise ValueError(
                     f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
                 )
-            return MulticlassClassificationReport(
-                num_classes=num_classes, top_k=top_k, **common_kwargs, **kwargs
-            )
+            return MulticlassClassificationReport(num_classes=num_classes, top_k=top_k, **common_kwargs, **kwargs)
 
         if task_enum == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(
                     f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
                 )
-            return MultilabelClassificationReport(
-                num_labels=num_labels, threshold=threshold, **common_kwargs, **kwargs
-            )
+            return MultilabelClassificationReport(num_labels=num_labels, threshold=threshold, **common_kwargs, **kwargs)
 
         raise ValueError(f"Not handled value: {task}")
