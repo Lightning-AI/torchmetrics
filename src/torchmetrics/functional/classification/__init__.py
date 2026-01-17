@@ -156,7 +156,6 @@ __all__ = [
     "binary_auroc",
     "binary_average_precision",
     "binary_calibration_error",
-
     "binary_cohen_kappa",
     "binary_confusion_matrix",
     "binary_eer",
