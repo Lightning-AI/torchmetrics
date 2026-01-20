@@ -106,6 +106,7 @@ def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
     ],
 )
 @pytest.mark.skipif(not dist.is_available(), reason="test requires torch distributed")
+@pytest.mark.DDP
 def test_score_ddp(preds, targets, exact_match, f1):
     """Tests for metric using DDP."""
     world_size = 2
