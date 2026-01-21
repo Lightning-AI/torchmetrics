@@ -80,8 +80,8 @@ run: |
   #du -h --max-depth=1 .
   # UnitTesting common
   #if [ "$testing" == "common" ]; then
-  timeout 5400 python -m pytest ${TEST_DIRS} -v \
-    -m "not DDP" --numprocesses=6 --dist=loadfile \
+  timeout 3600 python -m pytest ${TEST_DIRS} -v \
+    -m "not DDP" --numprocesses=3 --dist=loadfile \
     --cov=torchmetrics --timeout=360 --durations=100 \
     --reruns 3 --reruns-delay 1
   # UnitTesting DDP
