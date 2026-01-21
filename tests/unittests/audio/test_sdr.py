@@ -72,13 +72,11 @@ class TestSDR(MetricTester):
     @pytest.mark.parametrize(
         "ddp",
         [
-            pytest.param(
-                True,
-                marks=[pytest.mark.DDP, pytest.mark.skipif(_IS_LIGHTNING_CI, reason="test too slow on Lightning CI")],
-            ),
+            pytest.param(True, marks=[pytest.mark.DDP]),
             False,
         ],
     )
+    @pytest.mark.skipif(_IS_LIGHTNING_CI, reason="test too slow on Lightning CI")
     def test_sdr(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
