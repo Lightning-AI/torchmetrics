@@ -2,4 +2,4 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 scipy >1.0.0, <1.17.0
-monai ==1.4.0
+monai ==1.5.1
