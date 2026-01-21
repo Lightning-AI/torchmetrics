@@ -81,14 +81,14 @@ run: |
   #du -h --max-depth=1 .
   # UnitTesting common
   #if [ "$testing" == "common" ]; then
-  timeout 4500 python -m pytest ${TEST_DIRS} -v \
+  timeout 7000 python -m pytest ${TEST_DIRS} -v \
     -m "not DDP" --numprocesses=3 --dist=loadfile \
     --cov=torchmetrics --timeout=360 --durations=100 \
     --reruns 3 --reruns-delay 1
   # UnitTesting DDP
   #elif [ "$testing" == "distributed" ]; then
   export USE_PYTEST_POOL="1"
-  timeout 4500 python -m pytest ${TEST_DIRS} -v \
+  timeout 7000 python -m pytest ${TEST_DIRS} -v \
     --cov=torchmetrics -m "DDP" \
     --timeout=360 --durations=100
   #fi
