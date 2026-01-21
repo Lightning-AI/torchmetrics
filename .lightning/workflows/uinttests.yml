@@ -21,6 +21,7 @@ env:
   TEST_DIRS: "unittests"
   FREEZE_REQUIREMENTS: 1
   SKIP_SLOW_DOCTEST: 1
+  LIGHTNING_CI: "1"
 
 run: |
   whereis nvidia

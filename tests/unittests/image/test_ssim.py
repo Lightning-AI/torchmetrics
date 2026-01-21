@@ -24,7 +24,7 @@ from torch import Tensor
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, _Input
-from unittests._helpers import _IS_WINDOWS, seed_all
+from unittests._helpers import _IS_LIGHTNING_CI, _IS_WINDOWS, seed_all
 from unittests._helpers.testers import MetricTester
 from unittests.image import cleanup_ddp, setup_ddp
 from unittests.utilities.test_utilities import find_free_port
@@ -384,6 +384,7 @@ def _run_ssim_ddp(rank: int, world_size: int, free_port: int):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.skipif(_IS_WINDOWS, reason="DDP not supported on Windows")
+@pytest.mark.skipif(_IS_LIGHTNING_CI, reason="mp.spawn unreliable on Lightning CI")
 @pytest.mark.DDP
 def test_ssim_reduction_none_ddp():
     """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP.
