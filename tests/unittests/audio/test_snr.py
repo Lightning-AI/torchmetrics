@@ -15,7 +15,6 @@ from functools import partial
 
 import pytest
 import torch
-from mir_eval.separation import bss_eval_images as mir_eval_bss_eval_images
 from torch import Tensor
 
 from torchmetrics.audio import SignalNoiseRatio
@@ -34,22 +33,18 @@ inputs = _Input(
 )
 
 
-def _reference_bss_snr(preds: Tensor, target: Tensor, zero_mean: bool):
+def _reference_bss_snr(preds: Tensor, target: Tensor, zero_mean: bool) -> Tensor:
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
         target = target - torch.mean(target, dim=-1, keepdim=True)
         preds = preds - torch.mean(preds, dim=-1, keepdim=True)
-    target = target.detach().cpu().numpy()
-    preds = preds.detach().cpu().numpy()
-    mss = []
-    for i in range(preds.shape[0]):
-        ms = []
-        for j in range(preds.shape[1]):
-            snr_v = mir_eval_bss_eval_images([target[i, j]], [preds[i, j]], compute_permutation=True)[0][0]
-            ms.append(snr_v)
-        mss.append(ms)
-    return torch.tensor(mss)
+
+    # SNR formula: 10 * log10(||target||^2 / ||noise||^2)
+    eps = torch.finfo(preds.dtype).eps
+    noise = target - preds
+    snr_value = (torch.sum(target**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
+    return 10 * torch.log10(snr_value)
 
 
 @pytest.mark.parametrize(
