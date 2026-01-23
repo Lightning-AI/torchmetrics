@@ -23,7 +23,7 @@ from torch import Tensor
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
 from unittests import _Input
-from unittests._helpers import _IS_LIGHTNING_CI, seed_all
+from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _SAMPLE_NUMPY_ISSUE_895
 
@@ -76,7 +76,6 @@ class TestSDR(MetricTester):
             False,
         ],
     )
-    @pytest.mark.skipif(_IS_LIGHTNING_CI, reason="test too slow on Lightning CI")
     def test_sdr(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
