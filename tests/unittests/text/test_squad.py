@@ -19,6 +19,7 @@ import torch
 from torchmetrics.functional.text import squad
 from torchmetrics.text.squad import SQuAD
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL
+from unittests._helpers import _IS_WINDOWS
 from unittests._helpers.testers import _assert_allclose, _assert_tensor
 from unittests.conftest import setup_ddp
 from unittests.text._inputs import _inputs_squad_batch_match, _inputs_squad_exact_match, _inputs_squad_exact_mismatch
@@ -107,6 +108,7 @@ def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
     ],
 )
 @pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available")
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not supported on Windows")
 @pytest.mark.DDP
 def test_score_ddp(preds, targets, exact_match, f1):
     """Tests for metric using DDP."""
