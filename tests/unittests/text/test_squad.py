@@ -88,7 +88,11 @@ def _squad_score_ddp(rank, world_size, pred, targets, exact_match, f1):
 
 def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
     """Core functionality for the `test_score_ddp` test."""
-    _squad_score_ddp(rank, world_size, preds[rank], targets[rank], exact_match[rank], f1[rank])
+    # In DDP, the metric syncs across ranks and computes the global average.
+    # So each rank sees the mean of ALL expected scores, not just its local one.
+    mean_exact_match = torch.tensor(exact_match, dtype=torch.float).mean()
+    mean_f1 = torch.tensor(f1, dtype=torch.float).mean()
+    _squad_score_ddp(rank, world_size, [preds[rank]], [targets[rank]], mean_exact_match, mean_f1)
 
 
 @pytest.mark.parametrize(
