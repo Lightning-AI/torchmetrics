@@ -25,6 +25,7 @@ from torchmetrics.image import StructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, NUM_PROCESSES, USE_PYTEST_POOL, _Input
 from unittests._helpers import _IS_WINDOWS, seed_all
 from unittests._helpers.testers import MetricTester
+from unittests.conftest import setup_ddp
 
 seed_all(42)
 
@@ -362,8 +363,9 @@ def test_ssim_for_correct_padding():
     assert structural_similarity_index_measure(preds, target) < 1.0
 
 
-def _run_ssim_ddp(rank: int):
+def _run_ssim_ddp(rank: int, world_size: int):
     """Run SSIM metric computation in a DDP setup."""
+    setup_ddp(rank, world_size)
     device = torch.device(f"cuda:{rank}")
     metric = StructuralSimilarityIndexMeasure(reduction="none").to(device)
 
@@ -385,4 +387,4 @@ def test_ssim_reduction_none_ddp():
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
 
     """
-    pytest.pool.map(_run_ssim_ddp, range(NUM_PROCESSES))
+    pytest.pool.map(partial(_run_ssim_ddp, world_size=NUM_PROCESSES), range(NUM_PROCESSES))

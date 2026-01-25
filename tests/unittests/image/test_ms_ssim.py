@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
 
 import pytest
 import torch
@@ -22,6 +23,7 @@ from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 from unittests import NUM_BATCHES, NUM_PROCESSES, USE_PYTEST_POOL, _Input
 from unittests._helpers import _IS_WINDOWS, seed_all
 from unittests._helpers.testers import MetricTester
+from unittests.conftest import setup_ddp
 
 seed_all(42)
 
@@ -107,8 +109,9 @@ def test_ms_ssim_contrast_sensitivity():
     assert isinstance(out, torch.Tensor)
 
 
-def _run_ms_ssim_ddp(rank: int):
+def _run_ms_ssim_ddp(rank: int, world_size: int):
     """Run MSSSIM metric computation in a DDP setup."""
+    setup_ddp(rank, world_size)
     device = torch.device(f"cuda:{rank}")
     metric = MultiScaleStructuralSimilarityIndexMeasure(reduction="none").to(device)
 
@@ -130,4 +133,4 @@ def test_ms_ssim_reduction_none_ddp():
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
 
     """
-    pytest.pool.map(_run_ms_ssim_ddp, range(NUM_PROCESSES))
+    pytest.pool.map(partial(_run_ms_ssim_ddp, world_size=NUM_PROCESSES), range(NUM_PROCESSES))
