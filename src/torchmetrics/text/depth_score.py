@@ -112,7 +112,7 @@ class DepthScore(Metric):
             thresholds between ``eps`` and 1.0).
         eps: The lowest level-set bound in [0, 1]. The highest level set is fixed to 1.0 in this implementation.
         p: The power of the ground cost.
-        measure: Depth / discrepancy measure to use (e.g. ``"irw"`` or ``"ai_irw"``).
+        depth_measure: Depth / discrepancy measure to use (e.g. ``"irw"`` or ``"ai_irw"``).
         truncation: An indication of whether the input sequences should be truncated to the ``max_length``.
         multi_ref_reduction: Reduction to apply across multiple references per prediction.
             Default ``"min"`` (best match) since this is a distance metric. Options: ``"min"``, ``"max"``, ``"mean"``.
@@ -165,7 +165,7 @@ class DepthScore(Metric):
         n_alpha: int = 5,
         eps: float = 0.3,
         p: int = 5,
-        measure: str = "irw",
+        depth_measure: str = "irw",
         truncation: bool = False,
         multi_ref_reduction: str = "min",
         **kwargs: Any,
@@ -191,7 +191,7 @@ class DepthScore(Metric):
         self.n_alpha = n_alpha
         self.eps = eps
         self.p = p
-        self.measure = measure
+        self.depth_measure = depth_measure
         self.truncation = truncation
         self.multi_ref_reduction = multi_ref_reduction
 
@@ -284,7 +284,7 @@ class DepthScore(Metric):
             n_alpha=self.n_alpha,
             eps=self.eps,
             p=self.p,
-            measure=self.measure,
+            depth_measure=self.depth_measure,
             device=self.embedding_device if self.embedding_device is not None else None,
             model=self.model,
             user_tokenizer=self.tokenizer if self.user_tokenizer else None,

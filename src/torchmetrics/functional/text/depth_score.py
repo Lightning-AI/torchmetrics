@@ -307,6 +307,10 @@ def dr_distance(
     """
     np.random.seed(random_state)
 
+    # Match reference numerics: many reference code paths end up in float64.
+    x = np.asarray(x, dtype=np.float64)
+    y = np.asarray(y, dtype=np.float64)
+
     if data_depth == "irw":
         depth_x = ai_irw(x, ai=False, n_dirs=n_dirs, random_state=random_state)
         depth_y = ai_irw(y, ai=False, n_dirs=n_dirs, random_state=random_state)
@@ -445,7 +449,7 @@ def depth_score(
     n_dirs: int = 10000,
     eps: float = 0.3,
     p: int = 5,
-    measure: str = "irw",
+    depth_measure: str = "irw",
     # Multi-ref postprocess for a distance metric (best = min by default)
     multi_ref_reduction: str = "min",
 ) -> Tensor:
@@ -486,7 +490,7 @@ def depth_score(
         n_dirs: Number of random projection directions used by depth/sliced computations.
         eps: Lower quantile bound (eps_min) used in the depth distance integration (upper bound fixed at 1.0).
         p: Power used in the distance aggregation.
-        measure: Depth/distance backend to use. One of:
+        depth_measure: Depth/distance backend to use. One of:
             `"irw"`, `"ai_irw"`, `"wasserstein"`, `"sliced"`, `"mmd"`.
         multi_ref_reduction: Reduction to apply across multiple references per prediction.
             Default `"min"` (best match) since this is a distance metric.
@@ -663,7 +667,7 @@ def depth_score(
                 y,
                 n_alpha=n_alpha,
                 n_dirs=n_dirs,
-                data_depth=measure,
+                data_depth=depth_measure,
                 eps_min=eps,
                 eps_max=1.0,
                 p=p,

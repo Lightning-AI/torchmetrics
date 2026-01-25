@@ -48,6 +48,7 @@ def _reference_depth_score(
     preds: Sequence[str],
     target: Sequence[str],
     num_layers: int,
+    depth_measure: str = "irw",
 ) -> Tensor:
     # Reference source code depthscore implementation
     try:
@@ -55,12 +56,13 @@ def _reference_depth_score(
     except ImportError:
         pytest.skip("test requires `nlg_eval_via_simi_measures` to be installed.")
 
-    metric_call = DepthScoreMetric(MODEL_NAME, layers_to_consider=num_layers)
+    metric_call = DepthScoreMetric(MODEL_NAME, layers_to_consider=num_layers, considered_measure=depth_measure)
     out = metric_call.evaluate_batch(list(target), list(preds))
     return torch.as_tensor(out["depth_score"], dtype=torch.float32)
 
 
 @pytest.mark.parametrize("num_layers", [4, 8])
+@pytest.mark.parametrize("depth_measure", ["irw", "ai_irw", "sliced", "wasserstein", "mmd"])
 @pytest.mark.parametrize(
     ("preds", "targets"),
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
@@ -81,11 +83,12 @@ class TestDepthScore(TextTester):
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues()
-    def test_depthscore_class(self, ddp, preds, targets, num_layers):
+    def test_depthscore_class(self, ddp, preds, targets, num_layers, depth_measure):
         """Test the depth score class."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,
+            "depth_measure": depth_measure,
             "device": "cpu",
             "batch_size": 8,
             "max_length": 128,
@@ -94,6 +97,7 @@ class TestDepthScore(TextTester):
         reference_depth_score_metric = partial(
             _reference_depth_score,
             num_layers=num_layers,
+            depth_measure=depth_measure,
         )
 
         self.run_class_metric_test(
@@ -108,16 +112,18 @@ class TestDepthScore(TextTester):
         )
 
     @skip_on_connection_issues()
-    def test_depthscore_functional(self, preds, targets, num_layers):
+    def test_depthscore_functional(self, preds, targets, num_layers, depth_measure):
         """Test the depthscore functional."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,
+            "depth_measure": depth_measure,
             "truncation": True,  # nlg_eval reference always truncates
         }
         reference_depth_score_metric = partial(
             _reference_depth_score,
             num_layers=num_layers,
+            depth_measure=depth_measure,
         )
 
         self.run_functional_metric_test(
@@ -129,11 +135,12 @@ class TestDepthScore(TextTester):
         )
 
     @skip_on_connection_issues()
-    def test_depthscore_differentiability(self, preds, targets, num_layers):
+    def test_depthscore_differentiability(self, preds, targets, num_layers, depth_measure):
         """Test the depthscore differentiability."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,
+            "depth_measure": depth_measure,
             "truncation": True,  # nlg_eval reference always truncates
         }
 
