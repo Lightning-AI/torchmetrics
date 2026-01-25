@@ -10,6 +10,6 @@ mecab-python3 >=1.0.6, <1.1.0
 ipadic >=1.0.0, <1.1.0
 sentencepiece >=0.2.0, <0.3.0
 
-git scikit-learn >1.5.0, <1.8.0
+scikit-learn >1.5.0, <1.8.0
 POT >=0.4.0, <=0.9.6
 geomloss ==0.2.6  # strict
