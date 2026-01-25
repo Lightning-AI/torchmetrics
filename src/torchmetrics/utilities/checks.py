@@ -313,6 +313,7 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
     """
     # source: https://stackoverflow.com/a/14924210/4521646
     if multiprocessing.current_process().daemon:
+        # Skip timeout check in daemon processes since they cannot spawn child processes; allow operation to proceed normally
         return True
 
     proc = multiprocessing.Process(target=fn)
