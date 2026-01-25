@@ -459,12 +459,7 @@ def depth_score(
     of their contextual token embeddings using a depth-based pseudo-metric. Lower values
     indicate that the predicted sentence is closer to the reference sentence.
 
-    The function supports:
-    - Single string inputs (`str`)
-    - Lists of strings (`Sequence[str]`)
-    - Tokenized dict inputs (`dict[str, Tensor]`) (used internally by the Metric class)
-    - Multi-reference evaluation (`Sequence[Sequence[str]]`), reduced per prediction by
-      `multi_ref_reduction` (default `"min"` for distance metrics).
+    This implementation follows the original implementation from `DEPTH_score`_.
 
     Args:
         preds: Predicted sentence(s) as `str`, `Sequence[str]`, or tokenized dict

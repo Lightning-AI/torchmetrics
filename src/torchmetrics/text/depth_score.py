@@ -60,8 +60,7 @@ class DepthScore(Metric):
     mismatches between contextual representations and can be used for evaluating text generation tasks where
     *lower* distance indicates a better match.
 
-    This implementation follows the reference DepthScore formulation introduced by ``Colombo et al.`` and mirrors the
-    TorchMetrics-style API used by embedding-based text metrics.
+    This implementation follows the original implementation from `DEPTH_score`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
