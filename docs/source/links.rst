@@ -50,6 +50,7 @@
 .. _Mean Reciprocal Rank: https://en.wikipedia.org/wiki/Mean_reciprocal_rank
 .. _BERT_score: https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
+.. _DepthScore Evaluating Text Generation: https://arxiv.org/abs/2103.12711
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
 .. _BLEU: https://www.semanticscholar.org/paper/Bleu%3A-a-Method-for-Automatic-Evaluation-of-Machine-Papineni-Roukos/d7da009f457917aa381619facfa5ffae9329a6e9
 .. _SacreBLEU: https://github.com/mjpost/sacrebleu
