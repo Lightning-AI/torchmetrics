@@ -89,7 +89,7 @@ class TestDepthScore(TextTester):
             "device": "cpu",
             "batch_size": 8,
             "max_length": 128,
-            "truncation": True, # nlg_eval reference always truncates
+            "truncation": True,  # nlg_eval reference always truncates
         }
         reference_depth_score_metric = partial(
             _reference_depth_score,
@@ -113,7 +113,7 @@ class TestDepthScore(TextTester):
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,
-            "truncation": True, # nlg_eval reference always truncates
+            "truncation": True,  # nlg_eval reference always truncates
         }
         reference_depth_score_metric = partial(
             _reference_depth_score,
@@ -134,7 +134,7 @@ class TestDepthScore(TextTester):
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,
-            "truncation": True, # nlg_eval reference always truncates
+            "truncation": True,  # nlg_eval reference always truncates
         }
 
         self.run_differentiability_test(
@@ -191,7 +191,14 @@ def test_depthscore_truncation(truncation: bool):
     """Test that DepthScore truncation works as expected."""
     pred = ["abc " * 2000]
     gt = ["def " * 2000]
-    metric = DepthScore(model_name_or_path=MODEL_NAME, num_layers=4, device="cpu", batch_size=1, max_length=64, truncation=truncation)
+    metric = DepthScore(
+        model_name_or_path=MODEL_NAME,
+        num_layers=4,
+        device="cpu",
+        batch_size=1,
+        max_length=64,
+        truncation=truncation,
+    )
 
     if truncation:
         res = metric(pred, gt)
@@ -225,7 +232,15 @@ def test_depthscore_single_str_input():
     # Distance for identical text should be smaller than for different text.
     score_class_ident = score_class.item()
 
-    score_functional = depth_score(preds, target, model_name_or_path=MODEL_NAME, num_layers=4, device="cpu", batch_size=1, max_length=64)
+    score_functional = depth_score(
+        preds,
+        target,
+        model_name_or_path=MODEL_NAME,
+        num_layers=4,
+        device="cpu",
+        batch_size=1,
+        max_length=64,
+    )
     score_func_ident = score_functional.item()
 
     assert score_class_ident == pytest.approx(score_func_ident, abs=1e-6)

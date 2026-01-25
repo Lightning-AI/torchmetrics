@@ -11,25 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import annotations
-
 import logging
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
+import geomloss
 import numpy as np
+
+# DepthScore deps
+import ot  # pip install POT  # codespell:ignore ot
 import torch
+from sklearn.covariance import MinCovDet as MCD  # noqa: N817
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import normalize
 from torch import Tensor
 from torch.nn import Module
 from torch.utils.data import DataLoader
-
-# DepthScore deps
-import ot  # pip install POT
-import geomloss
-from sklearn.preprocessing import normalize
-from sklearn.covariance import MinCovDet as MCD
-from sklearn.decomposition import PCA
 
 # TorchMetrics text helpers (same style as BERTScore)
 from torchmetrics.functional.text.helper_embedding_metric import (
@@ -102,7 +100,7 @@ def _preprocess_multiple_references(
     Raises:
         ValueError:
             If `preds` is not a list of strings.
-            
+
     """
     if not all(isinstance(item, str) for item in preds):
         raise ValueError("Invalid input provided.")
@@ -181,70 +179,72 @@ def _postprocess_multiple_references_distance(
     return torch.stack(out, dim=0)
 
 
-def cov_matrix(X: np.ndarray, robust: bool = False) -> np.ndarray:
+def cov_matrix(x: np.ndarray, robust: bool = False) -> np.ndarray:
     """Covariance matrix (optionally robust)."""
     if robust:
-        return MCD().fit(X).covariance_
-    return np.cov(X.T)
+        return MCD().fit(x).covariance_
+    return np.cov(x.T)
 
 
-def standardize(X: np.ndarray, robust: bool = False) -> np.ndarray:
+def standardize(x: np.ndarray, robust: bool = False) -> np.ndarray:
     """Affine standardization using inverse sqrt covariance."""
-    sigma = cov_matrix(X, robust)
-    _, n_features = X.shape
-    rank = np.linalg.matrix_rank(X)
+    sigma = cov_matrix(x, robust)
+    _, n_features = x.shape
+    rank = np.linalg.matrix_rank(x)
 
     if rank < n_features:
-        X = PCA(rank).fit_transform(X)
-        sigma = cov_matrix(X)
+        x = PCA(rank).fit_transform(x)
+        sigma = cov_matrix(x)
 
     u, s, _ = np.linalg.svd(sigma)
     square_inv = u / np.sqrt(s)
-    return X @ square_inv
+    return x @ square_inv
 
 
 def sampled_sphere(n_dirs: int, d: int) -> np.ndarray:
     """Uniform samples on unit sphere."""
-    U = np.random.multivariate_normal(np.zeros(d), np.eye(d), size=n_dirs)
-    return normalize(U)
+    u = np.random.multivariate_normal(np.zeros(d), np.eye(d), size=n_dirs)
+    return normalize(u)
 
 
-def Wasserstein(X: np.ndarray, Y: np.ndarray) -> float:
-    """OT cost with uniform weights."""
-    M = ot.dist(X, Y)
-    wX = np.ones(len(X)) / len(X)
-    wY = np.ones(len(Y)) / len(Y)
-    return float(ot.emd2(wX, wY, M))
+def wasserstein(x: np.ndarray, y: np.ndarray) -> float:
+    """Optimal transport cost with uniform weights."""
+    m = ot.dist(x, y)  # codespell:ignore ot
+    w_x = np.ones(len(x)) / len(x)
+    w_y = np.ones(len(y)) / len(y)
+    return float(ot.emd2(w_x, w_y, m))  # codespell:ignore ot
 
 
-def SW(X: np.ndarray, Y: np.ndarray, ndirs: int, p: int = 2) -> float:
+def sw(x: np.ndarray, y: np.ndarray, ndirs: int, p: int = 2) -> float:
     """Sliced Wasserstein distance."""
-    n, d = X.shape
-    U = sampled_sphere(ndirs, d)
-    Zx = X @ U.T
-    Zy = Y @ U.T
+    n, d = x.shape
+    u = sampled_sphere(ndirs, d)
+    z_x = x @ u.T
+    z_y = y @ u.T
     sliced = np.zeros(ndirs)
     for k in range(ndirs):
-        sliced[k] = ot.emd2_1d(Zx[:, k], Zy[:, k], p=2)
+        sliced[k] = ot.emd2_1d(z_x[:, k], z_y[:, k], p=2)  # codespell:ignore ot
     return float((np.mean(sliced)) ** (1 / p))
 
 
-def MMD(X: np.ndarray, Y: np.ndarray) -> float:
+def mmd(x: np.ndarray, y: np.ndarray) -> float:
     """Gaussian MMD via geomloss."""
-    return float(geomloss.SamplesLoss("gaussian")(torch.tensor(X), torch.tensor(Y)).item())
+    return float(geomloss.SamplesLoss("gaussian")(torch.tensor(x), torch.tensor(y)).item())
 
 
-def ai_irw(X: np.ndarray, AI: bool = True, robust: bool = False, n_dirs: Optional[int] = None, random_state: int = 0) -> np.ndarray:
+def ai_irw(
+    x: np.ndarray, ai: bool = True, robust: bool = False, n_dirs: Optional[int] = None, random_state: int = 0
+) -> np.ndarray:
     """(Affine-invariant) integrated rank-weighted depth."""
     np.random.seed(random_state)
-    if AI:
-        X = standardize(X, robust)
+    if ai:
+        x = standardize(x, robust)
 
-    n, d = X.shape
+    n, d = x.shape
     n_dirs = d * 100 if n_dirs is None else n_dirs
 
-    U = sampled_sphere(n_dirs, d)
-    proj = X @ U.T
+    u = sampled_sphere(n_dirs, d)
+    proj = x @ u.T
     ranks = np.argsort(proj, axis=0)
 
     depth = np.zeros_like(proj)
@@ -257,8 +257,8 @@ def ai_irw(X: np.ndarray, AI: bool = True, robust: bool = False, n_dirs: Optiona
 
 
 def dr_distance(
-    X: np.ndarray,
-    Y: np.ndarray,
+    x: np.ndarray,
+    y: np.ndarray,
     n_alpha: int = 5,
     n_dirs: int = 10000,
     data_depth: str = "irw",
@@ -270,15 +270,15 @@ def dr_distance(
     """Compute the depth-based pseudo-metric between two point clouds.
 
     This function implements the DepthScore "DR distance" between two empirical
-    distributions represented by token-embedding point clouds `X` and `Y`. The distance
+    distributions represented by token-embedding point clouds `x` and `y`. The distance
     is computed by (1) choosing a data depth / distributional discrepancy backend
     (e.g., IRW depth, affine-invariant IRW, Wasserstein, sliced Wasserstein, or MMD),
     and (2) integrating over depth level sets between `eps_min` and `eps_max`, while
     approximating the supremum over directions on the unit sphere by Monte Carlo.
 
     Args:
-        X: Array of shape `(n_samples, n_features)` representing the first point cloud.
-        Y: Array of shape `(n_samples, n_features)` representing the second point cloud.
+        x: Array of shape `(n_samples, n_features)` representing the first point cloud.
+        y: Array of shape `(n_samples, n_features)` representing the second point cloud.
         n_alpha: Monte-Carlo parameter controlling the approximation of the integral
             over alpha (number of level-set thresholds between `eps_min` and `eps_max`).
         n_dirs: Number of random directions used to approximate the supremum over the
@@ -286,7 +286,7 @@ def dr_distance(
         data_depth: Depth / discrepancy measure to use. One of
             `{"irw", "ai_irw", "wasserstein", "sliced", "mmd"}`.
             - `"irw"` / `"ai_irw"` compute depth values and then integrate level sets.
-            - `"wasserstein"` returns the (unsliced) OT cost directly.
+            - `"wasserstein"` returns the (unsliced) OT cost directly.  # codespell:ignore ot
             - `"sliced"` returns the sliced Wasserstein distance directly.
             - `"mmd"` returns the Gaussian MMD directly.
         eps_min: Lower level-set bound in `[0, eps_max]` (lowest alpha / quantile level).
@@ -308,39 +308,39 @@ def dr_distance(
     np.random.seed(random_state)
 
     if data_depth == "irw":
-        depth_X = ai_irw(X, AI=False, n_dirs=n_dirs, random_state=random_state)
-        depth_Y = ai_irw(Y, AI=False, n_dirs=n_dirs, random_state=random_state)
+        depth_x = ai_irw(x, ai=False, n_dirs=n_dirs, random_state=random_state)
+        depth_y = ai_irw(y, ai=False, n_dirs=n_dirs, random_state=random_state)
     elif data_depth == "ai_irw":
-        depth_X = ai_irw(X, AI=True, n_dirs=n_dirs, random_state=random_state)
-        depth_Y = ai_irw(Y, AI=True, n_dirs=n_dirs, random_state=random_state)
+        depth_x = ai_irw(x, ai=True, n_dirs=n_dirs, random_state=random_state)
+        depth_y = ai_irw(y, ai=True, n_dirs=n_dirs, random_state=random_state)
     elif data_depth == "wasserstein":
-        return Wasserstein(X, Y)
+        return wasserstein(x, y)
     elif data_depth == "sliced":
-        return SW(X, Y, ndirs=n_dirs)
+        return sw(x, y, ndirs=n_dirs)
     elif data_depth == "mmd":
-        return MMD(X, Y)
+        return mmd(x, y)
     else:
         raise ValueError("Unsupported depth")
 
     if not (0.0 <= eps_min <= eps_max <= 1.0):
         raise ValueError("Expected 0 <= eps_min <= eps_max <= 1")
 
-    _, d = X.shape
-    U = sampled_sphere(n_dirs, d)
-    proj_X = X @ U.T
-    proj_Y = Y @ U.T
+    _, d = x.shape
+    u = sampled_sphere(n_dirs, d)
+    proj_x = x @ u.T
+    proj_y = y @ u.T
 
     alphas = np.linspace(int(eps_min * 100), int(eps_max * 100), n_alpha)
-    qX = [np.percentile(depth_X, a) for a in alphas]
-    qY = [np.percentile(depth_Y, a) for a in alphas]
+    q_x = [np.percentile(depth_x, a) for a in alphas]
+    q_y = [np.percentile(depth_y, a) for a in alphas]
 
     score = 0.0
     for i in range(n_alpha):
-        idx_X = np.where(depth_X >= qX[i])[0]
-        idx_Y = np.where(depth_Y >= qY[i])[0]
-        supp_X = np.max(proj_X[idx_X], axis=0)
-        supp_Y = np.max(proj_Y[idx_Y], axis=0)
-        score += float(np.max((supp_X - supp_Y) ** p))
+        idx_x = np.where(depth_x >= q_x[i])[0]
+        idx_y = np.where(depth_y >= q_y[i])[0]
+        supp_x = np.max(proj_x[idx_x], axis=0)
+        supp_y = np.max(proj_y[idx_y], axis=0)
+        score += float(np.max((supp_x - supp_y) ** p))
 
     return float((score / n_alpha) ** (1 / p))
 
@@ -522,7 +522,6 @@ def depth_score(
         tensor([...])
 
     """
-
     ref_group_boundaries: Optional[List[Tuple[int, int]]] = None
 
     if isinstance(preds, str):
@@ -539,7 +538,7 @@ def depth_score(
             "Expected number of predicted and reference sentences to be the same, but got"
             f" {len(preds)} and {len(target)}"
         )
-    
+
     if isinstance(preds, list) and len(preds) > 0 and isinstance(target, list) and len(target) > 0:
         preds, target, ref_group_boundaries = _preprocess_multiple_references(preds, target)
 
@@ -608,7 +607,6 @@ def depth_score(
         preds_dataset = TextDataset(preds, tokenizer, max_length, truncation=truncation)
 
     elif _are_valid_tensors:
-
         target_dataset = TokenizedDataset(**cast(dict, target))
         preds_dataset = TokenizedDataset(**cast(dict, preds))
     else:
@@ -652,17 +650,17 @@ def depth_score(
         pm = preds_mask[i].bool()
         tm = target_mask[i].bool()
 
-        X = preds_embeddings[i, 0, pm, :].numpy()
-        Y = target_embeddings[i, 0, tm, :].numpy()
+        x = preds_embeddings[i, 0, pm, :].numpy()
+        y = target_embeddings[i, 0, tm, :].numpy()
 
-        if X.shape[0] == 0 or Y.shape[0] == 0:
+        if x.shape[0] == 0 or y.shape[0] == 0:
             distances.append(float("inf"))
             continue
 
         distances.append(
             dr_distance(
-                X,
-                Y,
+                x,
+                y,
                 n_alpha=n_alpha,
                 n_dirs=n_dirs,
                 data_depth=measure,

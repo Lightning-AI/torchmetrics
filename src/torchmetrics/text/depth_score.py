@@ -11,28 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import annotations
-
 from collections.abc import Sequence
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
 import torch
 from torch import Tensor
 from torch.nn import Module
-
-from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
-from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
-from torchmetrics.utilities.data import dim_zero_cat
 
 from torchmetrics.functional.text.depth_score import (
     _postprocess_multiple_references_distance,
     _preprocess_multiple_references,
     depth_score,
 )
+from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
+from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
+from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["DepthScore.plot"]
@@ -54,19 +51,16 @@ else:
     __doctest_skip__ = ["DepthScore", "DepthScore.plot"]
 
 
-def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> dict[str, Tensor]:
-    """Create an input dictionary of ``input_ids`` and ``attention_mask`` for DepthScore calculation."""
-    return {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
-
-
 class DepthScore(Metric):
     """`DepthScore Evaluating Text Generation`_ for measuring text similarity.
 
-    DepthScore leverages pre-trained contextual token embeddings (e.g., from BERT-like models) and compares candidate and
-    reference sentences by treating their token embeddings as point clouds and computing a depth-based pseudo-metric
-    between the two distributions. This distance is designed to capture distributional mismatches between contextual
-    representations and can be used for evaluating text generation tasks where *lower* distance indicates a better match.
-    This implementation follows the reference DepthScore formulation introduced by Colombo et al. and mirrors the
+    DepthScore leverages pre-trained contextual token embeddings (e.g., from BERT-like models) and compares
+    candidate and reference sentences by treating their token embeddings as point clouds and computing a depth-
+    based pseudo-metric between the two distributions. This distance is designed to capture distributional
+    mismatches between contextual representations and can be used for evaluating text generation tasks where
+    *lower* distance indicates a better match.
+
+    This implementation follows the reference DepthScore formulation introduced by ``Colombo et al.`` and mirrors the
     TorchMetrics-style API used by embedding-based text metrics.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -84,8 +78,8 @@ class DepthScore(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``score`` (:class:`~torch.Tensor`): A 1D tensor of distances of shape `(num_predictions,)`. For multi-reference input,
-      the output is reduced per original prediction according to `multi_ref_reduction`.
+    - ``score`` (:class:`~torch.Tensor`): A 1D tensor of distances of shape `(num_predictions,)`. For multi-reference
+      input, the output is reduced per original prediction according to `multi_ref_reduction`.
 
     Args:
         preds (Union[str, Sequence[str]]): A single predicted sentence or a sequence of predicted sentences.
@@ -120,6 +114,8 @@ class DepthScore(Metric):
         p: The power of the ground cost.
         measure: Depth / discrepancy measure to use (e.g. ``"irw"`` or ``"ai_irw"``).
         truncation: An indication of whether the input sequences should be truncated to the ``max_length``.
+        multi_ref_reduction: Reduction to apply across multiple references per prediction.
+            Default ``"min"`` (best match) since this is a distance metric. Options: ``"min"``, ``"max"``, ``"mean"``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -171,6 +167,7 @@ class DepthScore(Metric):
         p: int = 5,
         measure: str = "irw",
         truncation: bool = False,
+        multi_ref_reduction: str = "min",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -196,6 +193,7 @@ class DepthScore(Metric):
         self.p = p
         self.measure = measure
         self.truncation = truncation
+        self.multi_ref_reduction = multi_ref_reduction
 
         self.ref_group_boundaries: Optional[List[Tuple[int, int]]] = None
 
@@ -224,6 +222,7 @@ class DepthScore(Metric):
         """Store predictions/references for computing DepthScore.
 
         It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
+
         """
         if isinstance(preds, str):
             preds = [preds]
@@ -295,6 +294,7 @@ class DepthScore(Metric):
             num_threads=self.num_threads,
             truncation=self.truncation,
             verbose=self.verbose,
+            multi_ref_reduction=self.multi_ref_reduction,
         )
 
         # out expected: {"depth_score": Tensor} aligned with flattened refs if multi-ref used
@@ -302,7 +302,7 @@ class DepthScore(Metric):
             out = _postprocess_multiple_references_distance(
                 out,
                 self.ref_group_boundaries,
-                reduction="min",   # distance metric → best match is smallest distance
+                reduction=self.multi_ref_reduction,
             )
 
         return out
