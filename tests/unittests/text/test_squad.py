@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
+from functools import partial
 
 import pytest
 import torch
-import torch.distributed as dist
-import torch.multiprocessing as mp
 
 from torchmetrics.functional.text import squad
 from torchmetrics.text.squad import SQuAD
+from unittests import NUM_PROCESSES, USE_PYTEST_POOL
+from unittests._helpers import _IS_WINDOWS
 from unittests._helpers.testers import _assert_allclose, _assert_tensor
+from unittests.conftest import setup_ddp
 from unittests.text._inputs import _inputs_squad_batch_match, _inputs_squad_exact_match, _inputs_squad_exact_mismatch
 
 
@@ -76,9 +77,7 @@ def test_accumulation(preds, targets, exact_match, f1):
 
 def _squad_score_ddp(rank, world_size, pred, targets, exact_match, f1):
     """Define a DDP process for SQuAD metric."""
-    os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = "12355"
-    dist.init_process_group("gloo", rank=rank, world_size=world_size)
+    setup_ddp(rank, world_size)
     squad_metric = SQuAD()
     squad_metric.update(pred, targets)
     metrics_score = squad_metric.compute()
@@ -86,12 +85,15 @@ def _squad_score_ddp(rank, world_size, pred, targets, exact_match, f1):
     _assert_tensor(metrics_score["f1"])
     _assert_allclose(metrics_score["exact_match"], exact_match)
     _assert_allclose(metrics_score["f1"], f1)
-    dist.destroy_process_group()
 
 
 def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
     """Core functionality for the `test_score_ddp` test."""
-    _squad_score_ddp(rank, world_size, preds[rank], targets[rank], exact_match[rank], f1[rank])
+    # In DDP, the metric syncs across ranks and computes the global average.
+    # So each rank sees the mean of ALL expected scores, not just its local one.
+    mean_exact_match = torch.tensor(exact_match, dtype=torch.float).mean()
+    mean_f1 = torch.tensor(f1, dtype=torch.float).mean()
+    _squad_score_ddp(rank, world_size, [preds[rank]], [targets[rank]], mean_exact_match, mean_f1)
 
 
 @pytest.mark.parametrize(
@@ -105,8 +107,14 @@ def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
         )
     ],
 )
-@pytest.mark.skipif(not dist.is_available(), reason="test requires torch distributed")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available")
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not supported on Windows")
+@pytest.mark.DDP
 def test_score_ddp(preds, targets, exact_match, f1):
     """Tests for metric using DDP."""
-    world_size = 2
-    mp.spawn(_test_score_ddp_fn, args=(world_size, preds, targets, exact_match, f1), nprocs=world_size, join=False)
+    pytest.pool.map(
+        partial(
+            _test_score_ddp_fn, world_size=NUM_PROCESSES, preds=preds, targets=targets, exact_match=exact_match, f1=f1
+        ),
+        range(NUM_PROCESSES),
+    )

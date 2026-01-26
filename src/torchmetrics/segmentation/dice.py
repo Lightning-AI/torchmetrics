@@ -72,9 +72,7 @@ class DiceScore(Metric):
             score is computed globally over all samples.
         input_format: What kind of input the function receives.
             Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
-            or ``"mixed"`` for one one-hot encoded and one index tensor
-        zero_division: The value to return when there is a division by zero. Options are 1.0, 0.0, "warn" or "nan".
-            Setting it to "warn" behaves like 0.0 but will also create a warning.
+            or ``"mixed"`` for one one-hot encoded and one index tensor.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
