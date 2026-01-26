@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-##########
+###########
 Depth Score
-##########
+###########
 
 Module Interface
 ________________
