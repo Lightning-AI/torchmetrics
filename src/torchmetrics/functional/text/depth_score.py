@@ -16,15 +16,8 @@ from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
-import geomloss
 import numpy as np
-
-# DepthScore deps
-import ot  # pip install POT  # codespell:ignore ot
 import torch
-from sklearn.covariance import MinCovDet as MCD  # noqa: N817
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import normalize
 from torch import Tensor
 from torch.nn import Module
 from torch.utils.data import DataLoader
@@ -40,7 +33,13 @@ from torchmetrics.functional.text.helper_embedding_metric import (
 )
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
+from torchmetrics.utilities.imports import (
+    _GEOMLOSS_AVAILABLE,
+    _POT_AVAILABLE,
+    _SKLEARN_AVAILABLE,
+    _TQDM_AVAILABLE,
+    _TRANSFORMERS_GREATER_EQUAL_4_4,
+)
 
 log = logging.getLogger(__name__)
 
@@ -182,6 +181,13 @@ def _postprocess_multiple_references_distance(
 def cov_matrix(x: np.ndarray, robust: bool = False) -> np.ndarray:
     """Covariance matrix (optionally robust)."""
     if robust:
+        if not _SKLEARN_AVAILABLE:
+            raise ModuleNotFoundError(
+                "Robust covariance requires that `scikit-learn` is installed. "
+                "Use `pip install scikit-learn` or `pip install torchmetrics[text]`."
+            )
+        from sklearn.covariance import MinCovDet as MCD  # noqa: N817
+
         return MCD().fit(x).covariance_
     return np.cov(x.T)
 
@@ -193,6 +199,13 @@ def standardize(x: np.ndarray, robust: bool = False) -> np.ndarray:
     rank = np.linalg.matrix_rank(x)
 
     if rank < n_features:
+        if not _SKLEARN_AVAILABLE:
+            raise ModuleNotFoundError(
+                "Affine-invariant DepthScore requires that `scikit-learn` is installed. "
+                "Use `pip install scikit-learn` or `pip install torchmetrics[text]`."
+            )
+        from sklearn.decomposition import PCA
+
         x = PCA(rank).fit_transform(x)
         sigma = cov_matrix(x)
 
@@ -204,11 +217,26 @@ def standardize(x: np.ndarray, robust: bool = False) -> np.ndarray:
 def sampled_sphere(n_dirs: int, d: int) -> np.ndarray:
     """Uniform samples on unit sphere."""
     u = np.random.multivariate_normal(np.zeros(d), np.eye(d), size=n_dirs)
-    return normalize(u)
+    # The reference implementation uses `sklearn.preprocessing.normalize`. Here, that is mocked
+    # so default irw metric runs without any additional dependencies being installed.
+    return _normalize_l2_rows_exact(u)
+
+
+def _normalize_l2_rows_exact(x: np.ndarray) -> np.ndarray:
+    norms = np.sqrt(np.einsum("ij,ij->i", x, x))
+    norms[norms == 0.0] = 1.0
+    return x / norms[:, None]
 
 
 def wasserstein(x: np.ndarray, y: np.ndarray) -> float:
     """Optimal transport cost with uniform weights."""
+    if not _POT_AVAILABLE:
+        raise ModuleNotFoundError(
+            "The `wasserstein` backend requires that `POT` is installed. "
+            "Use `pip install POT` or `pip install torchmetrics[text]`."
+        )
+    import ot  # pip install POT  # codespell:ignore ot
+
     m = ot.dist(x, y)  # codespell:ignore ot
     w_x = np.ones(len(x)) / len(x)
     w_y = np.ones(len(y)) / len(y)
@@ -217,6 +245,13 @@ def wasserstein(x: np.ndarray, y: np.ndarray) -> float:
 
 def sw(x: np.ndarray, y: np.ndarray, ndirs: int, p: int = 2) -> float:
     """Sliced Wasserstein distance."""
+    if not _POT_AVAILABLE:
+        raise ModuleNotFoundError(
+            "The `sliced` backend requires that `POT` is installed. "
+            "Use `pip install POT` or `pip install torchmetrics[text]`."
+        )
+    import ot  # pip install POT  # codespell:ignore ot
+
     n, d = x.shape
     u = sampled_sphere(ndirs, d)
     z_x = x @ u.T
@@ -229,6 +264,13 @@ def sw(x: np.ndarray, y: np.ndarray, ndirs: int, p: int = 2) -> float:
 
 def mmd(x: np.ndarray, y: np.ndarray) -> float:
     """Gaussian MMD via geomloss."""
+    if not _GEOMLOSS_AVAILABLE:
+        raise ModuleNotFoundError(
+            "The `mmd` backend requires that `geomloss` is installed. "
+            "Use `pip install geomloss` or `pip install torchmetrics[text]`."
+        )
+    import geomloss
+
     return float(geomloss.SamplesLoss("gaussian")(torch.tensor(x), torch.tensor(y)).item())
 
 

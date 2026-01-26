@@ -21,7 +21,12 @@ from torch import Tensor
 
 from torchmetrics.functional.text.depth_score import depth_score
 from torchmetrics.text.depth_score import DepthScore
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
+from torchmetrics.utilities.imports import (
+    _GEOMLOSS_AVAILABLE,
+    _POT_AVAILABLE,
+    _SKLEARN_AVAILABLE,
+    _TRANSFORMERS_GREATER_EQUAL_4_4,
+)
 from unittests._helpers import (
     _IS_WINDOWS,
     _TORCH_LESS_THAN_2_1,
@@ -37,6 +42,27 @@ from unittests.text._inputs import (
 )
 
 MODEL_NAME = "albert-base-v2"
+
+
+_DEPTH_MEASURES = [
+    "irw",
+    pytest.param(
+        "ai_irw",
+        marks=pytest.mark.skipif(not _SKLEARN_AVAILABLE, reason="test requires scikit-learn"),
+    ),
+    pytest.param(
+        "sliced",
+        marks=pytest.mark.skipif(not _POT_AVAILABLE, reason="test requires POT"),
+    ),
+    pytest.param(
+        "wasserstein",
+        marks=pytest.mark.skipif(not _POT_AVAILABLE, reason="test requires POT"),
+    ),
+    pytest.param(
+        "mmd",
+        marks=pytest.mark.skipif(not _GEOMLOSS_AVAILABLE, reason="test requires geomloss"),
+    ),
+]
 
 # Disable tokenizers parallelism (forking not friendly with parallelism)
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -62,7 +88,7 @@ def _reference_depth_score(
 
 
 @pytest.mark.parametrize("num_layers", [4, 8])
-@pytest.mark.parametrize("depth_measure", ["irw", "ai_irw", "sliced", "wasserstein", "mmd"])
+@pytest.mark.parametrize("depth_measure", _DEPTH_MEASURES)
 @pytest.mark.parametrize(
     ("preds", "targets"),
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
