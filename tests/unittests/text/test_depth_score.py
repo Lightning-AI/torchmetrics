@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Check if nlg_eval_via_simi_measures is available for reference metric tests
+import importlib.util
 import os
 from collections.abc import Sequence
 from functools import partial
@@ -40,6 +42,8 @@ from unittests.text._inputs import (
     _inputs_single_reference,
     _inputs_single_sentence_multiple_references,
 )
+
+_NLG_EVAL_AVAILABLE = importlib.util.find_spec("nlg_eval_via_simi_measures") is not None
 
 MODEL_NAME = "albert-base-v2"
 
@@ -77,10 +81,7 @@ def _reference_depth_score(
     depth_measure: str = "irw",
 ) -> Tensor:
     # Reference source code depthscore implementation
-    try:
-        from nlg_eval_via_simi_measures.depth_score import DepthScoreMetric
-    except ImportError:
-        pytest.skip("test requires `nlg_eval_via_simi_measures` to be installed.")
+    from nlg_eval_via_simi_measures.depth_score import DepthScoreMetric
 
     metric_call = DepthScoreMetric(MODEL_NAME, layers_to_consider=num_layers, considered_measure=depth_measure)
     out = metric_call.evaluate_batch(list(target), list(preds))
@@ -107,6 +108,7 @@ def _reference_depth_score(
 class TestDepthScore(TextTester):
     """Tests for DepthScore."""
 
+    @pytest.mark.skipif(not _NLG_EVAL_AVAILABLE, reason="test requires nlg_eval_via_simi_measures to be installed")
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues()
     def test_depthscore_class(self, ddp, preds, targets, num_layers, depth_measure):
@@ -137,6 +139,7 @@ class TestDepthScore(TextTester):
             ignore_order=ddp,  # ignore order of predictions when DDP is used
         )
 
+    @pytest.mark.skipif(not _NLG_EVAL_AVAILABLE, reason="test requires nlg_eval_via_simi_measures to be installed")
     @skip_on_connection_issues()
     def test_depthscore_functional(self, preds, targets, num_layers, depth_measure):
         """Test the depthscore functional."""
