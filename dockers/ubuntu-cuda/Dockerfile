@@ -13,13 +13,13 @@
 # limitations under the License.
 
 ARG UBUNTU_VERSION=22.04
-ARG CUDA_VERSION=11.7.1
+ARG CUDA_VERSION=12.1.1
 
 
 FROM nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu${UBUNTU_VERSION}
 
 ARG PYTHON_VERSION=3.10
-ARG PYTORCH_VERSION=2.0
+ARG PYTORCH_VERSION=2.0.1
 
 SHELL ["/bin/bash", "-c"]
 # https://techoverflow.net/2019/05/18/how-to-fix-configuring-tzdata-interactive-input-when-building-docker-images/

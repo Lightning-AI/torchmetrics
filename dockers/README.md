@@ -11,11 +11,11 @@ git clone https://github.com/Lightning-AI/torchmetrics.git
 docker image build -t torchmetrics:latest -f dockers/ubuntu-cuda/Dockerfile .
 
 # build with specific arguments
-docker image build -t torchmetrics:ubuntu-cuda11.7.1-py3.9-torch1.13 \
+docker image build -t torchmetrics:ubuntu-cuda12.1.1-py3.10-torch2.0 \
   -f dockers/base-cuda/Dockerfile \
-  --build-arg PYTHON_VERSION=3.9 \
-  --build-arg PYTORCH_VERSION=1.13 \
-  --build-arg CUDA_VERSION=11.7.1 \
+  --build-arg PYTHON_VERSION=3.10 \
+  --build-arg PYTORCH_VERSION=2.0.1 \
+  --build-arg CUDA_VERSION=12.1.1 \
   .
 ```
 
@@ -50,5 +50,5 @@ sudo systemctl restart docker
 and later run the docker image with `--gpus all`. For example,
 
 ```bash
-docker run --rm -it --gpus all torchmetrics:ubuntu-cuda11.7.1-py3.9-torch1.12
+docker run --rm -it --gpus all torchmetrics:ubuntu-cuda12.1.1-py3.10-torch2.0
 ```
