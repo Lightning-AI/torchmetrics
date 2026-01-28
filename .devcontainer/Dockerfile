@@ -12,6 +12,7 @@ RUN if [ "${NODE_VERSION}" != "none" ]; then \
 
 COPY requirements/ /tmp/pip-tmp/requirements/
 RUN \
+    pip3 install --upgrade pip setuptools && \
     pip3 install awscli && \
     aws s3 sync --no-sign-request s3://sphinx-packages/ dist/  && \
     # trying to resolve pesq installation issue
