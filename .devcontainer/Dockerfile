@@ -14,7 +14,6 @@ COPY requirements/ /tmp/pip-tmp/requirements/
 RUN \
     pip3 install awscli && \
     aws s3 sync --no-sign-request s3://sphinx-packages/ dist/  && \
-    pip3 install --upgrade setuptools && \
     # trying to resolve pesq installation issue
     pip3 install -q "numpy<1.24" && \
     pip3 --disable-pip-version-check --no-cache-dir install \
