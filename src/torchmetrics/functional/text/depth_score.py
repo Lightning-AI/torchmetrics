@@ -644,12 +644,12 @@ def depth_score(
         return torch.zeros(1, dtype=torch.float32)
 
     if _are_valid_lists:
-        target_dataset = TextDataset(target, tokenizer, max_length, truncation=truncation)
-        preds_dataset = TextDataset(preds, tokenizer, max_length, truncation=truncation)
+        target_dataset = TextDataset(target, tokenizer, max_length, truncation=truncation)  # type: ignore
+        preds_dataset = TextDataset(preds, tokenizer, max_length, truncation=truncation)  # type: ignore
 
     elif _are_valid_tensors:
-        target_dataset = TokenizedDataset(**cast(dict, target))
-        preds_dataset = TokenizedDataset(**cast(dict, preds))
+        target_dataset = TokenizedDataset(**target)  # type: ignore
+        preds_dataset = TokenizedDataset(**preds)  # type: ignore
     else:
         raise ValueError("Invalid input provided.")
 

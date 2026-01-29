@@ -352,6 +352,6 @@ class DepthScore(Metric):
 
         """
         if val is None:  # default average score across sentences
-            val = self.compute()  # type: ignore
-            val = val.mean()  # type: ignore
+            val = self.compute()
+            val = val.mean()
         return self._plot(val, ax)
