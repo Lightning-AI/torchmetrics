@@ -43,7 +43,7 @@ def _error_relative_global_dimensionless_synthesis(
     preds: Tensor,
     target: Tensor,
     ratio: float = 4,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Wrapper for deprecated import.
 
@@ -82,7 +82,7 @@ def _peak_signal_noise_ratio(
     target: Tensor,
     data_range: Union[float, tuple[float, float]] = 3.0,
     base: float = 10.0,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     dim: Optional[Union[int, tuple[int, ...]]] = None,
 ) -> Tensor:
     """Wrapper for deprecated import.
@@ -135,7 +135,7 @@ def _root_mean_squared_error_using_sliding_window(
 def _spectral_angle_mapper(
     preds: Tensor,
     target: Tensor,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Wrapper for deprecated import.
 
@@ -156,7 +156,7 @@ def _multiscale_structural_similarity_index_measure(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -194,7 +194,7 @@ def _structural_similarity_index_measure(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -226,7 +226,7 @@ def _structural_similarity_index_measure(
     )
 
 
-def _total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None] = "sum") -> Tensor:
+def _total_variation(img: Tensor, reduction: Optional[Literal["mean", "sum", "none"]] = "sum") -> Tensor:
     """Wrapper for deprecated import.
 
     >>> from torch import rand

@@ -169,7 +169,7 @@ def spatial_correlation_coefficient(
     target: Tensor,
     hp_filter: Optional[Tensor] = None,
     window_size: int = 8,
-    reduction: Optional[Literal["mean", "none", None]] = "mean",
+    reduction: Optional[Optional[Literal["mean", "none"]]] = "mean",
 ) -> Tensor:
     """Compute Spatial Correlation Coefficient (SCC_).
 
