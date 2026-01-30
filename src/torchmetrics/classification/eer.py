@@ -37,7 +37,7 @@ class BinaryEER(BinaryROC):
     r"""Compute Equal Error Rate (EER) for multiclass classification task.
 
     .. math::
-        \text{EER} = \frac{\text{FAR} + (1 - \text{FRR})}{2}, \text{where} \min_t abs(FAR_t-FRR_t)
+        \text{EER} = \frac{\text{FAR} + \text{FRR}}{2}, \text{where} \min_t abs(FAR_t-FRR_t)
 
     The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and True Positive Rate (TPR) are
     equal, or in practise minimized. A lower EER value signifies higher system accuracy.
