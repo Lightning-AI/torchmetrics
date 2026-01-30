@@ -28,7 +28,8 @@ seed_all(42)
 
 _INPUTS_0 = _Input(
     # Shape of input tensors is (num_batches, batch_size, height, width, 2).
-    preds=torch.tensor([
+    preds=torch
+    .tensor([
         [[6, 0], [0, 0], [6, 0], [6, 0], [0, 1]],
         [[0, 0], [0, 0], [6, 0], [0, 1], [0, 1]],
         [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
@@ -37,7 +38,8 @@ _INPUTS_0 = _Input(
     ])
     .reshape((1, 1, 5, 5, 2))
     .repeat(2, 1, 1, 1, 1),
-    target=torch.tensor([
+    target=torch
+    .tensor([
         [[6, 0], [6, 0], [6, 0], [6, 0], [0, 0]],
         [[0, 1], [0, 1], [6, 0], [0, 0], [0, 0]],
         [[0, 1], [0, 1], [6, 0], [1, 0], [1, 0]],
@@ -49,12 +51,14 @@ _INPUTS_0 = _Input(
 )
 _INPUTS_1 = _Input(
     # Shape of input tensors is (num_batches, batch_size, num_points, 2).
-    preds=torch.tensor(
+    preds=torch
+    .tensor(
         [[10, 0], [10, 123], [0, 1], [10, 0], [1, 2]],
     )
     .reshape((1, 1, 5, 2))
     .repeat(2, 1, 1, 1),
-    target=torch.tensor(
+    target=torch
+    .tensor(
         [[10, 0], [10, 0], [0, 0], [0, 1], [1, 0]],
     )
     .reshape((1, 1, 5, 2))
