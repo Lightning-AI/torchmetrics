@@ -9,8 +9,22 @@ from itertools import chain
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from pkg_resources import Requirement, yield_lines
+from packaging.requirements import Requirement
 from setuptools import find_packages, setup
+
+
+def _yield_lines(strs: Union[str, Iterable[str]]) -> Iterator[str]:
+    """Yield non-empty, non-comment lines from a string or iterable of strings.
+
+    Adapted from pkg_resources.yield_lines which was removed in setuptools 82.0.0.
+    """
+    if isinstance(strs, str):
+        strs = strs.splitlines()
+    for line in strs:
+        line = line.strip()
+        if line and not line.startswith("#"):
+            yield line
+
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 _PATH_SOURCE = os.path.join(_PATH_ROOT, "src")
@@ -48,10 +62,10 @@ class _RequirementWithComment(Requirement):
         if self.strict:
             return f"{out}  {self.strict_string}"
         if unfreeze:
-            for operator, version in self.specs:
-                if operator in ("<", "<="):
+            for spec in self.specifier:
+                if spec.operator in ("<", "<="):
                     # drop upper bound
-                    return out.replace(f"{operator}{version},", "")
+                    return out.replace(f"{spec.operator}{spec.version},", "")
         return out
 
 
@@ -66,7 +80,7 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
     ['this', 'example', 'foo  # strict', 'thing']
 
     """
-    lines = yield_lines(strs)
+    lines = _yield_lines(strs)
     pip_argument = None
     for line in lines:
         # Drop comments -- a hash without a space may be in a URL.
