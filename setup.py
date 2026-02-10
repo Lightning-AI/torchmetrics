@@ -17,6 +17,7 @@ def _yield_lines(strs: Union[str, Iterable[str]]) -> Iterator[str]:
     """Yield non-empty, non-comment lines from a string or iterable of strings.
 
     Adapted from pkg_resources.yield_lines which was removed in setuptools 82.0.0.
+
     """
     if isinstance(strs, str):
         strs = strs.splitlines()
