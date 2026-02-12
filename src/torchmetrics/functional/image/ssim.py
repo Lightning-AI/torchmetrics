@@ -111,14 +111,14 @@ def _ssim_update(
         raise ValueError(f"Expected `sigma` to have positive number. Got {sigma}.")
 
     if data_range is None:
-        data_range = max(preds.max() - preds.min(), target.max() - target.min())  # type: ignore[call-overload]
+        data_range = max(preds.max() - preds.min(), target.max() - target.min()).item()
     elif isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
         data_range = data_range[1] - data_range[0]
 
-    c1 = pow(k1 * data_range, 2)  # type: ignore[operator]
-    c2 = pow(k2 * data_range, 2)  # type: ignore[operator]
+    c1 = pow(k1 * data_range, 2)
+    c2 = pow(k2 * data_range, 2)
     device = preds.device
 
     channel = preds.size(1)
