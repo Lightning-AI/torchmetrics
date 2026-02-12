@@ -64,6 +64,12 @@ _input_retrieval_scores_with_ignore_index = _Input(
     ),
 )
 
+_input_retrieval_scores_2d = _Input(
+    indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE, 2)),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2),
+    target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, 2)),
+)
+
 # with errors
 _input_retrieval_scores_no_target = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),

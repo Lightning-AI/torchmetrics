@@ -25,6 +25,7 @@ from typing_extensions import Literal
 from unittests._helpers import seed_all
 from unittests._helpers.testers import Metric, MetricTester
 from unittests.retrieval._inputs import _input_retrieval_scores as _irs
+from unittests.retrieval._inputs import _input_retrieval_scores_2d as _irs_2d
 from unittests.retrieval._inputs import _input_retrieval_scores_all_target as _irs_all
 from unittests.retrieval._inputs import _input_retrieval_scores_empty as _irs_empty
 from unittests.retrieval._inputs import _input_retrieval_scores_extra as _irs_extra
@@ -99,15 +100,20 @@ def _compute_sklearn_metric(
     target: Union[Tensor, array],
     indexes: Optional[np.ndarray] = None,
     metric: Optional[Callable] = None,
-    empty_target_action: str = "skip",
+    empty_target_action: Optional[str] = None,
     ignore_index: Optional[int] = None,
     reverse: bool = False,
     aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+    metric_name: Optional[str] = None,
     **kwargs: Any,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
     if indexes is None:
-        indexes = np.full_like(preds, fill_value=0, dtype=np.int64)
+        if metric_name == "ndcg" and preds.ndim == 2:
+            row_indexes = np.arange(preds.shape[0], dtype=np.int64)[:, None]
+            indexes = np.tile(row_indexes, (1, preds.shape[1]))
+        else:
+            indexes = np.zeros_like(preds, dtype=np.int64)
     if isinstance(indexes, Tensor):
         indexes = indexes.cpu().numpy()
     if isinstance(preds, Tensor):
@@ -393,6 +399,7 @@ _default_metric_functional_input_arguments_with_non_binary_target = {
     "argnames": "preds,target",
     "argvalues": [
         (_irs.preds, _irs.target),
+        (_irs_2d.preds, _irs_2d.target),
         (_irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.preds, _irs_no_tgt.target),
         (_irs_int_tgt.preds, _irs_int_tgt.target),
@@ -494,11 +501,14 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
         reference_metric: Callable,
         metric_args: dict,
+        metric_name: Optional[str] = None,
         reverse: bool = False,
         **kwargs: Any,
     ):
         """Test functional implementation of metric."""
-        _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
+        _ref_metric_adapted = partial(
+            _compute_sklearn_metric, metric=reference_metric, reverse=reverse, metric_name=metric_name, **metric_args
+        )
 
         super().run_functional_metric_test(
             preds=preds,
