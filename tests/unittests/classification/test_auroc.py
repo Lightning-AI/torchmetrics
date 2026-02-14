@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from functools import partial
+from typing import Any, Callable, Optional
 
 import numpy as np
 import pytest
@@ -20,16 +21,23 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_auc_score as sk_roc_auc_score
+from torch import Tensor
 
-from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAUROC, MultilabelAUROC
+from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MaskedBinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
-from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
-from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests._helpers.testers import (
+    MetricTester,
+    inject_ignore_index,
+    remove_ignore_index,
+    remove_ignore_index_groups,
+)
+from unittests._helpers.testers import _assert_requires_grad as _core_assert_requires_grad
+from unittests.classification._inputs import _binary_cases, _masked_binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
@@ -138,6 +146,157 @@ class TestBinaryAUROC(MetricTester):
             ap1 = binary_auroc(pred, true, thresholds=None)
             ap2 = binary_auroc(pred, true, thresholds=threshold_fn(t.flip(0)))
             assert torch.allclose(ap1, ap2)
+
+
+def _reference_sklearn_masked_auroc_binary(preds, target, mask, max_fpr, ignore_index):
+    preds = preds.numpy().flatten()
+    target = target.numpy().flatten()
+    mask = mask.numpy().flatten() if mask is not None else None
+    if not ((preds > 0) & (preds < 1)).all():
+        preds = sigmoid(preds)
+    target, preds, mask = remove_ignore_index_groups(target=target, preds=preds, groups=mask, ignore_index=ignore_index)
+    if mask is not None:
+        preds, target = preds[mask], target[mask]
+    return sk_roc_auc_score(target, preds, max_fpr=max_fpr)
+
+
+def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None) -> None:
+    if isinstance(pl_result, dict) and key is None:
+        for res in pl_result.values():
+            _core_assert_requires_grad(metric, res)
+    else:
+        _core_assert_requires_grad(metric, pl_result, key)
+
+
+class MaskedBinaryAUROCTester(MetricTester):
+    """Tester class for `MaskedBinaryAUROC` metric overriding some defaults."""
+
+    @staticmethod
+    def run_differentiability_test(
+        preds: Tensor,
+        target: Tensor,
+        mask: Tensor,
+        metric_module: Metric,
+        metric_functional: Optional[Callable] = None,
+        metric_args: Optional[dict] = None,
+    ) -> None:
+        """Test if a metric is differentiable or not.
+
+        Args:
+            preds: torch tensor with predictions
+            target: torch tensor with targets
+            metric_module: the metric module to test
+            metric_functional: functional version of the metric
+            metric_args: dict with additional arguments used for class initialization
+            mask: Tensor with binary mask indicating valid elements.
+
+        """
+        metric_args = metric_args or {}
+        # only floating point tensors can require grad
+        metric = metric_module(**metric_args)
+        if preds.is_floating_point():
+            preds.requires_grad = True
+            out = metric(preds[0, :2], target[0, :2], mask[0, :2])
+
+            # Check if requires_grad matches is_differentiable attribute
+            _assert_requires_grad(metric, out)
+
+            if metric.is_differentiable and metric_functional is not None:
+                # check for numerical correctness
+                assert torch.autograd.gradcheck(
+                    partial(metric_functional, **metric_args), (preds[0, :2].double(), target[0, :2])
+                )
+
+            # reset as else it will carry over to other tests
+            preds.requires_grad = False
+
+
+@pytest.mark.parametrize("inputs", _masked_binary_cases)
+class TestMaskedBinaryAUROC(MaskedBinaryAUROCTester):
+    """Test class for `MaskedBinaryAUROC` metric."""
+
+    @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_masked_binary_auroc(self, inputs, ddp, max_fpr, ignore_index):
+        """Test class implementation of metric."""
+        preds, target, mask = inputs
+
+        if ignore_index is not None:
+            target = inject_ignore_index(target, ignore_index)
+
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MaskedBinaryAUROC,
+            reference_metric=partial(
+                _reference_sklearn_masked_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index
+            ),
+            metric_args={
+                "max_fpr": max_fpr,
+                "thresholds": None,
+                "ignore_index": ignore_index,
+            },
+            mask=mask,
+            fragment_kwargs=True,
+        )
+
+    def test_masked_binary_auroc_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target, mask = inputs
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MaskedBinaryAUROC,
+            metric_functional=binary_auroc,
+            metric_args={"thresholds": None},
+            mask=mask,
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_masked_binary_auroc_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target, mask = inputs
+
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MaskedBinaryAUROC,
+            metric_args={"thresholds": None},
+            dtype=dtype,
+            mask=mask,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_masked_binary_auroc_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target, mask = inputs
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MaskedBinaryAUROC,
+            metric_args={"thresholds": None},
+            dtype=dtype,
+            mask=mask,
+        )
+
+    def test_mask_error_on_wrong_dtype_and_shape(self, inputs):
+        """Test that errors are raised on wrong mask dtype and shape."""
+        preds, target, _ = inputs
+
+        # wrong dtype: mask should be boolean
+        mask_wrong_dtype = torch.randint(high=2, size=preds.shape, dtype=torch.int32)
+        with pytest.raises(ValueError, match="Mask must be boolean, got "):
+            MaskedBinaryAUROC()(preds, target, mask=mask_wrong_dtype)
+
+        # wrong shape: mask must match preds/target shape
+        mask_wrong_shape = torch.randint(high=2, size=(preds.shape[0],), dtype=torch.bool)
+        with pytest.raises(ValueError, match="Mask shape "):
+            MaskedBinaryAUROC()(preds, target, mask=mask_wrong_shape)
 
 
 def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
