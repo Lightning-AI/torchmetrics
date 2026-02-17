@@ -18,7 +18,11 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
-from sklearn.metrics import auc, roc_curve
+
+from torchmetrics.utilities.imports import _PYTDC_AVAILABLE
+
+if _PYTDC_AVAILABLE:
+    from tdc.evaluator import range_logAUC
 
 from torchmetrics.classification.logauc import BinaryLogAUC, LogAUC, MulticlassLogAUC, MultilabelLogAUC
 from torchmetrics.functional.classification.logauc import binary_logauc, multiclass_logauc, multilabel_logauc
@@ -30,79 +34,6 @@ from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
-
-def range_logauc(
-    true_y: np.ndarray, predicted_score: np.ndarray, fpr_range: tuple[float, float] = (0.001, 0.1)
-) -> float:
-    """Calculate logAUC in a certain FPR range (default range: [0.001, 0.1]).
-
-    Adapted from Therapeutics Commons (TDC): Multimodal Foundation for Therapeutic Science
-    https://github.com/mims-harvard/TDC/blob/main/tdc/evaluator.py#L66
-
-    Original Author: Yunchao "Lance" Liu (lanceknight26@gmail.com)
-
-    This metric is used in applications where the positive and negative are imbalanced and a low
-    false positive rate is of high importance. The score is computed by first computing the ROC curve,
-    which then is interpolated to the specified range of false positive rates (FPR) and then the log
-    is taken of the FPR before the area under the curve (AUC) is computed.
-
-    A perfect classifier gets a logAUC[0.001, 0.1] of 1, while a random classifier gets a
-    logAUC[0.001, 0.1] of around 0.0215.
-
-    References:
-        [1] Mysinger, M.M. and B.K. Shoichet, Rapid Context-Dependent Ligand
-        Desolvation in Molecular Docking. Journal of Chemical Information and
-        Modeling, 2010. 50(9): p. 1561-1573.
-        [2] Liu, Yunchao, et al. "Interpretable Chirality-Aware Graph Neural
-        Network for Quantitative Structure Activity Relationship Modeling in
-        Drug Discovery." bioRxiv (2022).
-
-    Args:
-        true_y: numpy array of the ground truth. Values are either 0 (inactive) or 1(active).
-        predicted_score: numpy array of the predicted score (The score does not have to be between 0 and 1)
-        fpr_range: the range for calculating the logAUC formatted in (x, y) with x being the lower bound
-            and y being the upper bound
-
-    Returns:
-        float: the logAUC score
-
-    """
-    # FPR range validity check
-    if fpr_range is None:
-        raise ValueError("FPR range cannot be None")
-    lower_bound = fpr_range[0]
-    upper_bound = fpr_range[1]
-    if lower_bound >= upper_bound:
-        raise ValueError("FPR upper_bound must be greater than lower_bound")
-
-    fpr, tpr, _thresholds = roc_curve(true_y, predicted_score, pos_label=1)
-
-    tpr = np.append(tpr, np.interp([lower_bound, upper_bound], fpr, tpr))
-    fpr = np.append(fpr, [lower_bound, upper_bound])
-
-    # Sort both x-, y-coordinates array
-    tpr = np.sort(tpr)
-    fpr = np.sort(fpr)
-
-    # Get the data points' coordinates. log_fpr is the x coordinate, tpr is the y coordinate.
-    log_fpr = np.log10(fpr)
-    x = log_fpr
-    y = tpr
-    lower_bound = np.log10(lower_bound)
-    upper_bound = np.log10(upper_bound)
-
-    # Get the index of the lower and upper bounds
-    lower_bound_idx = np.where(x == lower_bound)[-1][-1]
-    upper_bound_idx = np.where(x == upper_bound)[-1][-1]
-
-    # Create a new array trimmed at the lower and upper bound
-    trim_x = x[lower_bound_idx : upper_bound_idx + 1]
-    trim_y = y[lower_bound_idx : upper_bound_idx + 1]
-
-    area = auc(trim_x, trim_y) / (upper_bound - lower_bound)
-    return float(area)
-
-
 seed_all(42)
 
 
@@ -113,9 +44,10 @@ def _binary_compare_implementation(preds, target, fpr_range, ignore_index=None):
     if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    return range_logauc(target, preds, fpr_range=fpr_range)
+    return range_logAUC(target, preds, FPR_range=fpr_range)
 
 
+@pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
 @pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryLogAUC(MetricTester):
     """Test class for `BinaryLogAUC` metric."""
@@ -221,12 +153,13 @@ def _multiclass_compare_implementation(preds, target, fpr_range, average):
     scores = []
     for i in range(NUM_CLASSES):
         p, t = preds[:, i], (target == i).astype(int)
-        scores.append(range_logauc(t, p, fpr_range=fpr_range))
+        scores.append(range_logAUC(t, p, FPR_range=fpr_range))
     if average == "macro":
         return np.mean(scores)
     return scores
 
 
+@pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
 @pytest.mark.parametrize(
     "inputs", [_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]]
 )
@@ -339,12 +272,13 @@ def _multilabel_compare_implementation(preds, target, fpr_range, average):
     scores = []
     for i in range(NUM_CLASSES):
         p, t = preds[:, i], target[:, i]
-        scores.append(range_logauc(t, p, fpr_range=fpr_range))
+        scores.append(range_logAUC(t, p, FPR_range=fpr_range))
     if average == "macro":
         return np.mean(scores)
     return scores
 
 
+@pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
 @pytest.mark.parametrize(
     "inputs", [_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]]
 )
