@@ -264,4 +264,3 @@ def test_safe_divide():
         assert result.device == torch.device(device), f"Result not on correct device: {result.device}"
         expected_dev = torch.tensor([0.0, 2.0, 1.5], device=device)
         assert torch.allclose(result, expected_dev)
-
