@@ -238,3 +238,29 @@ def test_half_precision_top_k_cpu_raises_error():
     x = torch.randn(100, 10, dtype=torch.half)
     with pytest.raises(RuntimeError, match="\"topk_cpu\" not implemented for 'Half'"):
         torch.topk(x, k=3, dim=1)
+
+
+def test_safe_divide():
+    """Test that _safe_divide works correctly and doesn't have race conditions."""
+    from torchmetrics.utilities.compute import _safe_divide
+
+    # Test basic functionality
+    num = torch.tensor([1.0, 2.0, 3.0])
+    denom = torch.tensor([0.0, 1.0, 2.0])
+    result = _safe_divide(num, denom)
+    expected = torch.tensor([0.0, 2.0, 1.5])
+    assert torch.allclose(result, expected)
+
+    # Test custom zero_division value
+    result = _safe_divide(num, denom, zero_division=99.0)
+    expected_custom = torch.tensor([99.0, 2.0, 1.5])
+    assert torch.allclose(result, expected_custom)
+
+    # Test that result is on the same device as input
+    for device in ["cpu"] + (["cuda"] if torch.cuda.is_available() else []):
+        num_dev = torch.tensor([1.0, 2.0, 3.0], device=device)
+        denom_dev = torch.tensor([0.0, 1.0, 2.0], device=device)
+        result = _safe_divide(num_dev, denom_dev)
+        assert result.device == torch.device(device), f"Result not on correct device: {result.device}"
+        expected_dev = torch.tensor([0.0, 2.0, 1.5], device=device)
+        assert torch.allclose(result, expected_dev)
