@@ -240,8 +240,8 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
                 # Only apply stabilization when min value is also large (indicating all values will overflow)
                 # This avoids the issue where subtracting max creates artificial ties for widely spread values
                 min_val = tensor.min()
-                max_val = tensor.max()
                 if min_val > 15:  # All values are large enough to potentially overflow
+                    max_val = tensor.max()
                     tensor = (tensor - max_val).sigmoid()
                 else:
                     tensor = tensor.sigmoid()
