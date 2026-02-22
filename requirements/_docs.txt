@@ -32,3 +32,5 @@ pydantic > 1.0.0, < 3.0.0
 # todo: until this has resolution - https://github.com/sphinx-gallery/sphinx-gallery/issues/1290
 # Image
 scikit-image ~=0.25
+# pin setuptools version for stability
+setuptools <82.2.0
