@@ -126,7 +126,7 @@ jobs:
 
       - name: Install package
         run: |
-          uv pip install . -U setuptools -r requirements/_doctest.txt \
+          uv pip install . -U "setuptools<82.2.0" -r requirements/_doctest.txt \
             $PIP_EXTRA_URL
           uv pip list
         timeout-minutes: 25
