@@ -2,3 +2,6 @@
 
 # ToDo: investigate and add validation with 2.0+ on GPU
 pytorch-lightning >=1.9.0, <2.6.0
+
+# pin setuptools version for stability
+setuptools <82.2.0
