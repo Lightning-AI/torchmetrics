@@ -3,6 +3,7 @@
 # [Choice] Python version: 3, 3.10, 3.11, 3.12
 ARG VARIANT="3.10"
 FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # [Choice] Node.js version: none, lts/*, 16, 14, 12, 10
 ARG NODE_VERSION="none"
@@ -12,11 +13,11 @@ RUN if [ "${NODE_VERSION}" != "none" ]; then \
 
 COPY requirements/ /tmp/pip-tmp/requirements/
 RUN \
-    pip3 install awscli && \
+    uv pip install --system awscli && \
     aws s3 sync --no-sign-request s3://sphinx-packages/ dist/  && \
     # trying to resolve pesq installation issue
-    pip3 install -q "numpy<1.24" && \
-    pip3 --disable-pip-version-check --no-cache-dir install \
+    uv pip install --system -q "numpy<1.24" && \
+    uv pip install --system --no-cache \
       -r /tmp/pip-tmp/requirements/_devel.txt \
       -r /tmp/pip-tmp/requirements/_docs.txt \
       --extra-index-url="https://download.pytorch.org/whl/cpu/" \
@@ -24,7 +25,7 @@ RUN \
     rm -rf /tmp/pip-tmp
 
 # [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
-# RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements/base.txt \
+# RUN uv pip install --system --no-cache -r /tmp/pip-tmp/requirements/base.txt \
 #    && rm -rf /tmp/pip-tmp
 
 # [Optional] Uncomment this section to install additional OS packages.
