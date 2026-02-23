@@ -105,8 +105,10 @@ RUN \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
     done && \
-    # trying to resolve pesq installation issue
-    uv pip install -q "numpy<1.24" && \
+    # trying to resolve pesq installation issue (numpy<1.24 uses distutils, removed in Python 3.12)
+    if python -c "import sys; exit(0 if sys.version_info < (3, 12) else 1)"; then \
+        uv pip install -q "numpy<1.24"; \
+    fi && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
     # switch some packages to be GPU related
