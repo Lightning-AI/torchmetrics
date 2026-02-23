@@ -73,7 +73,8 @@ RUN \
 
 RUN python${PYTHON_VERSION} -m venv /opt/venv
 
-ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv" \
+    PATH="/opt/venv/bin:$PATH"
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
