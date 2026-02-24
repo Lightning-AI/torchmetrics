@@ -15,10 +15,12 @@ ENV UV_SYSTEM_PYTHON=1
 
 COPY requirements/ /tmp/pip-tmp/requirements/
 RUN \
-    pip3 install awscli && \
+    uv pip install awscli && \
     aws s3 sync --no-sign-request s3://sphinx-packages/ dist/  && \
-    # trying to resolve pesq installation issue
-    uv pip install -q "numpy<1.24" && \
+    # trying to resolve pesq installation issue (numpy<1.24 uses distutils, removed in Python 3.12)
+    if python3 -c "import sys; exit(0 if sys.version_info < (3, 12) else 1)"; then \
+        uv pip install -q "numpy<1.24"; \
+    fi && \
     uv pip install --no-cache --index-strategy unsafe-best-match \
       -r /tmp/pip-tmp/requirements/_devel.txt \
       -r /tmp/pip-tmp/requirements/_docs.txt \
