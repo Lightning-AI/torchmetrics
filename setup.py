@@ -21,13 +21,11 @@ _FREEZE_REQUIREMENTS = os.environ.get("FREEZE_REQUIREMENTS", "0").lower() in ("1
 def _yield_lines(strs: Union[str, Iterable[str]]) -> Iterator[str]:
     """Yield non-empty, non-comment lines from a string or iterable of strings."""
     if isinstance(strs, str):
-        for line in strs.splitlines():
-            line = line.strip()
-            if line and not line.startswith("#"):
-                yield line
-    else:
-        for s in strs:
-            yield from _yield_lines(s)
+        strs = strs.splitlines()
+    for line in strs:
+        line = line.strip()
+        if line and not line.startswith("#"):
+            yield line
 
 
 class _RequirementWithComment(_Requirement):
