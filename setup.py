@@ -9,7 +9,7 @@ from itertools import chain
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from pkg_resources import Requirement, yield_lines
+from packaging.requirements import Requirement as _Requirement
 from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
@@ -18,8 +18,24 @@ _PATH_REQUIRE = os.path.join(_PATH_ROOT, "requirements")
 _FREEZE_REQUIREMENTS = os.environ.get("FREEZE_REQUIREMENTS", "0").lower() in ("1", "true")
 
 
-class _RequirementWithComment(Requirement):
+def _yield_lines(strs: Union[str, Iterable[str]]) -> Iterator[str]:
+    """Yield non-empty, non-comment lines from a string or iterable of strings."""
+    if isinstance(strs, str):
+        for line in strs.splitlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                yield line
+    else:
+        for s in strs:
+            yield from _yield_lines(s)
+
+
+class _RequirementWithComment(_Requirement):
     strict_string = "# strict"
+
+    @property
+    def specs(self) -> list[tuple[str, str]]:
+        return [(s.operator, s.version) for s in self.specifier]
 
     def __init__(self, *args: Any, comment: str = "", pip_argument: Optional[str] = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -56,7 +72,7 @@ class _RequirementWithComment(Requirement):
 
 
 def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_RequirementWithComment]:
-    r"""Adapted from `pkg_resources.parse_requirements` to include comments.
+    r"""Parse requirements from a string or iterable, preserving inline comments.
 
     >>> txt = ['# ignored', '', 'this # is an', '--piparg', 'example', 'foo # strict', 'thing', '-r different/file.txt']
     >>> [r.adjust('none') for r in _parse_requirements(txt)]
@@ -66,7 +82,7 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
     ['this', 'example', 'foo  # strict', 'thing']
 
     """
-    lines = yield_lines(strs)
+    lines = _yield_lines(strs)
     pip_argument = None
     for line in lines:
         # Drop comments -- a hash without a space may be in a URL.
