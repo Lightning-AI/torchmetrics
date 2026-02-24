@@ -19,7 +19,7 @@ RUN \
     aws s3 sync --no-sign-request s3://sphinx-packages/ dist/  && \
     # trying to resolve pesq installation issue
     uv pip install -q "numpy<1.24" && \
-    uv pip install --no-cache \
+    uv pip install --no-cache --index-strategy unsafe-best-match \
       -r /tmp/pip-tmp/requirements/_devel.txt \
       -r /tmp/pip-tmp/requirements/_docs.txt \
       --extra-index-url="https://download.pytorch.org/whl/cpu/" \
