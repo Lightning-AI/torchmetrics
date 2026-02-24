@@ -73,7 +73,10 @@ RUN \
 
 RUN python${PYTHON_VERSION} -m venv /opt/venv
 
-ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv" \
+    PATH="/opt/venv/bin:$PATH"
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # ─── Patch pkgutil only on Python 3.12+ ───
 RUN printf '%s\n' \
@@ -97,26 +100,26 @@ COPY .github/assistant.py ./assistant.py
 
 RUN \
     # set particular PyTorch version and requirements for assistant
-    pip install -U wget packaging "setuptools>=80.9.0" fire && \
+    uv pip install -U wget packaging "setuptools>=80.9.0" fire && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
     done && \
     # trying to resolve pesq installation issue
-    pip install -q "numpy<1.24" && \
+    uv pip install -q "numpy<1.24" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
     # switch some packages to be GPU related
     python assistant.py replace_str_requirements "onnxruntime" "onnxruntime_gpu" --req_files requirements/audio.txt && \
     # install develop environment
-    pip install --no-cache-dir -r requirements/_devel.txt \
+    uv pip install --no-cache -r requirements/_devel.txt \
       --extra-index-url="https://download.pytorch.org/whl/cu${CU_VERSION_MM}/" \
       --extra-index-url="https://download.pytorch.org/whl/test/cu${CU_VERSION_MM}" && \
     rm -rf requirements/
 
 RUN \
     # Show what we have
-    pip --version && \
-    pip list && \
+    uv --version && \
+    uv pip list && \
     python -c "import sys; ver = sys.version_info ; assert f'{ver.major}.{ver.minor}' == '$PYTHON_VERSION', ver" && \
     python -c "import torch; assert torch.__version__.startswith('$PYTORCH_VERSION'), torch.__version__"
