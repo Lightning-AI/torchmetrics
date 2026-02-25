@@ -5,4 +5,3 @@ numpy >1.20.0, <2.4.0
 packaging >17.1
 torch >=2.0.0, <2.9.0
 lightning-utilities >=0.8.0, <0.16.0
-setuptools <82.0.0 # pkg_resources was removed in setuptools 82.0.0
