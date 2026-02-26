@@ -126,8 +126,8 @@ jobs:
 
       - name: Install package
         run: |
-          uv pip install . -U setuptools -r requirements/_doctest.txt \
-            $PIP_EXTRA_URL
+          uv pip install . -U "${{ matrix.requires == 'oldest' && 'setuptools<82.0.0' || 'setuptools' }}" \
+            -r requirements/_doctest.txt $PIP_EXTRA_URL
           uv pip list
         timeout-minutes: 25
 
