@@ -2,14 +2,14 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.194.0/containers/python-3
 {
   "name": "PyTorch Lightning Metrics",
-  "image": "pytorchlightning/torchmetrics:devcontainer-py3.9",
+  "image": "pytorchlightning/torchmetrics:devcontainer-py3.10",
   // If you want to use a different Python version, uncomment the build object below
   // "build": {
   //     "dockerfile": "Dockerfile",
   //     "context": "..",
   //     "args": {
-  //         // Update 'VARIANT' to pick a Python version: 3, 3.6, 3.7, 3.8, 3.9
-  //         "VARIANT": "3.9",
+  //         // Update 'VARIANT' to pick a Python version: 3, 3.10, 3.11, 3.12
+  //         "VARIANT": "3.10",
   //         // Options
   //         "NODE_VERSION": "none"
   //     }
