@@ -27,14 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04", "macOS-14", "windows-2022"]
-        python-version: ["3.9", "3.11"]
+        python-version: ["3.10", "3.11"]
         requires: ["oldest", "latest"]
-        exclude:
-          - { python-version: "3.10", requires: "oldest" }
-          - { python-version: "3.10", os: "windows" } # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
-        include:
-          - { python-version: "3.10", requires: "latest", os: "ubuntu-22.04" }
-          # - { python-version: "3.10", requires: "latest", os: "macOS-14" } # M1 machine # todo: crashing for MPS out of memory
+        # exclude:
+        #   - { python-version: "3.10", requires: "oldest" }
+        #   - { python-version: "3.10", os: "windows" } # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       UV_TORCH_BACKEND: "cpu"

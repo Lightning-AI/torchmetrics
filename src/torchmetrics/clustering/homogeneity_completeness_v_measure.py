@@ -228,7 +228,7 @@ class VMeasureScore(Metric):
 
     The V-measure is the harmonic mean between homogeneity and completeness:
 
-    ..math::
+    .. math::
         v = \frac{(1 + \beta) * homogeneity * completeness}{\beta * homogeneity + completeness}
 
     where :math:`\beta` is a weight parameter that defines the weight of homogeneity in the harmonic mean, with the
