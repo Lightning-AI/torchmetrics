@@ -231,7 +231,7 @@ def _flexible_bincount(x: Tensor) -> Tensor:
 
     """
     unique_x, inverse_indices = torch.unique(x, return_inverse=True)
-    return _bincount(inverse_indices, minlength=len(unique_x))  # type: ignore[arg-type]
+    return _bincount(inverse_indices, minlength=len(unique_x))
 
 
 def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
