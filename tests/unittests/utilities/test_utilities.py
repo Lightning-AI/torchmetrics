@@ -261,6 +261,6 @@ def test_safe_divide():
         num_dev = torch.tensor([1.0, 2.0, 3.0], device=device)
         denom_dev = torch.tensor([0.0, 1.0, 2.0], device=device)
         result = _safe_divide(num_dev, denom_dev)
-        assert result.device == torch.device(device), f"Result not on correct device: {result.device}"
+        assert result.device.type == device, f"Result not on correct device: {result.device}"
         expected_dev = torch.tensor([0.0, 2.0, 1.5], device=device)
         assert torch.allclose(result, expected_dev)
