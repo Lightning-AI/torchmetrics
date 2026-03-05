@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed device mismatch in `Metric` base class ([#3316](https://github.com/Lightning-AI/torchmetrics/pull/3316))
-- Fixed nd slicing deprecation warning ([#3319](https://github.com/Lightning-AI/torchmetrics/pull/3319))
+- Fixed n-d slicing deprecation warning ([#3319](https://github.com/Lightning-AI/torchmetrics/pull/3319))
 - Fixed tensor copy warning in `logAUC` ([#3295](https://github.com/Lightning-AI/torchmetrics/pull/3295))
 - Fixed memory issues when computing retrieval metrics with high-valued indices ([#3291](https://github.com/Lightning-AI/torchmetrics/pull/3291))
 - Fixed race condition in `_safe_divide` by creating tensor directly on device ([#3284](https://github.com/Lightning-AI/torchmetrics/pull/3284))
