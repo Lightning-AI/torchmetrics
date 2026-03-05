@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import socket
 import sys
 
 import numpy as np
@@ -20,7 +19,6 @@ import torch
 from lightning_utilities.test.warning import no_warning_call
 from torch import tensor
 from unittests._helpers import _IS_WINDOWS
-from unittests.conftest import MAX_PORT, START_PORT
 
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
@@ -242,13 +240,27 @@ def test_half_precision_top_k_cpu_raises_error():
         torch.topk(x, k=3, dim=1)
 
 
-def find_free_port(start=START_PORT, end=MAX_PORT):
-    """Returns an available localhost port in the given range or returns -1 if no port available."""
-    for port in range(start, end + 1):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(("localhost", port))
-                return port
-            except OSError:
-                continue
-    return -1
+def test_safe_divide():
+    """Test that _safe_divide works correctly and doesn't have race conditions."""
+    from torchmetrics.utilities.compute import _safe_divide
+
+    # Test basic functionality
+    num = torch.tensor([1.0, 2.0, 3.0])
+    denom = torch.tensor([0.0, 1.0, 2.0])
+    result = _safe_divide(num, denom)
+    expected = torch.tensor([0.0, 2.0, 1.5])
+    assert torch.allclose(result, expected)
+
+    # Test custom zero_division value
+    result = _safe_divide(num, denom, zero_division=99.0)
+    expected_custom = torch.tensor([99.0, 2.0, 1.5])
+    assert torch.allclose(result, expected_custom)
+
+    # Test that result is on the same device as input
+    for device in ["cpu"] + (["cuda"] if torch.cuda.is_available() else []):
+        num_dev = torch.tensor([1.0, 2.0, 3.0], device=device)
+        denom_dev = torch.tensor([0.0, 1.0, 2.0], device=device)
+        result = _safe_divide(num_dev, denom_dev)
+        assert result.device.type == device, f"Result not on correct device: {result.device}"
+        expected_dev = torch.tensor([0.0, 2.0, 1.5], device=device)
+        assert torch.allclose(result, expected_dev)

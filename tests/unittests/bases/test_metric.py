@@ -324,6 +324,14 @@ def test_device_and_dtype_transfer(tmpdir):
     metric.reset()
     assert metric.x.dtype == torch.float16
 
+    default_dtype = torch.get_default_dtype()
+    torch.set_default_dtype(torch.float16)
+    with torch.device("cuda", index=0):
+        metric = DummyMetricSum()
+        assert metric.device == torch.device("cuda", index=0)
+        assert metric.x.dtype == torch.float16
+    torch.set_default_dtype(default_dtype)
+
 
 def test_disable_of_normal_dtype_methods():
     """Check that the default dtype changing methods does nothing."""

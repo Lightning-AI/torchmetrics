@@ -33,8 +33,8 @@ jobs:
       import-name: "torchmetrics"
       testing-matrix: |
         {
-          "os": ["ubuntu-22.04", "macos-13", "windows-2022"],
-          "python-version": ["3.9", "3.11"]
+          "os": ["ubuntu-22.04", "macOS-14", "windows-2022"],
+          "python-version": ["3.10", "3.11"]
         }
 
   check-md-links:
