@@ -55,8 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed race condition in `_safe_divide` by creating tensor directly on device ([#3284](https://github.com/Lightning-AI/torchmetrics/pull/3284))
 
 
----
-
 ## [1.8.2] - 2025-09-03
 
 ### Fixed
