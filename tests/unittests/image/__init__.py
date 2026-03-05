@@ -13,23 +13,6 @@
 # limitations under the License.
 import os
 
-import torch
-import torch.distributed as dist
-
 from unittests import _PATH_ALL_TESTS
 
 _SAMPLE_IMAGE = os.path.join(_PATH_ALL_TESTS, "_data", "image", "i01_01_5.bmp")
-
-
-def setup_ddp(rank: int, world_size: int, free_port: int):
-    """Set up DDP with a free port and assign CUDA device to the given rank."""
-    os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(free_port)
-    dist.init_process_group(backend="nccl", rank=rank, world_size=world_size)
-    torch.cuda.set_device(rank)
-
-
-def cleanup_ddp():
-    """Clean up the DDP process group if initialized."""
-    if dist.is_initialized():
-        dist.destroy_process_group()
