@@ -38,19 +38,19 @@ seed_all(42)
 
 def test_error_on_wrong_input():
     """Test that base metric class raises error on wrong input types."""
-    with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_on_step` to be an `bool` but.*"):
+    with pytest.raises(ValueError, match=r"Expected keyword argument `dist_sync_on_step` to be an `bool` but\.\*"):
         DummyMetric(dist_sync_on_step=None)
 
-    with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
+    with pytest.raises(ValueError, match=r"Expected keyword argument `dist_sync_fn` to be an callable function\.\*"):
         DummyMetric(dist_sync_fn=[2, 3])
 
-    with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` but.*"):
+    with pytest.raises(ValueError, match=r"Expected keyword argument `compute_on_cpu` to be an `bool` but\.\*"):
         DummyMetric(compute_on_cpu=None)
 
-    with pytest.raises(ValueError, match="Expected keyword argument `sync_on_compute` to be a `bool` but.*"):
+    with pytest.raises(ValueError, match=r"Expected keyword argument `sync_on_compute` to be a `bool` but\.\*"):
         DummyMetric(sync_on_compute=None)
 
-    with pytest.raises(ValueError, match="Expected keyword argument `compute_with_cache` to be a `bool` but got.*"):
+    with pytest.raises(ValueError, match=r"Expected keyword argument `compute_with_cache` to be a `bool` but got\.\*"):
         DummyMetric(compute_with_cache=None)
 
     with pytest.raises(ValueError, match="Unexpected keyword arguments: `foo`"):
@@ -78,16 +78,16 @@ def test_add_state():
     metric.add_state("c", tensor(0), "cat")
     assert metric._reductions["c"]([tensor([1]), tensor([1])]).shape == (2,)
 
-    with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
+    with pytest.raises(ValueError, match=r"`dist_reduce_fx` must be callable or one of \.\*"):
         metric.add_state("d1", tensor(0), "xyz")
 
-    with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
+    with pytest.raises(ValueError, match=r"`dist_reduce_fx` must be callable or one of \.\*"):
         metric.add_state("d2", tensor(0), 42)
 
-    with pytest.raises(ValueError, match="state variable must be a tensor or any empty list .*"):
+    with pytest.raises(ValueError, match=r"state variable must be a tensor or any empty list \.\*"):
         metric.add_state("d3", [tensor(0)], "sum")
 
-    with pytest.raises(ValueError, match="state variable must be a tensor or any empty list .*"):
+    with pytest.raises(ValueError, match=r"state variable must be a tensor or any empty list \.\*"):
         metric.add_state("d4", 42, "sum")
 
     def custom_fx(_):
@@ -360,7 +360,7 @@ def test_warning_on_compute_before_update(recwarn):
 
     metric.reset()
 
-    with pytest.warns(UserWarning, match=r"The ``compute`` method of metric .*"):
+    with pytest.warns(UserWarning, match=r"The ``compute`` method of metric \.\*"):
         val = metric.compute()
     assert val == 0.0
 
@@ -647,13 +647,13 @@ def test_merge_state_feature_raises_errors():
     metric2 = SumMetric()
     metric3 = MeanMetric()
 
-    with pytest.raises(ValueError, match="Expected incoming state to be a.*"):
+    with pytest.raises(ValueError, match=r"Expected incoming state to be a\.\*"):
         metric.merge_state(2)
 
-    with pytest.raises(RuntimeError, match="``merge_state`` is not supported.*"):
+    with pytest.raises(RuntimeError, match=r"``merge_state`` is not supported\.\*"):
         metric.merge_state({"sum_value": torch.tensor(2)})
 
-    with pytest.raises(ValueError, match="Expected incoming state to be an.*"):
+    with pytest.raises(ValueError, match=r"Expected incoming state to be an\.\*"):
         metric2.merge_state(metric3)
 
 

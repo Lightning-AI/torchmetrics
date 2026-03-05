@@ -135,5 +135,5 @@ class TestPSNR(MetricTester):
 
 def test_error_on_color_images():
     """Test that appropriate error is raised when color images are passed to PSNRB metric."""
-    with pytest.raises(ValueError, match="`psnrb` metric expects grayscale images.*"):
+    with pytest.raises(ValueError, match=r"`psnrb` metric expects grayscale images\.\*"):
         peak_signal_noise_ratio_with_blocked_effect(torch.rand(1, 3, 16, 16), torch.rand(1, 3, 16, 16), data_range=1.0)

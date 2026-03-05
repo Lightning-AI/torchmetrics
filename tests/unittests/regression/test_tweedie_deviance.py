@@ -127,25 +127,25 @@ def test_error_on_different_shape(metric_class=TweedieDevianceScore):
 
 def test_error_on_invalid_inputs(metric_class=TweedieDevianceScore):
     """Test that error is raised on wrong argument combinations."""
-    with pytest.raises(ValueError, match="Deviance Score is not defined for power=0.5."):
+    with pytest.raises(ValueError, match=r"Deviance Score is not defined for power=0\.5\."):
         metric_class(power=0.5)
 
     metric = metric_class(power=1)
     with pytest.raises(
-        ValueError, match="For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative."
+        ValueError, match=r"For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative\."
     ):
         metric(torch.tensor([-1.0, 2.0, 3.0]), torch.rand(3))
 
     with pytest.raises(
-        ValueError, match="For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative."
+        ValueError, match=r"For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative\."
     ):
         metric(torch.rand(3), torch.tensor([-1.0, 2.0, 3.0]))
 
     metric = metric_class(power=2)
-    with pytest.raises(ValueError, match="For power=2, both 'preds' and 'targets' have to be strictly positive."):
+    with pytest.raises(ValueError, match=r"For power=2, both 'preds' and 'targets' have to be strictly positive\."):
         metric(torch.tensor([-1.0, 2.0, 3.0]), torch.rand(3))
 
-    with pytest.raises(ValueError, match="For power=2, both 'preds' and 'targets' have to be strictly positive."):
+    with pytest.raises(ValueError, match=r"For power=2, both 'preds' and 'targets' have to be strictly positive\."):
         metric(torch.rand(3), torch.tensor([-1.0, 2.0, 3.0]))
 
 

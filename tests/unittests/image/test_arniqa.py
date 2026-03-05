@@ -131,10 +131,10 @@ def test_normalize_arg():
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
-    with pytest.raises(ValueError, match="Argument `regressor_dataset` must be one .*"):
+    with pytest.raises(ValueError, match=r"Argument `regressor_dataset` must be one \.\*"):
         ARNIQA(regressor_dataset="spaq")
 
-    with pytest.raises(ValueError, match="Argument `reduction` must be one .*"):
+    with pytest.raises(ValueError, match=r"Argument `reduction` must be one \.\*"):
         ARNIQA(regressor_dataset="koniq10k", reduction=None)
 
 
@@ -144,7 +144,7 @@ def test_error_on_wrong_input_shape():
     """Test error is raised on wrong input shape to update method."""
     inp = torch.rand(1, 1, 224, 224)
     metric = ARNIQA()
-    with pytest.raises(ValueError, match="Input image must have .*"):
+    with pytest.raises(ValueError, match=r"Input image must have \.\*"):
         metric(inp)
 
 
@@ -154,7 +154,7 @@ def test_error_on_wrong_normalize_value():
     """Test error is raised on wrong normalize parameter value to update method."""
     inp = torch.randn(1, 3, 224, 224)
     metric = ARNIQA(normalize=True)
-    with pytest.raises(ValueError, match="Input image values must be .*"):
+    with pytest.raises(ValueError, match=r"Input image values must be \.\*"):
         metric(inp)
 
 

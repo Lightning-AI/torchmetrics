@@ -81,5 +81,5 @@ def test_error_on_different_shape(metric_class=ContinuousRankedProbabilityScore)
 def test_error_on_single_ensemble_member():
     """Test that error is raised on single ensemble member."""
     metric = ContinuousRankedProbabilityScore()
-    with pytest.raises(ValueError, match="CRPS requires at least 2 ensemble members, but.*"):
+    with pytest.raises(ValueError, match=r"CRPS requires at least 2 ensemble members, but\.\*"):
         metric(torch.randn(100, 1), torch.randn(100))

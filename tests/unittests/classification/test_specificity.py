@@ -408,7 +408,7 @@ def _reference_specificity_multilabel_global(preds, target, ignore_index, averag
             idx = t == ignore_index
             t = t[~idx]
             p = p[~idx]
-        tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
+        tn, fp, _fn, _tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
         tns.append(tn)
         fps.append(fp)
 
@@ -612,7 +612,7 @@ def test_wrapper_class(metric, kwargs, base_metric=Specificity):
     """Test the wrapper class."""
     assert issubclass(base_metric, Metric)
     if metric is None:
-        with pytest.raises(ValueError, match=r"Invalid *"):
+        with pytest.raises(ValueError, match=r"Invalid \*"):
             base_metric(**kwargs)
     else:
         instance = base_metric(**kwargs)

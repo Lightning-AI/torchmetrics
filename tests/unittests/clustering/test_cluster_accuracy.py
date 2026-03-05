@@ -81,5 +81,5 @@ def test_cluster_accuracy_sanity_check():
 def test_cluster_accuracy_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic
-    with pytest.raises(ValueError, match=r"Expected *"):
+    with pytest.raises(ValueError, match=r"Expected \*"):
         cluster_accuracy(preds, target, num_classes=NUM_CLASSES)

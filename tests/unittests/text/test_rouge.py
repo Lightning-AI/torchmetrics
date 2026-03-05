@@ -173,7 +173,7 @@ def test_rouge_metric_raises_errors_and_warnings():
     if not _NLTK_AVAILABLE:
         with pytest.raises(
             ModuleNotFoundError,
-            match="ROUGE metric requires that `nltk` is installed."
+            match=r"ROUGE metric requires that `nltk` is installed\."
             " Either as `pip install torchmetrics[text]` or `pip install nltk`.",
         ):
             ROUGEScore()
@@ -183,10 +183,10 @@ def test_rouge_metric_wrong_key_value_error():
     """Test errors are raised on wrongly provided keys."""
     key = ("rouge1", "rouge")
 
-    with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
+    with pytest.raises(ValueError, match=r"Got unknown rouge key rouge\. Expected to be one of"):
         ROUGEScore(rouge_keys=key)
 
-    with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
+    with pytest.raises(ValueError, match=r"Got unknown rouge key rouge\. Expected to be one of"):
         rouge_score(
             _inputs_single_sentence_single_reference.preds,
             _inputs_single_sentence_single_reference.target,

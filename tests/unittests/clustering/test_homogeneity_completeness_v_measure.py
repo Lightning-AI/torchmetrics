@@ -94,5 +94,5 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
 def test_homogeneity_completeness_vmeasure_functional_raises_invalid_task(functional_metric):
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic
-    with pytest.raises(ValueError, match=r"Expected *"):
+    with pytest.raises(ValueError, match=r"Expected \*"):
         functional_metric(preds, target)

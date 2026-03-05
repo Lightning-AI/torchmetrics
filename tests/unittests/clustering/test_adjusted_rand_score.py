@@ -57,7 +57,7 @@ class TestAdjustedRandScore(MetricTester):
 def test_rand_score_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic
-    with pytest.raises(ValueError, match=r"Expected *"):
+    with pytest.raises(ValueError, match=r"Expected \*"):
         adjusted_rand_score(preds, target)
 
 

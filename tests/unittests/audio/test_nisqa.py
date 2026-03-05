@@ -180,23 +180,23 @@ def test_error_on_short_input():
     """Test error on short input."""
     preds = torch.rand(3000)
     non_intrusive_speech_quality_assessment(preds, 16000)
-    with pytest.raises(RuntimeError, match="Input signal is too short."):
+    with pytest.raises(RuntimeError, match=r"Input signal is too short\."):
         non_intrusive_speech_quality_assessment(preds, 48000)
     preds = torch.rand(2000)
-    with pytest.raises(RuntimeError, match="Input signal is too short."):
+    with pytest.raises(RuntimeError, match=r"Input signal is too short\."):
         non_intrusive_speech_quality_assessment(preds, 16000)
-    with pytest.raises(RuntimeError, match="Input signal is too short."):
+    with pytest.raises(RuntimeError, match=r"Input signal is too short\."):
         non_intrusive_speech_quality_assessment(preds, 48000)
 
 
 def test_error_on_long_input():
     """Test error on long input."""
     preds = torch.rand(834240)
-    with pytest.raises(RuntimeError, match="Maximum number of mel spectrogram windows exceeded. Use shorter audio."):
+    with pytest.raises(RuntimeError, match=r"Maximum number of mel spectrogram windows exceeded\. Use shorter audio\."):
         non_intrusive_speech_quality_assessment(preds, 16000)
     non_intrusive_speech_quality_assessment(preds, 48000)
     preds = torch.rand(2502720)
-    with pytest.raises(RuntimeError, match="Maximum number of mel spectrogram windows exceeded. Use shorter audio."):
+    with pytest.raises(RuntimeError, match=r"Maximum number of mel spectrogram windows exceeded\. Use shorter audio\."):
         non_intrusive_speech_quality_assessment(preds, 16000)
-    with pytest.raises(RuntimeError, match="Maximum number of mel spectrogram windows exceeded. Use shorter audio."):
+    with pytest.raises(RuntimeError, match=r"Maximum number of mel spectrogram windows exceeded\. Use shorter audio\."):
         non_intrusive_speech_quality_assessment(preds, 48000)

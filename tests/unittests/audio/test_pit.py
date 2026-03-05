@@ -232,14 +232,14 @@ def test_error_on_wrong_eval_func() -> None:
 def test_error_on_wrong_mode() -> None:
     """Test that error is raised on wrong `mode` argument."""
     metric = PermutationInvariantTraining(signal_noise_ratio, mode="xxx")
-    with pytest.raises(ValueError, match='mode can only be "speaker-wise" or "permutation-wise"*'):
+    with pytest.raises(ValueError, match=r'mode can only be "speaker-wise" or "permutation-wise"\*'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
 def test_error_on_wrong_shape() -> None:
     """Test that error is raised on wrong input shape."""
     metric = PermutationInvariantTraining(signal_noise_ratio)
-    with pytest.raises(ValueError, match="Inputs must be of shape *"):
+    with pytest.raises(ValueError, match=r"Inputs must be of shape \*"):
         metric(torch.randn(3), torch.randn(3))
 
 

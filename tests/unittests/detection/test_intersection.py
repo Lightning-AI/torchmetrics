@@ -340,16 +340,16 @@ class TestIntersectionMetrics(MetricTester):
 
     def test_functional_error_on_wrong_input_shape(self, class_metric, functional_metric, reference_metric):
         """Test functional input validation."""
-        with pytest.raises(ValueError, match="Expected preds to be of shape.*"):
+        with pytest.raises(ValueError, match=r"Expected preds to be of shape\.\*"):
             functional_metric(torch.randn(25), torch.randn(25, 4))
 
-        with pytest.raises(ValueError, match="Expected target to be of shape.*"):
+        with pytest.raises(ValueError, match=r"Expected target to be of shape\.\*"):
             functional_metric(torch.randn(25, 4), torch.randn(25))
 
-        with pytest.raises(ValueError, match="Expected preds to be of shape.*"):
+        with pytest.raises(ValueError, match=r"Expected preds to be of shape\.\*"):
             functional_metric(torch.randn(25, 25), torch.randn(25, 4))
 
-        with pytest.raises(ValueError, match="Expected target to be of shape.*"):
+        with pytest.raises(ValueError, match=r"Expected target to be of shape\.\*"):
             functional_metric(torch.randn(25, 4), torch.randn(25, 25))
 
     def test_corner_case_only_one_empty_prediction(self, class_metric, functional_metric, reference_metric):

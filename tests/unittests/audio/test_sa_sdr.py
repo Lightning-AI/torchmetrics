@@ -145,5 +145,5 @@ def test_error_on_shape(metric_class=SourceAggregatedSignalDistortionRatio):
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
-    with pytest.raises(RuntimeError, match="The preds and target should have the shape (..., spk, time)*"):
+    with pytest.raises(RuntimeError, match=r"The preds and target should have the shape \(\.\.\., spk, time\)\*"):
         metric(torch.randn(100), torch.randn(100))

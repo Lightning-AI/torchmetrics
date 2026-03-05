@@ -59,18 +59,18 @@ def test_kid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     with pytest.warns(
         UserWarning,
-        match="Metric `Kernel Inception Distance` will save all extracted features in buffer."
+        match=r"Metric `Kernel Inception Distance` will save all extracted features in buffer\."
         " For large datasets this may lead to large memory footprint.",
     ):
         KernelInceptionDistance()
 
     if _TORCH_FIDELITY_AVAILABLE:
-        with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
+        with pytest.raises(ValueError, match=r"Integer input to argument `feature` must be one of \.\*"):
             KernelInceptionDistance(feature=2)
     else:
         with pytest.raises(
             ModuleNotFoundError,
-            match="Kernel Inception Distance metric requires that `Torch-fidelity` is installed."
+            match=r"Kernel Inception Distance metric requires that `Torch-fidelity` is installed\."
             " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`.",
         ):
             KernelInceptionDistance()
@@ -218,5 +218,5 @@ def test_normalize_arg_false():
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
     metric = KernelInceptionDistance(normalize=False)
-    with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
+    with pytest.raises(ValueError, match=r"Expecting image as torch\.Tensor with dtype=torch\.uint8"):
         metric.update(img, real=True)

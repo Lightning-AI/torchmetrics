@@ -119,11 +119,11 @@ def test_error_on_different_shape():
         metric(torch.randn(100), torch.randn(50))
 
     metric = PearsonCorrCoef(num_outputs=5)
-    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1- or 2-.*"):
+    with pytest.raises(ValueError, match=r"Expected both predictions and target to be either 1- or 2-\.\*"):
         metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
 
     metric = PearsonCorrCoef(num_outputs=2)
-    with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `num_outputs` to match the second dimension of input\.\*"):
         metric(torch.randn(100, 5), torch.randn(100, 5))
 
 
@@ -231,7 +231,7 @@ def test_pearsons_warning_on_small_input(dtype, scale):
     """Check that a user warning is raised for small input."""
     preds = scale * torch.randn(100, dtype=dtype)
     target = scale * torch.randn(100, dtype=dtype)
-    with pytest.warns(UserWarning, match="The variance of predictions or target is close to zero.*"):
+    with pytest.warns(UserWarning, match=r"The variance of predictions or target is close to zero\.\*"):
         pearson_corrcoef(preds, target)
 
 

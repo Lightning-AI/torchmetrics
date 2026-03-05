@@ -9,16 +9,18 @@ from torchmetrics.wrappers import ClasswiseWrapper
 
 def test_raises_error_on_wrong_input():
     """Test that errors are raised on wrong input."""
-    with pytest.raises(ValueError, match="Expected argument `metric` to be an instance of `torchmetrics.Metric` but.*"):
+    with pytest.raises(
+        ValueError, match=r"Expected argument `metric` to be an instance of `torchmetrics\.Metric` but\.\*"
+    ):
         ClasswiseWrapper([])
 
-    with pytest.raises(ValueError, match="Expected argument `labels` to either be `None` or a list of strings.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `labels` to either be `None` or a list of strings\.\*"):
         ClasswiseWrapper(MulticlassAccuracy(num_classes=3), "hest")
 
-    with pytest.raises(ValueError, match="Expected argument `prefix` to either be `None` or a string.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `prefix` to either be `None` or a string\.\*"):
         ClasswiseWrapper(MulticlassAccuracy(num_classes=3), prefix=1)
 
-    with pytest.raises(ValueError, match="Expected argument `postfix` to either be `None` or a string.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `postfix` to either be `None` or a string\.\*"):
         ClasswiseWrapper(MulticlassAccuracy(num_classes=3), postfix=1)
 
 
