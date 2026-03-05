@@ -9,7 +9,7 @@ machine: "L4_X_2"
 parametrize:
   matrix:
     image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
-      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.9-torch2.0"
+      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.10-torch2.0"
       - "pytorchlightning/torchmetrics:ubuntu24.04-cuda12.6.3-py3.12-torch2.8"
     # testing: ["doctest", "common", "distributed"] # todo
   include: []
@@ -21,6 +21,7 @@ env:
   TEST_DIRS: "unittests"
   FREEZE_REQUIREMENTS: 1
   SKIP_SLOW_DOCTEST: 1
+  LIGHTNING_CI: "1"
 
 run: |
   whereis nvidia
@@ -81,7 +82,7 @@ run: |
   # UnitTesting common
   #if [ "$testing" == "common" ]; then
   python -m pytest ${TEST_DIRS} -v \
-    -m "not DDP" --numprocesses=6 --dist=loadfile \
+    -m "not DDP" --numprocesses=3 --dist=loadfile \
     --cov=torchmetrics --timeout=360 --durations=100 \
     --reruns 3 --reruns-delay 1
   # UnitTesting DDP
