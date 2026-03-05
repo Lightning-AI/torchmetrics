@@ -38,12 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.x.x] - 2026-03-0X
+## [1.9.0] - 2026-03-05
 
 ### Changed
 
 - Defaulting Dice score `average="macro"` ([#3042](https://github.com/Lightning-AI/torchmetrics/pull/3042))
-- Dropped Python 3.9, set 3.10 as minimum ([#3330](https://github.com/Lightning-AI/torchmetrics/pull/3330))
+- Dropped Python 3.9 support, set 3.10 as minimum ([#3330](https://github.com/Lightning-AI/torchmetrics/pull/3330))
 - Replaced `pkg_resources` with `packaging` ([#3329](https://github.com/Lightning-AI/torchmetrics/pull/3329))
 
 ### Fixed
