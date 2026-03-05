@@ -39,7 +39,7 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1, _TORCH_GREATER_EQUAL_2_3
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -113,7 +113,7 @@ class Metric(Module, ABC):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
         # magic patch for `RuntimeError: DataLoader worker (pid(s) 104) exited unexpectedly`
         self._TORCH_GREATER_EQUAL_2_1 = bool(_TORCH_GREATER_EQUAL_2_1)
-        self._device = torch.device("cpu")
+        self._device = torch.get_default_device() if _TORCH_GREATER_EQUAL_2_3 else torch.empty(0).device
         self._dtype = torch.get_default_dtype()
 
         self.compute_on_cpu = kwargs.pop("compute_on_cpu", False)
