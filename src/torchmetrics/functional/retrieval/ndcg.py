@@ -68,7 +68,39 @@ def _dcg_sample_scores(target: Tensor, preds: Tensor, top_k: int, ignore_ties: b
     return cumulative_gain
 
 
-def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
+def _handle_empty_target(action: str, device: torch.device) -> Optional[Tensor]:
+    """Return a default nDCG score when the target contains no positive labels.
+
+    Args:
+        action: policy for handling empty targets:
+            - "skip": return None (exclude from batch average)
+            - "pos": return a score of 1.0
+            - "neg": return a score of 0.0
+        device: the torch device on which to create the output tensor.
+
+    Returns:
+        A scalar tensor with the default score if action is "pos" or "neg".
+        None if action is "skip".
+
+    Raises:
+        ValueError: if ``action`` is not one of {"skip", "pos", "neg"}.
+
+    """
+    if action == "skip":
+        return None
+    if action == "pos":
+        return torch.tensor(1.0, device=device)
+    if action == "neg":
+        return torch.tensor(0.0, device=device)
+    raise ValueError(f"Invalid empty_target_action: {action}")
+
+
+def retrieval_normalized_dcg(
+    preds: Tensor,
+    target: Tensor,
+    top_k: Optional[int] = None,
+    empty_target_action: str = "skip",
+) -> Tensor:
     """Compute `Normalized Discounted Cumulative Gain`_ (for information retrieval).
 
     ``preds`` and ``target`` should be of the same shape and live on the same device.
@@ -79,6 +111,10 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
         preds: estimated probabilities of each document to be relevant.
         target: ground truth about each document relevance.
         top_k: consider only the top k elements (default: ``None``, which considers them all)
+        empty_target_action: what to do when the target has no positives:
+            - "skip": exclude from average
+            - "pos": assign score 1.0
+            - "neg": assign score 0.0
 
     Return:
         A single-value tensor with the nDCG of the predictions ``preds`` w.r.t. the labels ``target``.
@@ -95,19 +131,37 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
         tensor(0.6957)
 
     """
+    original_shape = preds.shape
     preds, target = _check_retrieval_functional_inputs(preds, target, allow_non_binary_target=True)
 
-    top_k = preds.shape[-1] if top_k is None else top_k
+    # reshape back if input was 2D
+    if len(original_shape) == 2:
+        preds = preds.view(original_shape)
+        target = target.view(original_shape)
+    else:
+        preds = preds.unsqueeze(0)
+        target = target.unsqueeze(0)
+
+    n_samples, n_labels = preds.shape
+    top_k = n_labels if top_k is None else top_k
+    top_k = min(top_k, n_labels)
 
     if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`top_k` has to be a positive integer or None")
 
-    gain = _dcg_sample_scores(target, preds, top_k, ignore_ties=False)
-    normalized_gain = _dcg_sample_scores(target, target, top_k, ignore_ties=True)
+    scores = []
+    for p, t in zip(preds, target):
+        gain = _dcg_sample_scores(t, p, top_k, ignore_ties=False)
+        ideal_gain = _dcg_sample_scores(t, t, top_k, ignore_ties=True)
 
-    # filter undefined scores
-    all_irrelevant = normalized_gain == 0
-    gain[all_irrelevant] = 0
-    gain[~all_irrelevant] /= normalized_gain[~all_irrelevant]
+        if ideal_gain == 0:
+            score = _handle_empty_target(empty_target_action, preds.device)
+            if score is not None:
+                scores.append(score)
+        else:
+            scores.append(gain / ideal_gain)
 
-    return gain.mean()
+    if not scores:
+        return torch.tensor(0.0, device=preds.device)
+
+    return torch.stack(scores).mean()
