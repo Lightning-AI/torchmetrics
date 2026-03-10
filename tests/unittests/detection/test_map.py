@@ -798,7 +798,7 @@ class TestMapProperties:
         metric.warn_on_many_detections = warn_on_many_detections
 
         if warn_on_many_detections:
-            with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
+            with pytest.warns(UserWarning, match=r"Encountered more than 100 detections in a single image\.\*"):
                 metric.update(preds, targets)
         else:
             assert len(recwarn) == 0
@@ -946,7 +946,7 @@ class TestMapProperties:
 
         """
         with pytest.raises(
-            ValueError, match="When providing a list of max detection thresholds it should have length 3.*"
+            ValueError, match=r"When providing a list of max detection thresholds it should have length 3\.\*"
         ):
             MeanAveragePrecision(max_detection_thresholds=max_detection_thresholds, backend=backend)
 

@@ -140,4 +140,4 @@ class TestHausdorffDistance(MetricTester):
 
 def test_hausdorff_distance_raises_error():
     """Check that metric raises appropriate errors."""
-    preds, target = _inputs1
+    _preds, _target = _inputs1

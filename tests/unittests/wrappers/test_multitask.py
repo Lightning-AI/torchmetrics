@@ -63,13 +63,13 @@ def _multitask_same_as_individual_tasks(classification_metric, regression_metric
 
 def test_errors_on_wrong_input():
     """Check that type errors are raised when inputs are of the wrong type."""
-    with pytest.raises(TypeError, match="Expected *"):
+    with pytest.raises(TypeError, match=r"Expected \*"):
         MultitaskWrapper(1)
 
-    with pytest.raises(TypeError, match="Expected *"):
+    with pytest.raises(TypeError, match=r"Expected \*"):
         MultitaskWrapper(None)
 
-    with pytest.raises(TypeError, match="Expected *"):
+    with pytest.raises(TypeError, match=r"Expected \*"):
         MultitaskWrapper({"Classification": 1})
 
 

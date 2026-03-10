@@ -52,7 +52,7 @@ def test_reduce():
     assert torch.allclose(reduce(start_tensor, "sum"), torch.sum(start_tensor))
     assert torch.allclose(reduce(start_tensor, "none"), start_tensor)
 
-    with pytest.raises(ValueError, match="Reduction parameter unknown."):
+    with pytest.raises(ValueError, match=r"Reduction parameter unknown\."):
         reduce(start_tensor, "error_reduction")
 
 
@@ -181,7 +181,7 @@ def test_cumsum_still_not_supported(use_deterministic_algorithms):
     If this test begins to pass, it means newer Pytorch versions support this and we can drop internal support.
 
     """
-    with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):
+    with pytest.raises(RuntimeError, match=r"cumsum_cuda_kernel does not have a deterministic implementation\.\*"):
         torch.arange(10).float().cuda().cumsum(0)
 
 
@@ -193,7 +193,7 @@ def test_custom_cumsum(use_deterministic_algorithms):
     x = torch.arange(100).float().to(device)
     with (
         pytest.warns(
-            TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
+            TorchMetricsUserWarning, match=r"You are trying to use a metric in deterministic mode on GPU that\.\*"
         )
         if sys.platform != "win32" and _TORCH_LESS_THAN_2_6 and torch.are_deterministic_algorithms_enabled()
         else no_warning_call()
@@ -236,7 +236,7 @@ def test_half_precision_top_k_cpu_raises_error():
 
     """
     x = torch.randn(100, 10, dtype=torch.half)
-    with pytest.raises(RuntimeError, match="\"topk_cpu\" not implemented for 'Half'"):
+    with pytest.raises(RuntimeError, match=r'"topk_cpu" not implemented for \'Half\''):
         torch.topk(x, k=3, dim=1)
 
 

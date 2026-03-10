@@ -15,7 +15,7 @@
 import re
 from collections.abc import Sequence
 from functools import partial
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 import pytest
 import torch
@@ -50,7 +50,7 @@ def _reference_rouge_score(
     use_stemmer: bool,
     rouge_level: str,
     metric: str,
-    accumulate: Literal["avg", "best", None],
+    accumulate: Optional[Literal["avg", "best"]],
 ) -> Tensor:
     """Evaluate rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
@@ -173,7 +173,7 @@ def test_rouge_metric_raises_errors_and_warnings():
     if not _NLTK_AVAILABLE:
         with pytest.raises(
             ModuleNotFoundError,
-            match="ROUGE metric requires that `nltk` is installed."
+            match=r"ROUGE metric requires that `nltk` is installed\."
             " Either as `pip install torchmetrics[text]` or `pip install nltk`.",
         ):
             ROUGEScore()
@@ -183,10 +183,10 @@ def test_rouge_metric_wrong_key_value_error():
     """Test errors are raised on wrongly provided keys."""
     key = ("rouge1", "rouge")
 
-    with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
+    with pytest.raises(ValueError, match=r"Got unknown rouge key rouge\. Expected to be one of"):
         ROUGEScore(rouge_keys=key)
 
-    with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
+    with pytest.raises(ValueError, match=r"Got unknown rouge key rouge\. Expected to be one of"):
         rouge_score(
             _inputs_single_sentence_single_reference.preds,
             _inputs_single_sentence_single_reference.target,

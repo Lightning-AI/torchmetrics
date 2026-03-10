@@ -79,7 +79,7 @@ def test_normalized_mutual_info_score_functional_single_cluster(average_method):
 def test_normalized_mutual_info_score_functional_raises_invalid_task(average_method):
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic
-    with pytest.raises(ValueError, match=r"Expected *"):
+    with pytest.raises(ValueError, match=r"Expected \*"):
         normalized_mutual_info_score(preds, target, average_method)
 
 

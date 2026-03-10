@@ -120,10 +120,10 @@ def test_normalize_arg(normalize):
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
-    with pytest.raises(ValueError, match="Argument `net_type` must be one .*"):
+    with pytest.raises(ValueError, match=r"Argument `net_type` must be one \.\*"):
         LearnedPerceptualImagePatchSimilarity(net_type="resnet")
 
-    with pytest.raises(ValueError, match="Argument `reduction` must be one .*"):
+    with pytest.raises(ValueError, match=r"Argument `reduction` must be one \.\*"):
         LearnedPerceptualImagePatchSimilarity(net_type="squeeze", reduction="invalid_option")
 
 
@@ -140,7 +140,7 @@ def test_error_on_wrong_init():
 def test_error_on_wrong_update(inp1, inp2):
     """Test error is raised on wrong input to update method."""
     metric = LearnedPerceptualImagePatchSimilarity()
-    with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
+    with pytest.raises(ValueError, match=r"Expected both input arguments to be normalized tensors \.\*"):
         metric(inp1, inp2)
 
 

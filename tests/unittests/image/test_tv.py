@@ -113,8 +113,8 @@ class TestTotalVariation(MetricTester):
 
 def test_correct_args():
     """That that arguments have the right type and sizes."""
-    with pytest.raises(ValueError, match="Expected argument `reduction`.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `reduction`\.\*"):
         _ = TotalVariation(reduction="diff")
 
-    with pytest.raises(RuntimeError, match="Expected input `img` to.*"):
+    with pytest.raises(RuntimeError, match=r"Expected input `img` to\.\*"):
         _ = total_variation(torch.randn(1, 2, 3))

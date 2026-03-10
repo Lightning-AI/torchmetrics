@@ -75,7 +75,7 @@ def test_accuracy_functional_raises_invalid_task():
     ignore_index = None
     multidim_average = "global"
 
-    with pytest.raises(ValueError, match=r"Invalid *"):
+    with pytest.raises(ValueError, match=r"Invalid \*"):
         accuracy(
             preds,
             target,
@@ -768,7 +768,7 @@ def test_wrapper_class(metric, kwargs, base_metric=Accuracy):
     """Test the wrapper class."""
     assert issubclass(base_metric, Metric)
     if metric is None:
-        with pytest.raises(ValueError, match=r"Invalid *"):
+        with pytest.raises(ValueError, match=r"Invalid \*"):
             base_metric(**kwargs)
     else:
         instance = base_metric(**kwargs)

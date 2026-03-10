@@ -113,7 +113,7 @@ def test_basic_example(preds, labels, raws, maxs, mins) -> None:
 
 def test_no_base_metric() -> None:
     """Tests that ValueError is raised when no base_metric is passed."""
-    with pytest.raises(ValueError, match=r"Expected base metric to be an instance .*"):
+    with pytest.raises(ValueError, match=r"Expected base metric to be an instance \.\*"):
         MinMaxMetric([])
 
 
@@ -121,5 +121,5 @@ def test_no_scalar_compute() -> None:
     """Tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
     min_max_nsm = MinMaxMetric(BinaryConfusionMatrix())
 
-    with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a float.*"):
+    with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a float\.\*"):
         min_max_nsm.compute()
