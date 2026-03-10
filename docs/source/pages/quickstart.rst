@@ -48,9 +48,9 @@ Using TorchMetrics
 Functional metrics
 ~~~~~~~~~~~~~~~~~~
 
-Similar to `torch.nn <https://pytorch.org/docs/stable/nn>`_, most metrics have both a class-based and a functional version.
+Similar to `torch.nn <https://pytorch.org/docs/2.7/nn>`_, most metrics have both a class-based and a functional version.
 The functional versions implement the basic operations required for computing each metric.
-They are simple python functions that as input take `torch.tensors <https://pytorch.org/docs/stable/tensors.html>`_
+They are simple python functions that as input take `torch.tensors <https://pytorch.org/docs/2.7/tensors.html>`_
 and return the corresponding metric as a ``torch.tensor``.
 The code-snippet below shows a simple example for calculating the accuracy using the functional interface:
 
