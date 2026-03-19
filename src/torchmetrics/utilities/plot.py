@@ -192,7 +192,7 @@ def _get_text_color(patch_color: tuple[float, float, float, float]) -> str:
 
     """
     # Convert to linear color space
-    r, g, b, a = patch_color
+    r, g, b, _a = patch_color
     r, g, b = (c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in (r, g, b))
 
     # Get the relative luminance

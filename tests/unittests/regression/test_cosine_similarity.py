@@ -97,5 +97,5 @@ def test_error_on_different_shape(metric_class=CosineSimilarity):
 def test_error_on_non_2d_input():
     """Test that error is raised if input is not 2-dimensional."""
     metric = CosineSimilarity()
-    with pytest.raises(ValueError, match="Expected input to cosine similarity to be 2D tensors of shape.*"):
+    with pytest.raises(ValueError, match=r"Expected input to cosine similarity to be 2D tensors of shape\.\*"):
         metric(torch.randn(100), torch.randn(100))

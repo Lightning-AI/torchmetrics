@@ -27,7 +27,9 @@ from unittests._helpers import _IS_WINDOWS
 
 def test_errors_on_wrong_input():
     """Make sure that input type errors are raised on the wrong input."""
-    with pytest.raises(ValueError, match="Expected argument `metric` to be an instance of `torchmetrics.Metric` .*"):
+    with pytest.raises(
+        ValueError, match=r"Expected argument `metric` to be an instance of `torchmetrics\.Metric` \.\*"
+    ):
         Running(1)
 
     with pytest.raises(ValueError, match="Expected argument `window` to be a positive integer but got -1"):

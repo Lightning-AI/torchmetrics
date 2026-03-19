@@ -32,7 +32,7 @@ def test_no_train_network_missing_torch_fidelity(monkeypatch):
     # mock/fake the import of torch-fidelity
     monkeypatch.setattr("torchmetrics.image.fid._TORCH_FIDELITY_AVAILABLE", False)
     with pytest.raises(
-        ModuleNotFoundError, match="NoTrainInceptionV3 module requires that `Torch-fidelity` is installed.*"
+        ModuleNotFoundError, match=r"NoTrainInceptionV3 module requires that `Torch-fidelity` is installed\.\*"
     ):
         NoTrainInceptionV3(name="inception-v3-compat", features_list=["2048"])
 
@@ -69,12 +69,12 @@ def test_fid_pickle():
 def test_fid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     if _TORCH_FIDELITY_AVAILABLE:
-        with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
+        with pytest.raises(ValueError, match=r"Integer input to argument `feature` must be one of \.\*"):
             _ = FrechetInceptionDistance(feature=2)
     else:
         with pytest.raises(
             ModuleNotFoundError,
-            match="FID metric requires that `Torch-fidelity` is installed."
+            match=r"FID metric requires that `Torch-fidelity` is installed\."
             " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
         ):
             _ = FrechetInceptionDistance()
@@ -199,7 +199,9 @@ def test_normalize_arg(normalize):
 
     context = (
         partial(
-            pytest.raises, expected_exception=ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"
+            pytest.raises,
+            expected_exception=ValueError,
+            match=r"Expecting image as torch\.Tensor with dtype=torch\.uint8",
         )
         if not normalize
         else does_not_raise

@@ -48,7 +48,7 @@ def _pairwise_cosine_similarity_update(
 def pairwise_cosine_similarity(
     x: Tensor,
     y: Optional[Tensor] = None,
-    reduction: Literal["mean", "sum", "none", None] = None,
+    reduction: Optional[Literal["mean", "sum", "none"]] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
     r"""Calculate pairwise cosine similarity.

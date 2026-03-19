@@ -33,7 +33,7 @@ seed_all(42)
 
 def test_raises_error_on_wrong_input():
     """Make sure that input type errors are raised on the wrong input."""
-    with pytest.raises(TypeError, match="Metric arg need to be an instance of a .*"):
+    with pytest.raises(TypeError, match=r"Metric arg need to be an instance of a \.\*"):
         MetricTracker([1, 2, 3])
 
     with pytest.raises(ValueError, match="Argument `maximize` should either be a single bool or list of bool"):
@@ -170,7 +170,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
         for _ in range(5):
             tracker.update(torch.randint(3, (10,)), torch.randint(3, (10,)))
 
-    with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
+    with pytest.warns(UserWarning, match=r"Encountered the following error when trying to get the best metric\.\*"):
         best = tracker.best_metric()
     if isinstance(best, dict):
         assert best["MulticlassAccuracy"] is not None
@@ -178,7 +178,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     else:
         assert best is None
 
-    with pytest.warns(UserWarning, match="Encountered the following error when trying to get the best metric.*"):
+    with pytest.warns(UserWarning, match=r"Encountered the following error when trying to get the best metric\.\*"):
         best, idx = tracker.best_metric(return_step=True)
 
     if isinstance(best, dict):

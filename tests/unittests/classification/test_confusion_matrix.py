@@ -411,7 +411,7 @@ def test_warning_on_nan():
 
     with pytest.warns(
         UserWarning,
-        match=".* NaN values found in confusion matrix have been replaced with zeros.",
+        match=r"\.\* NaN values found in confusion matrix have been replaced with zeros\.",
     ):
         multiclass_confusion_matrix(preds, target, num_classes=5, normalize="true")
 
@@ -429,7 +429,7 @@ def test_wrapper_class(metric, kwargs, base_metric=ConfusionMatrix):
     """Test the wrapper class."""
     assert issubclass(base_metric, Metric)
     if metric is None:
-        with pytest.raises(ValueError, match=r"Invalid *"):
+        with pytest.raises(ValueError, match=r"Invalid \*"):
             base_metric(**kwargs)
     else:
         instance = base_metric(**kwargs)

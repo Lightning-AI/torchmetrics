@@ -148,7 +148,9 @@ def test_warning_on_no_positives():
     """Test that a warning is raised when there are no positive samples in the target."""
     preds = torch.rand(100)
     target = torch.zeros(100).long()
-    with pytest.warns(UserWarning, match="No positive samples found in target, recall is undefined. Setting recall.*"):
+    with pytest.warns(
+        UserWarning, match=r"No positive samples found in target, recall is undefined\. Setting recall\.\*"
+    ):
         binary_average_precision(preds, target)
 
 
@@ -428,7 +430,7 @@ def test_wrapper_class(metric, kwargs, base_metric=AveragePrecision):
     """Test the wrapper class."""
     assert issubclass(base_metric, Metric)
     if metric is None:
-        with pytest.raises(ValueError, match=r"Invalid *"):
+        with pytest.raises(ValueError, match=r"Invalid \*"):
             base_metric(**kwargs)
     else:
         instance = base_metric(**kwargs)

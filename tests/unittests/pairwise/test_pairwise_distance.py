@@ -134,13 +134,13 @@ class TestPairwise(MetricTester):
 )
 def test_error_on_wrong_shapes(metric):
     """Test errors are raised on wrong input."""
-    with pytest.raises(ValueError, match="Expected argument `x` to be a 2D tensor .*"):
+    with pytest.raises(ValueError, match=r"Expected argument `x` to be a 2D tensor \.\*"):
         metric(torch.randn(10))
 
-    with pytest.raises(ValueError, match="Expected argument `y` to be a 2D tensor .*"):
+    with pytest.raises(ValueError, match=r"Expected argument `y` to be a 2D tensor \.\*"):
         metric(torch.randn(10, 5), torch.randn(5, 3))
 
-    with pytest.raises(ValueError, match="Expected reduction to be one of .*"):
+    with pytest.raises(ValueError, match=r"Expected reduction to be one of \.\*"):
         metric(torch.randn(10, 5), torch.randn(10, 5), reduction=1)
 
 

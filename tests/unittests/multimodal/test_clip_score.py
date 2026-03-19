@@ -149,7 +149,7 @@ class TestCLIPScore(MetricTester):
     def test_error_on_not_same_amount_of_input(self, inputs, model_name_or_path):
         """Test that an error is raised if the number of images and text examples does not match."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
-        with pytest.raises(ValueError, match="Expected the number of source and target examples to be the same.*"):
+        with pytest.raises(ValueError, match=r"Expected the number of source and target examples to be the same\.\*"):
             metric(torch.randint(255, (2, 3, 64, 64)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
@@ -181,7 +181,7 @@ class TestCLIPScore(MetricTester):
         target[0] = [target[0][0], "A 28-year-old chef who recently moved to San Francisco was found dead. " * 100]
         with pytest.warns(
             UserWarning,
-            match="Encountered caption longer than max_position_embeddings=77. Will truncate captions to this.*",
+            match=r"Encountered caption longer than max_position_embeddings=77\. Will truncate captions to this\.\*",
         ):
             metric.update(preds[0], target[0])
 

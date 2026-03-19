@@ -451,7 +451,7 @@ def test_wrapper_class(metric, kwargs, base_metric=RecallAtFixedPrecision):
     """Test the wrapper class."""
     assert issubclass(base_metric, Metric)
     if metric is None:
-        with pytest.raises(ValueError, match=r"Invalid *"):
+        with pytest.raises(ValueError, match=r"Invalid \*"):
             base_metric(**kwargs)
     else:
         instance = base_metric(**kwargs)

@@ -218,7 +218,7 @@ def _test_state_dict_is_synced(rank, tmpdir):
         metric.sync()
         assert metric._is_synced
 
-        with pytest.raises(TorchMetricsUserError, match="The Metric has already been synced."):
+        with pytest.raises(TorchMetricsUserError, match=r"The Metric has already been synced\."):
             metric.sync()
 
         verify_metric(metric, i, 2)
@@ -226,7 +226,7 @@ def _test_state_dict_is_synced(rank, tmpdir):
         metric.unsync()
         assert not metric._is_synced
 
-        with pytest.raises(TorchMetricsUserError, match="The Metric has already been un-synced."):
+        with pytest.raises(TorchMetricsUserError, match=r"The Metric has already been un-synced\."):
             metric.unsync()
 
         with metric.sync_context():
@@ -246,7 +246,7 @@ def _test_state_dict_is_synced(rank, tmpdir):
         cache = metric._cache
         metric._cache = None
 
-        with pytest.raises(TorchMetricsUserError, match="The internal cache should exist to unsync the Metric."):
+        with pytest.raises(TorchMetricsUserError, match=r"The internal cache should exist to unsync the Metric\."):
             metric.unsync()
 
         metric._cache = cache

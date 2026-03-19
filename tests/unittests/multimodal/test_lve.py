@@ -106,24 +106,24 @@ class TestLipVertexError(MetricTester):
     def test_error_on_wrong_dimensions(self):
         """Test that an error is raised if vertices tensors have wrong dimensions."""
         metric = LipVertexError(mouth_map=[0, 1, 2, 3, 4])
-        with pytest.raises(ValueError, match="Expected both vertices_pred and vertices_gt to have 3 dimensions.*"):
+        with pytest.raises(ValueError, match=r"Expected both vertices_pred and vertices_gt to have 3 dimensions\.\*"):
             metric(torch.randn(10, 100), torch.randn(10, 100, 3))
 
     def test_error_on_mismatched_dimensions(self):
         """Test that an error is raised if vertex dimensions don't match."""
         metric = LipVertexError(mouth_map=[0, 1, 2, 3, 4])
-        with pytest.raises(ValueError, match="Expected vertices_pred and vertices_gt to have same vertex.*"):
+        with pytest.raises(ValueError, match=r"Expected vertices_pred and vertices_gt to have same vertex\.\*"):
             metric(torch.randn(10, 80, 3), torch.randn(10, 100, 3))
 
     def test_error_on_empty_mouth_map(self):
         """Test that an error is raised if mouth_map is empty."""
-        with pytest.raises(ValueError, match="mouth_map cannot be empty."):
+        with pytest.raises(ValueError, match=r"mouth_map cannot be empty\."):
             LipVertexError(mouth_map=[])
 
     def test_error_on_invalid_mouth_indices(self):
         """Test that an error is raised if mouth_map contains invalid indices."""
         metric = LipVertexError(mouth_map=[98, 99, 100])
-        with pytest.raises(ValueError, match="mouth_map contains invalid vertex indices.*"):
+        with pytest.raises(ValueError, match=r"mouth_map contains invalid vertex indices\.\*"):
             metric(torch.randn(10, 50, 3), torch.randn(10, 50, 3))
 
     def test_different_sequence_lengths(self):

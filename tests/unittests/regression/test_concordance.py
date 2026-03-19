@@ -135,9 +135,9 @@ def test_error_on_different_shape():
         metric(torch.randn(100), torch.randn(50))
 
     metric = ConcordanceCorrCoef(num_outputs=5)
-    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1- or 2-.*"):
+    with pytest.raises(ValueError, match=r"Expected both predictions and target to be either 1- or 2-\.\*"):
         metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
 
     metric = ConcordanceCorrCoef(num_outputs=2)
-    with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `num_outputs` to match the second dimension of input\.\*"):
         metric(torch.randn(100, 5), torch.randn(100, 5))

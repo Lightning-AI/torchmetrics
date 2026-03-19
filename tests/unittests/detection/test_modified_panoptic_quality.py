@@ -28,7 +28,8 @@ seed_all(42)
 
 _INPUTS_0 = _Input(
     # Shape of input tensors is (num_batches, batch_size, height, width, 2).
-    preds=torch.tensor([
+    preds=torch
+    .tensor([
         [[6, 0], [0, 0], [6, 0], [6, 0], [0, 1]],
         [[0, 0], [0, 0], [6, 0], [0, 1], [0, 1]],
         [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
@@ -37,7 +38,8 @@ _INPUTS_0 = _Input(
     ])
     .reshape((1, 1, 5, 5, 2))
     .repeat(2, 1, 1, 1, 1),
-    target=torch.tensor([
+    target=torch
+    .tensor([
         [[6, 0], [6, 0], [6, 0], [6, 0], [0, 0]],
         [[0, 1], [0, 1], [6, 0], [0, 0], [0, 0]],
         [[0, 1], [0, 1], [6, 0], [1, 0], [1, 0]],
@@ -122,10 +124,10 @@ def test_empty_metric():
 
 def test_error_on_wrong_input():
     """Test class input validation."""
-    with pytest.raises(TypeError, match="Expected argument `stuffs` to contain `int` categories.*"):
+    with pytest.raises(TypeError, match=r"Expected argument `stuffs` to contain `int` categories\.\*"):
         ModifiedPanopticQuality(things={0}, stuffs={"sky"})
 
-    with pytest.raises(ValueError, match="Expected arguments `things` and `stuffs` to have distinct keys.*"):
+    with pytest.raises(ValueError, match=r"Expected arguments `things` and `stuffs` to have distinct keys\.\*"):
         ModifiedPanopticQuality(things={0}, stuffs={0})
 
     metric = ModifiedPanopticQuality(things={0, 1, 3}, stuffs={2, 8}, allow_unknown_preds_category=True)
@@ -134,31 +136,31 @@ def test_error_on_wrong_input():
     valid_point_clouds = torch.randint(low=0, high=9, size=(1, 100, 2))
     metric.update(valid_point_clouds, valid_point_clouds)
 
-    with pytest.raises(TypeError, match="Expected argument `preds` to be of type `torch.Tensor`.*"):
+    with pytest.raises(TypeError, match=r"Expected argument `preds` to be of type `torch\.Tensor`\.\*"):
         metric.update([], valid_images)
 
-    with pytest.raises(TypeError, match="Expected argument `target` to be of type `torch.Tensor`.*"):
+    with pytest.raises(TypeError, match=r"Expected argument `target` to be of type `torch\.Tensor`\.\*"):
         metric.update(valid_images, [])
 
     preds = torch.randint(low=0, high=9, size=(2, 400, 300, 2))
     target = torch.randint(low=0, high=9, size=(2, 30, 40, 2))
-    with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same shape.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `preds` and `target` to have the same shape\.\*"):
         metric.update(preds, target)
 
     preds = torch.randint(low=0, high=9, size=(1, 2))
-    with pytest.raises(ValueError, match="Expected argument `preds` to have at least one spatial dimension.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `preds` to have at least one spatial dimension\.\*"):
         metric.update(preds, preds)
 
     preds = torch.randint(low=0, high=9, size=(1, 64, 64, 8))
     with pytest.raises(
-        ValueError, match="Expected argument `preds` to have exactly 2 channels in the last dimension.*"
+        ValueError, match=r"Expected argument `preds` to have exactly 2 channels in the last dimension\.\*"
     ):
         metric.update(preds, preds)
 
     metric = ModifiedPanopticQuality(things=[0], stuffs=[1], allow_unknown_preds_category=False)
     preds = torch.randint(low=0, high=1, size=(1, 100, 2))
     preds[0, 0, 0] = 2
-    with pytest.raises(ValueError, match="Unknown categories found.*"):
+    with pytest.raises(ValueError, match=r"Unknown categories found\.\*"):
         metric.update(preds, preds)
 
 

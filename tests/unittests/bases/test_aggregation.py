@@ -159,7 +159,7 @@ def test_nan_expected(metric_class, nan_strategy, value, expected):
 @pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
 def test_error_on_wrong_nan_strategy(metric_class):
     """Test error raised on wrong nan_strategy argument."""
-    with pytest.raises(ValueError, match="Arg `nan_strategy` should either .*"):
+    with pytest.raises(ValueError, match=r"Arg `nan_strategy` should either \.\*"):
         metric_class(nan_strategy=[])
 
 

@@ -139,7 +139,7 @@ def test_d_lambda_invalid_type():
     """Test that error is raised on different dtypes."""
     preds_t = torch.rand((1, 1, 16, 16))
     target_t = torch.rand((1, 1, 16, 16), dtype=torch.float64)
-    with pytest.raises(TypeError, match="Expected `ms` and `fused` to have the same data type.*"):
+    with pytest.raises(TypeError, match=r"Expected `ms` and `fused` to have the same data type\.\*"):
         spectral_distortion_index(preds_t, target_t, p=1)
 
 

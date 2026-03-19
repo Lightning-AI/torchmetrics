@@ -142,16 +142,16 @@ class TestSpearmanCorrCoef(MetricTester):
 def test_error_on_different_shape():
     """Test that error is raised when the preds and target shapes are not what is expected of the metric."""
     metric = SpearmanCorrCoef(num_outputs=1)
-    with pytest.raises(TypeError, match="Expected `preds` and `target` both to be floating point tensors.*"):
+    with pytest.raises(TypeError, match=r"Expected `preds` and `target` both to be floating point tensors\.\*"):
         metric(torch.randint(5, (100,)), torch.randn(100))
 
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
     metric = SpearmanCorrCoef(num_outputs=5)
-    with pytest.raises(ValueError, match="Expected both predictions and target to be either 1- or 2-dimensional.*"):
+    with pytest.raises(ValueError, match=r"Expected both predictions and target to be either 1- or 2-dimensional\.\*"):
         metric(torch.randn(100, 2, 5), torch.randn(100, 2, 5))
 
     metric = SpearmanCorrCoef(num_outputs=2)
-    with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `num_outputs` to match the second dimension of input\.\*"):
         metric(torch.randn(100, 5), torch.randn(100, 5))

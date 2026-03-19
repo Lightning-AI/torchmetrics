@@ -961,7 +961,9 @@ def test_plot_method_collection(together, num_vals, prefix, postfix):
     m_collection.plot(ax=ax.tolist())
 
     fig, ax = plt.subplots(nrows=len(m_collection) + 1, ncols=1)
-    with pytest.raises(ValueError, match="Expected argument `ax` to be a sequence of matplotlib axis objects with.*"):
+    with pytest.raises(
+        ValueError, match=r"Expected argument `ax` to be a sequence of matplotlib axis objects with\.\*"
+    ):
         m_collection.plot(ax=ax.tolist())
     plt.close(fig)
 

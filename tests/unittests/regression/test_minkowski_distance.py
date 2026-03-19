@@ -93,5 +93,5 @@ def test_error_on_different_shape():
 
 def test_error_on_wrong_p_arg():
     """Test that error is raised if wrongly p argument is provided."""
-    with pytest.raises(TorchMetricsUserError, match="Argument ``p`` must be a float.*"):
+    with pytest.raises(TorchMetricsUserError, match=r"Argument ``p`` must be a float\.\*"):
         MinkowskiDistance(p=-10)

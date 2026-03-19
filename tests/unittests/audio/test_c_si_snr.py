@@ -65,8 +65,8 @@ class TestComplexSISNR(MetricTester):
 
 def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
-    rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
-    rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
+    _rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
+    _rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     ref = torch.tensor(ref, dtype=torch.float32)
     deg = torch.tensor(deg, dtype=torch.float32)
     ref_stft = torch.stft(ref, n_fft=256, hop_length=128, return_complex=True)
@@ -83,7 +83,7 @@ def test_error_on_incorrect_shape(metric_class=ComplexScaleInvariantSignalNoiseR
     metric = metric_class()
     with pytest.raises(
         RuntimeError,
-        match="Predictions and targets are expected to have the shape (..., frequency, time, 2)*",
+        match=r"Predictions and targets are expected to have the shape \(\.\.\., frequency, time, 2\)\*",
     ):
         metric(torch.randn(100), torch.randn(50))
 
@@ -91,5 +91,5 @@ def test_error_on_incorrect_shape(metric_class=ComplexScaleInvariantSignalNoiseR
 def test_error_on_different_shape(metric_class=ComplexScaleInvariantSignalNoiseRatio):
     """Test that error is raised on different shapes of input."""
     metric = metric_class()
-    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape*"):
+    with pytest.raises(RuntimeError, match=r"Predictions and targets are expected to have the same shape\*"):
         metric(torch.randn(129, 100, 2), torch.randn(129, 101, 2))

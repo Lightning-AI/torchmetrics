@@ -69,7 +69,7 @@ def test_mutual_info_score_functional_single_cluster():
 def test_mutual_info_score_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic
-    with pytest.raises(ValueError, match=r"Expected *"):
+    with pytest.raises(ValueError, match=r"Expected \*"):
         mutual_info_score(preds, target)
 
 

@@ -134,14 +134,14 @@ def test_edit_empty_functional():
 
 def test_edit_raise_errors():
     """Test errors are raised on wrong input."""
-    with pytest.raises(ValueError, match="Expected argument `substitution_cost` to be a positive integer.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `substitution_cost` to be a positive integer\.\*"):
         EditDistance(substitution_cost=-1)
 
-    with pytest.raises(ValueError, match="Expected argument `substitution_cost` to be a positive integer.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `substitution_cost` to be a positive integer\.\*"):
         EditDistance(substitution_cost=2.0)
 
-    with pytest.raises(ValueError, match="Expected argument `reduction` to be one of.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `reduction` to be one of\.\*"):
         EditDistance(reduction=2.0)
 
-    with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have same length.*"):
+    with pytest.raises(ValueError, match=r"Expected argument `preds` and `target` to have same length\.\*"):
         edit_distance(["abc"], ["abc", "def"])

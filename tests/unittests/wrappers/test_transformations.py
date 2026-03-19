@@ -32,7 +32,7 @@ class TestMetricInputTransformer:
 
     def test_no_base_metric(self) -> None:
         """Tests that TypeError is raised when no wrapped_metric is passed."""
-        with pytest.raises(TypeError, match=r"Expected wrapped metric to be an instance of .*"):
+        with pytest.raises(TypeError, match=r"Expected wrapped metric to be an instance of \.\*"):
             MetricInputTransformer([])
 
 
@@ -131,12 +131,12 @@ class TestLambdaInputTransformer:
 
     def test_no_transform_pred(self) -> None:
         """Tests that TypeError is raised when a non-callable is passed as `transform_pred`."""
-        with pytest.raises(TypeError, match=r"Expected `transform_pred` to be of type .*"):
+        with pytest.raises(TypeError, match=r"Expected `transform_pred` to be of type \.\*"):
             LambdaInputTransformer(BinaryAccuracy(), transform_pred=[])
 
     def test_no_transform_target(self) -> None:
         """Tests that TypeError is raised when a non-callable is passed as `transform_target`."""
-        with pytest.raises(TypeError, match=r"Expected `transform_target` to be of type .*"):
+        with pytest.raises(TypeError, match=r"Expected `transform_target` to be of type \.\*"):
             LambdaInputTransformer(BinaryAccuracy(), transform_target=[])
 
     def test_reset_forwards_to_wrapped_metric(self):
@@ -264,5 +264,5 @@ class TestBinaryTargetTransformer:
 
     def test_threshold(self) -> None:
         """Tests that TypeError is raised when invalid threshold is passed."""
-        with pytest.raises(TypeError, match=r"Expected `threshold` to be of type .*"):
+        with pytest.raises(TypeError, match=r"Expected `threshold` to be of type \.\*"):
             BinaryTargetTransformer(RetrievalMAP(), "a")

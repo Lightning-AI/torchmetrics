@@ -75,13 +75,13 @@ class TestContingencyMatrix:
 
 def test_eps_and_sparse_error():
     """Check that contingency matrix is not calculated if `eps` is nonzero and `sparse` is True."""
-    with pytest.raises(ValueError, match="Cannot specify*"):
+    with pytest.raises(ValueError, match=r"Cannot specify\*"):
         calculate_contingency_matrix(_single_dim_inputs.preds, _single_dim_inputs.target, eps=1e-16, sparse=True)
 
 
 def test_multidimensional_contingency_error():
     """Check that contingency matrix is not calculated for multidimensional input."""
-    with pytest.raises(ValueError, match="Expected 1d*"):
+    with pytest.raises(ValueError, match=r"Expected 1d\*"):
         calculate_contingency_matrix(_multi_dim_inputs.preds, _multi_dim_inputs.target)
 
 

@@ -169,7 +169,7 @@ def test_uqi_different_dtype():
     """Check that an type error is raised if preds and target have different dtype."""
     pred_t = torch.rand([1, 1, 16, 16])
     target_t = torch.rand([1, 1, 16, 16], dtype=torch.float64)
-    with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
+    with pytest.raises(TypeError, match=r"Expected `preds` and `target` to have the same data type\.\*"):
         universal_image_quality_index(pred_t, target_t)
 
 

@@ -249,7 +249,7 @@ def test_bertscore_truncation(truncation: bool):
         res = bert_score(pred, gt)
         assert res["f1"] > 0.0
     else:
-        with pytest.raises(RuntimeError, match="The expanded size of the tensor.*must match.*"):
+        with pytest.raises(RuntimeError, match=r"The expanded size of the tensor\.\*must match\.\*"):
             bert_score(pred, gt)
 
 
@@ -345,8 +345,8 @@ def test_bertscore_invalid_references():
     preds = _inputs_multiple_references.preds
     target = _inputs_multiple_references.target
 
-    with pytest.raises(ValueError, match="Invalid input provided."):
+    with pytest.raises(ValueError, match=r"Invalid input provided\."):
         bert_score(preds, target)
     metric = BERTScore()
-    with pytest.raises(ValueError, match="Invalid input provided."):
+    with pytest.raises(ValueError, match=r"Invalid input provided\."):
         metric(preds, target)

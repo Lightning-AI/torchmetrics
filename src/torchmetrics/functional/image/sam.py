@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+
 import torch
 from torch import Tensor
 from typing_extensions import Literal
@@ -49,7 +51,7 @@ def _sam_update(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
 def _sam_compute(
     preds: Tensor,
     target: Tensor,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Compute Spectral Angle Mapper.
 
@@ -81,7 +83,7 @@ def _sam_compute(
 def spectral_angle_mapper(
     preds: Tensor,
     target: Tensor,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Universal Spectral Angle Mapper.
 

@@ -118,19 +118,19 @@ def test_metric_collection_wrong_input(tmpdir):
     dms = DummyMetricSum()
 
     # Not all input are metrics (list)
-    with pytest.raises(ValueError, match="Input .* to `MetricCollection` is not a instance of .*"):
+    with pytest.raises(ValueError, match=r"Input \.\* to `MetricCollection` is not a instance of \.\*"):
         _ = MetricCollection([dms, 5])
 
     # Not all input are metrics (dict)
-    with pytest.raises(ValueError, match="Value .* belonging to key .* is not an instance of .*"):
+    with pytest.raises(ValueError, match=r"Value \.\* belonging to key \.\* is not an instance of \.\*"):
         _ = MetricCollection({"metric1": dms, "metric2": 5})
 
     # Same metric passed in multiple times
-    with pytest.raises(ValueError, match="Encountered two metrics both named *."):
+    with pytest.raises(ValueError, match=r"Encountered two metrics both named \*\."):
         _ = MetricCollection([dms, dms])
 
     # Not a list or dict passed in
-    with pytest.warns(Warning, match=" which are not `Metric` so they will be ignored."):
+    with pytest.warns(Warning, match=r" which are not `Metric` so they will be ignored\."):
         _ = MetricCollection(dms, [dms])
 
 
@@ -285,7 +285,7 @@ def test_collection_add_metrics():
     assert results["custom_sum"] == 5
 
     duplicate_collection = MetricCollection([DummyMetricSum()])
-    with pytest.raises(ValueError, match="Metric with name 'DummyMetricSum' already exists in the collection."):
+    with pytest.raises(ValueError, match=r"Metric with name 'DummyMetricSum' already exists in the collection\."):
         collection1.add_metrics(duplicate_collection)
 
 
@@ -674,7 +674,7 @@ def test_compute_on_different_dtype():
 
 def test_error_on_wrong_specified_compute_groups():
     """Test that error is raised if user miss-specify the compute groups."""
-    with pytest.raises(ValueError, match="Input MulticlassAccuracy in `compute_groups`.*"):
+    with pytest.raises(ValueError, match=r"Input MulticlassAccuracy in `compute_groups`\.\*"):
         MetricCollection(
             MulticlassConfusionMatrix(3),
             MulticlassRecall(3),
