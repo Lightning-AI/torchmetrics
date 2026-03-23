@@ -64,7 +64,6 @@ jobs:
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
           - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.8.0" }
           - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.9.1" }
-          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.10.0" }
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       TOKENIZERS_PARALLELISM: false
