@@ -34,7 +34,7 @@ from torchmetrics.utilities.imports import (
     _PYCOCOTOOLS_AVAILABLE,
 )
 from unittests._helpers.testers import MetricTester
-from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
+from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL, _DETECTION_KEYPOINTS, _DETECTION_VAL_KEYPOINTS
 
 
 def _skip_if_faster_coco_eval_missing(backend):
@@ -50,29 +50,45 @@ def _generate_coco_inputs(iou_type):
     and should therefore correspond directly to the result on the webpage
 
     """
+    if iou_type == "bbox":
+        _DETECTION = _DETECTION_BBOX
+        _VAL_DETECTION = _DETECTION_VAL
+    elif iou_type == "segm":
+        _DETECTION = _DETECTION_SEGM
+        _VAL_DETECTION = _DETECTION_VAL
+    elif iou_type == "keypoints":
+        _DETECTION = _DETECTION_KEYPOINTS
+        _VAL_DETECTION = _DETECTION_VAL_KEYPOINTS
     batched_preds, batched_target = MeanAveragePrecision().coco_to_tm(
-        _DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM, _DETECTION_VAL, iou_type
+        _DETECTION, _VAL_DETECTION, iou_type
     )
 
     # create 10 batches of 10 preds/targets each
-    batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(10)]
-    batched_target = [batched_target[10 * i : 10 * (i + 1)] for i in range(10)]
+    n = min(10, len(batched_preds) // 10)
+    batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(n)]
+    batched_target = [batched_target[10 * i : 10 * (i + 1)] for i in range(n)]
     return batched_preds, batched_target
 
 
 _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
+_coco_keypoints_input = _generate_coco_inputs("keypoints")
 
 
 @pytest.mark.skipif(
     not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
 )
-@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+@pytest.mark.parametrize("iou_type", ["bbox", "segm", "keypoints"])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
 def test_tm_to_coco(tmpdir, iou_type, backend):
     """Test that the conversion from TM to COCO format works."""
-    preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
-    metric = MeanAveragePrecision(iou_type=iou_type, backend=backend, box_format="xywh")
+    if iou_type == "bbox":
+        preds, target = _coco_bbox_input
+    elif iou_type == "segm":
+        preds, target = _coco_segm_input
+    elif iou_type == "keypoints":
+        preds, target = _coco_keypoints_input
+    metric = MeanAveragePrecision(iou_type=iou_type, backend=backend, box_format="xywh", keypoint_format="xyv")
     for bp, bt in zip(preds, target):
         metric.update(bp, bt)
     metric.tm_to_coco(f"{tmpdir}/tm_map_input")
@@ -95,9 +111,14 @@ def test_tm_to_coco(tmpdir, iou_type, backend):
                     sample1["masks"], sample2["masks"]
                 ):
                     sample_found = True
-            else:
+            elif iou_type == "bbox":
                 if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
                     sample1["boxes"], sample2["boxes"]
+                ):
+                    sample_found = True
+            elif iou_type == "keypoints":
+                if sample1["keypoints"].shape == sample2["keypoints"].shape and torch.allclose(
+                    sample1["keypoints"], sample2["keypoints"]
                 ):
                     sample_found = True
         assert sample_found, "preds not found"
@@ -110,9 +131,14 @@ def test_tm_to_coco(tmpdir, iou_type, backend):
                     sample1["masks"], sample2["masks"]
                 ):
                     sample_found = True
-            else:
+            elif iou_type == "bbox":
                 if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
                     sample1["boxes"], sample2["boxes"]
+                ):
+                    sample_found = True
+            elif iou_type == "keypoints":
+                if sample1["keypoints"].shape == sample2["keypoints"].shape and torch.allclose(
+                    sample1["keypoints"], sample2["keypoints"]
                 ):
                     sample_found = True
         assert sample_found, "target not found"
@@ -965,19 +991,24 @@ def compare_with_class(functional_result, preds, target, **kwargs: Any):
 
 
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
-@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+@pytest.mark.parametrize("iou_type", ["bbox", "segm", "keypoints"])
 def test_mean_average_precision_iou_type_functional(backend, iou_type):
     """Test that the functional API returns a valid dictionary with the expected keys."""
-    preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+    if iou_type == "bbox":
+        preds, target = _coco_bbox_input
+    elif iou_type == "segm":
+        preds, target = _coco_segm_input
+    elif iou_type == "keypoints":
+        preds, target = _coco_keypoints_input
 
     preds_flat = [p for batch in preds for p in batch]
     target_flat = [t for batch in target for t in batch]
 
     functional_result = mean_average_precision(
-        preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh"
+        preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh", keypoint_format="xyv",
     )
     compare_with_class(
-        functional_result, preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh"
+        functional_result, preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh",  keypoint_format="xyv",
     )
 
 

@@ -158,8 +158,8 @@ class MeanAveragePrecision(Metric):
                   width and height.
 
         iou_type:
-            Type of input (either masks or bounding-boxes) used for computing IOU. Supported IOU types are
-            ``"bbox"`` or ``"segm"`` or both as a tuple.
+            Type of input (either masks or bounding-boxes or keypoints) used for computing IOU. Supported IOU types are
+            ``"bbox"`` or ``"segm"`` or ``"kpt"`` or ``["bbox", "segm"]`` or ``["bbox", "kpt"]``.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.
@@ -205,7 +205,7 @@ class MeanAveragePrecision(Metric):
         ValueError:
             If ``box_format`` is not one of ``"xyxy"``, ``"xywh"`` or ``"cxcywh"``
         ValueError:
-            If ``iou_type`` is not one of ``"bbox"`` or ``"segm"``
+            If ``iou_type`` is not one of ``"bbox"`` or ``"segm"`` or ``"keypoints"``
         ValueError:
             If ``iou_thresholds`` is not None or a list of floats
         ValueError:
@@ -319,10 +319,12 @@ class MeanAveragePrecision(Metric):
 
     detection_box: List[Tensor]
     detection_mask: List[Tensor]
+    detection_keypoint: List[Tensor]
     detection_scores: List[Tensor]
     detection_labels: List[Tensor]
     groundtruth_box: List[Tensor]
     groundtruth_mask: List[Tensor]
+    groundtruth_keypoint: List[Tensor]
     groundtruth_labels: List[Tensor]
     groundtruth_crowds: List[Tensor]
     groundtruth_area: List[Tensor]
@@ -344,7 +346,8 @@ class MeanAveragePrecision(Metric):
     def __init__(
         self,
         box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
-        iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = "bbox",
+        keypoint_format: Literal["xy", "xyv"] = "xy",
+        iou_type: Union[Literal["bbox", "segm", "keypoints"], tuple[Literal["bbox", "segm", "keypoints"], ...]] = "bbox",
         iou_thresholds: Optional[list[float]] = None,
         rec_thresholds: Optional[list[float]] = None,
         max_detection_thresholds: Optional[list[int]] = None,
@@ -372,6 +375,11 @@ class MeanAveragePrecision(Metric):
         if box_format not in allowed_box_formats:
             raise ValueError(f"Expected argument `box_format` to be one of {allowed_box_formats} but got {box_format}")
         self.box_format = box_format
+
+        allowed_keypoint_formats = ("xy", "xyv")
+        if keypoint_format not in allowed_keypoint_formats:
+            raise ValueError(f"Expected argument `keypoint_format` to be one of {allowed_keypoint_formats} but got {keypoint_format}")
+        self.keypoint_format = keypoint_format
 
         self.iou_type = _validate_iou_type_arg(iou_type)
 
@@ -416,10 +424,12 @@ class MeanAveragePrecision(Metric):
 
         self.add_state("detection_box", default=[], dist_reduce_fx=None)
         self.add_state("detection_mask", default=[], dist_reduce_fx=None)
+        self.add_state("detection_keypoint", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_box", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_mask", default=[], dist_reduce_fx=None)
+        self.add_state("groundtruth_keypoint", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_crowds", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_area", default=[], dist_reduce_fx=None)
@@ -459,11 +469,13 @@ class MeanAveragePrecision(Metric):
             self.groundtruth_labels,
             self.groundtruth_box,
             self.groundtruth_mask,
+            self.groundtruth_keypoint,
             self.groundtruth_crowds,
             self.groundtruth_area,
             self.detection_labels,
             self.detection_box,
             self.detection_mask,
+            self.detection_keypoint,
             self.detection_scores,
             name,
             self.iou_type,
@@ -530,9 +542,10 @@ class MeanAveragePrecision(Metric):
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
-            bbox_detection, mask_detection = _get_safe_item_values(
+            bbox_detection, mask_detection, keypoint_detection = _get_safe_item_values(
                 iou_type=self.iou_type,
                 box_format=self.box_format,
+                keypoint_format=self.keypoint_format,
                 max_detection_thresholds=self.max_detection_thresholds,
                 coco_backend=self._coco_backend,
                 item=item,
@@ -542,13 +555,16 @@ class MeanAveragePrecision(Metric):
                 self.detection_box.append(bbox_detection)
             if mask_detection is not None:
                 self.detection_mask.append(mask_detection)  # type: ignore[arg-type]
+            if keypoint_detection is not None:
+                self.detection_keypoint.append(keypoint_detection)  # type: ignore[arg-type]
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
 
         for item in target:
-            bbox_groundtruth, mask_groundtruth = _get_safe_item_values(
+            bbox_groundtruth, mask_groundtruth, keypoint_groundtruth = _get_safe_item_values(
                 self.iou_type,
                 self.box_format,
+                self.keypoint_format,
                 self.max_detection_thresholds,
                 self._coco_backend,
                 item,
@@ -557,6 +573,8 @@ class MeanAveragePrecision(Metric):
                 self.groundtruth_box.append(bbox_groundtruth)
             if mask_groundtruth is not None:
                 self.groundtruth_mask.append(mask_groundtruth)  # type: ignore[arg-type]
+            if keypoint_groundtruth is not None:
+                self.groundtruth_keypoint.append(keypoint_groundtruth)  # type: ignore[arg-type]
             self.groundtruth_labels.append(item["labels"])
             self.groundtruth_crowds.append(item.get("iscrowd", torch.zeros_like(item["labels"])))
             self.groundtruth_area.append(item.get("area", torch.zeros_like(item["labels"])))
@@ -568,11 +586,13 @@ class MeanAveragePrecision(Metric):
             self.groundtruth_labels,
             self.groundtruth_box,
             self.groundtruth_mask,
+            self.groundtruth_keypoint,
             self.groundtruth_crowds,
             self.groundtruth_area,
             self.detection_labels,
             self.detection_box,
             self.detection_mask,
+            self.detection_keypoint,
             self.detection_scores,
             self.iou_type,
             self.average,
