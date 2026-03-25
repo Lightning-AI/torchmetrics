@@ -9,5 +9,7 @@ _DETECTION_VAL = os.path.join(_PATH_ALL_TESTS, "_data", "detection", "instances_
 _DETECTION_BBOX = os.path.join(_PATH_ALL_TESTS, "_data", "detection", "instances_val2014_fakebbox100_results.json")
 _DETECTION_SEGM = os.path.join(_PATH_ALL_TESTS, "_data", "detection", "instances_val2014_fakesegm100_results.json")
 
-_DETECTION_KEYPOINTS = os.path.join(_PATH_ALL_TESTS, "_data", "detection", "person_keypoints_val2014_fakekeypoints100_results.json")
+_DETECTION_KEYPOINTS = os.path.join(
+    _PATH_ALL_TESTS, "_data", "detection", "person_keypoints_val2014_fakekeypoints100_results.json"
+)
 _DETECTION_VAL_KEYPOINTS = os.path.join(_PATH_ALL_TESTS, "_data", "detection", "person_keypoints_val2014_100.json")

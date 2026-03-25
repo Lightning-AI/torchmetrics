@@ -34,7 +34,13 @@ from torchmetrics.utilities.imports import (
     _PYCOCOTOOLS_AVAILABLE,
 )
 from unittests._helpers.testers import MetricTester
-from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL, _DETECTION_KEYPOINTS, _DETECTION_VAL_KEYPOINTS
+from unittests.detection import (
+    _DETECTION_BBOX,
+    _DETECTION_KEYPOINTS,
+    _DETECTION_SEGM,
+    _DETECTION_VAL,
+    _DETECTION_VAL_KEYPOINTS,
+)
 
 
 def _skip_if_faster_coco_eval_missing(backend):
@@ -59,9 +65,7 @@ def _generate_coco_inputs(iou_type):
     elif iou_type == "keypoints":
         _DETECTION = _DETECTION_KEYPOINTS
         _VAL_DETECTION = _DETECTION_VAL_KEYPOINTS
-    batched_preds, batched_target = MeanAveragePrecision().coco_to_tm(
-        _DETECTION, _VAL_DETECTION, iou_type
-    )
+    batched_preds, batched_target = MeanAveragePrecision().coco_to_tm(_DETECTION, _VAL_DETECTION, iou_type)
 
     # create 10 batches of 10 preds/targets each
     n = min(10, len(batched_preds) // 10)
@@ -1005,10 +1009,21 @@ def test_mean_average_precision_iou_type_functional(backend, iou_type):
     target_flat = [t for batch in target for t in batch]
 
     functional_result = mean_average_precision(
-        preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh", keypoint_format="xyv",
+        preds_flat,
+        target_flat,
+        backend=backend,
+        iou_type=iou_type,
+        box_format="xywh",
+        keypoint_format="xyv",
     )
     compare_with_class(
-        functional_result, preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh",  keypoint_format="xyv",
+        functional_result,
+        preds_flat,
+        target_flat,
+        backend=backend,
+        iou_type=iou_type,
+        box_format="xywh",
+        keypoint_format="xyv",
     )
 
 

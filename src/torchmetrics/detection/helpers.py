@@ -267,21 +267,20 @@ class CocoBackend:
                 f"{prefix}mar_medium": torch.tensor([stats[8]], dtype=torch.float32),
                 f"{prefix}mar_large": torch.tensor([stats[9]], dtype=torch.float32),
             }
-        else:
-            return {
-                f"{prefix}map": torch.tensor([stats[0]], dtype=torch.float32),
-                f"{prefix}map_50": torch.tensor([stats[1]], dtype=torch.float32),
-                f"{prefix}map_75": torch.tensor([stats[2]], dtype=torch.float32),
-                f"{prefix}map_small": torch.tensor([stats[3]], dtype=torch.float32),
-                f"{prefix}map_medium": torch.tensor([stats[4]], dtype=torch.float32),
-                f"{prefix}map_large": torch.tensor([stats[5]], dtype=torch.float32),
-                f"{prefix}mar_{mdt[0]}": torch.tensor([stats[6]], dtype=torch.float32),
-                f"{prefix}mar_{mdt[1]}": torch.tensor([stats[7]], dtype=torch.float32),
-                f"{prefix}mar_{mdt[2]}": torch.tensor([stats[8]], dtype=torch.float32),
-                f"{prefix}mar_small": torch.tensor([stats[9]], dtype=torch.float32),
-                f"{prefix}mar_medium": torch.tensor([stats[10]], dtype=torch.float32),
-                f"{prefix}mar_large": torch.tensor([stats[11]], dtype=torch.float32),
-            }
+        return {
+            f"{prefix}map": torch.tensor([stats[0]], dtype=torch.float32),
+            f"{prefix}map_50": torch.tensor([stats[1]], dtype=torch.float32),
+            f"{prefix}map_75": torch.tensor([stats[2]], dtype=torch.float32),
+            f"{prefix}map_small": torch.tensor([stats[3]], dtype=torch.float32),
+            f"{prefix}map_medium": torch.tensor([stats[4]], dtype=torch.float32),
+            f"{prefix}map_large": torch.tensor([stats[5]], dtype=torch.float32),
+            f"{prefix}mar_{mdt[0]}": torch.tensor([stats[6]], dtype=torch.float32),
+            f"{prefix}mar_{mdt[1]}": torch.tensor([stats[7]], dtype=torch.float32),
+            f"{prefix}mar_{mdt[2]}": torch.tensor([stats[8]], dtype=torch.float32),
+            f"{prefix}mar_small": torch.tensor([stats[9]], dtype=torch.float32),
+            f"{prefix}mar_medium": torch.tensor([stats[10]], dtype=torch.float32),
+            f"{prefix}mar_large": torch.tensor([stats[11]], dtype=torch.float32),
+        }
 
     @staticmethod
     def coco_to_tm(
@@ -352,7 +351,7 @@ class CocoBackend:
             if "keypoints" in iou_type:
                 if "bbox" not in iou_type and hasattr(t, "bbox"):
                     target[t["image_id"]]["boxes"].append(t["bbox"])
-                target[t["image_id"]]["keypoints"].append(t['keypoints'])
+                target[t["image_id"]]["keypoints"].append(t["keypoints"])
                 target[t["image_id"]]["num_keypoints"].append(len(t["keypoints"]) // 3)
             target[t["image_id"]]["labels"].append(t["category_id"])
             target[t["image_id"]]["iscrowd"].append(t["iscrowd"])
@@ -576,7 +575,7 @@ class CocoBackend:
             if keypoints is not None:
                 if boxes is None:
                     kp = keypoints[image_id].view(-1, 17, 3)
-                    v_mask = kp[..., 2:] > 0 # visible points
+                    v_mask = kp[..., 2:] > 0  # visible points
                     mins = torch.masked.amin(kp[..., :2], mask=v_mask, dim=1)  # [N, 2] -> [xmin, ymin]
                     maxs = torch.masked.amax(kp[..., :2], mask=v_mask, dim=1)
                     image_boxes = torch.cat([mins, maxs - mins], dim=-1).nan_to_num(0).cpu().tolist()
@@ -622,9 +621,9 @@ class CocoBackend:
                 else:
                     area_stat = self.mask_utils.area(image_mask) if "segm" in iou_type else image_box[2] * image_box[3]
                     if len(iou_type) > 1:
-                        if 'bbox' in iou_type:
+                        if "bbox" in iou_type:
                             area_stat_box = image_box[2] * image_box[3]
-                        if 'segm' in iou_type:
+                        if "segm" in iou_type:
                             area_stat_mask = self.mask_utils.area(image_mask)
 
                 annotation = {
@@ -735,12 +734,13 @@ def _get_safe_item_values(
             masks.append((tuple(rle["size"]), rle["counts"]))
         output[1] = tuple(masks)  # type: ignore[call-overload]
     if "keypoints" in iou_type:
-        def keypoint_convert(keypoints, in_fmt='xy', out_fmt="xyv"):
+
+        def keypoint_convert(keypoints, in_fmt="xy", out_fmt="xyv"):
             # the keypoint format is expected to be:
             #   [number_of_keypoints * 3] -> x_0,y_0,viz_0, x_1,y_1,viz_1, ..., x_n,y_n,viz_n
             if in_fmt == "xy" and out_fmt == "xyv":
                 keypoints = torch.cat([keypoints, torch.ones_like(keypoints[..., :1])], dim=-1)
-                keypoints = keypoints.flatten(-2) # [num_keypoints, 3] --> [num_keypoints * 3]
+                keypoints = keypoints.flatten(-2)  # [num_keypoints, 3] --> [num_keypoints * 3]
             return keypoints
 
         keypoints = _fix_empty_tensors(item["keypoints"])

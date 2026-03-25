@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -174,7 +174,13 @@ def mean_average_precision(
     detection_mask: List[Tensor] = []
     for item in preds:
         bbox_detection, mask_detection, keypoint_detection = _get_safe_item_values(
-            iou_type, box_format, keypoint_format, max_detection_thresholds, coco_backend, item, warn=warn_on_many_detections
+            iou_type,
+            box_format,
+            keypoint_format,
+            max_detection_thresholds,
+            coco_backend,
+            item,
+            warn=warn_on_many_detections,
         )
         if bbox_detection is not None:
             detection_box.append(bbox_detection)

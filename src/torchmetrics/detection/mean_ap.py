@@ -347,7 +347,9 @@ class MeanAveragePrecision(Metric):
         self,
         box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
         keypoint_format: Literal["xy", "xyv"] = "xy",
-        iou_type: Union[Literal["bbox", "segm", "keypoints"], tuple[Literal["bbox", "segm", "keypoints"], ...]] = "bbox",
+        iou_type: Union[
+            Literal["bbox", "segm", "keypoints"], tuple[Literal["bbox", "segm", "keypoints"], ...]
+        ] = "bbox",
         iou_thresholds: Optional[list[float]] = None,
         rec_thresholds: Optional[list[float]] = None,
         max_detection_thresholds: Optional[list[int]] = None,
@@ -378,7 +380,9 @@ class MeanAveragePrecision(Metric):
 
         allowed_keypoint_formats = ("xy", "xyv")
         if keypoint_format not in allowed_keypoint_formats:
-            raise ValueError(f"Expected argument `keypoint_format` to be one of {allowed_keypoint_formats} but got {keypoint_format}")
+            raise ValueError(
+                f"Expected argument `keypoint_format` to be one of {allowed_keypoint_formats} but got {keypoint_format}"
+            )
         self.keypoint_format = keypoint_format
 
         self.iou_type = _validate_iou_type_arg(iou_type)
