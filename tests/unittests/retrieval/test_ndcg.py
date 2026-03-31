@@ -240,9 +240,7 @@ def test_accuracy_vs_sklearn(batch_size: int, list_length: int, top_k: Optional[
     labels = (torch.randint(0, 2, (batch_size, list_length)) * 2 - 1).float() + 1.0
 
     fast_result = retrieval_normalized_dcg(scores, labels, top_k=top_k).item()
-    sklearn_result = float(
-        np.mean([ndcg_score([t], [p], k=top_k) for t, p in zip(labels.numpy(), scores.numpy())])
-    )
+    sklearn_result = float(np.mean([ndcg_score([t], [p], k=top_k) for t, p in zip(labels.numpy(), scores.numpy())]))
 
     assert abs(fast_result - sklearn_result) <= 1e-4, (
         f"nDCG differs from sklearn by {abs(fast_result - sklearn_result):.2e} "
@@ -280,9 +278,7 @@ def test_tie_handling_explicit():
     ])
 
     result = retrieval_normalized_dcg(scores, labels)
-    sklearn_result = float(
-        np.mean([ndcg_score([t], [p]) for t, p in zip(labels.numpy(), scores.numpy())])
-    )
+    sklearn_result = float(np.mean([ndcg_score([t], [p]) for t, p in zip(labels.numpy(), scores.numpy())]))
 
     assert isinstance(result, torch.Tensor)
     assert 0.0 <= result.item() <= 1.0

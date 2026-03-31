@@ -27,38 +27,38 @@ def _tie_average_dcg(target: Tensor, preds: Tensor, discount: Tensor) -> Tensor:
     Float64 is used for accumulation to preserve numerical accuracy.
 
     Args:
-        target: ground truth relevances in **predicted** rank order, shape ``(B, L)``.
-        preds: predicted scores in **predicted** rank order, shape ``(B, L)``.
-        discount: per-rank discount values ``1 / log2(rank + 2)``, shape ``(L,)``.
+        target: ground truth relevances in **predicted** rank order, shape ``(n_queries, n_docs)``.
+        preds: predicted scores in **predicted** rank order, shape ``(n_queries, n_docs)``.
+        discount: per-rank discount values ``1 / log2(rank + 2)``, shape ``(n_docs,)``.
 
     Returns:
-        DCG values, shape ``(B,)``, dtype float32.
+        DCG values, shape ``(n_queries,)``, dtype float32.
 
     """
-    B, L = target.shape
+    n_queries, n_docs = target.shape
     device = target.device
 
     # Detect tie-group boundaries: True at the first element of each new group
     new_grp = torch.cat(
         [
-            torch.ones(B, 1, dtype=torch.bool, device=device),
+            torch.ones(n_queries, 1, dtype=torch.bool, device=device),
             preds.diff(dim=-1).abs() > 0,
         ],
         dim=-1,
-    )  # (B, L)
+    )  # (n_queries, n_docs)
 
     # Per-element group id, unique across the batch
     gid = new_grp.long().cumsum(-1) - 1  # 0-based within each row
-    gid = gid + torch.arange(B, device=device).unsqueeze(-1) * L
+    gid = gid + torch.arange(n_queries, device=device).unsqueeze(-1) * n_docs
 
     # Scatter: accumulate gains, discounts, and counts per group
     flat_id = gid.flatten()
     flat_gain = target.flatten().float()
-    flat_disc = discount.unsqueeze(0).expand(B, -1).flatten().float()
+    flat_disc = discount.unsqueeze(0).expand(n_queries, -1).flatten().float()
 
-    grp_gain = torch.zeros(B * L, dtype=torch.float32, device=device)
-    grp_disc = torch.zeros(B * L, dtype=torch.float32, device=device)
-    grp_cnt = torch.zeros(B * L, dtype=torch.int32, device=device)
+    grp_gain = torch.zeros(n_queries * n_docs, dtype=torch.float32, device=device)
+    grp_disc = torch.zeros(n_queries * n_docs, dtype=torch.float32, device=device)
+    grp_cnt = torch.zeros(n_queries * n_docs, dtype=torch.int32, device=device)
 
     grp_gain.scatter_add_(0, flat_id, flat_gain)
     grp_disc.scatter_add_(0, flat_id, flat_disc)
@@ -69,8 +69,8 @@ def _tie_average_dcg(target: Tensor, preds: Tensor, discount: Tensor) -> Tensor:
 
     # Scatter only non-empty groups back to the batch dimension
     valid = grp_cnt > 0
-    batch_idx = flat_id[valid] // L
-    dcg = torch.zeros(B, dtype=torch.float64, device=device)
+    batch_idx = flat_id[valid] // n_docs
+    dcg = torch.zeros(n_queries, dtype=torch.float64, device=device)
     dcg.scatter_add_(0, batch_idx, contrib[valid])
     return dcg.float()
 
@@ -79,13 +79,13 @@ def _dcg_sample_scores(target: Tensor, preds: Tensor, top_k: int, ignore_ties: b
     """Compute DCG sample scores.
 
     Args:
-        target: ground truth relevances, shape ``(L,)`` or ``(B, L)``.
-        preds: predicted scores, shape ``(L,)`` or ``(B, L)``.
+        target: ground truth relevances, shape ``(n_docs,)`` or ``(n_queries, n_docs)``.
+        preds: predicted scores, shape ``(n_docs,)`` or ``(n_queries, n_docs)``.
         top_k: consider only the top k elements.
         ignore_ties: If ``True``, ties are broken by order. If ``False``, ties are averaged.
 
     Returns:
-        DCG value(s): scalar for 1-D input, shape ``(B,)`` for batched input.
+        DCG value(s): scalar for 1-D input, shape ``(n_queries,)`` for batched input.
 
     """
     batched = preds.dim() > 1
@@ -93,17 +93,17 @@ def _dcg_sample_scores(target: Tensor, preds: Tensor, top_k: int, ignore_ties: b
         preds = preds.unsqueeze(0)
         target = target.unsqueeze(0)
 
-    L = preds.shape[-1]
+    n_docs = preds.shape[-1]
 
-    # Use topk when k < L to avoid sorting the full list
-    if top_k < L:
+    # Use topk when k < n_docs to avoid sorting the full list
+    if top_k < n_docs:
         order = preds.topk(top_k, dim=-1, sorted=True).indices
-        L_eff = top_k
+        n_docs_eff = top_k
     else:
         order = preds.argsort(dim=-1, descending=True, stable=True)
-        L_eff = L
+        n_docs_eff = n_docs
 
-    discount = 1.0 / torch.log2(torch.arange(L_eff, device=preds.device) + 2.0)
+    discount = 1.0 / torch.log2(torch.arange(n_docs_eff, device=preds.device) + 2.0)
     p_sorted = preds.gather(-1, order)
     g_sorted = target.float().gather(-1, order)
 
