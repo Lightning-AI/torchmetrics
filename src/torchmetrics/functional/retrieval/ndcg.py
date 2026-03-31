@@ -24,58 +24,55 @@ def _tie_average_dcg(target: Tensor, preds: Tensor, discount: Tensor) -> Tensor:
 
     Replaces the ``torch.unique`` approach with ``diff`` + ``scatter_add_``, which is
     significantly faster on GPU (``torch.unique`` is ~15x slower on GPU than CPU).
+    Float64 is used for accumulation to preserve numerical accuracy.
 
     Args:
-        target: ground truth relevances, shape ``(L,)`` or ``(B, L)``.
-        preds: predicted scores, shape ``(L,)`` or ``(B, L)``.
+        target: ground truth relevances in **predicted** rank order, shape ``(B, L)``.
+        preds: predicted scores in **predicted** rank order, shape ``(B, L)``.
         discount: per-rank discount values ``1 / log2(rank + 2)``, shape ``(L,)``.
 
     Returns:
-        DCG value(s): scalar for 1-D input, shape ``(B,)`` for batched input.
+        DCG values, shape ``(B,)``, dtype float32.
 
     """
-    batched = preds.dim() > 1
-    B = preds.shape[0] if batched else 1
-    L = preds.shape[-1]
-
-    if not batched:
-        preds = preds.unsqueeze(0)
-        target = target.unsqueeze(0)
-
-    # Sort each row by descending predicted score
-    order = preds.argsort(dim=-1, descending=True, stable=True)
-    p_sorted = preds.gather(-1, order)
-    g_sorted = target.float().gather(-1, order)
+    B, L = target.shape
+    device = target.device
 
     # Detect tie-group boundaries: True at the first element of each new group
     new_grp = torch.cat(
         [
-            torch.ones(B, 1, dtype=torch.bool, device=preds.device),
-            p_sorted.diff(dim=-1) != 0,
+            torch.ones(B, 1, dtype=torch.bool, device=device),
+            preds.diff(dim=-1).abs() > 0,
         ],
         dim=-1,
     )  # (B, L)
 
-    # Per-element group id, made unique across the batch
+    # Per-element group id, unique across the batch
     gid = new_grp.long().cumsum(-1) - 1  # 0-based within each row
-    gid = gid + torch.arange(B, device=preds.device).unsqueeze(-1) * L
+    gid = gid + torch.arange(B, device=device).unsqueeze(-1) * L
 
     # Scatter: accumulate gains, discounts, and counts per group
-    flat_gid = gid.flatten()
-    flat_gain = g_sorted.flatten().float()
+    flat_id = gid.flatten()
+    flat_gain = target.flatten().float()
     flat_disc = discount.unsqueeze(0).expand(B, -1).flatten().float()
 
-    grp_gain = torch.zeros(B * L, dtype=torch.float32, device=preds.device)
-    grp_disc = torch.zeros(B * L, dtype=torch.float32, device=preds.device)
-    grp_cnt = torch.zeros(B * L, dtype=torch.long, device=preds.device)
+    grp_gain = torch.zeros(B * L, dtype=torch.float32, device=device)
+    grp_disc = torch.zeros(B * L, dtype=torch.float32, device=device)
+    grp_cnt = torch.zeros(B * L, dtype=torch.int32, device=device)
 
-    grp_gain.scatter_add_(0, flat_gid, flat_gain)
-    grp_disc.scatter_add_(0, flat_gid, flat_disc)
-    grp_cnt.scatter_add_(0, flat_gid, torch.ones_like(flat_gid))
+    grp_gain.scatter_add_(0, flat_id, flat_gain)
+    grp_disc.scatter_add_(0, flat_id, flat_disc)
+    grp_cnt.scatter_add_(0, flat_id, torch.ones_like(flat_id, dtype=torch.int32))
 
-    contrib = grp_gain * grp_disc / grp_cnt.float().clamp(min=1)
-    dcg = contrib.view(B, L).sum(-1)  # (B,)
-    return dcg if batched else dcg.squeeze(0)
+    # Float64 accumulation for numerical parity with sklearn / reference implementations
+    contrib = grp_gain.double() * (grp_disc.double() / grp_cnt.clamp(min=1).double())
+
+    # Scatter only non-empty groups back to the batch dimension
+    valid = grp_cnt > 0
+    batch_idx = flat_id[valid] // L
+    dcg = torch.zeros(B, dtype=torch.float64, device=device)
+    dcg.scatter_add_(0, batch_idx, contrib[valid])
+    return dcg.float()
 
 
 def _dcg_sample_scores(target: Tensor, preds: Tensor, top_k: int, ignore_ties: bool) -> Tensor:
@@ -91,16 +88,31 @@ def _dcg_sample_scores(target: Tensor, preds: Tensor, top_k: int, ignore_ties: b
         DCG value(s): scalar for 1-D input, shape ``(B,)`` for batched input.
 
     """
-    L = target.shape[-1]
-    discount = 1.0 / torch.log2(torch.arange(L, device=target.device) + 2.0)
-    discount[top_k:] = 0.0
+    batched = preds.dim() > 1
+    if not batched:
+        preds = preds.unsqueeze(0)
+        target = target.unsqueeze(0)
+
+    L = preds.shape[-1]
+
+    # Use topk when k < L to avoid sorting the full list
+    if top_k < L:
+        order = preds.topk(top_k, dim=-1, sorted=True).indices
+        L_eff = top_k
+    else:
+        order = preds.argsort(dim=-1, descending=True, stable=True)
+        L_eff = L
+
+    discount = 1.0 / torch.log2(torch.arange(L_eff, device=preds.device) + 2.0)
+    p_sorted = preds.gather(-1, order)
+    g_sorted = target.float().gather(-1, order)
 
     if ignore_ties:
-        ranking = preds.argsort(dim=-1, descending=True)
-        ranked = target.float().gather(-1, ranking)
-        return (discount * ranked).sum(-1)
+        dcg = (discount * g_sorted).sum(-1, dtype=torch.float64).float()
+    else:
+        dcg = _tie_average_dcg(g_sorted, p_sorted, discount)
 
-    return _tie_average_dcg(target, preds, discount)
+    return dcg if batched else dcg.squeeze(0)
 
 
 def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
