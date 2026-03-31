@@ -212,3 +212,42 @@ def test_corner_case_with_tied_scores():
             retrieval_normalized_dcg(preds, target, top_k=k),
             torch.tensor([ndcg_score(target, preds, k=k)], dtype=torch.float32),
         )
+
+
+def test_batched_input_matches_per_query():
+    """Batched 2-D input must give the same mean nDCG as averaging per-query results.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2287.
+    """
+    preds = torch.tensor([
+        [0.1, 0.2, 0.3, 4.0, 70.0],
+        [0.5, 0.5, 0.1, 0.9, 0.2],
+        [1.0, 0.0, 0.5, 0.5, 0.3],
+    ])
+    target = torch.tensor([
+        [10, 0, 0, 1, 5],
+        [0, 1, 2, 3, 4],
+        [5, 0, 1, 2, 3],
+    ])
+
+    # Per-query average (existing 1-D API)
+    per_query = torch.stack([
+        retrieval_normalized_dcg(preds[i], target[i]) for i in range(preds.shape[0])
+    ])
+    expected_mean = per_query.mean()
+
+    # Batched 2-D call
+    batched_result = retrieval_normalized_dcg(preds, target)
+
+    assert torch.allclose(batched_result, expected_mean, atol=1e-5), (
+        f"Batched result {batched_result} differs from per-query mean {expected_mean}"
+    )
+
+    # Also verify against sklearn for each query
+    for i in range(preds.shape[0]):
+        p = preds[i].unsqueeze(0).numpy()
+        t = target[i].unsqueeze(0).numpy()
+        sklearn_val = torch.tensor(ndcg_score(t, p), dtype=torch.float32)
+        assert torch.allclose(per_query[i], sklearn_val, atol=1e-5), (
+            f"Query {i}: got {per_query[i]}, expected {sklearn_val}"
+        )
