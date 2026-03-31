@@ -234,6 +234,7 @@ def test_accuracy_vs_sklearn(batch_size: int, list_length: int, top_k: Optional[
     """Batched nDCG must stay within 1e-4 of sklearn across configs.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/2287.
+
     """
     torch.manual_seed(42)
     scores = torch.randn(batch_size, list_length)
@@ -252,6 +253,7 @@ def test_batched_input_matches_per_query():
     """Batched 2-D input must give the same mean nDCG as averaging per-query 1-D results.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/2287.
+
     """
     torch.manual_seed(42)
     preds = torch.randn(16, 50)
@@ -267,6 +269,7 @@ def test_tie_handling_explicit():
     """Tie-averaged DCG must match sklearn on inputs with explicit score ties.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/2287.
+
     """
     scores = torch.tensor([
         [1.0, 1.0, 0.5, 0.5, 0.1],  # two pairs of ties
