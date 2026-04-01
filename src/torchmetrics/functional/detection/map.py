@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -40,7 +40,8 @@ def mean_average_precision(
     preds: List[Dict[str, Any]],
     target: List[Dict[str, Any]],
     box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
-    iou_type: Union[Literal["bbox", "segm"], Tuple[Literal["bbox", "segm"], ...]] = "bbox",
+    keypoint_format: Literal["xy", "xyv"] = "xy",
+    iou_type: Union[Literal["bbox", "segm", "keypoints"], tuple[Literal["bbox", "segm", "keypoints"], ...]] = "bbox",
     iou_thresholds: Optional[list[float]] = None,
     rec_thresholds: Optional[list[float]] = None,
     max_detection_thresholds: Optional[list[int]] = None,
@@ -167,33 +168,45 @@ def mean_average_precision(
 
     coco_backend = CocoBackend(backend=backend)
     detection_box: List[Tensor] = []
+    detection_keypoints: List[Tensor] = []
     detection_labels: List[Tensor] = []
     detection_scores: List[Tensor] = []
     detection_mask: List[Tensor] = []
     for item in preds:
-        bbox_detection, mask_detection = _get_safe_item_values(
-            iou_type, box_format, max_detection_thresholds, coco_backend, item, warn=warn_on_many_detections
+        bbox_detection, mask_detection, keypoint_detection = _get_safe_item_values(
+            iou_type,
+            box_format,
+            keypoint_format,
+            max_detection_thresholds,
+            coco_backend,
+            item,
+            warn=warn_on_many_detections,
         )
         if bbox_detection is not None:
             detection_box.append(bbox_detection)
         if mask_detection is not None:
             detection_mask.append(mask_detection)  # type: ignore[arg-type]
+        if keypoint_detection is not None:
+            detection_keypoints.append(keypoint_detection)
         detection_labels.append(item["labels"])
         detection_scores.append(item["scores"])
 
     groundtruth_box: List[Tensor] = []
     groundtruth_mask: List[Tensor] = []
+    groundtruth_keypoints: List[Tensor] = []
     groundtruth_labels: List[Tensor] = []
     groundtruth_crowds: List[Tensor] = []
     groundtruth_area: List[Tensor] = []
     for item in target:
-        bbox_groundtruth, mask_groundtruth = _get_safe_item_values(
-            iou_type, box_format, max_detection_thresholds, coco_backend, item
+        bbox_groundtruth, mask_groundtruth, keypoint_groundtruth = _get_safe_item_values(
+            iou_type, box_format, keypoint_format, max_detection_thresholds, coco_backend, item
         )
         if bbox_groundtruth is not None:
             groundtruth_box.append(bbox_groundtruth)
         if mask_groundtruth is not None:
             groundtruth_mask.append(mask_groundtruth)  # type: ignore[arg-type]
+        if keypoint_groundtruth is not None:
+            groundtruth_keypoints.append(keypoint_groundtruth)
         groundtruth_labels.append(item["labels"])
         groundtruth_crowds.append(item.get("iscrowd", torch.zeros_like(item["labels"])))
         groundtruth_area.append(item.get("area", torch.zeros_like(item["labels"])))
@@ -203,11 +216,13 @@ def mean_average_precision(
         groundtruth_labels,
         groundtruth_box,
         groundtruth_mask,
+        groundtruth_keypoints,
         groundtruth_crowds,
         groundtruth_area,
         detection_labels,
         detection_box,
         detection_mask,
+        detection_keypoints,
         detection_scores,
         iou_type,
         average,
