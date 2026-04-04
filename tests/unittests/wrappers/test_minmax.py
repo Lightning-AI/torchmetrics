@@ -117,6 +117,21 @@ def test_no_base_metric() -> None:
         MinMaxMetric([])
 
 
+def test_reset_clears_min_max() -> None:
+    """Tests that reset() properly resets min_val and max_val to initialization bounds (issue #3328)."""
+    min_max_acc = MinMaxMetric(BinaryAccuracy())
+    preds = Tensor([[0.9, 0.1], [0.2, 0.8]])
+    labels = Tensor([[0, 1], [0, 1]]).long()
+    min_max_acc(preds, labels)
+    result = min_max_acc.compute()
+    assert result["min"] != torch.tensor(float("inf"))
+    assert result["max"] != torch.tensor(float("-inf"))
+
+    min_max_acc.reset()
+    assert min_max_acc.min_val == torch.tensor(float("inf")), "min_val should be reset to inf after reset()"
+    assert min_max_acc.max_val == torch.tensor(float("-inf")), "max_val should be reset to -inf after reset()"
+
+
 def test_no_scalar_compute() -> None:
     """Tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
     min_max_nsm = MinMaxMetric(BinaryConfusionMatrix())
