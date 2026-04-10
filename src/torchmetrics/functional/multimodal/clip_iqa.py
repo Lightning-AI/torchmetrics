@@ -175,6 +175,9 @@ def _clip_iqa_get_anchor_vectors(
         anchors = model.get_text_features(
             text_processed["input_ids"].to(device), text_processed["attention_mask"].to(device)
         )
+    # Handle both tensor and BaseModelOutputWithPooling returns (transformers v5)
+    if hasattr(anchors, "pooler_output"):
+        anchors = anchors.pooler_output
     return anchors / anchors.norm(p=2, dim=-1, keepdim=True)
 
 
@@ -198,6 +201,9 @@ def _clip_iqa_update(
     else:
         processed_input = processor(images=[i.cpu() for i in images], return_tensors="pt", padding=True)
         img_features = model.get_image_features(processed_input["pixel_values"].to(device))
+    # Handle both tensor and BaseModelOutputWithPooling returns (transformers v5)
+    if hasattr(img_features, "pooler_output"):
+        img_features = img_features.pooler_output
     return img_features / img_features.norm(p=2, dim=-1, keepdim=True)
 
 
