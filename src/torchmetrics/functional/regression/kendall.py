@@ -71,7 +71,8 @@ def _count_concordant_pairs(preds: Tensor, target: Tensor) -> Tensor:
 def _discordant_element_sum(x: Tensor, y: Tensor, i: int) -> Tensor:
     """Count a total number of discordant pairs in a single sequences."""
     return (
-        torch.logical_or(
+        torch
+        .logical_or(
             torch.logical_and(x[i] > x[(i + 1) :], y[i] < y[(i + 1) :]),
             torch.logical_and(x[i] < x[(i + 1) :], y[i] > y[(i + 1) :]),
         )
