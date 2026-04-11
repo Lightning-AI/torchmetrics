@@ -579,3 +579,48 @@ def test_compositional_metrics_update():
 
     assert compos.metric_a._num_updates == 3
     assert compos.metric_b._num_updates == 3
+
+
+def test_compositional_metric_state_property():
+    """Test that metric_state property works correctly for CompositionalMetric."""
+    metric_a = DummyMetric(5)
+    metric_b = DummyMetric(3)
+    compos_binary = metric_a + metric_b
+
+    assert isinstance(compos_binary, CompositionalMetric)
+    state = compos_binary.metric_state
+    assert isinstance(state, dict)
+    compos_binary.update()
+    state_after_update = compos_binary.metric_state
+    assert torch.equal(state_after_update["_num_updates"], tensor(1))
+
+    metric_c = DummyMetric(10)
+    compos_unary = abs(metric_c)
+
+    assert isinstance(compos_unary, CompositionalMetric)
+    assert compos_unary.metric_b is None
+    state_unary = compos_unary.metric_state
+    assert isinstance(state_unary, dict)
+    assert "_num_updates" in state_unary
+    compos_unary.update()
+    state_unary_after_update = compos_unary.metric_state
+    assert torch.equal(state_unary_after_update["_num_updates"], tensor(1))
+
+    metric_d = DummyMetric([1, 2, 3])
+    compos_getitem = metric_d[1]
+    assert isinstance(compos_getitem, CompositionalMetric)
+    assert compos_getitem.metric_b is None
+    state_getitem = compos_getitem.metric_state
+    assert isinstance(state_getitem, dict)
+    assert "_num_updates" in state_getitem
+
+    metric_e = DummyMetric(5)
+    compos_scalar = metric_e + 10
+    assert isinstance(compos_scalar, CompositionalMetric)
+    assert not isinstance(compos_scalar.metric_b, Metric)
+    state_scalar = compos_scalar.metric_state
+    assert isinstance(state_scalar, dict)
+    assert "_num_updates" in state_scalar
+    compos_scalar.update()
+    state_scalar_after = compos_scalar.metric_state
+    assert torch.equal(state_scalar_after["_num_updates"], tensor(1))
