@@ -35,10 +35,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.9", "3.10", "3.11"]
+        python: ["3.10", "3.11"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Login to DockerHub
         if: env.PUSH_DOCKERHUB == 'true' && github.repository_owner == 'Lightning-AI'
@@ -67,7 +67,6 @@ jobs:
         include:
           # These are the base images for PL release docker images,
           #  so include at least all the combinations in release-dockers.yml.
-          - { python: "3.9", pytorch: "2.0.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.10", pytorch: "2.0.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.1.2", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.2.2", cuda: "12.1.1", ubuntu: "22.04" }
@@ -78,9 +77,13 @@ jobs:
           - { python: "3.11", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "22.04" }
           - { python: "3.12", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "24.04" }
           - { python: "3.12", pytorch: "2.8.0", cuda: "12.6.3", ubuntu: "24.04" }
+          - { python: "3.12", pytorch: "2.8.0", cuda: "12.8.1", ubuntu: "24.04" }
+          - { python: "3.12", pytorch: "2.9.1", cuda: "12.6.3", ubuntu: "24.04" }
+          - { python: "3.12", pytorch: "2.10.0", cuda: "12.6.3", ubuntu: "24.04" }
+          - { python: "3.12", pytorch: "2.10.0", cuda: "12.8.1", ubuntu: "24.04" }
           #- { python: "3.13", pytorch: "2.8.0", cuda: "12.6.3", ubuntu: "24.04" }
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Login to DockerHub
         uses: docker/login-action@v3

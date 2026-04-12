@@ -18,8 +18,9 @@ defaults:
 
 env:
   FREEZE_REQUIREMENTS: "1"
-  TORCH_URL: "https://download.pytorch.org/whl/cpu/"
   PYPI_CACHE: "_ci-cache_PyPI"
+  TORCH_URL: "https://download.pytorch.org/whl/cpu/"
+  UV_TORCH_BACKEND: "cpu"
   PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
   TOKENIZERS_PARALLELISM: false
   SPHINX_MOCK_REQUIREMENTS: 0
@@ -36,7 +37,7 @@ jobs:
         target: [html, doctest, linkcheck]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install uv and set Python version
         uses: astral-sh/setup-uv@v6
