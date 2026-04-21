@@ -131,7 +131,7 @@ def test_error_on_multidim_tensors(metric_class=R2Score):
 def test_error_on_too_few_samples(metric_class=R2Score):
     """Test that error is raised if too few samples are provided."""
     metric = metric_class()
-    with pytest.raises(ValueError, match="Needs at least two samples to calculate r2 score."):
+    with pytest.raises(ValueError, match=r"Needs at least two samples to calculate r2 score."):
         metric(torch.randn(1), torch.randn(1))
     metric.reset()
 

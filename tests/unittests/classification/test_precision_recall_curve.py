@@ -148,10 +148,10 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
         """Test that error are raised on wrong dtype."""
         preds, target = inputs
 
-        with pytest.raises(ValueError, match="Expected argument `target` to be an int or long tensor with ground.*"):
+        with pytest.raises(ValueError, match=r"Expected argument `target` to be an int or long tensor with ground.*"):
             binary_precision_recall_curve(preds[0], target[0].to(torch.float32))
 
-        with pytest.raises(ValueError, match="Expected argument `preds` to be an floating tensor with probability.*"):
+        with pytest.raises(ValueError, match=r"Expected argument `preds` to be an floating tensor with probability.*"):
             binary_precision_recall_curve(preds[0].long(), target[0])
 
 
@@ -276,10 +276,10 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
         """Test that error are raised on wrong dtype."""
         preds, target = inputs
 
-        with pytest.raises(ValueError, match="Expected argument `target` to be an int or long tensor, but got.*"):
+        with pytest.raises(ValueError, match=r"Expected argument `target` to be an int or long tensor, but got.*"):
             multiclass_precision_recall_curve(preds[0], target[0].to(torch.float32), num_classes=NUM_CLASSES)
 
-        with pytest.raises(ValueError, match="Expected `preds` to be a float tensor, but got.*"):
+        with pytest.raises(ValueError, match=r"Expected `preds` to be a float tensor, but got.*"):
             multiclass_precision_recall_curve(preds[0].long(), target[0], num_classes=NUM_CLASSES)
 
     @pytest.mark.parametrize("average", ["macro", "micro"])
@@ -415,10 +415,10 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
         """Test that error are raised on wrong dtype."""
         preds, target = inputs
 
-        with pytest.raises(ValueError, match="Expected argument `target` to be an int or long tensor with ground.*"):
+        with pytest.raises(ValueError, match=r"Expected argument `target` to be an int or long tensor with ground.*"):
             multilabel_precision_recall_curve(preds[0], target[0].to(torch.float32), num_labels=NUM_CLASSES)
 
-        with pytest.raises(ValueError, match="Expected argument `preds` to be an floating tensor with probability.*"):
+        with pytest.raises(ValueError, match=r"Expected argument `preds` to be an floating tensor with probability.*"):
             multilabel_precision_recall_curve(preds[0].long(), target[0], num_labels=NUM_CLASSES)
 
 
