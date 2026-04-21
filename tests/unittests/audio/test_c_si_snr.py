@@ -66,7 +66,7 @@ class TestComplexSISNR(MetricTester):
 def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
-    rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
+    _rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     ref = torch.tensor(ref, dtype=torch.float32)
     deg = torch.tensor(deg, dtype=torch.float32)
     ref_stft = torch.stft(ref, n_fft=256, hop_length=128, return_complex=True)

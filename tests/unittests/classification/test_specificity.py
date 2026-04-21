@@ -408,7 +408,7 @@ def _reference_specificity_multilabel_global(preds, target, ignore_index, averag
             idx = t == ignore_index
             t = t[~idx]
             p = p[~idx]
-        tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
+        tn, fp, _fn, _tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
         tns.append(tn)
         fps.append(fp)
 

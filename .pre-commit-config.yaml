@@ -110,12 +110,12 @@ repos:
     rev: v0.15.9
     hooks:
       # try to fix what is possible
-      - id: ruff
-        args: ["--fix", "--unsafe-fixes"]
+      - id: ruff-check
+        args: ["--fix"]
       # perform formatting updates
       - id: ruff-format
       # validate if all is fine with preview mode
-      - id: ruff
+      - id: ruff-check
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.21.0
