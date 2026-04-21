@@ -117,6 +117,42 @@ def test_no_base_metric() -> None:
         MinMaxMetric([])
 
 
+def test_reset_clears_min_max() -> None:
+    """Tests that reset() properly resets min_val and max_val to initialization bounds (issue #3328)."""
+    min_max_acc: MinMaxMetric = MinMaxMetric(BinaryAccuracy())
+    preds = Tensor([[0.9, 0.1], [0.2, 0.8]])
+    labels = Tensor([[0, 1], [0, 1]]).long()
+    min_max_acc(preds, labels)
+    result = min_max_acc.compute()
+    assert result["min"].item() != float("inf")
+    assert result["max"].item() != float("-inf")
+
+    min_max_acc.reset()
+    assert min_max_acc.min_val.item() == float("inf"), "min_val should be reset to inf after reset()"
+    assert min_max_acc.max_val.item() == float("-inf"), "max_val should be reset to -inf after reset()"
+
+
+def test_reset_no_pollution_across_epochs() -> None:
+    """Make sure min/max values from a previous epoch do not leak into the next epoch after reset (issue #3328)."""
+    min_max_acc: MinMaxMetric = MinMaxMetric(BinaryAccuracy())
+    labels = Tensor([[0, 1], [0, 1]]).long()
+
+    # Epoch 1 (e.g. Lightning sanity check): perfect predictions -> accuracy = 1.0
+    min_max_acc(Tensor([[0.1, 0.9], [0.1, 0.9]]), labels)
+    epoch1 = min_max_acc.compute()  # type: ignore[call-arg]
+    assert epoch1["raw"].item() == 1.0
+    assert epoch1["max"].item() == 1.0
+
+    min_max_acc.reset()
+
+    # Epoch 2: worse predictions -> accuracy = 0.5; max must not be 1.0 leaked from epoch 1
+    min_max_acc(Tensor([[0.9, 0.1], [0.1, 0.9]]), labels)
+    epoch2 = min_max_acc.compute()  # type: ignore[call-arg]
+    assert epoch2["raw"].item() == 0.5
+    assert epoch2["max"].item() == 0.5, "max_val should not retain values from before reset()"
+    assert epoch2["min"].item() == 0.5, "min_val should not retain values from before reset()"
+
+
 def test_no_scalar_compute() -> None:
     """Tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
     min_max_nsm = MinMaxMetric(BinaryConfusionMatrix())
