@@ -48,9 +48,9 @@ class UpperFaceDynamicsDeviation(Metric):
 
     As input to ``forward`` and ``update``, the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Predicted vertices tensor of shape (T, V, 3) where T is the number of frames,
+    - ``preds`` (:class:`~torch.Tensor`): Predicted vertices tensor of shape (B, T, V, 3) where B is the batch size, T is the number of frames,
         V is the number of vertices, and 3 represents XYZ coordinates.
-    - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (T, V, 3) where T is the number of
+    - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (B, T, V, 3) where B is the batch size, T is the number of
         frames, V is the number of vertices, and 3 represents XYZ coordinates.
 
     As output of ``forward`` and ``compute``, the metric returns the following output:
@@ -65,7 +65,7 @@ class UpperFaceDynamicsDeviation(Metric):
 
     Raises:
         ValueError:
-            If the number of dimensions of `vertices_pred` or `vertices_gt` is not 3.
+            If the number of dimensions of `vertices_pred` or `vertices_gt` is not 4.
             If `template` does not have shape (No_of_vertices, 3).
             If `vertices_pred` and `vertices_gt` do not have the same vertex and coordinate dimensions.
             If `template` shape does not match the vertex-coordinate dimensions of `vertices_pred` (and `vertices_gt`).
@@ -76,10 +76,10 @@ class UpperFaceDynamicsDeviation(Metric):
         >>> from torchmetrics.multimodal.fdd import UpperFaceDynamicsDeviation
         >>> template = torch.randn(100, 3, generator=torch.manual_seed(41))
         >>> metric = UpperFaceDynamicsDeviation(template=template, upper_face_map=[0, 1, 2, 3, 4])
-        >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42))
-        >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
+        >>> vertices_pred = torch.randn(10, 10, 100, 3, generator=torch.manual_seed(42))
+        >>> vertices_gt = torch.randn(10, 10, 100, 3, generator=torch.manual_seed(43))
         >>> metric(vertices_pred, vertices_gt)
-        tensor(0.2131)
+        tensor(-0.0723)
 
     """
 
@@ -117,32 +117,32 @@ class UpperFaceDynamicsDeviation(Metric):
         """Update metric states with predictions and targets.
 
         Args:
-            vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
+            vertices_pred: Predicted vertices tensor of shape (B, T, V, 3) where B is batch size, T is number of frames,
                 V is number of vertices, and 3 represents XYZ coordinates
-            vertices_gt: Ground truth vertices tensor of shape (T', V, 3) where T is number of frames,
+            vertices_gt: Ground truth vertices tensor of shape (B, T', V, 3) where B is batch size, T is number of frames,
                 V is number of vertices, and 3 represents XYZ coordinates
 
         """
-        if vertices_pred.ndim != 3 or vertices_gt.ndim != 3:
+        if vertices_pred.ndim != 4 or vertices_gt.ndim != 4:
             raise ValueError(
-                f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
+                f"Expected both vertices_pred and vertices_gt to have 4 dimensions but got "
                 f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
             )
-        if vertices_pred.shape[1:] != vertices_gt.shape[1:]:
+        if vertices_pred.shape[2:] != vertices_gt.shape[2:]:
             raise ValueError(
                 f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
                 f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
             )
-        if vertices_pred.shape[1:] != self.template.shape:
+        if vertices_pred.shape[2:] != self.template.shape:
             raise ValueError(
                 f"Shape mismatch: expected template shape {self.template.shape} to match "
-                f"vertex-coordinate dimensions of predictions {vertices_pred.shape[1:]}, "
+                f"vertex-coordinate dimensions of predictions {vertices_pred.shape[2:]}, "
                 f"but got template shape {self.template.shape} instead."
             )
 
-        min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
-        self.vertices_pred_list.append(vertices_pred[:min_frames])
-        self.vertices_gt_list.append(vertices_gt[:min_frames])
+        min_frames = min(vertices_pred.shape[1], vertices_gt.shape[1])
+        self.vertices_pred_list.append(vertices_pred[:, :min_frames])
+        self.vertices_gt_list.append(vertices_gt[:, :min_frames])
 
     def compute(self) -> Tensor:
         """Compute the Upper Face Dynamics Deviation over all accumulated states.
@@ -153,7 +153,7 @@ class UpperFaceDynamicsDeviation(Metric):
         """
         vertices_pred = dim_zero_cat(self.vertices_pred_list)
         vertices_gt = dim_zero_cat(self.vertices_gt_list)
-        return upper_face_dynamics_deviation(vertices_pred, vertices_gt, self.template, self.upper_face_map)
+        return upper_face_dynamics_deviation(vertices_pred, vertices_gt, self.template, self.upper_face_map).nanmean(dim=0)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -179,8 +179,8 @@ class UpperFaceDynamicsDeviation(Metric):
             >>> import torch
             >>> from torchmetrics.multimodal.fdd import UpperFaceDynamicsDeviation
             >>> metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
-            >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42))
-            >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43))
+            >>> vertices_pred = torch.randn(10, 10, 100, 3, generator=torch.manual_seed(42))
+            >>> vertices_gt = torch.randn(10, 10, 100, 3, generator=torch.manual_seed(43))
             >>> metric.update(vertices_pred, vertices_gt)
             >>> fig_, ax_ = metric.plot()
 
@@ -193,8 +193,8 @@ class UpperFaceDynamicsDeviation(Metric):
             >>> metric = UpperFaceDynamicsDeviation(template=torch.randn(100, 3), upper_face_map=[0, 1, 2, 3, 4])
             >>> values = []
             >>> for _ in range(10):
-            ...     vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(42+_))
-            ...     vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(43+_))
+            ...     vertices_pred = torch.randn(10, 10, 100, 3, generator=torch.manual_seed(42+_))
+            ...     vertices_gt = torch.randn(10, 10, 100, 3, generator=torch.manual_seed(43+_))
             ...     values.append(metric(vertices_pred, vertices_gt))
             >>> fig_, ax_ = metric.plot(values)
 

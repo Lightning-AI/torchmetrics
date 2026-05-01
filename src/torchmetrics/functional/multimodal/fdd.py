@@ -44,9 +44,9 @@ def upper_face_dynamics_deviation(
     computes the standard deviation of the temporal sequence.
 
     Args:
-        vertices_pred: Predicted vertices tensor of shape (T, V, 3) where T is number of frames,
+        vertices_pred: Predicted vertices tensor of shape (B, T, V, 3) where B is batch size, T is number of frames,
             V is number of vertices, and 3 represents XYZ coordinates.
-        vertices_gt: Ground truth vertices tensor of shape (T, V, 3) where T is number of frames,
+        vertices_gt: Ground truth vertices tensor of shape (B, T, V, 3) where B is batch size, T is number of frames,
             V is number of vertices, and 3 represents XYZ coordinates.
         template: Template mesh tensor of shape (V, 3) representing the neutral face.
         upper_face_map: List of vertex indices corresponding to the upper face region.
@@ -56,7 +56,7 @@ def upper_face_dynamics_deviation(
 
     Raises:
         ValueError:
-            If the number of dimensions of `vertices_pred` or `vertices_gt` is not 3.
+            If the number of dimensions of `vertices_pred` or `vertices_gt` is not 4.
             If `template` does not have shape (No_of_vertices, 3).
             If `vertices_pred` and `vertices_gt` do not have the same vertex and coordinate dimensions.
             If `template` shape does not match the vertex-coordinate dimensions of `vertices_pred` (and `vertices_gt`).
@@ -65,30 +65,30 @@ def upper_face_dynamics_deviation(
     Example:
         >>> import torch
         >>> from torchmetrics.functional.multimodal import upper_face_dynamics_deviation
-        >>> vertices_pred = torch.randn(10, 100, 3, generator=torch.manual_seed(41))
-        >>> vertices_gt = torch.randn(10, 100, 3, generator=torch.manual_seed(42))
+        >>> vertices_pred = torch.randn(10, 10, 100, 3, generator=torch.manual_seed(41))
+        >>> vertices_gt = torch.randn(10, 10, 100, 3, generator=torch.manual_seed(42))
         >>> upper_face_map = [10, 11, 12, 13, 14]
         >>> template = torch.randn(100, 3, generator=torch.manual_seed(43))
         >>> upper_face_dynamics_deviation(vertices_pred, vertices_gt, template, upper_face_map)
-        tensor(1.0385)
+        tensor([ 0.0560, -1.5893,  0.1581,  0.3403, -0.4391,  0.6418,  0.7764, -0.4834, -2.1282,  1.3899])
 
     """
-    if vertices_pred.ndim != 3 or vertices_gt.ndim != 3:
+    if vertices_pred.ndim != 4 or vertices_gt.ndim != 4:
         raise ValueError(
-            f"Expected both vertices_pred and vertices_gt to have 3 dimensions but got "
+            f"Expected both vertices_pred and vertices_gt to have 4 dimensions but got "
             f"{vertices_pred.ndim} and {vertices_gt.ndim} dimensions respectively."
         )
     if template.ndim != 2 or template.shape[1] != 3:
         raise ValueError(f"Expected template to have shape (V, 3) but got {template.shape}.")
-    if vertices_pred.shape[1:] != vertices_gt.shape[1:]:
+    if vertices_pred.shape[2:] != vertices_gt.shape[2:]:
         raise ValueError(
             f"Expected vertices_pred and vertices_gt to have same vertex and coordinate dimensions but got "
             f"shapes {vertices_pred.shape} and {vertices_gt.shape}."
         )
-    if vertices_pred.shape[1:] != template.shape:
+    if vertices_pred.shape[2:] != template.shape:
         raise ValueError(
             f"Shape mismatch: expected template shape {template.shape} to match "
-            f"vertex-coordinate dimensions of predictions {vertices_pred.shape[1:]}, "
+            f"vertex-coordinate dimensions of predictions {vertices_pred.shape[2:]}, "
             f"but got template shape {template.shape} instead."
         )
     if not upper_face_map:
@@ -99,18 +99,17 @@ def upper_face_dynamics_deviation(
             f"Valid index range is [0, {template.shape[0] - 1}], "
             f"but received indices in range [{min(upper_face_map)}, {max(upper_face_map)}]."
         )
-    min_frames = min(vertices_pred.shape[0], vertices_gt.shape[0])
-    pred = vertices_pred[:min_frames, upper_face_map, :]  # (T, M, 3)
-    gt = vertices_gt[:min_frames, upper_face_map, :]
+    min_frames = min(vertices_pred.shape[1], vertices_gt.shape[1])
+    pred = vertices_pred[:, :min_frames, upper_face_map, :]  # (B, T, M, 3)
+    gt = vertices_gt[:, :min_frames, upper_face_map, :]
     template = template.to(pred.device)[upper_face_map, :]  # (M, 3)
 
-    pred_disp = pred - template  # (T, M, 3)
+    pred_disp = pred - template  # (B, T, M, 3)
     gt_disp = gt - template
 
-    pred_norm_sq = torch.sum(pred_disp**2, dim=-1)  # (T, M)
-    gt_norm_sq = torch.sum(gt_disp**2, dim=-1)  # (T, M)
+    pred_norm_sq = torch.sum(pred_disp**2, dim=-1)  # (B, T, M)
+    gt_norm_sq = torch.sum(gt_disp**2, dim=-1)  # (B, T, M)
 
-    pred_dyn = torch.std(pred_norm_sq, dim=0, unbiased=False)  # (M,)
-    gt_dyn = torch.std(gt_norm_sq, dim=0, unbiased=False)
-
-    return torch.mean(gt_dyn - pred_dyn)  # scalar
+    pred_dyn = torch.std(pred_norm_sq, dim=1, unbiased=False)  # (B, M)
+    gt_dyn = torch.std(gt_norm_sq, dim=1, unbiased=False)  # (B, M)
+    return torch.mean(gt_dyn - pred_dyn, dim=1)  # (B,)
