@@ -32,17 +32,29 @@ from torchmetrics.wrappers.feature_share import NetworkCache
 @pytest.mark.parametrize(
     "metrics",
     [
-        [FrechetInceptionDistance(feature=64), InceptionScore(feature=64), KernelInceptionDistance(feature=64)],
-        {
-            "fid": FrechetInceptionDistance(feature=64),
-            "is": InceptionScore(feature=64),
-            "kid": KernelInceptionDistance(feature=64),
-        },
+        # Use lambdas to defer instantiation of heavy metric objects to avoid pickle truncation errors on Windows
+        # with pytest-xdist (-n auto) and spawn start method.
+        pytest.param(
+            lambda: [
+                FrechetInceptionDistance(feature=64),
+                InceptionScore(feature=64),
+                KernelInceptionDistance(feature=64),
+            ],
+            id="list",
+        ),
+        pytest.param(
+            lambda: {
+                "fid": FrechetInceptionDistance(feature=64),
+                "is": InceptionScore(feature=64),
+                "kid": KernelInceptionDistance(feature=64),
+            },
+            id="dict",
+        ),
     ],
 )
 def test_initialization(metrics):
     """Test that the feature share wrapper can be initialized."""
-    fs = FeatureShare(metrics)
+    fs = FeatureShare(metrics())
     assert isinstance(fs, MetricCollection)
     assert len(fs) == 3
 
