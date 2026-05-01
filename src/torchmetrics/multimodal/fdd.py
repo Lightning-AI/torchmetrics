@@ -48,10 +48,12 @@ class UpperFaceDynamicsDeviation(Metric):
 
     As input to ``forward`` and ``update``, the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Predicted vertices tensor of shape (B, T, V, 3) where B is the batch size, T is the number of frames,
+    - ``preds`` (:class:`~torch.Tensor`): Predicted vertices tensor of shape (B, T, V, 3) where B is the batch size,
+        T is the number of frames,
         V is the number of vertices, and 3 represents XYZ coordinates.
-    - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (B, T, V, 3) where B is the batch size, T is the number of
-        frames, V is the number of vertices, and 3 represents XYZ coordinates.
+    - ``target`` (:class:`~torch.Tensor`): Ground truth vertices tensor of shape (B, T, V, 3) where B is the batch size,
+        T is the number of frames,
+        V is the number of vertices, and 3 represents XYZ coordinates.
 
     As output of ``forward`` and ``compute``, the metric returns the following output:
 
@@ -119,8 +121,8 @@ class UpperFaceDynamicsDeviation(Metric):
         Args:
             vertices_pred: Predicted vertices tensor of shape (B, T, V, 3) where B is batch size, T is number of frames,
                 V is number of vertices, and 3 represents XYZ coordinates
-            vertices_gt: Ground truth vertices tensor of shape (B, T', V, 3) where B is batch size, T is number of frames,
-                V is number of vertices, and 3 represents XYZ coordinates
+            vertices_gt: Ground truth vertices tensor of shape (B, T', V, 3) where B is batch size,
+                T is number of frames, V is number of vertices, and 3 represents XYZ coordinates
 
         """
         if vertices_pred.ndim != 4 or vertices_gt.ndim != 4:

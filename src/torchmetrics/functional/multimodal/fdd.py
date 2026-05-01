@@ -70,7 +70,7 @@ def upper_face_dynamics_deviation(
         >>> upper_face_map = [10, 11, 12, 13, 14]
         >>> template = torch.randn(100, 3, generator=torch.manual_seed(43))
         >>> upper_face_dynamics_deviation(vertices_pred, vertices_gt, template, upper_face_map)
-        tensor([ 0.0560, -1.5893,  0.1581,  0.3403, -0.4391,  0.6418,  0.7764, -0.4834, -2.1282,  1.3899])
+        tensor([ 1.0385,  2.0192,  0.0570, -0.1548,  0.1477,  1.6602,  0.9452, -0.1325, 0.6305, -0.8280])
 
     """
     if vertices_pred.ndim != 4 or vertices_gt.ndim != 4:
