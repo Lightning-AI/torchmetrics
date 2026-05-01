@@ -153,7 +153,9 @@ class UpperFaceDynamicsDeviation(Metric):
         """
         vertices_pred = dim_zero_cat(self.vertices_pred_list)
         vertices_gt = dim_zero_cat(self.vertices_gt_list)
-        return upper_face_dynamics_deviation(vertices_pred, vertices_gt, self.template, self.upper_face_map).nanmean(dim=0)
+        return upper_face_dynamics_deviation(vertices_pred, vertices_gt, self.template, self.upper_face_map).nanmean(
+            dim=0
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

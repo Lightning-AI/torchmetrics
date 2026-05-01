@@ -23,9 +23,9 @@ from torch import Tensor
 
 from torchmetrics.functional.multimodal.fdd import upper_face_dynamics_deviation
 from torchmetrics.multimodal.fdd import UpperFaceDynamicsDeviation
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-from unittests import BATCH_SIZE, NUM_BATCHES
 
 seed_all(42)
 
