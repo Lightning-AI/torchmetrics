@@ -130,3 +130,21 @@ def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
     metric = metric_class()
     with pytest.raises(ValueError, match="Expected channel dimension of `preds` and `target` to be larger than 1.*"):
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))
+
+
+def test_sam_no_nan_on_zero_pixel() -> None:
+    """Regression test: a single zero-norm pixel must not produce NaN (GH #3322).
+
+    When any spatial position has an all-zero channel vector its L2-norm is 0,
+    causing division-by-zero in the cosine step.  The fix clamps the denominator
+    to machine-epsilon so that position yields acos(0) = pi/2 instead of NaN.
+    """
+    preds = torch.ones(2, 3, 8, 8)
+    target = torch.ones(2, 3, 8, 8)
+    preds[0, :, 4, 4] = 0.0  # zero-norm pixel in preds
+
+    result_fn = spectral_angle_mapper(preds, target)
+    assert not torch.isnan(result_fn).any(), "spectral_angle_mapper returned NaN for zero-norm pixel"
+
+    result_cls = SpectralAngleMapper()(preds, target)
+    assert not torch.isnan(result_cls).any(), "SpectralAngleMapper returned NaN for zero-norm pixel"
