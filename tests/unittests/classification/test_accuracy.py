@@ -32,7 +32,13 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
-from unittests.classification._inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import (
+    _binary_cases,
+    _input_binary,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 
 seed_all(42)
 
@@ -93,9 +99,18 @@ class TestBinaryAccuracy(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_binary_accuracy(self, ddp, inputs, ignore_index, multidim_average):
+    @pytest.mark.parametrize(
+        "input_format",
+        [
+            "probs",
+            "logits",
+            "labels",
+        ],
+    )
+    def test_binary_accuracy(self, ddp, inputs, ignore_index, multidim_average, input_format, request):
         """Test class implementation of metric."""
         preds, target = inputs
+        check_input_format_matches_data(input_format, request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -111,14 +126,21 @@ class TestBinaryAccuracy(MetricTester):
             reference_metric=partial(
                 _reference_sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
-            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
+            metric_args={
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "input_format": input_format,
+            },
         )
 
+    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_accuracy_functional(self, inputs, ignore_index, multidim_average):
+    def test_binary_accuracy_functional(self, inputs, ignore_index, multidim_average, input_format, request):
         """Test functional implementation of metric."""
         preds, target = inputs
+        check_input_format_matches_data(input_format, request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -135,25 +157,29 @@ class TestBinaryAccuracy(MetricTester):
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
+                "input_format": input_format,
             },
         )
 
-    def test_binary_accuracy_differentiability(self, inputs):
+    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
+    def test_binary_accuracy_differentiability(self, inputs, input_format, request):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
+        check_input_format_matches_data(input_format, request)
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=BinaryAccuracy,
             metric_functional=binary_accuracy,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
         )
 
+    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_accuracy_half_cpu(self, inputs, dtype):
+    def test_binary_accuracy_half_cpu(self, inputs, dtype, input_format, request):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-
+        check_input_format_matches_data(input_format, request)
         if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
@@ -161,21 +187,23 @@ class TestBinaryAccuracy(MetricTester):
             target=target,
             metric_module=BinaryAccuracy,
             metric_functional=binary_accuracy,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
             dtype=dtype,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_accuracy_half_gpu(self, inputs, dtype):
+    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
+    def test_binary_accuracy_half_gpu(self, inputs, dtype, input_format, request):
         """Test dtype support of the metric on GPU."""
         preds, target = inputs
+        check_input_format_matches_data(input_format, request)
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
             metric_module=BinaryAccuracy,
             metric_functional=binary_accuracy,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
             dtype=dtype,
         )
 
