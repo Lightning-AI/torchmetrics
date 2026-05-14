@@ -139,7 +139,7 @@ class MinMaxMetric(WrapperMetric):
             >>> import torch
             >>> from torchmetrics.wrappers import MinMaxMetric
             >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = MinMaxMetric(BinaryAccuracy())
+            >>> metric = MinMaxMetric(BinaryAccuracy(input_format="labels"))
             >>> metric.update(torch.randint(2, (20,)), torch.randint(2, (20,)))
             >>> fig_, ax_ = metric.plot()
 
@@ -150,7 +150,7 @@ class MinMaxMetric(WrapperMetric):
             >>> import torch
             >>> from torchmetrics.wrappers import MinMaxMetric
             >>> from torchmetrics.classification import BinaryAccuracy
-            >>> metric = MinMaxMetric(BinaryAccuracy())
+            >>> metric = MinMaxMetric(BinaryAccuracy(input_format="labels"))
             >>> values = [ ]
             >>> for _ in range(3):
             ...     values.append(metric(torch.randint(2, (20,)), torch.randint(2, (20,))))

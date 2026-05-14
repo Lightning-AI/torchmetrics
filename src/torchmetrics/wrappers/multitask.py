@@ -322,7 +322,7 @@ class MultitaskWrapper(WrapperMetric):
             >>> preds = {"Classification": classification_preds, "Regression": regression_preds}
             >>>
             >>> metrics = MultitaskWrapper({
-            ...     "Classification": BinaryAccuracy(),
+            ...     "Classification": BinaryAccuracy(input_format="labels"),
             ...     "Regression": MeanSquaredError()
             ... })
             >>> metrics.update(preds, targets)
@@ -347,7 +347,7 @@ class MultitaskWrapper(WrapperMetric):
             >>> preds = {"Classification": classification_preds, "Regression": regression_preds}
             >>>
             >>> metrics = MultitaskWrapper({
-            ...     "Classification": BinaryAccuracy(),
+            ...     "Classification": BinaryAccuracy(input_format="labels"),
             ...     "Regression": MeanSquaredError()
             ... })
             >>> values = []
