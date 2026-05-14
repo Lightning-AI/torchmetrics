@@ -208,6 +208,26 @@ class TestBinaryAccuracy(MetricTester):
         )
 
 
+def test_binary_accuracy_logits_in_unit_interval_silent_error():
+    """Regression test: logits that happen to lie in [0, 1] must still be sigmoided when input_format='logits'.
+
+    With the legacy auto-detect behaviour (no input_format), a batch of logits whose values all fall in (0, 1)
+    is treated as probabilities and is NOT sigmoided, producing silently wrong predictions.
+    Using input_format='logits' fixes this by always applying sigmoid regardless of value range.
+    """
+    # logit of 0.49 → sigmoid(0.49) ≈ 0.620, which is ≥ 0.5 → predicted class 1 (correct)
+    logits = torch.tensor([0.49])
+    target = torch.tensor([1])
+
+    # Auto-detect: 0.49 is inside [0, 1] so sigmoid is NOT applied → threshold at 0.49 < 0.5 → class 0 (wrong)
+    ba_auto = BinaryAccuracy(threshold=0.5)
+    assert ba_auto(logits, target) == 0.0, "auto-detect should mis-classify logits inside [0,1]"
+
+    # Explicit input_format='logits': sigmoid is always applied → class 1 (correct)
+    ba_logits = BinaryAccuracy(threshold=0.5, input_format="logits")
+    assert ba_logits(logits, target) == 1.0, "input_format='logits' should correctly classify after sigmoid"
+
+
 def _reference_sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
