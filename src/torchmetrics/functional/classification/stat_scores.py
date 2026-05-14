@@ -71,7 +71,7 @@ def _binary_stat_scores_tensor_validation(
     - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be at least 2 dimensional
     - if ``input_format`` is set to ``labels``, preds tensor values have to be in {0, 1}
     - if ``input_format`` is set to ``probs``, preds tensor needs to be floating point with values in [0,1] range
-    - if ``input_format`` is set to ``logits``, preds tensor needs to be floating point # TODO jpf decide if need
+    - if ``input_format`` is set to ``logits``, preds tensor needs to be floating point
 
     """
     # Check that they have same shape
@@ -255,7 +255,7 @@ def binary_stat_scores(
     return _binary_stat_scores_compute(tp, fp, tn, fn, multidim_average)
 
 
-# TODO jpf
+# TODO update to use input_format
 def _multiclass_stat_scores_arg_validation(
     num_classes: Optional[int],
     top_k: int = 1,
@@ -634,7 +634,7 @@ def multiclass_stat_scores(
     return _multiclass_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
 
-# TODO jpf
+# TODO update to use input_format
 def _multilabel_stat_scores_arg_validation(
     num_labels: int,
     threshold: float = 0.5,
