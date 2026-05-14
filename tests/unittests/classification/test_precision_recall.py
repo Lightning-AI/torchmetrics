@@ -45,7 +45,12 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
-from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 
 seed_all(42)
 
@@ -94,11 +99,23 @@ class TestBinaryPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("zero_division", [0, 1])
+    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
     def test_binary_precision_recall(
-        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, zero_division
+        self,
+        ddp,
+        inputs,
+        module,
+        functional,
+        compare,
+        ignore_index,
+        multidim_average,
+        zero_division,
+        input_format,
+        request,
     ):
         """Test class implementation of metric."""
         preds, target = inputs
+        check_input_format_matches_data(input_format, request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -123,17 +140,20 @@ class TestBinaryPrecisionRecall(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "zero_division": zero_division,
+                "input_format": input_format,
             },
         )
 
+    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("zero_division", [0, 1])
     def test_binary_precision_recall_functional(
-        self, inputs, module, functional, compare, ignore_index, multidim_average, zero_division
+        self, inputs, module, functional, compare, ignore_index, multidim_average, zero_division, input_format, request
     ):
         """Test functional implementation of metric."""
         preds, target = inputs
+        check_input_format_matches_data(input_format, request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -155,6 +175,7 @@ class TestBinaryPrecisionRecall(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "zero_division": zero_division,
+                "input_format": input_format,
             },
         )
 

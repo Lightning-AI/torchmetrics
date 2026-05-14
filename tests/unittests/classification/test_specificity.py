@@ -36,7 +36,12 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index
-from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 
 seed_all(42)
 
@@ -92,9 +97,11 @@ class TestBinarySpecificity(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_binary_specificity(self, ddp, inputs, ignore_index, multidim_average):
+    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
+    def test_binary_specificity(self, ddp, inputs, ignore_index, multidim_average, input_format, request):
         """Test class implementation of metric."""
         preds, target = inputs
+        check_input_format_matches_data(input_format, request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -110,14 +117,21 @@ class TestBinarySpecificity(MetricTester):
             reference_metric=partial(
                 _reference_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
-            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
+            metric_args={
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "input_format": input_format,
+            },
         )
 
+    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_specificity_functional(self, inputs, ignore_index, multidim_average):
+    def test_binary_specificity_functional(self, inputs, ignore_index, multidim_average, input_format, request):
         """Test functional implementation of metric."""
         preds, target = inputs
+        check_input_format_matches_data(input_format, request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -134,6 +148,7 @@ class TestBinarySpecificity(MetricTester):
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
+                "input_format": input_format,
             },
         )
 
