@@ -100,8 +100,8 @@ class MultitaskWrapper(WrapperMetric):
          >>>
          >>> metrics = MultitaskWrapper({
          ...     "Classification": MetricCollection(
-        ...         BinaryAccuracy(input_format="labels"), BinaryF1Score(input_format="labels")
-        ...     ),
+         ...         BinaryAccuracy(input_format="labels"), BinaryF1Score(input_format="labels")
+         ...     ),
          ...     "Regression": MetricCollection(MeanSquaredError(), MeanAbsoluteError())
          ... })
          >>> metrics.update(preds, targets)
