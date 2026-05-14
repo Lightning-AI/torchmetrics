@@ -256,6 +256,13 @@ _group_cases = (
 )
 
 
+def get_input_format_from_request(request):
+    """Extract the input format from the test request."""
+    test_id = request.node.callspec.id
+    match = re.search(r"input\[[^\]]+\]", test_id)
+    return match.group(0).split("-")[1].strip("]") if match else None
+
+
 def check_input_format_matches_data(input_format, request):
     """Check that the input format matches the data type, else we skip the test."""
     test_id = request.node.callspec.id

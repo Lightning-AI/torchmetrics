@@ -40,7 +40,7 @@ from unittests.classification._inputs import (
     _binary_cases,
     _multiclass_cases,
     _multilabel_cases,
-    check_input_format_matches_data,
+    get_input_format_from_request,
 )
 
 seed_all(42)
@@ -84,11 +84,10 @@ class TestBinaryHammingDistance(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
-    def test_binary_hamming_distance(self, ddp, inputs, ignore_index, multidim_average, input_format, request):
+    def test_binary_hamming_distance(self, ddp, inputs, ignore_index, multidim_average, request):
         """Test class implementation of metric."""
         preds, target = inputs
-        check_input_format_matches_data(input_format, request)
+        input_format = get_input_format_from_request(request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -112,13 +111,12 @@ class TestBinaryHammingDistance(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("input_format", ["probs", "logits", "labels"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_hamming_distance_functional(self, inputs, ignore_index, multidim_average, input_format, request):
+    def test_binary_hamming_distance_functional(self, inputs, ignore_index, multidim_average, request):
         """Test functional implementation of metric."""
         preds, target = inputs
-        check_input_format_matches_data(input_format, request)
+        input_format = get_input_format_from_request(request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -139,21 +137,23 @@ class TestBinaryHammingDistance(MetricTester):
             },
         )
 
-    def test_binary_hamming_distance_differentiability(self, inputs):
+    def test_binary_hamming_distance_differentiability(self, inputs, request):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
+        input_format = get_input_format_from_request(request)
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=BinaryHammingDistance,
             metric_functional=binary_hamming_distance,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_hamming_distance_dtype_cpu(self, inputs, dtype):
+    def test_binary_hamming_distance_dtype_cpu(self, inputs, dtype, request):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
+        input_format = get_input_format_from_request(request)
         if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
@@ -161,21 +161,22 @@ class TestBinaryHammingDistance(MetricTester):
             target=target,
             metric_module=BinaryHammingDistance,
             metric_functional=binary_hamming_distance,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
             dtype=dtype,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_hamming_distance_dtype_gpu(self, inputs, dtype):
+    def test_binary_hamming_distance_dtype_gpu(self, inputs, dtype, request):
         """Test dtype support of the metric on GPU."""
         preds, target = inputs
+        input_format = get_input_format_from_request(request)
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
             metric_module=BinaryHammingDistance,
             metric_functional=binary_hamming_distance,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
             dtype=dtype,
         )
 
