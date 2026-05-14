@@ -192,6 +192,13 @@ class BinaryFairness(_AbstractGroupStatScores):
         ignore_index: Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
@@ -244,7 +251,7 @@ class BinaryFairness(_AbstractGroupStatScores):
             )
 
         if validate_args:
-            _binary_stat_scores_arg_validation(threshold, "global", ignore_index)
+            _binary_stat_scores_arg_validation(threshold, "global", ignore_index, input_format=input_format)
 
         if not isinstance(num_groups, int) and num_groups < 2:
             raise ValueError(f"Expected argument `num_groups` to be an int larger than 1, but got {num_groups}")

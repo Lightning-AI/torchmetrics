@@ -353,6 +353,7 @@ def binary_fairness(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["probs", "logits", "labels"] = "probs",
 ) -> dict[str, torch.Tensor]:
     r"""Compute either `Demographic parity`_ and `Equal opportunity`_ ratio for binary classification problems.
 
@@ -372,6 +373,13 @@ def binary_fairness(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
 
     """
     if task not in ["demographic_parity", "equal_opportunity", "all"]:
@@ -386,7 +394,9 @@ def binary_fairness(
         target = torch.zeros(preds.shape)
 
     num_groups = torch.unique(groups).shape[0]
-    group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
+    group_stats = _binary_groups_stat_scores(
+        preds, target, groups, num_groups, threshold, ignore_index, validate_args, input_format
+    )
 
     transformed_group_stats = _groups_stat_transform(group_stats)
 
