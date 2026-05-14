@@ -81,7 +81,7 @@ class BinaryAccuracy(BinaryStatScores):
         >>> from torchmetrics.classification import BinaryAccuracy
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryAccuracy()
+        >>> metric = BinaryAccuracy(input_format="labels")
         >>> metric(preds, target)
         tensor(0.6667)
 

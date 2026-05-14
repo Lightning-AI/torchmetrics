@@ -141,7 +141,7 @@ class BinaryStatScores(_AbstractStatScores):
         >>> from torchmetrics.classification import BinaryStatScores
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryStatScores()
+        >>> metric = BinaryStatScores(input_format="labels")
         >>> metric(preds, target)
         tensor([2, 1, 2, 1, 3])
 
@@ -178,6 +178,7 @@ class BinaryStatScores(_AbstractStatScores):
         input_format: Literal["probs", "logits", "labels"] = "probs",
         **kwargs: Any,
     ) -> None:
+        zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format=input_format)
@@ -186,6 +187,7 @@ class BinaryStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
         self.input_format = input_format
+        self.zero_division = zero_division
 
         self._create_state(size=1, multidim_average=multidim_average)
 
@@ -347,6 +349,7 @@ class MulticlassStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
         self.input_format = input_format
+        self.zero_division = zero_division
 
         self._create_state(
             size=1 if (average == "micro" and top_k == 1) else (num_classes or 1), multidim_average=multidim_average
@@ -509,6 +512,7 @@ class MultilabelStatScores(_AbstractStatScores):
         self.ignore_index = ignore_index
         self.validate_args = validate_args
         self.input_format = input_format
+        self.zero_division = zero_division
 
         self._create_state(size=num_labels, multidim_average=multidim_average)
 

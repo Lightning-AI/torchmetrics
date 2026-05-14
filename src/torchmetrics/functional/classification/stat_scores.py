@@ -227,7 +227,7 @@ def binary_stat_scores(
         >>> from torchmetrics.functional.classification import binary_stat_scores
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> binary_stat_scores(preds, target)
+        >>> binary_stat_scores(preds, target, input_format="labels")
         tensor([2, 1, 2, 1, 3])
 
     Example (preds is float tensor):

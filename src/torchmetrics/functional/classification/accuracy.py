@@ -144,7 +144,7 @@ def binary_accuracy(
         >>> from torchmetrics.functional.classification import binary_accuracy
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> binary_accuracy(preds, target)
+        >>> binary_accuracy(preds, target, input_format="labels")
         tensor(0.6667)
 
     Example (preds is float tensor):
@@ -165,8 +165,8 @@ def binary_accuracy(
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format=input_format)
-        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format)
-    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format=input_format)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format=input_format)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
 

@@ -57,6 +57,7 @@ def _binary_groups_stat_scores(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["probs", "logits", "labels"] = "probs",
 ) -> list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
     """Compute the true/false positives and true/false negatives rates for binary classification by group.
 
@@ -64,11 +65,11 @@ def _binary_groups_stat_scores(
 
     """
     if validate_args:
-        _binary_stat_scores_arg_validation(threshold, "global", ignore_index)
-        _binary_stat_scores_tensor_validation(preds, target, "global", ignore_index)
+        _binary_stat_scores_arg_validation(threshold, "global", ignore_index, input_format=input_format)
+        _binary_stat_scores_tensor_validation(preds, target, "global", ignore_index, input_format=input_format)
         _groups_validation(groups, num_groups)
 
-    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format=input_format)
     groups = _groups_format(groups)
 
     indexes, indices = torch.sort(groups.squeeze(1))
@@ -110,6 +111,7 @@ def binary_groups_stat_rates(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["probs", "logits", "labels"] = "probs",
 ) -> dict[str, torch.Tensor]:
     r"""Compute the true/false positives and true/false negatives rates for binary classification by group.
 
@@ -135,6 +137,10 @@ def binary_groups_stat_rates(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains probabilities (float, [0,1] range).
+            - ``'logits'``: preds tensor contains logits (float).
+            - ``'labels'``: preds tensor contains integer labels ({0, 1}).
 
     Returns:
         The metric returns a dict with a group identifier as key and a tensor with the tp, fp, tn and fn rates as value.
@@ -144,7 +150,7 @@ def binary_groups_stat_rates(
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> binary_groups_stat_rates(preds, target, groups, 2)
+        >>> binary_groups_stat_rates(preds, target, groups, 2, input_format="labels")
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
 
     Example (preds is float tensor):
@@ -156,7 +162,9 @@ def binary_groups_stat_rates(
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
 
     """
-    group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
+    group_stats = _binary_groups_stat_scores(
+        preds, target, groups, num_groups, threshold, ignore_index, validate_args, input_format
+    )
 
     return _groups_reduce(group_stats)
 
@@ -180,6 +188,7 @@ def demographic_parity(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["probs", "logits", "labels"] = "probs",
 ) -> dict[str, torch.Tensor]:
     r"""`Demographic parity`_ compares the positivity rates between all groups.
 
@@ -210,6 +219,10 @@ def demographic_parity(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains probabilities (float, [0,1] range).
+            - ``'logits'``: preds tensor contains logits (float).
+            - ``'labels'``: preds tensor contains integer labels ({0, 1}).
 
     Returns:
         The metric returns a dict where the key identifies the group with the lowest and highest positivity rates
@@ -219,7 +232,7 @@ def demographic_parity(
         >>> from torchmetrics.functional.classification import demographic_parity
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> demographic_parity(preds, groups)
+        >>> demographic_parity(preds, groups, input_format="labels")
         {'DP_0_1': tensor(0.)}
 
     Example (preds is float tensor):
@@ -233,7 +246,9 @@ def demographic_parity(
     num_groups = torch.unique(groups).shape[0]
     target = torch.zeros(preds.shape)
 
-    group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
+    group_stats = _binary_groups_stat_scores(
+        preds, target, groups, num_groups, threshold, ignore_index, validate_args, input_format
+    )
 
     transformed_group_stats = _groups_stat_transform(group_stats)
 
@@ -262,6 +277,7 @@ def equal_opportunity(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["probs", "logits", "labels"] = "probs",
 ) -> dict[str, torch.Tensor]:
     r"""`Equal opportunity`_ compares the true positive rates between all groups.
 
@@ -293,6 +309,10 @@ def equal_opportunity(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains probabilities (float, [0,1] range).
+            - ``'logits'``: preds tensor contains logits (float).
+            - ``'labels'``: preds tensor contains integer labels ({0, 1}).
 
     Returns:
         The metric returns a dict where the key identifies the group with the lowest and highest true positives rates
@@ -303,7 +323,7 @@ def equal_opportunity(
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> equal_opportunity(preds, target, groups)
+        >>> equal_opportunity(preds, target, groups, input_format="labels")
         {'EO_0_1': tensor(0.)}
 
     Example (preds is float tensor):
@@ -316,7 +336,9 @@ def equal_opportunity(
 
     """
     num_groups = torch.unique(groups).shape[0]
-    group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
+    group_stats = _binary_groups_stat_scores(
+        preds, target, groups, num_groups, threshold, ignore_index, validate_args, input_format
+    )
 
     transformed_group_stats = _groups_stat_transform(group_stats)
 
