@@ -114,7 +114,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         if mode not in ("wb", "nb"):
             raise ValueError(f"Expected argument `mode` to either be 'wb' or 'nb' but got {mode}")
         self.mode = mode
-        if not isinstance(n_processes, int) and n_processes <= 0:
+        if not isinstance(n_processes, int) or n_processes <= 0:
             raise ValueError(f"Expected argument `n_processes` to be an int larger than 0 but got {n_processes}")
         self.n_processes = n_processes
 
