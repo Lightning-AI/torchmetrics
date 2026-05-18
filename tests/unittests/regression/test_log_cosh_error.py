@@ -82,13 +82,12 @@ class TestLogCoshError(MetricTester):
     def test_log_cosh_error_differentiability(self, preds, target):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = 1 if preds.ndim == 2 else NUM_TARGETS
-
-    self.run_differentiability_test(
-        preds=preds,
-        target=target,
-        metric_module=partial(LogCoshError, num_outputs=num_outputs),
-        metric_functional=log_cosh_error,
-    )
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=partial(LogCoshError, num_outputs=num_outputs),
+            metric_functional=log_cosh_error,
+        )
 
 
 @pytest.mark.parametrize("num_outputs", [0, -5])
