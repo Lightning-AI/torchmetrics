@@ -134,6 +134,7 @@ class TestGeneralizedDiceScoreAbsentClasses:
     per-sample score for that class should be ``nan``. When averaging across samples,
     ``nan`` values should be excluded so that absent-class samples do not drag the
     per-class score down incorrectly.
+
     """
 
     @staticmethod
@@ -143,6 +144,7 @@ class TestGeneralizedDiceScoreAbsentClasses:
         - Sample 0: class 0 present, perfectly predicted
         - Sample 2: class 1 present, perfectly predicted
         - Samples 1, 3: no class present (all zeros)
+
         """
         target = torch.zeros(4, num_classes, spatial, spatial, dtype=torch.int8)
         preds = torch.zeros(4, num_classes, spatial, spatial, dtype=torch.int8)
@@ -170,8 +172,9 @@ class TestGeneralizedDiceScoreAbsentClasses:
         assert torch.isnan(result[3]).all()
 
     def test_functional_per_class_false_absent(self):
-        """Per_class=False should sum across classes before dividing, giving nan only for
-        samples where ALL classes are absent."""
+        """Per_class=False should sum across classes before dividing, giving nan only for samples where ALL classes are
+        absent.
+        """
         preds, target = self._make_absent_class_data()
         result = generalized_dice_score(preds, target, num_classes=3, per_class=False, include_background=True)
         # Samples 0 and 2 have at least one class present -> score should be 1.0
@@ -182,8 +185,9 @@ class TestGeneralizedDiceScoreAbsentClasses:
         assert torch.isnan(result[3])
 
     def test_class_per_class_absent(self):
-        """Class metric with per_class=True should return nan for classes absent from all
-        samples, and exclude absent-class samples from the average."""
+        """Class metric with per_class=True should return nan for classes absent from all samples, and exclude absent-
+        class samples from the average.
+        """
         preds, target = self._make_absent_class_data()
         gds = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=True)
         result = gds(preds, target)
