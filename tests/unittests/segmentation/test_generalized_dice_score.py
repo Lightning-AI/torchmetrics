@@ -4,14 +4,13 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from functools import partial
 
 import pytest
@@ -51,13 +50,16 @@ def _reference_generalized_dice(
     elif input_format == "mixed":
         if preds.dim() == (target.dim() + 1):
             if torch.is_floating_point(preds):
+                # Preds is logits/probs: argmax then one-hot
                 preds = preds.argmax(dim=1)
                 preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
+            # else: preds is already one-hot integer tensor, no conversion needed
             target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
         elif (preds.dim() + 1) == target.dim():
             if torch.is_floating_point(target):
                 target = target.argmax(dim=1)
                 target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
+            # else: target is already one-hot integer tensor, no conversion needed
             preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
     monai_extra_arg = {"sum_over_classes": True} if RequirementCache("monai>=1.4.0") else {}
     val = compute_generalized_dice(preds, target, include_background=include_background, **monai_extra_arg)

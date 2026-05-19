@@ -59,6 +59,7 @@ def _generalized_dice_update(
         numerator: Shape ``(N, C)`` — weighted intersection terms.
         denominator: Shape ``(N, C)`` — weighted cardinality terms.
         support: Shape ``(N, C)`` — number of voxels per class in the target (used to detect absent classes).
+
     """
     preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
 
@@ -113,6 +114,7 @@ def _generalized_dice_compute(
     Returns:
         - ``per_class=True``: ``(N, C)`` tensor with ``nan`` for absent classes.
         - ``per_class=False``: ``(N,)`` tensor with ``nan`` only when ALL classes are absent.
+
     """
     if per_class:
         # Per-sample per-class scores: nan for absent classes (zero volume)
@@ -126,15 +128,16 @@ def _generalized_dice_compute(
         score[absent] = float("nan")
         return score
     else:
-        # Per-sample aggregate: nanmean over classes so absent classes are excluded
+        # Per-sample aggregate: sum weighted numerators and denominators across present classes,
+        # then divide (ratio of sums = true Generalized Dice formula).
+        # Zero out absent-class contributions so they don't affect the sums.
         if support is not None:
-            absent = support == 0
+            present = support != 0
         else:
-            absent = (numerator == 0) & (denominator == 0)
-        score = _safe_divide(numerator, denominator, zero_division="nan")
-        score[absent] = float("nan")
-        return score.nanmean(dim=1)
-
+            present = ~((numerator == 0) & (denominator == 0))
+        numerator_clean = numerator * present.float()
+        denominator_clean = denominator * present.float()
+        return _safe_divide(numerator_clean.sum(dim=1), denominator_clean.sum(dim=1), zero_division="nan")
 
 def generalized_dice_score(
     preds: Tensor,
