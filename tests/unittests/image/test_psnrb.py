@@ -146,6 +146,7 @@ class TestBlockSizeValidation:
     The original ``and`` condition short-circuited on valid ``int`` types, so
     ``0``, ``-5``, and non-integer values slipped through silently or raised
     ``TypeError`` instead of the intended ``ValueError``.
+
     """
 
     @pytest.mark.parametrize("invalid_block_size", [0, -1, -5])
