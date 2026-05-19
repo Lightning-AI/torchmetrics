@@ -43,19 +43,14 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
 
-    if confmat.numel() == 4:  # binary case
-        tn, fp, fn, tp = confmat.reshape(-1)
-        if tp + tn != 0 and fp + fn == 0:
-            return torch.tensor(1.0, dtype=confmat.dtype, device=confmat.device)
-
-        if tp + tn == 0 and fp + fn != 0:
-            return torch.tensor(-1.0, dtype=confmat.dtype, device=confmat.device)
-
-    confmat = confmat.float()
-    tk = confmat.sum(dim=-1)
-    pk = confmat.sum(dim=-2)
-    c = torch.trace(confmat)
-    s = confmat.sum()
+    # General MCC formula (works for both binary and multiclass).
+    # Use float64 for intermediate computations to avoid precision loss
+    # with large integer counts in bfloat16/float16 inputs.
+    confmat_f64 = confmat.double()
+    tk = confmat_f64.sum(dim=-1)
+    pk = confmat_f64.sum(dim=-2)
+    c = torch.trace(confmat_f64)
+    s = confmat_f64.sum()
 
     cov_ytyp = c * s - sum(tk * pk)
     cov_ypyp = s**2 - sum(pk * pk)
@@ -64,27 +59,8 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     numerator = cov_ytyp
     denom = cov_ypyp * cov_ytyt
 
-    if denom == 0 and confmat.numel() == 4:
-        eps = torch.tensor(torch.finfo(torch.float32).eps, dtype=torch.float32, device=confmat.device)
-        if fn == 0 and tn == 0:
-            numerator = torch.sqrt(eps) * (tp - fp)
-        elif fp == 0 and tn == 0:
-            numerator = torch.sqrt(eps) * (tp - fn)
-        elif tp == 0 and fn == 0:
-            numerator = torch.sqrt(eps) * (tn - fp)
-        elif tp == 0 and fp == 0:
-            numerator = torch.sqrt(eps) * (tn - fn)
-        elif tp == 0:
-            numerator = tn - fp * fn
-        elif tn == 0:
-            numerator = tp - fp * fn
-        elif fp == 0 or fn == 0:
-            numerator = tp * tn
-        else:
-            return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-        denom = (tp + fp + eps) * (tp + fn + eps) * (tn + fp + eps) * (tn + fn + eps)
-    elif denom == 0:
-        return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
+    if denom == 0:
+        return torch.tensor(0.0, device=confmat.device)
     return numerator / torch.sqrt(denom)
 
 
