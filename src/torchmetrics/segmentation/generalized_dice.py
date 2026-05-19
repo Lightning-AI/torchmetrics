@@ -24,7 +24,6 @@ from torchmetrics.functional.segmentation.generalized_dice import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 
@@ -134,6 +133,7 @@ class GeneralizedDiceScore(Metric):
         from the average using ``nanmean``. Classes not present in any sample will have a NaN score.
         For ``per_class=False``, the score is computed as the nanmean across samples of the per-sample
         aggregate score (nanmean over classes per sample).
+
         """
         result = _generalized_dice_compute(
             dim_zero_cat(self.numerator),
@@ -144,9 +144,8 @@ class GeneralizedDiceScore(Metric):
         if self.per_class:
             # result shape: (N, C) — average across samples, keeping NaN for fully absent classes
             return result.nanmean(dim=0)
-        else:
-            # result shape: (N,) — average across samples
-            return result.nanmean()
+        # result shape: (N,) — average across samples
+        return result.nanmean()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

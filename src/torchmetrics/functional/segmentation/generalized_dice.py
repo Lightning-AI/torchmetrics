@@ -127,17 +127,17 @@ def _generalized_dice_compute(
         # may still get 0.0 from _safe_divide if both are exactly 0; force nan for those.
         score[absent] = float("nan")
         return score
+    # Per-sample aggregate: sum weighted numerators and denominators across present classes,
+    # then divide (ratio of sums = true Generalized Dice formula).
+    # Zero out absent-class contributions so they don't affect the sums.
+    if support is not None:
+        present = support != 0
     else:
-        # Per-sample aggregate: sum weighted numerators and denominators across present classes,
-        # then divide (ratio of sums = true Generalized Dice formula).
-        # Zero out absent-class contributions so they don't affect the sums.
-        if support is not None:
-            present = support != 0
-        else:
-            present = ~((numerator == 0) & (denominator == 0))
-        numerator_clean = numerator * present.float()
-        denominator_clean = denominator * present.float()
-        return _safe_divide(numerator_clean.sum(dim=1), denominator_clean.sum(dim=1), zero_division="nan")
+        present = ~((numerator == 0) & (denominator == 0))
+    numerator_clean = numerator * present.float()
+    denominator_clean = denominator * present.float()
+    return _safe_divide(numerator_clean.sum(dim=1), denominator_clean.sum(dim=1), zero_division="nan")
+
 
 def generalized_dice_score(
     preds: Tensor,
