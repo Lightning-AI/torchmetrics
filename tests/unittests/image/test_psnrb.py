@@ -137,3 +137,69 @@ def test_error_on_color_images():
     """Test that appropriate error is raised when color images are passed to PSNRB metric."""
     with pytest.raises(ValueError, match="`psnrb` metric expects grayscale images.*"):
         peak_signal_noise_ratio_with_blocked_effect(torch.rand(1, 3, 16, 16), torch.rand(1, 3, 16, 16), data_range=1.0)
+
+
+class TestBlockSizeValidation:
+    """Test that ``block_size`` validation rejects invalid values.
+
+    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3364.
+    The original ``and`` condition short-circuited on valid ``int`` types, so
+    ``0``, ``-5``, and non-integer values slipped through silently or raised
+    ``TypeError`` instead of the intended ``ValueError``.
+    """
+
+    @pytest.mark.parametrize("invalid_block_size", [0, -1, -5])
+    def test_class_rejects_non_positive_int(self, invalid_block_size):
+        """Class metric should raise ValueError for non-positive integers."""
+        with pytest.raises(ValueError, match="Argument ``block_size`` should be a positive integer"):
+            PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0, block_size=invalid_block_size)
+
+    @pytest.mark.parametrize("invalid_block_size", [1.5, 8.0])
+    def test_class_rejects_float(self, invalid_block_size):
+        """Class metric should raise ValueError for float values (even 8.0 is not int)."""
+        with pytest.raises(ValueError, match="Argument ``block_size`` should be a positive integer"):
+            PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0, block_size=invalid_block_size)
+
+    def test_class_rejects_string(self):
+        """Class metric should raise ValueError for string values."""
+        with pytest.raises(ValueError, match="Argument ``block_size`` should be a positive integer"):
+            PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0, block_size="foo")
+
+    def test_class_accepts_valid_block_size(self):
+        """Class metric should accept valid positive integer block sizes."""
+        # Should not raise — just verify it constructs
+        metric = PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0, block_size=8)
+        assert metric.block_size == 8
+        metric = PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0, block_size=1)
+        assert metric.block_size == 1
+
+    @pytest.mark.parametrize("invalid_block_size", [0, -1, -5])
+    def test_functional_rejects_non_positive_int(self, invalid_block_size):
+        """Functional metric should raise ValueError for non-positive integers."""
+        preds = torch.rand(1, 1, 16, 16)
+        target = torch.rand(1, 1, 16, 16)
+        with pytest.raises(ValueError, match="Argument ``block_size`` should be a positive integer"):
+            peak_signal_noise_ratio_with_blocked_effect(preds, target, data_range=1.0, block_size=invalid_block_size)
+
+    @pytest.mark.parametrize("invalid_block_size", [1.5, 8.0])
+    def test_functional_rejects_float(self, invalid_block_size):
+        """Functional metric should raise ValueError for float values."""
+        preds = torch.rand(1, 1, 16, 16)
+        target = torch.rand(1, 1, 16, 16)
+        with pytest.raises(ValueError, match="Argument ``block_size`` should be a positive integer"):
+            peak_signal_noise_ratio_with_blocked_effect(preds, target, data_range=1.0, block_size=invalid_block_size)
+
+    def test_functional_rejects_string(self):
+        """Functional metric should raise ValueError for string values."""
+        preds = torch.rand(1, 1, 16, 16)
+        target = torch.rand(1, 1, 16, 16)
+        with pytest.raises(ValueError, match="Argument ``block_size`` should be a positive integer"):
+            peak_signal_noise_ratio_with_blocked_effect(preds, target, data_range=1.0, block_size="foo")
+
+    def test_functional_accepts_valid_block_size(self):
+        """Functional metric should work with valid positive integer block sizes."""
+        preds = torch.rand(1, 1, 16, 16)
+        target = torch.rand(1, 1, 16, 16)
+        # Should not raise
+        result = peak_signal_noise_ratio_with_blocked_effect(preds, target, data_range=1.0, block_size=8)
+        assert torch.isfinite(result)

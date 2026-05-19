@@ -131,6 +131,9 @@ def peak_signal_noise_ratio_with_blocked_effect(
         tensor(7.8402)
 
     """
+    if not isinstance(block_size, int) or block_size < 1:
+        raise ValueError("Argument ``block_size`` should be a positive integer")
+
     if isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
