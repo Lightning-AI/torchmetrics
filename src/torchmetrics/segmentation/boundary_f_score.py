@@ -37,7 +37,9 @@ class BoundaryFScore(Metric):
 
     Boundary F-score evaluates how well predicted object contours align with target contours. A predicted boundary
     pixel counts as correct if a target boundary pixel exists within ``boundary_width`` pixels, and vice versa. The
-    final score is the harmonic mean of boundary precision and boundary recall.
+    final score is the harmonic mean of boundary precision and boundary recall. The tolerance is expressed in pixels
+    for 2D masks and voxels for 3D volumes. Classes that are absent in both prediction and target are ignored in
+    reduced outputs and return ``nan`` when reported per class.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

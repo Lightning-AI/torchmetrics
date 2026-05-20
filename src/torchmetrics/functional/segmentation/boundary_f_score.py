@@ -130,7 +130,8 @@ def boundary_f_score(
     final score is the harmonic mean of boundary precision and boundary recall.
 
     This implementation supports 2D and 3D segmentation masks. Classes that are absent in both prediction and target
-    return ``nan`` in the per-class output and are ignored when reducing across classes.
+    return ``nan`` in the per-class output and are ignored when reducing across classes. The tolerance is expressed in
+    pixels for 2D masks and voxels for 3D volumes.
 
     Args:
         preds: Predictions from model.
@@ -166,6 +167,18 @@ def boundary_f_score(
         >>> target[:, 2:6, 2:6] = 1
         >>> boundary_f_score(preds, target, num_classes=2, input_format="index")
         tensor([1., 1.])
+
+    Example (tolerance sensitivity):
+        >>> import torch
+        >>> from torchmetrics.functional.segmentation import boundary_f_score
+        >>> preds = torch.zeros(1, 8, 8, dtype=torch.long)
+        >>> target = torch.zeros(1, 8, 8, dtype=torch.long)
+        >>> preds[:, 2:6, 2:6] = 1
+        >>> target[:, 2:6, 3:7] = 1
+        >>> strict = boundary_f_score(preds, target, num_classes=2, input_format="index", boundary_width=0)
+        >>> tolerant = boundary_f_score(preds, target, num_classes=2, input_format="index", boundary_width=1)
+        >>> bool(strict.item() < tolerant.item())
+        True
 
     """
     _boundary_f_score_validate_args(num_classes, include_background, per_class, boundary_width, input_format)
