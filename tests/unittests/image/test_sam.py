@@ -138,7 +138,7 @@ def test_no_nan_from_zero_pixel():
     b = torch.ones(2, 3, 8, 8)
     a[:, :, 5, 3] = 0  # zero out all channels of one spatial pixel
     result = spectral_angle_mapper(a, b)
-    assert not torch.isnan(result), f"Expected finite value, got NaN"
+    assert not torch.isnan(result), "Expected finite value, got NaN"
 
 
 def test_no_nan_from_all_zero_preds():
@@ -146,7 +146,7 @@ def test_no_nan_from_all_zero_preds():
     c = torch.zeros(2, 3, 4, 4)
     d = torch.ones(2, 3, 4, 4)
     result = spectral_angle_mapper(c, d)
-    assert not torch.isnan(result), f"Expected finite value, got NaN"
+    assert not torch.isnan(result), "Expected finite value, got NaN"
 
 
 def test_no_nan_from_both_zero():
@@ -154,7 +154,7 @@ def test_no_nan_from_both_zero():
     e = torch.zeros(2, 3, 4, 4)
     f = torch.zeros(2, 3, 4, 4)
     result = spectral_angle_mapper(e, f)
-    assert not torch.isnan(result), f"Expected finite value, got NaN"
+    assert not torch.isnan(result), "Expected finite value, got NaN"
 
 
 def test_zero_pixel_class_metric():
@@ -164,4 +164,4 @@ def test_zero_pixel_class_metric():
     b = torch.ones(2, 3, 8, 8)
     a[:, :, 5, 3] = 0
     result = metric(a, b)
-    assert not torch.isnan(result), f"Expected finite value, got NaN"
+    assert not torch.isnan(result), "Expected finite value, got NaN"
