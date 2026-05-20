@@ -145,6 +145,7 @@ def test_hausdorff_distance_non_square(h, w, distance_metric):
 
     The pytorch engine distance_transform used `h` (height) instead of `w` (width)
     when computing flat indices for a 2D image, causing IndexError when h != w.
+
     """
     preds = torch.randint(0, 2, size=(1, 1, h, w))
     target = torch.randint(0, 2, size=(1, 1, h, w))
