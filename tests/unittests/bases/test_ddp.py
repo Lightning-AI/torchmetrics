@@ -371,6 +371,7 @@ def _test_sync_with_unequal_none_reduce_lists(rank):
     This is the bug described in https://github.com/Lightning-AI/torchmetrics/issues/3336.
     Previously, _sync_dist would deadlock because apply_to_collection found different
     numbers of tensors across ranks, causing mismatched all_gather calls.
+
     """
 
     class DummyNoneReduceMetric(Metric):
@@ -417,5 +418,6 @@ def test_sync_with_unequal_none_reduce_lists():
     """Test that dist_reduce_fx=None list states sync correctly when some ranks have no data.
 
     Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3336.
+
     """
     pytest.pool.map(_test_sync_with_unequal_none_reduce_lists, range(NUM_PROCESSES))

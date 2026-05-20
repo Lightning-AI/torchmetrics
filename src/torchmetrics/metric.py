@@ -518,11 +518,7 @@ class Metric(Module, ABC):
         # same corner case for dist_reduce_fx=None list states: if one rank has an empty
         # list while others have entries, apply_to_collection will find different numbers
         # of tensors across ranks, causing mismatched all_gather calls and a deadlock.
-        if (
-            reduction_fn is None
-            and isinstance(input_dict[attr], list)
-            and len(input_dict[attr]) == 0
-        ):
+        if reduction_fn is None and isinstance(input_dict[attr], list) and len(input_dict[attr]) == 0:
             input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
 
         output_dict = apply_to_collection(
