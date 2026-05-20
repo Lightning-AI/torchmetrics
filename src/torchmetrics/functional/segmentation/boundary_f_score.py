@@ -35,9 +35,7 @@ def _boundary_f_score_validate_args(
     if not isinstance(per_class, bool):
         raise ValueError(f"Expected argument `per_class` to be a boolean, but got {per_class}.")
     if not isinstance(boundary_width, int) or boundary_width < 0:
-        raise ValueError(
-            f"Expected argument `boundary_width` to be a non-negative integer, but got {boundary_width}."
-        )
+        raise ValueError(f"Expected argument `boundary_width` to be a non-negative integer, but got {boundary_width}.")
     if input_format not in ["one-hot", "index", "mixed"]:
         raise ValueError(
             f"Expected argument `input_format` to be one of 'one-hot', 'index', 'mixed', but got {input_format}."
