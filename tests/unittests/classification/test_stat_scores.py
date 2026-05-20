@@ -482,6 +482,7 @@ def test_multiclass_stat_scores_linear_memory(num_classes, average):
     """Test that multiclass stat scores use O(num_classes) memory instead of O(num_classes**2).
 
     Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3343.
+
     """
     n = 500
     generator = torch.Generator().manual_seed(42)
