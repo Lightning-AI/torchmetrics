@@ -339,8 +339,9 @@ class MetricCollection(ModuleDict):
     def _equal_state_elements(s1: Any, s2: Any) -> bool:
         """Recursively compare two metric state elements for equality.
 
-        Handles Tensor, tuple, list, and scalar types that may appear in
-        metric states (e.g. MeanAveragePrecision stores tuples in list states).
+        Handles Tensor, tuple, list, and scalar types that may appear in metric states (e.g. MeanAveragePrecision stores
+        tuples in list states).
+
         """
         if type(s1) != type(s2):  # noqa: E721
             return False

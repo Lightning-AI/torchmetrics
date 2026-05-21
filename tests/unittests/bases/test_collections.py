@@ -863,14 +863,13 @@ class TestEqualMetricStatesWithTuples:
     Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3335
     MeanAveragePrecision stores tuples in list states, which caused AttributeError
     because the original implementation assumed all list elements were Tensors.
+
     """
 
     def test_equal_state_elements_tensor(self):
         """Tensor elements should compare by shape and value."""
         assert MetricCollection._equal_state_elements(torch.tensor([1.0]), torch.tensor([1.0]))
-        assert not MetricCollection._equal_state_elements(
-            torch.tensor([1.0]), torch.tensor([1.0, 2.0])
-        )
+        assert not MetricCollection._equal_state_elements(torch.tensor([1.0]), torch.tensor([1.0, 2.0]))
 
     def test_equal_state_elements_tuple_of_tensors(self):
         """Tuple elements should be recursively compared."""
@@ -908,7 +907,6 @@ class TestEqualMetricStatesWithTuples:
 
     def test_metric_collection_with_tuple_list_states(self):
         """MetricCollection.update should work when metrics have tuple elements in list states."""
-        from torchmetrics.utilities.data import allclose
 
         class MetricWithTupleState(Metric):
             """A metric whose list state contains tuples (like MeanAveragePrecision)."""
