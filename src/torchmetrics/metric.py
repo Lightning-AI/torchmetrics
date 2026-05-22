@@ -518,6 +518,9 @@ class Metric(Module, ABC):
         # same corner case for dist_reduce_fx=None list states: if one rank has an empty
         # list while others have entries, apply_to_collection will find different numbers
         # of tensors across ranks, causing mismatched all_gather calls and a deadlock.
+        # Pre-gather length check: insert a zero-element placeholder so the gather
+        # call counts match across ranks. The placeholder is filtered out post-gather
+        # before stacking, so its shape does not need to match real entries.
         if reduction_fn is None and isinstance(input_dict[attr], list) and len(input_dict[attr]) == 0:
             input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
 
@@ -528,23 +531,27 @@ class Metric(Module, ABC):
             group=process_group or self.process_group,
         )
 
-        for attr, reduction_fn in self._reductions.items():
-            # pre-processing ops (stack or flatten for inputs)
+    for attr, reduction_fn in self._reductions.items():
+        # pre-processing ops (stack or flatten for inputs)
 
-            if isinstance(output_dict[attr], list) and len(output_dict[attr]) == 0:
+        if isinstance(output_dict[attr], list) and len(output_dict[attr]) == 0:
+            setattr(self, attr, [])
+            continue
+
+        # for dist_reduce_fx=None list states, filter out empty placeholder
+        # tensors that were inserted to prevent all_gather deadlocks.
+        # This must happen before stacking, because placeholder shapes
+        # may not match real entries (e.g., multidimensional list entries).
+        if reduction_fn is None and isinstance(output_dict[attr], list):
+            output_dict[attr] = [t for t in output_dict[attr] if not (isinstance(t, Tensor) and t.numel() == 0)]
+            if len(output_dict[attr]) == 0:
                 setattr(self, attr, [])
                 continue
 
-            if isinstance(output_dict[attr][0], Tensor):
-                output_dict[attr] = torch.stack(output_dict[attr])
-            elif isinstance(output_dict[attr][0], list):
-                output_dict[attr] = _flatten(output_dict[attr])
-
-            # for dist_reduce_fx=None list states, filter out empty placeholder
-            # tensors that were inserted to prevent all_gather deadlocks
-            if reduction_fn is None and isinstance(output_dict[attr], Tensor) and output_dict[attr].numel() == 0:
-                setattr(self, attr, [])
-                continue
+        if isinstance(output_dict[attr][0], Tensor):
+            output_dict[attr] = torch.stack(output_dict[attr])
+        elif isinstance(output_dict[attr][0], list):
+            output_dict[attr] = _flatten(output_dict[attr])
 
             if not (callable(reduction_fn) or reduction_fn is None):
                 raise TypeError("reduction_fn must be callable or None")
