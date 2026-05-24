@@ -138,6 +138,22 @@ class TestHausdorffDistance(MetricTester):
         )
 
 
+@pytest.mark.parametrize("distance_metric", ["euclidean", "chessboard", "taxicab"])
+@pytest.mark.parametrize("h, w", [(11, 10), (10, 11), (13, 7), (7, 13)])
+def test_hausdorff_distance_non_square(h, w, distance_metric):
+    """Test that hausdorff_distance works for non-square images (issue #3300).
+
+    The pytorch engine distance_transform used `h` (height) instead of `w` (width)
+    when computing flat indices for a 2D image, causing IndexError when h != w.
+
+    """
+    preds = torch.randint(0, 2, size=(1, 1, h, w))
+    target = torch.randint(0, 2, size=(1, 1, h, w))
+    result = hausdorff_distance(preds, target, num_classes=1, distance_metric=distance_metric)
+    assert result.shape == (1, 1)
+    assert not torch.isnan(result).any()
+
+
 def test_hausdorff_distance_raises_error():
     """Check that metric raises appropriate errors."""
     preds, target = _inputs1
