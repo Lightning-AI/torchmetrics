@@ -911,7 +911,7 @@ class TestEqualMetricStatesWithTuples:
         class MetricWithTupleState(Metric):
             """A metric whose list state contains tuples (like MeanAveragePrecision)."""
 
-            def __init__(self):
+            def __init__(self) -> None:
                 super().__init__()
                 self.add_state("items", default=[], dist_reduce_fx=None)
 
