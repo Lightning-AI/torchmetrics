@@ -350,7 +350,7 @@ def _test_sync_with_empty_none_reduce_lists(rank):
     class DummyNoneReduceMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.add_state("x", default=[], dist_reduce_fx=None)
 
@@ -377,7 +377,7 @@ def _test_sync_with_unequal_none_reduce_lists(rank):
     class DummyNoneReduceMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.add_state("x", default=[], dist_reduce_fx=None)
 
