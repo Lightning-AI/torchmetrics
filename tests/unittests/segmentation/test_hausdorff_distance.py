@@ -139,7 +139,7 @@ class TestHausdorffDistance(MetricTester):
 
 
 @pytest.mark.parametrize("distance_metric", ["euclidean", "chessboard", "taxicab"])
-@pytest.mark.parametrize("h, w", [(11, 10), (10, 11), (13, 7), (7, 13)])
+@pytest.mark.parametrize(("h", "w"), [(11, 10), (10, 11), (13, 7), (7, 13)])
 def test_hausdorff_distance_non_square(h, w, distance_metric):
     """Test that hausdorff_distance works for non-square images (issue #3300).
 
