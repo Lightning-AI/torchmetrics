@@ -37,6 +37,8 @@ jobs:
       UV_TORCH_BACKEND: "cpu"
       # TODO: Remove this - Enable running MPS tests on this platform
       DISABLE_MPS: ${{ startsWith(matrix.os, 'macOS') && '1' || '0' }}
+      # Supply-chain guard: refuse PyPI releases newer than 2 days. See https://docs.astral.sh/uv/reference/settings/#exclude-newer
+      UV_EXCLUDE_NEWER: "2 days"
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
@@ -69,7 +71,9 @@ jobs:
           # this was updated in `source cashing` by optional oldest
           cat requirements/_integrate.txt
           # to have install pyTorch
-          uv pip install -e . "setuptools==69.5.1" --extra-index-url=${PYTORCH_URL}
+          # --index-strategy unsafe-best-match: PyTorch extra-index mirrors older packages; without this
+          # flag uv won't fall back to PyPI for a newer compatible version under UV_EXCLUDE_NEWER.
+          uv pip install -e . "setuptools==69.5.1" --extra-index-url=${PYTORCH_URL} --index-strategy unsafe-best-match
 
           # adjust version to PT ecosystem based on installed TM
           python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
