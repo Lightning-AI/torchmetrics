@@ -73,7 +73,7 @@ jobs:
           # to have install pyTorch
           # --index-strategy unsafe-best-match: PyTorch extra-index mirrors older packages; without this
           # flag uv won't fall back to PyPI for a newer compatible version under UV_EXCLUDE_NEWER.
-          uv pip install -e . "setuptools==69.5.1" --extra-index-url=${PYTORCH_URL} --index-strategy unsafe-best-match
+          uv pip install -e . "setuptools==69.5.1" --extra-index-url=${PYTORCH_URL}
 
           # adjust version to PT ecosystem based on installed TM
           python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
