@@ -138,7 +138,9 @@ class TestGeneralizedDiceScoreAbsentClasses:
     """
 
     @staticmethod
-    def _make_absent_class_data(num_classes=3, spatial=128):
+    def _make_absent_class_data(
+        num_classes=3, spatial=128
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Create data where some classes are absent from certain samples.
 
         - Sample 0: class 0 present, perfectly predicted
@@ -172,8 +174,9 @@ class TestGeneralizedDiceScoreAbsentClasses:
         assert torch.isnan(result[3]).all()
 
     def test_functional_per_class_false_absent(self):
-        """Per_class=False should sum across classes before dividing, giving nan only for samples where ALL classes are
-        absent.
+        """Per_class=False should sum across classes before dividing.
+
+        Gives nan only for samples where ALL classes are absent.
         """
         preds, target = self._make_absent_class_data()
         result = generalized_dice_score(preds, target, num_classes=3, per_class=False, include_background=True)
@@ -185,8 +188,9 @@ class TestGeneralizedDiceScoreAbsentClasses:
         assert torch.isnan(result[3])
 
     def test_class_per_class_absent(self):
-        """Class metric with per_class=True should return nan for classes absent from all samples, and exclude absent-
-        class samples from the average.
+        """Class metric with per_class=True should return nan for classes absent from all samples.
+
+        Also, exclude absent-class samples from the average.
         """
         preds, target = self._make_absent_class_data()
         gds = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=True)
