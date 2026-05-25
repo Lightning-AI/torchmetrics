@@ -4,14 +4,14 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -52,8 +52,14 @@ def _generalized_dice_update(
     include_background: bool,
     weight_type: Literal["square", "simple", "linear"] = "square",
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
-) -> Tuple[Tensor, Tensor]:
-    """Update the state with the current prediction and target."""
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Update the state with the current prediction and target.
+
+    Returns:
+        numerator: Shape ``(N, C)`` — weighted intersection terms.
+        denominator: Shape ``(N, C)`` — weighted cardinality terms.
+        support: Shape ``(N, C)`` — number of voxels per class in the target (used to detect absent classes).
+    """
     preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
 
     reduce_axis = list(range(2, target.ndim))
@@ -82,15 +88,55 @@ def _generalized_dice_update(
 
     numerator = 2.0 * intersection * weights
     denominator = cardinality * weights
-    return numerator, denominator
+    return numerator, denominator, target_sum
 
 
-def _generalized_dice_compute(numerator: Tensor, denominator: Tensor, per_class: bool = True) -> Tensor:
-    """Compute the generalized dice score."""
-    if not per_class:
-        numerator = torch.sum(numerator, 1)
-        denominator = torch.sum(denominator, 1)
-    return _safe_divide(numerator, denominator)
+def _generalized_dice_compute(
+    numerator: Tensor,
+    denominator: Tensor,
+    per_class: bool = True,
+    support: Optional[Tensor] = None,
+) -> Tensor:
+    """Compute the generalized dice score.
+
+    When ``support`` is provided, classes with zero volume (absent from both prediction and target) in a
+    given sample produce ``nan`` instead of ``0.0``. This ensures that absent classes are excluded from
+    averages (via ``nanmean``) rather than unfairly dragging scores down.
+
+    Args:
+        numerator: Weighted intersection, shape ``(N, C)``.
+        denominator: Weighted cardinality, shape ``(N, C)``.
+        per_class: If ``True``, return per-sample per-class scores ``(N, C)``.
+            If ``False``, return per-sample aggregate scores ``(N,)``.
+        support: Target class volumes, shape ``(N, C)``. Used to identify absent classes.
+
+    Returns:
+        - ``per_class=True``: ``(N, C)`` tensor with ``nan`` for absent classes.
+        - ``per_class=False``: ``(N,)`` tensor with ``nan`` only when ALL classes are absent.
+    """
+    if per_class:
+        # Per-sample per-class scores: nan for absent classes (zero volume)
+        if support is not None:
+            absent = support == 0
+        else:
+            absent = (numerator == 0) & (denominator == 0)
+        score = _safe_divide(numerator, denominator, zero_division="nan")
+        # Absent classes that had both numerator and denominator as 0 (from weight inf→0 replacement)
+        # may still get 0.0 from _safe_divide if both are exactly 0; force nan for those.
+        score[absent] = float("nan")
+        return score
+    else:
+        # Per-sample aggregate: sum weighted numerators and denominators across present classes,
+        # then divide (ratio of sums = true Generalized Dice formula).
+        # Zero out absent-class contributions so they don't affect the sums.
+        if support is not None:
+            present = support != 0
+        else:
+            present = ~((numerator == 0) & (denominator == 0))
+        # Where a class is absent, zero out its numerator/denominator contribution
+        numerator_clean = numerator * present.float()
+        denominator_clean = denominator * present.float()
+        return _safe_divide(numerator_clean.sum(dim=1), denominator_clean.sum(dim=1), zero_division="nan")
 
 
 def generalized_dice_score(
@@ -112,41 +158,43 @@ def generalized_dice_score(
         per_class: Whether to compute the score for each class separately, else average over all classes
         weight_type: Type of weight factor to apply to the classes. One of ``"square"``, ``"simple"``, or ``"linear"``
         input_format: What kind of input the function receives.
-            Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
-            or ``"mixed"`` for one one-hot encoded and one index tensor
+        Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
+        or ``"mixed"`` for one one-hot encoded and one index tensor
 
     Returns:
         The Generalized Dice Score
 
     Example (with one-hot encoded tensors):
-        >>> from torch import randint
+        >>> from torch import manual_seed, randint
         >>> from torchmetrics.functional.segmentation import generalized_dice_score
+        >>> _ = manual_seed(42)
         >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
-        >>> generalized_dice_score(preds, target, num_classes=5)
+        >>> generalized_dice_score(preds, target, num_classes=5)  # doctest: +NORMALIZE_WHITESPACE
         tensor([0.4830, 0.4935, 0.5044, 0.4880])
-        >>> generalized_dice_score(preds, target, num_classes=5, per_class=True)
+        >>> generalized_dice_score(preds, target, num_classes=5, per_class=True)  # doctest: +NORMALIZE_WHITESPACE
         tensor([[0.4724, 0.5185, 0.4710, 0.5062, 0.4500],
-                [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
-                [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
-                [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
+        [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
+        [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
+        [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
 
     Example (with index tensors):
-        >>> from torch import randint
+        >>> from torch import manual_seed, randint
         >>> from torchmetrics.functional.segmentation import generalized_dice_score
+        >>> _ = manual_seed(42)
         >>> preds = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
-        >>> generalized_dice_score(preds, target, num_classes=5, input_format="index")
+        >>> generalized_dice_score(preds, target, num_classes=5, input_format="index")  # doctest: +NORMALIZE_WHITESPACE
         tensor([0.1991, 0.1971, 0.2350, 0.2216])
-        >>> generalized_dice_score(preds, target, num_classes=5, per_class=True, input_format="index")
+        >>> generalized_dice_score(preds, target, num_classes=5, per_class=True, input_format="index")  # doctest: +NORMALIZE_WHITESPACE
         tensor([[0.1714, 0.2500, 0.1304, 0.2524, 0.2069],
-                [0.1837, 0.2162, 0.0962, 0.2692, 0.1895],
-                [0.3866, 0.1348, 0.2526, 0.2301, 0.2083],
-                [0.1978, 0.2804, 0.1714, 0.1915, 0.2783]])
+        [0.1837, 0.2162, 0.0962, 0.2692, 0.1895],
+        [0.3866, 0.1348, 0.2526, 0.2301, 0.2083],
+        [0.1978, 0.2804, 0.1714, 0.1915, 0.2783]])
 
     """
     _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type, input_format)
-    numerator, denominator = _generalized_dice_update(
+    numerator, denominator, support = _generalized_dice_update(
         preds, target, num_classes, include_background, weight_type, input_format
     )
-    return _generalized_dice_compute(numerator, denominator, per_class)
+    return _generalized_dice_compute(numerator, denominator, per_class, support=support)
