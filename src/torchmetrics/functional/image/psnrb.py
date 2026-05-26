@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
+from collections.abc import Sequence
 from typing import Union
 
 import torch
@@ -102,7 +103,7 @@ def _psnrb_update(preds: Tensor, target: Tensor, block_size: int = 8) -> tuple[T
 def peak_signal_noise_ratio_with_blocked_effect(
     preds: Tensor,
     target: Tensor,
-    data_range: Union[float, tuple[float, float]],
+    data_range: Union[float, Sequence[float]],
     block_size: int = 8,
 ) -> Tensor:
     r"""Computes `Peak Signal to Noise Ratio With Blocked Effect` (PSNRB) metrics.
@@ -115,7 +116,7 @@ def peak_signal_noise_ratio_with_blocked_effect(
     Args:
         preds: estimated signal
         target: ground truth signal
-        data_range: the range of the data. If a tuple is provided then the range is calculated as the difference and
+        data_range: the range of the data. If a Sequence is provided then the range is calculated as the difference and
             input is clamped between the values.
         block_size: integer indication the block size
 
@@ -131,7 +132,7 @@ def peak_signal_noise_ratio_with_blocked_effect(
         tensor(7.8402)
 
     """
-    if isinstance(data_range, tuple):
+    if isinstance(data_range, Sequence):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
         data_range_val = tensor(data_range[1] - data_range[0])
