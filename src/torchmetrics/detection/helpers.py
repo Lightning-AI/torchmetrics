@@ -636,6 +636,7 @@ class CocoBackend:
                 }
                 if area_stat_box is not None:
                     annotation["area_bbox"] = area_stat_box
+                if area_stat_mask is not None:
                     annotation["area_segm"] = area_stat_mask
 
                 if boxes is not None:
@@ -689,7 +690,7 @@ def _get_safe_item_values(
     coco_backend: CocoBackend,
     item: dict[str, Any],
     warn: bool = False,
-) -> tuple[Optional[Tensor], Optional[tuple]]:
+) -> tuple[Optional[Tensor], Optional[tuple], Optional[Tensor]]:
     """Convert and return the boxes or masks from the item depending on the iou_type.
 
     Args:
