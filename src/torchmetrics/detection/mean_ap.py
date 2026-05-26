@@ -160,6 +160,10 @@ class MeanAveragePrecision(Metric):
         iou_type:
             Type of input (either masks or bounding-boxes or keypoints) used for computing IOU. Supported IOU types are
             ``"bbox"`` or ``"segm"`` or ``"keypoints"`` or ``["bbox", "segm"]`` or ``["bbox", "keypoints"]``.
+        keypoint_format:
+            Format of input keypoints. Supported values are ``"xy"`` (x, y coordinates only, shape ``[N, K, 2]``)
+            and ``"xyv"`` (x, y coordinates plus visibility flag, shape ``[N, K*3]``). Only used when
+            ``iou_type`` includes ``"keypoints"``.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.
@@ -308,6 +312,12 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(-1.),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(0.2000)}
+
+    Note:
+        When ``iou_type="keypoints"``, the output dictionary always contains ``map_small`` and ``mar_small``
+        keys with a sentinel value of ``-1.0``. This is because the COCO keypoint evaluation protocol
+        does not report per-area-size statistics for ``"small"`` objects. All other keys match the
+        ``"bbox"`` and ``"segm"`` output schemas.
 
     """
 
