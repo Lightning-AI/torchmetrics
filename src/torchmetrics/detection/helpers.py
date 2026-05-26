@@ -259,11 +259,13 @@ class CocoBackend:
                 f"{prefix}map": torch.tensor([stats[0]], dtype=torch.float32),
                 f"{prefix}map_50": torch.tensor([stats[1]], dtype=torch.float32),
                 f"{prefix}map_75": torch.tensor([stats[2]], dtype=torch.float32),
+                f"{prefix}map_small": torch.tensor([-1.0], dtype=torch.float32),  # not reported by COCO keypoint eval
                 f"{prefix}map_medium": torch.tensor([stats[3]], dtype=torch.float32),
                 f"{prefix}map_large": torch.tensor([stats[4]], dtype=torch.float32),
                 f"{prefix}mar_{mdt[0]}": torch.tensor([stats[5]], dtype=torch.float32),
                 f"{prefix}mar_{mdt[1]}": torch.tensor([stats[6]], dtype=torch.float32),
                 f"{prefix}mar_{mdt[2]}": torch.tensor([stats[7]], dtype=torch.float32),
+                f"{prefix}mar_small": torch.tensor([-1.0], dtype=torch.float32),  # not reported by COCO keypoint eval
                 f"{prefix}mar_medium": torch.tensor([stats[8]], dtype=torch.float32),
                 f"{prefix}mar_large": torch.tensor([stats[9]], dtype=torch.float32),
             }
@@ -817,9 +819,13 @@ def _calculate_map_with_coco(
                     anno["area"] = anno[f"area_{i_type}"]
 
             if len(coco_preds.imgs) == 0 or len(coco_target.imgs) == 0:
+                n_stats = 10 if i_type == "keypoints" else 12
                 result_dict.update(
                     coco_backend._coco_stats_to_tensor_dict(
-                        12 * [-1.0], prefix=prefix, max_detection_thresholds=max_detection_thresholds, iou_type=i_type
+                        n_stats * [-1.0],
+                        prefix=prefix,
+                        max_detection_thresholds=max_detection_thresholds,
+                        iou_type=i_type,
                     )
                 )
             else:
