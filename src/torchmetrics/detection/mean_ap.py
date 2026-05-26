@@ -346,10 +346,10 @@ class MeanAveragePrecision(Metric):
     def __init__(
         self,
         box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
-        keypoint_format: Literal["xy", "xyv"] = "xy",
         iou_type: Union[
             Literal["bbox", "segm", "keypoints"], tuple[Literal["bbox", "segm", "keypoints"], ...]
         ] = "bbox",
+        keypoint_format: Literal["xy", "xyv"] = "xy",
         iou_thresholds: Optional[list[float]] = None,
         rec_thresholds: Optional[list[float]] = None,
         max_detection_thresholds: Optional[list[int]] = None,
