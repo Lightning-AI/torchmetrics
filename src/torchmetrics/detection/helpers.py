@@ -121,7 +121,7 @@ def _validate_iou_type_arg(
             f"Expected argument `iou_type` to be one of {allowed_iou_types} or a tuple of, but got {iou_type}"
         )
     if "segm" in iou_type and "keypoints" in iou_type:
-        raise NotImplementedError()
+        raise NotImplementedError("Combining iou_type='segm' and iou_type='keypoints' is not supported.")
     return iou_type
 
 
