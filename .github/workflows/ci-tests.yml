@@ -71,6 +71,8 @@ jobs:
       # PIP_EXTRA_URL: "--find-links=https://download.pytorch.org/whl/cpu/torch_stable.html"
       UV_TORCH_BACKEND: "cpu"
       UNITTEST_TIMEOUT: "" # by default, it is not set
+      # Supply-chain guard: refuse PyPI releases newer than 2 days. See https://docs.astral.sh/uv/reference/settings/#exclude-newer
+      UV_EXCLUDE_NEWER: "2 days"
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that macOS jobs take much more than orger OS

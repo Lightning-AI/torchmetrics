@@ -26,6 +26,8 @@ env:
   SPHINX_MOCK_REQUIREMENTS: 0
   SPHINX_FETCH_ASSETS: 0
   SPHINX_PIN_RELEASE_VERSIONS: 0
+  # Supply-chain guard: refuse PyPI releases newer than 2 days. See https://docs.astral.sh/uv/reference/settings/#exclude-newer
+  UV_EXCLUDE_NEWER: "2 days"
 
 jobs:
   docs-make:

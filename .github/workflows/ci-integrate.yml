@@ -37,6 +37,8 @@ jobs:
       UV_TORCH_BACKEND: "cpu"
       # TODO: Remove this - Enable running MPS tests on this platform
       DISABLE_MPS: ${{ startsWith(matrix.os, 'macOS') && '1' || '0' }}
+      # Supply-chain guard: refuse PyPI releases newer than 2 days. See https://docs.astral.sh/uv/reference/settings/#exclude-newer
+      UV_EXCLUDE_NEWER: "2 days"
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
