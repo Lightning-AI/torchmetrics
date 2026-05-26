@@ -79,7 +79,9 @@ def mean_average_precision(
         preds: List of dictionaries, each representing detection predictions for a single image.
         target: List of dictionaries, each representing ground truth annotations for a single image.
         box_format: Format of the input bounding boxes. Supported values are "xyxy", "xywh", and "cxcywh".
-        iou_type: Type of IoU to compute. Can be "bbox", "segm", or a tuple containing both.
+        keypoint_format: Format of input keypoints. Supported values are ``"xy"`` (x, y coordinates only) and
+            ``"xyv"`` (x, y coordinates plus visibility flag).
+        iou_type: Type of IoU to compute. Can be "bbox", "segm", "keypoints", or a tuple containing multiple.
         iou_thresholds: List of IoU thresholds (default is [0.5, 0.55, ..., 0.95]).
         rec_thresholds: List of recall thresholds (default is [0.0, 0.01, ..., 1.0]).
         max_detection_thresholds: List of maximum detections per image (default is [1, 10, 100]).

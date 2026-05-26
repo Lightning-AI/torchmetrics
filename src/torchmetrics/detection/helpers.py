@@ -339,7 +339,7 @@ class CocoBackend:
                 if "segm" in iou_type:
                     target[t["image_id"]]["masks"] = []
                 if "keypoints" in iou_type:
-                    if "bbox" not in iou_type and hasattr(t, "bbox"):
+                    if "bbox" not in iou_type and "bbox" in t:
                         target[t["image_id"]]["boxes"] = []
                     target[t["image_id"]]["keypoints"] = []
                     target[t["image_id"]]["num_keypoints"] = []
@@ -349,7 +349,7 @@ class CocoBackend:
             if "segm" in iou_type:
                 target[t["image_id"]]["masks"].append(gt.annToMask(t))
             if "keypoints" in iou_type:
-                if "bbox" not in iou_type and hasattr(t, "bbox"):
+                if "bbox" not in iou_type and "bbox" in t:
                     target[t["image_id"]]["boxes"].append(t["bbox"])
                 target[t["image_id"]]["keypoints"].append(t["keypoints"])
                 target[t["image_id"]]["num_keypoints"].append(len(t["keypoints"]) // 3)
@@ -366,7 +366,7 @@ class CocoBackend:
                 if "segm" in iou_type:
                     preds[p["image_id"]]["masks"] = []
                 if "keypoints" in iou_type:
-                    if "bbox" not in iou_type and hasattr(p, "bbox"):
+                    if "bbox" not in iou_type and "bbox" in p:
                         preds[p["image_id"]]["boxes"] = []
                     preds[p["image_id"]]["keypoints"] = []
                     preds[p["image_id"]]["num_keypoints"] = []
@@ -375,7 +375,7 @@ class CocoBackend:
             if "segm" in iou_type:
                 preds[p["image_id"]]["masks"].append(gt.annToMask(p))
             if "keypoints" in iou_type:
-                if "bbox" not in iou_type and hasattr(p, "bbox"):
+                if "bbox" not in iou_type and "bbox" in p:
                     preds[p["image_id"]]["boxes"].append(p["bbox"])
                 preds[p["image_id"]]["keypoints"].append(p["keypoints"])
                 preds[p["image_id"]]["num_keypoints"].append(len(p["keypoints"]) // 3)
@@ -392,7 +392,7 @@ class CocoBackend:
                 if "keypoints" in iou_type:
                     preds[k]["keypoints"] = []
                     preds[k]["num_keypoints"] = []
-                    if "bbox" not in iou_type and hasattr(preds[k], "bbox"):
+                    if "bbox" not in iou_type and "bbox" in preds[k]:
                         preds[k]["boxes"] = []
 
         batched_preds, batched_target = [], []
@@ -406,7 +406,7 @@ class CocoBackend:
             if "segm" in iou_type:
                 bp["masks"] = torch.tensor(np.array(preds[key]["masks"]), dtype=torch.uint8)
             if "keypoints" in iou_type:
-                if "bbox" not in iou_type and hasattr(bp, "bbox"):
+                if "bbox" not in iou_type and "boxes" in preds[key]:
                     bp["boxes"] = torch.tensor(np.array(preds[key]["boxes"]), dtype=torch.float32)
                 bp["keypoints"] = torch.tensor(np.array(preds[key]["keypoints"]), dtype=torch.float32)
                 bp["num_keypoints"] = torch.tensor(np.array(preds[key]["num_keypoints"]), dtype=torch.int32)
@@ -423,7 +423,7 @@ class CocoBackend:
             if "segm" in iou_type:
                 bt["masks"] = torch.tensor(np.array(target[key]["masks"]), dtype=torch.uint8)
             if "keypoints" in iou_type:
-                if "bbox" not in iou_type and hasattr(bp, "bbox"):
+                if "bbox" not in iou_type and "boxes" in preds[key]:
                     bt["boxes"] = torch.tensor(np.array(preds[key]["boxes"]), dtype=torch.float32)
                 bt["keypoints"] = torch.tensor(np.array(target[key]["keypoints"]), dtype=torch.float32)
                 bt["num_keypoints"] = torch.tensor(np.array(target[key]["num_keypoints"]), dtype=torch.int32)
@@ -604,7 +604,8 @@ class CocoBackend:
 
                 if "keypoints" in iou_type and len(image_keypoint) != 51:
                     raise ValueError(
-                        f"Invalid input keypoint of sample {image_id}, element {k} (expected 3 values, got {len(image_keypoint)})"
+                        f"Invalid input keypoint of sample {image_id}, element {k}"
+                        f" (expected 51 values for 17 keypoints [x,y,visibility], got {len(image_keypoint)})"
                     )
 
                 if not isinstance(image_label, int):
@@ -703,6 +704,9 @@ def _get_safe_item_values(
                   width and height.
                 - 'cxcywh': boxes are represented via centre, width and height, cx, cy being center of box, w, h being
                   width and height.
+        keypoint_format:
+            Input format of given keypoints. Supported formats are ``"xy"`` (x, y coordinates only) and
+            ``"xyv"`` (x, y coordinates plus visibility flag).
         max_detection_thresholds:
             List of thresholds on maximum detections per image. Used to determine if warnings should be raised
             when the number of detections exceeds these thresholds.
@@ -735,7 +739,7 @@ def _get_safe_item_values(
         output[1] = tuple(masks)  # type: ignore[call-overload]
     if "keypoints" in iou_type:
 
-        def keypoint_convert(keypoints, in_fmt="xy", out_fmt="xyv"):
+        def keypoint_convert(keypoints: Tensor, in_fmt: str = "xy", out_fmt: str = "xyv") -> Tensor:
             # the keypoint format is expected to be:
             #   [number_of_keypoints * 3] -> x_0,y_0,viz_0, x_1,y_1,viz_1, ..., x_n,y_n,viz_n
             if in_fmt == "xy" and out_fmt == "xyv":
