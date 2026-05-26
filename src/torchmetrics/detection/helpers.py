@@ -685,6 +685,14 @@ def _warning_on_too_many_detections(limit: int) -> None:
     )
 
 
+def _keypoint_convert(keypoints: Tensor, in_fmt: str = "xy", out_fmt: str = "xyv") -> Tensor:
+    """Convert keypoint tensor between ``"xy"`` and ``"xyv"`` formats."""
+    if in_fmt == "xy" and out_fmt == "xyv":
+        keypoints = torch.cat([keypoints, torch.ones_like(keypoints[..., :1])], dim=-1)
+        keypoints = keypoints.flatten(-2)  # [num_keypoints, 3] --> [num_keypoints * 3]
+    return keypoints
+
+
 def _get_safe_item_values(
     iou_type: Union[Literal["bbox", "segm"], Tuple[Literal["bbox", "segm"], ...]],
     box_format: str,
@@ -742,17 +750,8 @@ def _get_safe_item_values(
             masks.append((tuple(rle["size"]), rle["counts"]))
         output[1] = tuple(masks)  # type: ignore[call-overload]
     if "keypoints" in iou_type:
-
-        def keypoint_convert(keypoints: Tensor, in_fmt: str = "xy", out_fmt: str = "xyv") -> Tensor:
-            # the keypoint format is expected to be:
-            #   [number_of_keypoints * 3] -> x_0,y_0,viz_0, x_1,y_1,viz_1, ..., x_n,y_n,viz_n
-            if in_fmt == "xy" and out_fmt == "xyv":
-                keypoints = torch.cat([keypoints, torch.ones_like(keypoints[..., :1])], dim=-1)
-                keypoints = keypoints.flatten(-2)  # [num_keypoints, 3] --> [num_keypoints * 3]
-            return keypoints
-
         keypoints = _fix_empty_tensors(item["keypoints"])
-        output[2] = keypoint_convert(keypoints, keypoint_format, out_fmt="xyv")
+        output[2] = _keypoint_convert(keypoints, keypoint_format, out_fmt="xyv")
 
     def _valid_output_len(idx: int) -> bool:
         val = output[idx]
