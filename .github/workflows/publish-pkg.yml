@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.10"
 
@@ -31,7 +31,7 @@ jobs:
           python setup.py sdist bdist_wheel
           ls -lh dist/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pypi-packages-${{ github.sha }}
           path: dist
@@ -42,14 +42,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: pypi-packages-${{ github.sha }}
           path: dist
       - run: ls -lh dist/
 
       - name: Upload to release
-        uses: AButler/upload-release-assets@v3.0
+        uses: AButler/upload-release-assets@3d6774fae0ed91407dc5ae29d576b166536d1777 # v3.0
         with:
           files: "dist/*"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -60,14 +60,14 @@ jobs:
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 5
   #   steps:
-  #     - uses: actions/download-artifact@v5
+  #     - uses: actions/download-artifact@<COMMIT_SHA>  # repo pins SHAs, not tags; last tag in use: v5
   #       with:
   #         name: pypi-packages-${{ github.sha }}
   #         path: dist
   #     - run: ls -lh dist/
   #     # We do this, since failures on test.pypi aren't that bad
   #     - name: Publish to Test PyPI
-  #       uses: pypa/gh-action-pypi-publish@v1.13.0
+  #       uses: pypa/gh-action-pypi-publish@<COMMIT_SHA>  # repo pins SHAs, not tags; last tag in use: v1.13.0
   #       with:
   #         user: __token__
   #         password: ${{ secrets.test_pypi_password }}
@@ -78,7 +78,7 @@ jobs:
   #   needs: publish-pypi-test
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: juliangruber/sleep-action@v2
+  #     - uses: juliangruber/sleep-action@<COMMIT_SHA>  # repo pins SHAs, not tags; last tag in use: v2
   #       with:
   #         time: 5m
 
@@ -90,10 +90,10 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: pypi-packages-${{ github.sha }}
           path: dist
       - run: ls -lh dist/
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.13.0
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
