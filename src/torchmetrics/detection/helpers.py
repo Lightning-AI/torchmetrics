@@ -574,7 +574,8 @@ class CocoBackend:
                     continue
             if keypoints is not None:
                 if boxes is None:
-                    kp = keypoints[image_id].view(-1, 17, 3)
+                    n_kpts = keypoints[image_id].shape[-1] // 3
+                    kp = keypoints[image_id].view(-1, n_kpts, 3)
                     v_mask = kp[..., 2:] > 0  # visible points
                     mins = torch.masked.amin(kp[..., :2], mask=v_mask, dim=1)  # [N, 2] -> [xmin, ymin]
                     maxs = torch.masked.amax(kp[..., :2], mask=v_mask, dim=1)
