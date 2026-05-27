@@ -22,7 +22,7 @@ jobs:
     uses: Lightning-AI/utilities/.github/workflows/check-schema.yml@2094525f99d94e25998563f5f7c960d48c12dc87 # v0.15.2
     with:
       actions-ref: v0.15.2
-      azure-dir: ''
+      azure-dir: ""
 
   check-package:
     if: github.event.pull_request.draft == false
