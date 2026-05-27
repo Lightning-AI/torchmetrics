@@ -2,7 +2,7 @@
   "ignorePatterns": [
     {
       "pattern": "^https://github.com/Lightning-AI/torchmetrics/pull/.*"
-    },
+    }
   ],
   "httpHeaders": [
     {
