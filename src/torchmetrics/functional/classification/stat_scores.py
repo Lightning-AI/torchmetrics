@@ -441,13 +441,21 @@ def _multiclass_stat_scores_update(
             idx = target != ignore_index
             preds = preds[idx]
             target = target[idx]
-        unique_mapping = target.to(torch.long) * num_classes + preds.to(torch.long)
-        bins = _bincount(unique_mapping, minlength=num_classes**2)
-        confmat = bins.reshape(num_classes, num_classes)
-        tp = confmat.diag()
-        fp = confmat.sum(0) - tp
-        fn = confmat.sum(1) - tp
-        tn = confmat.sum() - (fp + fn + tp)
+        if num_classes < 1000:
+            unique_mapping = target.to(torch.long) * num_classes + preds.to(torch.long)
+            bins = _bincount(unique_mapping, minlength=num_classes**2)
+            confmat = bins.reshape(num_classes, num_classes)
+            tp = confmat.diag()
+            fp = confmat.sum(0) - tp
+            fn = confmat.sum(1) - tp
+            tn = confmat.sum() - (fp + fn + tp)
+        else:
+            # The above approach requires num_classes**2 memory. For large num_classes, we can calculate the
+            # statistics separately using linear memory.
+            tp = _bincount(preds[target == preds], minlength=num_classes)
+            fp = _bincount(preds, minlength=num_classes) - tp
+            fn = _bincount(target, minlength=num_classes) - tp
+            tn = target.numel() - (tp + fp + fn)
     return tp, fp, tn, fn
 
 
