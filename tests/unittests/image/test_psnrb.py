@@ -135,5 +135,21 @@ class TestPSNR(MetricTester):
 
 def test_error_on_color_images():
     """Test that appropriate error is raised when color images are passed to PSNRB metric."""
-    with pytest.raises(ValueError, match="`psnrb` metric expects grayscale images.*"):
+    with pytest.raises(ValueError, match=r"`psnrb` metric expects grayscale images.*"):
         peak_signal_noise_ratio_with_blocked_effect(torch.rand(1, 3, 16, 16), torch.rand(1, 3, 16, 16), data_range=1.0)
+
+
+@pytest.mark.parametrize("block_size", [0, -5, 1.5, "foo"])
+def test_error_on_invalid_block_size_class(block_size):
+    """Test that ValueError is raised for non-positive or non-integer block_size in the class API."""
+    with pytest.raises(ValueError, match="Argument ``block_size`` should be a positive integer"):
+        PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0, block_size=block_size)
+
+
+@pytest.mark.parametrize("block_size", [0, -5, 1.5, "foo"])
+def test_error_on_invalid_block_size_functional(block_size):
+    """Test that ValueError is raised for non-positive or non-integer block_size in the functional API."""
+    with pytest.raises(ValueError, match="Argument ``block_size`` should be a positive integer"):
+        peak_signal_noise_ratio_with_blocked_effect(
+            torch.rand(1, 1, 16, 16), torch.rand(1, 1, 16, 16), data_range=1.0, block_size=block_size
+        )
