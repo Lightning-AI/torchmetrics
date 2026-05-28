@@ -27,10 +27,6 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2, _TORCHVISION_AVAILABLE
 
-if _TORCHVISION_AVAILABLE:
-    from torchvision import transforms
-    from torchvision.models import resnet50
-
 _AVAILABLE_REGRESSOR_DATASETS = {
     "kadid10k": (1, 5),
     "koniq10k": (1, 100),
@@ -64,6 +60,8 @@ class _ARNIQA(nn.Module):
                 "ARNIQA metric requires that torchvision is installed."
                 " Either install as `pip install torchmetrics[image]` or `pip install torchvision`."
             )
+
+        from torchvision.models import resnet50
 
         valid_regressor_datasets = _AVAILABLE_REGRESSOR_DATASETS.keys()
         if regressor_dataset not in valid_regressor_datasets:
@@ -116,6 +114,8 @@ class _ARNIQA(nn.Module):
         Obtains the half-scale version of the input image and applies normalization if needed.
 
         """
+        from torchvision import transforms
+
         h, w = img.shape[-2:]
         img_ds = transforms.Resize((h // 2, w // 2))(img)  # get the half-scale version of the image
         if normalize:
