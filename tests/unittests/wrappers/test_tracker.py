@@ -33,7 +33,7 @@ seed_all(42)
 
 def test_raises_error_on_wrong_input():
     """Make sure that input type errors are raised on the wrong input."""
-    with pytest.raises(TypeError, match="Metric arg need to be an instance of a .*"):
+    with pytest.raises(TypeError, match=r"Metric arg need to be an instance of a .*"):
         MetricTracker([1, 2, 3])
 
     with pytest.raises(ValueError, match="Argument `maximize` should either be a single bool or list of bool"):

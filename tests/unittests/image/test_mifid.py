@@ -120,12 +120,12 @@ def test_no_train():
 def test_mifid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     if _TORCH_FIDELITY_AVAILABLE:
-        with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
+        with pytest.raises(ValueError, match=r"Integer input to argument `feature` must be one of .*"):
             _ = MemorizationInformedFrechetInceptionDistance(feature=2)
     else:
         with pytest.raises(
             ModuleNotFoundError,
-            match="FID metric requires that `Torch-fidelity` is installed."
+            match=r"FID metric requires that `Torch-fidelity` is installed."
             " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
         ):
             _ = MemorizationInformedFrechetInceptionDistance()

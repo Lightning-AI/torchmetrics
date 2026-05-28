@@ -42,7 +42,7 @@ def _pairwise_linear_similarity_update(
 def pairwise_linear_similarity(
     x: Tensor,
     y: Optional[Tensor] = None,
-    reduction: Literal["mean", "sum", "none", None] = None,
+    reduction: Optional[Literal["mean", "sum", "none"]] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
     r"""Calculate pairwise linear similarity.

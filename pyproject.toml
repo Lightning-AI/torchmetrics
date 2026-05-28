@@ -7,15 +7,14 @@ requires = [
 [tool.ruff]
 target-version = "py39"
 line-length = 120
-
-#[tool.ruff.pycodestyle]
-#ignore-overlong-task-comments = true
+# [tool.ruff.pycodestyle]
+# ignore-overlong-task-comments = true
 format.preview = true
 lint.select = [
   "D",  # see: https://pypi.org/project/pydocstyle
   "E",
   "F",  # see: https://pypi.org/project/pyflakes
-  "I",  #see: https://pypi.org/project/isort/
+  "I",  # see: https://pypi.org/project/isort/
   "N",  # see: https://pypi.org/project/pep8-naming
   "S",  # see: https://pypi.org/project/flake8-bandit
   "UP", # see: https://docs.astral.sh/ruff/rules/#pyupgrade-up
@@ -85,7 +84,7 @@ lint.mccabe.max-complexity = 10
 lint.pydocstyle.convention = "google"
 
 [tool.codespell]
-#skip = '*.py'
+# skip = '*.py'
 quiet-level = 3
 # Todo: comma separated list of words; waiting for:
 #  https://github.com/codespell-project/codespell/issues/2839#issuecomment-1731601603
@@ -115,40 +114,20 @@ ignore = [
   ".github/*",
 ]
 
-[tool.pytest.ini_options]
-norecursedirs = [
-  ".git",
-  ".github",
-  "dist",
-  "build",
-  "docs",
+[tool.typos]
+default.extend-ignore-identifiers-re = [
+  # *sigh* this just isn't worth the cost of fixing
+  "AttributeID.*Supress.*",
+  "Levenhstein",
 ]
-addopts = [
-  "--strict-markers",
-  "--doctest-modules",
-  "--doctest-plus",
-  "--color=yes",
-  "--disable-pytest-warnings",
-]
-markers = [
-  "DDP: mark a test as Distributed Data Parallel",
-]
-filterwarnings = [
-  "ignore::FutureWarning",
-  "default:::torchmetrics",
-]
-xfail_strict = true
-junit_duration_report = "call"
-
-[tool.coverage.report]
-exclude_lines = [
-  "pragma: no cover",
-  "pass",
-]
-[tool.coverage.run]
-parallel = true
-concurrency = "thread"
-relative_files = true
+# *sigh* this just isn't worth the cost of fixing
+default.extend-identifiers.MAPE = "MAPE"
+default.extend-identifiers.WIL = "WIL"
+default.extend-identifiers.Raison = "Raison"
+# Don't correct the surname "Teh"
+default.extend-words.fpr = "fpr"
+default.extend-words.mape = "mape"
+default.extend-words.wil = "wil"
 
 [tool.mypy]
 files = [
@@ -168,21 +147,36 @@ disable_error_code = "attr-defined"
 # style choices
 warn_no_return = "False"
 
-[tool.typos.default]
-extend-ignore-identifiers-re = [
-  # *sigh* this just isn't worth the cost of fixing
-  "AttributeID.*Supress.*",
-  "Levenhstein",
+[tool.pytest]
+ini_options.norecursedirs = [
+  ".git",
+  ".github",
+  "dist",
+  "build",
+  "docs",
 ]
+ini_options.addopts = [
+  "--strict-markers",
+  "--doctest-modules",
+  "--doctest-plus",
+  "--color=yes",
+  "--disable-pytest-warnings",
+]
+ini_options.markers = [
+  "DDP: mark a test as Distributed Data Parallel",
+]
+ini_options.filterwarnings = [
+  "ignore::FutureWarning",
+  "default:::torchmetrics",
+]
+ini_options.xfail_strict = true
+ini_options.junit_duration_report = "call"
 
-[tool.typos.default.extend-identifiers]
-# *sigh* this just isn't worth the cost of fixing
-MAPE = "MAPE"
-WIL = "WIL"
-Raison = "Raison"
-
-[tool.typos.default.extend-words]
-# Don't correct the surname "Teh"
-fpr = "fpr"
-mape = "mape"
-wil = "wil"
+[tool.coverage]
+run.concurrency = "thread"
+run.parallel = true
+run.relative_files = true
+report.exclude_lines = [
+  "pass",
+  "pragma: no cover",
+]

@@ -52,7 +52,7 @@ def test_reduce():
     assert torch.allclose(reduce(start_tensor, "sum"), torch.sum(start_tensor))
     assert torch.allclose(reduce(start_tensor, "none"), start_tensor)
 
-    with pytest.raises(ValueError, match="Reduction parameter unknown."):
+    with pytest.raises(ValueError, match=r"Reduction parameter unknown."):
         reduce(start_tensor, "error_reduction")
 
 
@@ -181,7 +181,7 @@ def test_cumsum_still_not_supported(use_deterministic_algorithms):
     If this test begins to pass, it means newer Pytorch versions support this and we can drop internal support.
 
     """
-    with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):
+    with pytest.raises(RuntimeError, match=r"cumsum_cuda_kernel does not have a deterministic implementation.*"):
         torch.arange(10).float().cuda().cumsum(0)
 
 

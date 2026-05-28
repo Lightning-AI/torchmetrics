@@ -35,7 +35,7 @@ def _reference_srmr_batch(
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
     preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
-    n_batch, time = preds.shape
+    _n_batch, _time = preds.shape
 
     preds = preds.detach().cpu().numpy()
     score = []

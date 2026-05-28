@@ -61,10 +61,10 @@ def test_initialization(metrics):
 
 def test_error_on_missing_feature_network():
     """Test that an error is raised when the feature network is missing."""
-    with pytest.raises(AttributeError, match="Tried to extract the network to share from the first metric.*"):
+    with pytest.raises(AttributeError, match=r"Tried to extract the network to share from the first metric.*"):
         FeatureShare([StructuralSimilarityIndexMeasure(), FrechetInceptionDistance(feature=64)])
 
-    with pytest.raises(AttributeError, match="Tried to set the cached network to all metrics, but one of the.*"):
+    with pytest.raises(AttributeError, match=r"Tried to set the cached network to all metrics, but one of the.*"):
         FeatureShare([FrechetInceptionDistance(feature=64), StructuralSimilarityIndexMeasure()])
 
 
