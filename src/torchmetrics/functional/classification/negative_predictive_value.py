@@ -64,6 +64,7 @@ def binary_negative_predictive_value(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
     zero_division: float = 0,
+    input_format: Literal["probs", "logits", "labels"] = "probs",
 ) -> Tensor:
     r"""Compute `Negative Predictive Value`_ for binary tasks.
 
@@ -96,6 +97,11 @@ def binary_negative_predictive_value(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
+        input_format: Specifies the format of the input preds tensor. Can be one of:
+
+            - ``'probs'``: preds tensor contains probabilities (float, [0,1] range).
+            - ``'logits'``: preds tensor contains logits (float).
+            - ``'labels'``: preds tensor contains integer labels ({0, 1}).
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -106,7 +112,7 @@ def binary_negative_predictive_value(
         >>> from torchmetrics.functional.classification import binary_negative_predictive_value
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> binary_negative_predictive_value(preds, target)
+        >>> binary_negative_predictive_value(preds, target, input_format="labels")
         tensor(0.6667)
 
     Example (preds is float tensor):
@@ -126,9 +132,9 @@ def binary_negative_predictive_value(
 
     """
     if validate_args:
-        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
-        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
-    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format=input_format)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format=input_format)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format=input_format)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _negative_predictive_value_reduce(
         tp, fp, tn, fn, average="binary", multidim_average=multidim_average, zero_division=zero_division
