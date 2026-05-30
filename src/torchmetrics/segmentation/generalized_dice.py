@@ -153,6 +153,7 @@ class GeneralizedDiceScore(Metric):
         For ``per_class=True``, samples where a class is not present produce NaN values, which are excluded
         from the average using ``nanmean``. Classes not present in any sample will have a NaN score.
         For ``per_class=False``, the score is the nanmean across samples of the per-sample aggregate score.
+
         """
         result = _generalized_dice_compute(
             dim_zero_cat(self.numerator),
@@ -163,9 +164,8 @@ class GeneralizedDiceScore(Metric):
         if self.per_class:
             # result shape: (N, C) — average across samples, keeping NaN for fully absent classes
             return result.nanmean(dim=0)
-        else:
-            # result shape: (N,) — average across samples
-            return result.nanmean()
+        # result shape: (N,) — average across samples
+        return result.nanmean()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
