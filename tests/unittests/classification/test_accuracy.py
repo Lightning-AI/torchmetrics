@@ -409,6 +409,30 @@ class TestMulticlassAccuracy(MetricTester):
 
 
 _mc_k_target = torch.tensor([0, 1, 2])
+
+
+def test_multiclass_accuracy_large_num_classes():
+    """Test that multiclass accuracy works with large num_classes (O(N) memory).
+
+    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3343.
+    Previously, num_classes=1_000_000 would cause OOM due to O(num_classes**2) memory.
+
+    """
+    num_classes = 1_000_000
+    n = 500
+    generator = torch.Generator().manual_seed(42)
+    target = torch.randint(0, num_classes, (n,), generator=generator)
+    preds = torch.randint(0, num_classes, (n,), generator=generator)
+
+    # Set 20% of predictions correct
+    correct_idx = torch.randperm(n, generator=generator)[: n // 5]
+    preds[correct_idx] = target[correct_idx]
+
+    expected = (preds == target).float().mean()
+    result = multiclass_accuracy(preds, target, num_classes=num_classes, average="micro")
+    assert torch.isclose(result, expected), f"Expected {expected}, got {result}"
+
+
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
 _mc_k_targets2 = torch.tensor([0, 0, 2])
