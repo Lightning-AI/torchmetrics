@@ -130,3 +130,38 @@ def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
     metric = metric_class()
     with pytest.raises(ValueError, match="Expected channel dimension of `preds` and `target` to be larger than 1.*"):
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))
+
+
+def test_no_nan_from_zero_pixel():
+    """Test that a single zero-valued pixel does not produce NaN (issue #3322)."""
+    a = torch.ones(2, 3, 8, 8)
+    b = torch.ones(2, 3, 8, 8)
+    a[:, :, 5, 3] = 0  # zero out all channels of one spatial pixel
+    result = spectral_angle_mapper(a, b)
+    assert not torch.isnan(result), "Expected finite value, got NaN"
+
+
+def test_no_nan_from_all_zero_preds():
+    """Test that all-zero predictions produce a finite result instead of NaN."""
+    c = torch.zeros(2, 3, 4, 4)
+    d = torch.ones(2, 3, 4, 4)
+    result = spectral_angle_mapper(c, d)
+    assert not torch.isnan(result), "Expected finite value, got NaN"
+
+
+def test_no_nan_from_both_zero():
+    """Test that both-zero inputs produce a finite result instead of NaN."""
+    e = torch.zeros(2, 3, 4, 4)
+    f = torch.zeros(2, 3, 4, 4)
+    result = spectral_angle_mapper(e, f)
+    assert not torch.isnan(result), "Expected finite value, got NaN"
+
+
+def test_zero_pixel_class_metric():
+    """Test that SpectralAngleMapper class does not produce NaN with zero pixels."""
+    metric = SpectralAngleMapper()
+    a = torch.ones(2, 3, 8, 8)
+    b = torch.ones(2, 3, 8, 8)
+    a[:, :, 5, 3] = 0
+    result = metric(a, b)
+    assert not torch.isnan(result), "Expected finite value, got NaN"
