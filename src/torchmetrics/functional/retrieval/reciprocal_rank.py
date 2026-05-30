@@ -49,7 +49,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor, top_k: Optional[int
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
     top_k = top_k or preds.shape[-1]
-    if not isinstance(top_k, int) and top_k <= 0:
+    if not isinstance(top_k, int) or top_k <= 0:
         raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
 
     target = torch.where(preds > 0, target, torch.zeros_like(target))
