@@ -175,6 +175,7 @@ class TestGeneralizedDiceScoreAbsentClasses:
         """Per_class=False should sum across classes before dividing.
 
         Gives nan only for samples where ALL classes are absent.
+
         """
         preds, target = self._make_absent_class_data()
         result = generalized_dice_score(preds, target, num_classes=3, per_class=False, include_background=True)
@@ -189,6 +190,7 @@ class TestGeneralizedDiceScoreAbsentClasses:
         """Class metric with per_class=True should return nan for classes absent from all samples.
 
         Excludes absent-class samples from the average.
+
         """
         preds, target = self._make_absent_class_data()
         gds = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=True)
