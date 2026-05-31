@@ -665,3 +665,17 @@ def test_wrapper_class(metric, kwargs, base_metric=StatScores):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+@pytest.mark.parametrize("top_k", [0, -1, -5])
+def test_error_on_invalid_top_k_non_positive(top_k):
+    """Test that ValueError is raised when top_k is not a positive integer for MulticlassStatScores."""
+    with pytest.raises(ValueError, match="Expected argument `top_k` to be an integer larger than or equal to 1"):
+        MulticlassStatScores(num_classes=3, top_k=top_k)
+
+
+@pytest.mark.parametrize("top_k", [1.5, "foo"])
+def test_error_on_invalid_top_k_non_int(top_k):
+    """Test that ValueError is raised when top_k is not an integer for MulticlassStatScores."""
+    with pytest.raises(ValueError, match="Expected argument `top_k` to be an integer larger than or equal to 1"):
+        MulticlassStatScores(num_classes=3, top_k=top_k)

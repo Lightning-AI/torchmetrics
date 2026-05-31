@@ -484,3 +484,17 @@ def test_wrapper_class(metric, kwargs, base_metric=SpecificityAtSensitivity):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+@pytest.mark.parametrize("min_sensitivity", [-0.1, 1.5])
+def test_error_on_invalid_min_sensitivity_out_of_range(min_sensitivity):
+    """Test that ValueError is raised when min_sensitivity is out of [0, 1] range."""
+    with pytest.raises(ValueError, match="Expected argument `min_sensitivity` to be an float in the \\[0,1\\] range"):
+        BinarySpecificityAtSensitivity(min_sensitivity=min_sensitivity)
+
+
+@pytest.mark.parametrize("min_sensitivity", [1, "foo"])
+def test_error_on_invalid_min_sensitivity_non_float(min_sensitivity):
+    """Test that ValueError is raised when min_sensitivity is not a float."""
+    with pytest.raises(ValueError, match="Expected argument `min_sensitivity` to be an float in the \\[0,1\\] range"):
+        BinarySpecificityAtSensitivity(min_sensitivity=min_sensitivity)

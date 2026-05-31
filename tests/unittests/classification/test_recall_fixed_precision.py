@@ -469,3 +469,17 @@ def test_binary_recall_at_fixed_precision_nan_threshold():
 
     assert recall == 0.0
     assert torch.isnan(threshold), "Expected NaN when no precision condition is met"
+
+
+@pytest.mark.parametrize("min_precision", [-0.1, 1.5])
+def test_error_on_invalid_min_precision_out_of_range(min_precision):
+    """Test that ValueError is raised when min_precision is out of [0, 1] range."""
+    with pytest.raises(ValueError, match="Expected argument `min_precision` to be an float in the \\[0,1\\] range"):
+        BinaryRecallAtFixedPrecision(min_precision=min_precision)
+
+
+@pytest.mark.parametrize("min_precision", [1, "foo"])
+def test_error_on_invalid_min_precision_non_float(min_precision):
+    """Test that ValueError is raised when min_precision is not a float."""
+    with pytest.raises(ValueError, match="Expected argument `min_precision` to be an float in the \\[0,1\\] range"):
+        BinaryRecallAtFixedPrecision(min_precision=min_precision)
