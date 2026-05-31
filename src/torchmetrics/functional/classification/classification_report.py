@@ -48,13 +48,12 @@ def _compute_per_class_metrics(
 
     Returns:
         Dictionary with keys ``precision``, ``recall``, ``f1_score``, ``support``
+
     """
     support = tp + fn
     precision = _safe_divide(tp.float(), tp.float() + fp.float(), zero_division)
     recall = _safe_divide(tp.float(), tp.float() + fn.float(), zero_division)
-    f1_score = _safe_divide(
-        2 * tp.float(), 2 * tp.float() + fp.float() + fn.float(), zero_division
-    )
+    f1_score = _safe_divide(2 * tp.float(), 2 * tp.float() + fp.float() + fn.float(), zero_division)
     return {
         "precision": precision,
         "recall": recall,
@@ -81,6 +80,7 @@ def _compute_average(
 
     Returns:
         Dictionary of scalar tensors for each metric
+
     """
     result: Dict[str, Tensor] = {}
     support = scores["support"]
@@ -91,9 +91,7 @@ def _compute_average(
         fn_sum = fn.sum()
         result["precision"] = _safe_divide(tp_sum.float(), tp_sum.float() + fp_sum.float(), 0.0)
         result["recall"] = _safe_divide(tp_sum.float(), tp_sum.float() + fn_sum.float(), 0.0)
-        result["f1_score"] = _safe_divide(
-            2 * tp_sum.float(), 2 * tp_sum.float() + fp_sum.float() + fn_sum.float(), 0.0
-        )
+        result["f1_score"] = _safe_divide(2 * tp_sum.float(), 2 * tp_sum.float() + fp_sum.float() + fn_sum.float(), 0.0)
         result["support"] = support.sum()
     elif average == "macro":
         for key in ("precision", "recall", "f1_score"):
