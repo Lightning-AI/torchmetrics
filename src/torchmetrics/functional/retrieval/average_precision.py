@@ -50,7 +50,8 @@ def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[i
 
     if top_k is not None and not (isinstance(top_k, int) and top_k > 0):
         raise ValueError(f"`top_k` has to be a positive integer or None, but got {top_k}.")
-    top_k = top_k or preds.shape[-1]
+    if top_k is None:
+        top_k = preds.shape[-1]
 
     target = torch.where(preds > 0, target, torch.zeros_like(target))
     target = target[preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)[1]]
