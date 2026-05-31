@@ -118,10 +118,7 @@ def _generalized_dice_compute(
     """
     if per_class:
         # Per-sample per-class scores: nan for absent classes (zero volume)
-        if support is not None:
-            absent = support == 0
-        else:
-            absent = (numerator == 0) & (denominator == 0)
+        absent = support == 0 if support is not None else (numerator == 0) & (denominator == 0)
         score = _safe_divide(numerator, denominator, zero_division="nan")
         # Absent classes that had both numerator and denominator as 0 (from weight inf→0 replacement)
         # may still get 0.0 from _safe_divide if both are exactly 0; force nan for those.
@@ -130,10 +127,7 @@ def _generalized_dice_compute(
     # Per-sample aggregate: sum weighted numerators and denominators across present classes,
     # then divide (ratio of sums = true Generalized Dice formula).
     # Zero out absent-class contributions so they don't affect the sums.
-    if support is not None:
-        present = support != 0
-    else:
-        present = ~((numerator == 0) & (denominator == 0))
+    present = support != 0 if support is not None else ~((numerator == 0) & (denominator == 0))
     # Where a class is absent, zero out its numerator/denominator contribution
     numerator_clean = numerator * present.float()
     denominator_clean = denominator * present.float()
@@ -187,7 +181,9 @@ def generalized_dice_score(
         >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> generalized_dice_score(preds, target, num_classes=5, input_format="index")  # doctest: +NORMALIZE_WHITESPACE
         tensor([0.1991, 0.1971, 0.2350, 0.2216])
-        >>> generalized_dice_score(preds, target, num_classes=5, per_class=True, input_format="index")  # doctest: +NORMALIZE_WHITESPACE
+    >>> generalized_dice_score(  # doctest: +NORMALIZE_WHITESPACE
+    ...     preds, target, num_classes=5, per_class=True, input_format="index"
+    ... )
         tensor([[0.1714, 0.2500, 0.1304, 0.2524, 0.2069],
         [0.1837, 0.2162, 0.0962, 0.2692, 0.1895],
         [0.3866, 0.1348, 0.2526, 0.2301, 0.2083],
