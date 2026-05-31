@@ -114,6 +114,7 @@ def _reference_sklearn_multiclass(preds, target, ignore_index=None, zero_divisio
     Handles both single-dim and multi-dim inputs. For multi-dim, flattens
     the extra dimensions along the batch dimension to match torchmetrics
     ``multidim_average='global'`` behavior.
+
     """
     preds_np = _to_numpy(preds)
     target_np = _to_numpy(target)
@@ -133,8 +134,7 @@ def _reference_sklearn_multiclass(preds, target, ignore_index=None, zero_divisio
         preds_flat = preds_flat[mask]
 
     report = sk_classification_report(
-        target_flat, preds_flat, output_dict=True, zero_division=zero_division,
-        labels=list(range(NUM_CLASSES))
+        target_flat, preds_flat, output_dict=True, zero_division=zero_division, labels=list(range(NUM_CLASSES))
     )
     result = {}
     for c in range(NUM_CLASSES):
@@ -179,6 +179,7 @@ def _reference_sklearn_multilabel(preds, target, zero_division=0):
     Expects data already in torchmetrics format: (N, C, ...) where C = num_labels.
     For single-dim: (N, C) -> use sklearn directly.
     For multi-dim: (N, C, D) -> flatten each label's D values independently.
+
     """
     preds_np = _to_numpy(preds)
     target_np = _to_numpy(target)
@@ -192,9 +193,7 @@ def _reference_sklearn_multilabel(preds, target, zero_division=0):
 
     # Single-dim case: (N, C)
     if preds_np.ndim == 2:
-        report = sk_classification_report(
-            target_np, preds_np, output_dict=True, zero_division=zero_division
-        )
+        report = sk_classification_report(target_np, preds_np, output_dict=True, zero_division=zero_division)
         result = {}
         for lbl_idx in range(n_labels):
             key = f"label_{lbl_idx}"
@@ -209,9 +208,7 @@ def _reference_sklearn_multilabel(preds, target, zero_division=0):
             else:
                 result[key] = {"precision": 0.0, "recall": 0.0, "f1_score": 0.0, "support": 0}
 
-        total_support = sum(
-            report[str(lbl_idx)]["support"] for lbl_idx in range(n_labels) if str(lbl_idx) in report
-        )
+        total_support = sum(report[str(lbl_idx)]["support"] for lbl_idx in range(n_labels) if str(lbl_idx) in report)
         result["micro"] = {
             "precision": report.get("micro avg", {}).get("precision", 0.0),
             "recall": report.get("micro avg", {}).get("recall", 0.0),
@@ -246,8 +243,13 @@ def _reference_sklearn_multilabel(preds, target, zero_division=0):
         rec = tp / (tp + fn) if (tp + fn) > 0 else float(zero_division)
         f1 = 2 * tp / (2 * tp + fp + fn) if (2 * tp + fp + fn) > 0 else float(zero_division)
         per_label_stats.append({
-            "precision": prec, "recall": rec, "f1_score": f1, "support": support,
-            "tp": tp, "fp": fp, "fn": fn,
+            "precision": prec,
+            "recall": rec,
+            "f1_score": f1,
+            "support": support,
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
         })
 
     result = {}
@@ -267,13 +269,13 @@ def _reference_sklearn_multilabel(preds, target, zero_division=0):
     micro_prec = tp_sum / (tp_sum + fp_sum) if (tp_sum + fp_sum) > 0 else float(zero_division)
     micro_rec = tp_sum / (tp_sum + fn_sum) if (tp_sum + fn_sum) > 0 else float(zero_division)
     micro_f1 = (
-        2 * tp_sum / (2 * tp_sum + fp_sum + fn_sum)
-        if (2 * tp_sum + fp_sum + fn_sum) > 0
-        else float(zero_division)
+        2 * tp_sum / (2 * tp_sum + fp_sum + fn_sum) if (2 * tp_sum + fp_sum + fn_sum) > 0 else float(zero_division)
     )
 
     result["micro"] = {
-        "precision": micro_prec, "recall": micro_rec, "f1_score": micro_f1,
+        "precision": micro_prec,
+        "recall": micro_rec,
+        "f1_score": micro_f1,
         "support": total_support,
     }
 
@@ -282,7 +284,9 @@ def _reference_sklearn_multilabel(preds, target, zero_division=0):
     macro_f1 = np.mean([s["f1_score"] for s in per_label_stats])
 
     result["macro"] = {
-        "precision": macro_prec, "recall": macro_rec, "f1_score": macro_f1,
+        "precision": macro_prec,
+        "recall": macro_rec,
+        "f1_score": macro_f1,
         "support": total_support,
     }
 
@@ -295,7 +299,9 @@ def _reference_sklearn_multilabel(preds, target, zero_division=0):
         weighted_prec = weighted_rec = weighted_f1 = 0.0
 
     result["weighted"] = {
-        "precision": weighted_prec, "recall": weighted_rec, "f1_score": weighted_f1,
+        "precision": weighted_prec,
+        "recall": weighted_rec,
+        "f1_score": weighted_f1,
         "support": total_support,
     }
 
@@ -323,6 +329,7 @@ def _flatten_multiclass(preds, target):
     - multi_dim logits: preds (B, N, C, D) target (B, N, D)
 
     Flatten B+N dims together to get (N, ...) format for torchmetrics.
+
     """
     is_prob = preds.ndim == target.ndim + 1
     if is_prob:
@@ -340,6 +347,7 @@ def _flatten_multilabel(preds, target):
     torchmetrics multilabel expects: (N, C, ...) where C = num_labels.
     Test input shapes use (B, N, C) convention, so we need to permute
     to (B, C, N) for torchmetrics, then flatten B*N together.
+
     """
     nc = NUM_CLASSES
     if preds.ndim == 3 and preds.shape[-1] == nc:
@@ -395,7 +403,8 @@ class TestBinaryClassificationReport:
         preds_flat, target_flat = _flatten_binary(preds, target)
 
         tm_result = binary_classification_report(
-            preds_flat, target_flat,
+            preds_flat,
+            target_flat,
             threshold=THRESHOLD,
             multidim_average="global",
             ignore_index=ignore_index,
@@ -449,7 +458,9 @@ class TestMulticlassClassificationReport:
         preds_flat, target_flat = _flatten_multiclass(preds, target)
 
         tm_result = multiclass_classification_report(
-            preds_flat, target_flat, num_classes=NUM_CLASSES,
+            preds_flat,
+            target_flat,
+            num_classes=NUM_CLASSES,
             multidim_average="global",
             ignore_index=ignore_index,
             zero_division=zero_division,
@@ -484,9 +495,7 @@ class TestMultilabelClassificationReport:
         )
         tm_result = metric(preds_tm, target_tm)
         # Reference uses torchmetrics-format data
-        ref_result = _reference_sklearn_multilabel(
-            preds_tm, target_tm, zero_division=zero_division
-        )
+        ref_result = _reference_sklearn_multilabel(preds_tm, target_tm, zero_division=zero_division)
         _compare_dicts(tm_result, ref_result)
 
     @pytest.mark.parametrize("zero_division", [0, 1])
@@ -496,15 +505,15 @@ class TestMultilabelClassificationReport:
         preds_tm, target_tm = _flatten_multilabel(preds_orig, target_orig)
 
         tm_result = multilabel_classification_report(
-            preds_tm, target_tm, num_labels=NUM_CLASSES,
+            preds_tm,
+            target_tm,
+            num_labels=NUM_CLASSES,
             threshold=THRESHOLD,
             multidim_average="global",
             ignore_index=None,
             zero_division=zero_division,
         )
-        ref_result = _reference_sklearn_multilabel(
-            preds_tm, target_tm, zero_division=zero_division
-        )
+        ref_result = _reference_sklearn_multilabel(preds_tm, target_tm, zero_division=zero_division)
         _compare_dicts(tm_result, ref_result)
 
 
@@ -664,9 +673,9 @@ def test_multiclass_incremental():
 
     for key in report_batch:
         for metric_key in ["precision", "recall", "f1_score", "support"]:
-            assert torch.allclose(
-                report_batch[key][metric_key], report_incr[key][metric_key], atol=1e-8
-            ), f"Mismatch at {key}.{metric_key}"
+            assert torch.allclose(report_batch[key][metric_key], report_incr[key][metric_key], atol=1e-8), (
+                f"Mismatch at {key}.{metric_key}"
+            )
 
 
 def test_multilabel_incremental():
@@ -684,9 +693,9 @@ def test_multilabel_incremental():
 
     for key in report_batch:
         for metric_key in ["precision", "recall", "f1_score", "support"]:
-            assert torch.allclose(
-                report_batch[key][metric_key], report_incr[key][metric_key], atol=1e-8
-            ), f"Mismatch at {key}.{metric_key}"
+            assert torch.allclose(report_batch[key][metric_key], report_incr[key][metric_key], atol=1e-8), (
+                f"Mismatch at {key}.{metric_key}"
+            )
 
 
 def test_multiclass_sklearn_match():
@@ -732,7 +741,9 @@ def test_multiclass_ignore_index():
     for key in report:
         for metric_key in ["precision", "recall", "f1_score"]:
             assert torch.allclose(
-                report[key][metric_key], report_clean[key][metric_key], atol=1e-4,
+                report[key][metric_key],
+                report_clean[key][metric_key],
+                atol=1e-4,
             ), f"Mismatch at {key}.{metric_key}: {report[key][metric_key]} vs {report_clean[key][metric_key]}"
 
 
@@ -830,9 +841,9 @@ def test_binary_functional_vs_class():
 
     for key in class_result:
         for metric_key in ["precision", "recall", "f1_score", "support"]:
-            assert torch.allclose(
-                class_result[key][metric_key], func_result[key][metric_key], atol=1e-8
-            ), f"Mismatch at {key}.{metric_key}"
+            assert torch.allclose(class_result[key][metric_key], func_result[key][metric_key], atol=1e-8), (
+                f"Mismatch at {key}.{metric_key}"
+            )
 
 
 def test_multiclass_functional_vs_class():
@@ -847,9 +858,9 @@ def test_multiclass_functional_vs_class():
 
     for key in class_result:
         for metric_key in ["precision", "recall", "f1_score", "support"]:
-            assert torch.allclose(
-                class_result[key][metric_key], func_result[key][metric_key], atol=1e-8
-            ), f"Mismatch at {key}.{metric_key}"
+            assert torch.allclose(class_result[key][metric_key], func_result[key][metric_key], atol=1e-8), (
+                f"Mismatch at {key}.{metric_key}"
+            )
 
 
 def test_multilabel_functional_vs_class():
@@ -864,9 +875,9 @@ def test_multilabel_functional_vs_class():
 
     for key in class_result:
         for metric_key in ["precision", "recall", "f1_score", "support"]:
-            assert torch.allclose(
-                class_result[key][metric_key], func_result[key][metric_key], atol=1e-8
-            ), f"Mismatch at {key}.{metric_key}"
+            assert torch.allclose(class_result[key][metric_key], func_result[key][metric_key], atol=1e-8), (
+                f"Mismatch at {key}.{metric_key}"
+            )
 
 
 def test_binary_multidim_logits():
@@ -909,6 +920,6 @@ def test_binary_incremental():
 
     for key in report_batch:
         for metric_key in ["precision", "recall", "f1_score", "support"]:
-            assert torch.allclose(
-                report_batch[key][metric_key], report_incr[key][metric_key], atol=1e-8
-            ), f"Mismatch at {key}.{metric_key}"
+            assert torch.allclose(report_batch[key][metric_key], report_incr[key][metric_key], atol=1e-8), (
+                f"Mismatch at {key}.{metric_key}"
+            )

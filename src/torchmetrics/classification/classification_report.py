@@ -150,13 +150,11 @@ class BinaryClassificationReport(BinaryStatScores):
         return {
             "0": _extract(per_class, 0),
             "1": _extract(per_class, 1),
-        "macro": dict(macro_avg),
-        "weighted": dict(weighted_avg),
+            "macro": dict(macro_avg),
+            "weighted": dict(weighted_avg),
         }
 
-    def plot(
-        self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None
-    ) -> _PLOT_OUT_TYPE:
+    def plot(self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot the classification report as a table.
 
         Args:
@@ -174,12 +172,9 @@ class BinaryClassificationReport(BinaryStatScores):
         cell_text = []
         for row_key in row_labels:
             row_data = val[row_key]
-            cell_text.append(
-                [
-                    f"{row_data[c].item():.4f}" if c != "support" else f"{row_data[c].item():.0f}"
-                    for c in col_labels
-                ]
-            )
+            cell_text.append([
+                f"{row_data[c].item():.4f}" if c != "support" else f"{row_data[c].item():.0f}" for c in col_labels
+            ])
 
         table = ax.table(cellText=cell_text, rowLabels=row_labels, colLabels=col_labels, loc="center")
         table.auto_set_font_size(False)
@@ -305,9 +300,7 @@ class MulticlassClassificationReport(MulticlassStatScores):
 
         return result
 
-    def plot(
-        self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None
-    ) -> _PLOT_OUT_TYPE:
+    def plot(self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot the classification report as a table.
 
         Args:
@@ -325,12 +318,9 @@ class MulticlassClassificationReport(MulticlassStatScores):
         cell_text = []
         for row_key in row_labels:
             row_data = val[row_key]
-            cell_text.append(
-                [
-                    f"{row_data[c].item():.4f}" if c != "support" else f"{row_data[c].item():.0f}"
-                    for c in col_labels
-                ]
-            )
+            cell_text.append([
+                f"{row_data[c].item():.4f}" if c != "support" else f"{row_data[c].item():.0f}" for c in col_labels
+            ])
 
         table = ax.table(cellText=cell_text, rowLabels=row_labels, colLabels=col_labels, loc="center")
         table.auto_set_font_size(False)
@@ -443,9 +433,7 @@ class MultilabelClassificationReport(MultilabelStatScores):
 
         return result
 
-    def plot(
-        self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None
-    ) -> _PLOT_OUT_TYPE:
+    def plot(self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot the classification report as a table.
 
         Args:
@@ -463,12 +451,9 @@ class MultilabelClassificationReport(MultilabelStatScores):
         cell_text = []
         for row_key in row_labels:
             row_data = val[row_key]
-            cell_text.append(
-                [
-                    f"{row_data[c].item():.4f}" if c != "support" else f"{row_data[c].item():.0f}"
-                    for c in col_labels
-                ]
-            )
+            cell_text.append([
+                f"{row_data[c].item():.4f}" if c != "support" else f"{row_data[c].item():.0f}" for c in col_labels
+            ])
 
         table = ax.table(cellText=cell_text, rowLabels=row_labels, colLabels=col_labels, loc="center")
         table.auto_set_font_size(False)
@@ -608,8 +593,6 @@ class ClassificationReport(_ClassificationTaskWrapper):
         """Reset metric state."""
         self._metric.reset()
 
-    def plot(
-        self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None
-    ) -> _PLOT_OUT_TYPE:
+    def plot(self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot the classification report."""
         return self._metric.plot(val=val, ax=ax)
