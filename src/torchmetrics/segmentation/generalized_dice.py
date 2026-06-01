@@ -63,9 +63,9 @@ class GeneralizedDiceScore(Metric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``gds`` (:class:`~torch.Tensor`): The generalized dice score. If ``per_class`` is set to ``True``, the output
-      will be a tensor of shape ``(C,)`` with the generalized dice score for each class. If ``per_class`` is
-      set to ``False``, the output will be a scalar tensor.
+ - ``gds`` (:class:`~torch.Tensor`): The generalized dice score. If ``per_class`` is set to ``True``, the output
+ will be a tensor of shape ``(C,)`` with the generalized dice score for each class (``nan`` for absent classes).
+ If ``per_class`` is set to ``False``, the output will be a scalar tensor.
 
     Args:
         num_classes: The number of classes in the segmentation problem.
@@ -162,9 +162,9 @@ class GeneralizedDiceScore(Metric):
             support=dim_zero_cat(self.support),
         )
         if self.per_class:
-            # result shape: (N, C) — average across samples, keeping NaN for fully absent classes
+            # result shape: (N, C) - average across samples, keeping NaN for fully absent classes
             return result.nanmean(dim=0)
-        # result shape: (N,) — average across samples
+        # result shape: (N,) - average across samples
         return result.nanmean()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:

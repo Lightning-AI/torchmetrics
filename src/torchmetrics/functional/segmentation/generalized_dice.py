@@ -55,10 +55,10 @@ def _generalized_dice_update(
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Update the state with the current prediction and target.
 
-    Returns:
-        numerator: Shape ``(N, C)`` — weighted intersection terms.
-        denominator: Shape ``(N, C)`` — weighted cardinality terms.
-        support: Shape ``(N, C)`` — number of voxels per class in the target (used to detect absent classes).
+ Returns:
+ numerator: Weighted intersection terms, shape ``(N, C)``.
+ denominator: Weighted cardinality terms, shape ``(N, C)``.
+ support: Number of voxels per class in the target, shape ``(N, C)``. Used to detect absent classes.
 
     """
     preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
