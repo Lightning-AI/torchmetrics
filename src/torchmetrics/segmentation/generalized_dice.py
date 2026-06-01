@@ -63,9 +63,9 @@ class GeneralizedDiceScore(Metric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
- - ``gds`` (:class:`~torch.Tensor`): The generalized dice score. If ``per_class`` is set to ``True``, the output
- will be a tensor of shape ``(C,)`` with the generalized dice score for each class (``nan`` for absent classes).
- If ``per_class`` is set to ``False``, the output will be a scalar tensor.
+    - ``gds`` (:class:`~torch.Tensor`): The generalized dice score. If ``per_class`` is set to ``True``, the output
+    will be a tensor of shape ``(C,)`` with the generalized dice score for each class (``nan`` for absent classes).
+    If ``per_class`` is set to ``False``, the output will be a scalar tensor.
 
     Args:
         num_classes: The number of classes in the segmentation problem.
