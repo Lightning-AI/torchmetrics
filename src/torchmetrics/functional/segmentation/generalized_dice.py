@@ -120,7 +120,7 @@ def _generalized_dice_compute(
         # Per-sample per-class scores: nan for absent classes (zero volume)
         absent = support == 0 if support is not None else (numerator == 0) & (denominator == 0)
         score = _safe_divide(numerator, denominator, zero_division="nan")
-        # Absent classes that had both numerator and denominator as 0 (from weight inf→0 replacement)
+        # Absent classes that had both numerator and denominator as 0 (from weight inf-to-0 replacement)
         # may still get 0.0 from _safe_divide if both are exactly 0; force nan for those.
         score[absent] = float("nan")
         return score
