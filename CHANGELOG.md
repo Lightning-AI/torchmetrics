@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed `top_k` validation in multiclass classification metrics to reject negative integers and non-integer values ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
 
 
 ---
