@@ -287,9 +287,9 @@ class RetrievalPrecisionRecallCurve(Metric):
         """
         curve = curve or self.compute()
         return plot_curve(
-            curve,
+            (curve[1], curve[0], curve[2]),
             ax=ax,
-            label_names=("Precision", "Recall"),
+            label_names=("Recall", "Precision"),
             name=self.__class__.__name__,
         )
 
