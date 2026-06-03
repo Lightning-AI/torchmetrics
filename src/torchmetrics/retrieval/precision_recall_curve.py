@@ -289,7 +289,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         return plot_curve(
             curve,
             ax=ax,
-            label_names=("False positive rate", "True positive rate"),
+            label_names=("Precision", "Recall"),
             name=self.__class__.__name__,
         )
 
