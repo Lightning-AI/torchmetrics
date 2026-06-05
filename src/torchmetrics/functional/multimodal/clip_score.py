@@ -130,7 +130,8 @@ def _get_features(
     if modality == "image":
         image_data = [i for i in data if isinstance(i, Tensor)]  # Add type checking for images
         processed = processor(images=[i.cpu() for i in image_data], return_tensors="pt", padding=True)
-        return model.get_image_features(processed["pixel_values"].to(device))
+        features = model.get_image_features(processed["pixel_values"].to(device))
+        return features.pooler_output if hasattr(features, 'pooler_output') else features
     if modality == "text":
         processed = processor(text=data, return_tensors="pt", padding=True)
         if hasattr(model.config, "text_config") and hasattr(model.config.text_config, "max_position_embeddings"):
@@ -144,7 +145,8 @@ def _get_features(
                 )
                 processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
                 processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
-        return model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
+        features = model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
+        return features.pooler_output if hasattr(features, 'pooler_output') else features
     raise ValueError(f"invalid modality {modality}")
 
 

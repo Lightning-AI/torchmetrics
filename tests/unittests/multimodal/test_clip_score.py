@@ -23,6 +23,7 @@ from torch import Tensor
 from torchmetrics.functional.multimodal.clip_score import (
     _detect_modality,
     _get_clip_model_and_processor,
+    _get_features,
     _process_image_data,
     _process_text_data,
     clip_score,
@@ -307,3 +308,40 @@ def test_process_text_data(texts, expected_len):
     assert isinstance(processed, list)
     assert len(processed) == expected_len
     assert all(isinstance(text, str) for text in processed)
+
+
+def test_clip_score_handles_dataclass_output():
+    """Test that _get_features handles BaseModelOutputWithPooling from transformers >= 5.0."""
+    from unittest.mock import MagicMock
+
+    from transformers.modeling_outputs import BaseModelOutputWithPooling
+
+    pooled = torch.randn(1, 512)
+    dataclass_output = BaseModelOutputWithPooling(
+        last_hidden_state=torch.randn(1, 10, 512),
+        pooler_output=pooled,
+    )
+
+    model = MagicMock()
+    model.get_image_features.return_value = dataclass_output
+    model.get_text_features.return_value = dataclass_output
+    model.config = MagicMock(spec=[])  # no text_config
+
+    processor = MagicMock()
+    processor.return_value = {
+        "pixel_values": torch.randn(2, 3, 64, 64),
+        "input_ids": torch.randint(100, (2, 5)),
+        "attention_mask": torch.ones(2, 5),
+    }
+
+    device = torch.device("cpu")
+    images = list(_random_input.images[0])
+    texts = captions[0:2]
+
+    image_features = _get_features(images, "image", device, model, processor)
+    text_features = _get_features(texts, "text", device, model, processor)
+
+    assert isinstance(image_features, Tensor)
+    assert isinstance(text_features, Tensor)
+    assert torch.equal(image_features, pooled)
+    assert torch.equal(text_features, pooled)
