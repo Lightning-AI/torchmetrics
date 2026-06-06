@@ -130,8 +130,9 @@ def _get_features(
     if modality == "image":
         image_data = [i for i in data if isinstance(i, Tensor)]  # Add type checking for images
         processed = processor(images=[i.cpu() for i in image_data], return_tensors="pt", padding=True)
-        features = model.get_image_features(processed["pixel_values"].to(device))
-        return features.pooler_output if hasattr(features, "pooler_output") else features
+features = model.get_image_features(processed["pixel_values"].to(device))
+pooled = getattr(features, "pooler_output", None)
+return pooled if pooled is not None else features
     if modality == "text":
         processed = processor(text=data, return_tensors="pt", padding=True)
         if hasattr(model.config, "text_config") and hasattr(model.config.text_config, "max_position_embeddings"):
