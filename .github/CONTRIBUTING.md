@@ -57,7 +57,7 @@ New metrics follow a consistent structure across the codebase:
    `src/torchmetrics/functional/<domain>/__init__.py`.
 5. **Optional dependencies** — if the metric requires an optional package, gate it with the
    `RequirementCache` flags from `torchmetrics.utilities.imports` and add a module-level
-   `__doctest_skip__` guard so doctests are skipped when the dependency is absent.
+   `__doctest_requires__` mapping so doctests are skipped when the dependency is absent.
 6. **Tests** in `tests/unittests/<domain>/test_<metric>.py` using `MetricTester` as the base class.
 
 ### Test cases:
@@ -75,7 +75,7 @@ ______________________________________________________________________
 To build the documentation locally, simply execute the following commands from project root (only for Unix):
 
 - `make clean` cleans repo from temp/generated files
-- `make docs` builds documentation under _docs/build/html_ (open `docs/build/html/index.html` in a browser)
+- `make docs` builds documentation under `docs/build/html` (open `docs/build/html/index.html` in a browser)
 - `make test` runs all project's tests with coverage
 
 By default all make commands will use `python`/`pip` but if you are using [uv](https://docs.astral.sh/uv/)
@@ -158,8 +158,8 @@ You can run the full test suite via:
 ```bash
 make test
 # or natively (two separate steps matching the src layout):
-cd src && python -m pytest torchmetrics          # doctests inside the package
-cd tests && python -m pytest unittests -v        # unit tests
+(cd src && python -m pytest torchmetrics)          # doctests inside the package
+(cd tests && python -m pytest unittests -v)        # unit tests
 
 # run tests for a specific domain only
 pytest tests/unittests/classification/ -v
