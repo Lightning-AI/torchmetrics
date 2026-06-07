@@ -181,9 +181,9 @@ def generalized_dice_score(
         >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> generalized_dice_score(preds, target, num_classes=5, input_format="index")  # doctest: +NORMALIZE_WHITESPACE
         tensor([0.1991, 0.1971, 0.2350, 0.2216])
-    >>> generalized_dice_score(  # doctest: +NORMALIZE_WHITESPACE
-    ...     preds, target, num_classes=5, per_class=True, input_format="index"
-    ... )
+        >>> generalized_dice_score(  # doctest: +NORMALIZE_WHITESPACE
+        ...     preds, target, num_classes=5, per_class=True, input_format="index"
+        ... )
         tensor([[0.1714, 0.2500, 0.1304, 0.2524, 0.2069],
         [0.1837, 0.2162, 0.0962, 0.2692, 0.1895],
         [0.3866, 0.1348, 0.2526, 0.2301, 0.2083],
