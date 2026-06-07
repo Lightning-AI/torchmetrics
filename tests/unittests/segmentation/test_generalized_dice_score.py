@@ -257,20 +257,32 @@ class TestGeneralizedDiceScoreAbsentClasses:
         assert torch.isnan(result[2, 2])
 
     def test_functional_fp_on_absent_per_class_true(self):
-        """FP-on-absent class should score 0.0 (not NaN) in per_class=True mode.
+        """FP-on-absent class should score 0.0 (not NaN) when the class appears in another sample.
 
         Regression test for F2: absent = support == 0 silently set FP-on-absent to NaN.
 
+        The FP penalty requires the class to appear in at least one sample's target so that
+        w_max > 0. With two samples where sample 1 has class 1 present, sample 0's FP on
+        class 1 gets weight w_max > 0 and scores 0.0 instead of NaN.
+
         """
-        preds = torch.zeros(1, 2, 4, 4, dtype=torch.int8)
-        target = torch.zeros(1, 2, 4, 4, dtype=torch.int8)
-        target[0, 0] = 1  # class 0 present in target
-        preds[0, 0] = 1  # class 0 perfectly predicted
-        preds[0, 1, :2] = 1  # class 1: FP (8 pixels predicted, absent from target)
+        preds = torch.zeros(2, 2, 4, 4, dtype=torch.int8)
+        target = torch.zeros(2, 2, 4, 4, dtype=torch.int8)
+        # Sample 0: class 0 perfect, class 1 FP-on-absent
+        target[0, 0] = 1
+        preds[0, 0] = 1
+        preds[0, 1, :2] = 1  # class 1: 8 FP pixels
+        # Sample 1: class 0 perfect, class 1 present and perfect (w_max for class 1 > 0)
+        target[1, 0] = 1
+        preds[1, 0] = 1
+        target[1, 1] = 1
+        preds[1, 1] = 1
         result = generalized_dice_score(preds, target, num_classes=2, per_class=True)
         assert result[0, 0] == 1.0
-        assert not torch.isnan(result[0, 1]), "FP-on-absent must not be NaN"
+        assert not torch.isnan(result[0, 1]), "FP-on-absent must not be NaN when class appears in another sample"
         assert result[0, 1] == 0.0, "FP-on-absent should score 0.0"
+        assert result[1, 0] == 1.0
+        assert result[1, 1] == 1.0
 
     def test_functional_fp_on_absent_per_class_false(self):
         """FP-on-absent class must lower the aggregate score below 1.0.
@@ -312,35 +324,48 @@ class TestGeneralizedDiceScoreAbsentClasses:
         assert not torch.isnan(result[0, 1]), "FP-on-absent must not be NaN"
 
     def test_class_metric_fp_on_absent(self):
-        """GeneralizedDiceScore module metric should average FP-on-absent as 0.0, not NaN.
+        """Module metric: FP-on-absent averages to 0.0 (not NaN) when class appears in another sample.
 
         Regression test for F4: module compute() inherits per-sample NaN from _generalized_dice_compute.
+        Uses 2 samples so that w_max > 0 for the FP class (sample 1 has class 1 present).
 
         """
-        preds = torch.zeros(1, 2, 4, 4, dtype=torch.int8)
-        target = torch.zeros(1, 2, 4, 4, dtype=torch.int8)
+        preds = torch.zeros(2, 2, 4, 4, dtype=torch.int8)
+        target = torch.zeros(2, 2, 4, 4, dtype=torch.int8)
         target[0, 0] = 1
         preds[0, 0] = 1
-        preds[0, 1, :2] = 1  # class 1: FP on 8 pixels, absent from target
+        preds[0, 1, :2] = 1  # sample 0: class 1 FP
+        target[1, 0] = 1
+        preds[1, 0] = 1
+        target[1, 1] = 1
+        preds[1, 1] = 1  # sample 1: class 1 present and perfect (w_max for class 1 > 0)
         gds = GeneralizedDiceScore(num_classes=2, per_class=True)
         result = gds(preds, target)
         assert result[0] == 1.0
         assert not torch.isnan(result[1]), "FP-on-absent class must not produce NaN in module compute()"
-        assert result[1] == 0.0
+        # class 1: [0.0 (FP), 1.0 (present)] -> nanmean = 0.5
+        assert torch.isclose(result[1], torch.tensor(0.5), atol=1e-4)
 
     def test_functional_fp_on_absent_include_background_false(self):
         """FP-on-absent handling is consistent when include_background=False.
 
         Regression test for F6e: combined include_background=False x absent-class path.
+        Uses 2 samples so that w_max > 0 for the FP class.
 
         """
-        preds = torch.zeros(1, 3, 4, 4, dtype=torch.int8)
-        target = torch.zeros(1, 3, 4, 4, dtype=torch.int8)
-        target[0, 1] = 1  # class 1 (non-background) present in target
-        preds[0, 1] = 1  # class 1 perfectly predicted
-        preds[0, 2, :2] = 1  # class 2: FP (absent from target)
+        preds = torch.zeros(2, 3, 4, 4, dtype=torch.int8)
+        target = torch.zeros(2, 3, 4, 4, dtype=torch.int8)
+        # Sample 0: class 1 perfect, class 2 FP-on-absent
+        target[0, 1] = 1
+        preds[0, 1] = 1
+        preds[0, 2, :2] = 1  # class 2 FP
+        # Sample 1: class 1 and class 2 both present and perfect (w_max for class 2 > 0)
+        target[1, 1] = 1
+        preds[1, 1] = 1
+        target[1, 2] = 1
+        preds[1, 2] = 1
         result = generalized_dice_score(preds, target, num_classes=3, per_class=True, include_background=False)
-        # With include_background=False, class 0 (background) is excluded; result has C-1=2 columns
+        # With include_background=False: class 0 excluded; columns map to [class 1, class 2]
         assert result.shape[1] == 2, "include_background=False should exclude background class"
         assert result[0, 0] == 1.0, "class 1 (non-background, present) should score 1.0"
         assert result[0, 1] == 0.0, "class 2 (non-background, FP-on-absent) should score 0.0"
