@@ -18,7 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- `GeneralizedDiceScore.compute()` with ``per_class=True`` now returns ``nan`` for classes absent
+  from all samples (both prediction and target have zero volume) instead of ``0.0``; use
+  ``torch.nanmean()`` or ``~torch.isnan()`` to aggregate or filter. Classes with false positive
+  predictions (predicted but absent from target) still receive a ``0.0`` penalty score and are not
+  excluded ([#3399](https://github.com/Lightning-AI/torchmetrics/pull/3399))
 
 
 ### Deprecated

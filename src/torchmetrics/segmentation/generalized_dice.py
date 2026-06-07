@@ -64,8 +64,20 @@ class GeneralizedDiceScore(Metric):
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``gds`` (:class:`~torch.Tensor`): The generalized dice score. If ``per_class`` is set to ``True``, the output
-    will be a tensor of shape ``(C,)`` with the generalized dice score for each class (``nan`` for absent classes).
-    If ``per_class`` is set to ``False``, the output will be a scalar tensor.
+      will be a tensor of shape ``(C,)`` with the generalized dice score for each class (``nan`` for classes absent
+      from all samples). If ``per_class`` is set to ``False``, the output will be a scalar tensor.
+
+    .. note::
+        When ``per_class=True``, :meth:`compute` returns ``nan`` for classes absent from all samples (zero volume
+        in both prediction and target). Expressions like ``score[i] > threshold`` or ``.mean()`` will silently
+        propagate those ``nan`` values; use ``torch.nanmean()`` or ``~torch.isnan()`` to aggregate or filter.
+        Classes with false positive predictions (predicted but absent from target) return ``0.0``, not ``nan``.
+
+    .. note::
+        This metric stores per-sample numerator, denominator, and support tensors of shape ``(N, C)`` in memory.
+        Memory scales as ``O(N * C)`` per rank. For large datasets or many classes, pass
+        ``compute_on_cpu=True`` to keep accumulated state on CPU and only move to GPU for the final
+        :meth:`compute` call.
 
     Args:
         num_classes: The number of classes in the segmentation problem.
@@ -91,8 +103,9 @@ class GeneralizedDiceScore(Metric):
             If ``input_format`` is not one of ``"one-hot"``, ``"index"`` or ``"mixed"``
 
     Example:
-        >>> from torch import randint
+        >>> from torch import manual_seed, randint
         >>> from torchmetrics.segmentation import GeneralizedDiceScore
+        >>> _ = manual_seed(42)
         >>> gds = GeneralizedDiceScore(num_classes=3)
         >>> preds = randint(0, 2, (10, 3, 128, 128))
         >>> target = randint(0, 2, (10, 3, 128, 128))
