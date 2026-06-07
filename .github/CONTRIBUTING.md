@@ -40,11 +40,29 @@ help you or finish it with you :\]_
 
 4. Add/update the relevant tests!
 
-- [This PR](https://github.com/Lightning-AI/torchmetrics/pull/98) is a good example for adding a new metric
+- See the [implementing a metric guide](https://lightning.ai/docs/torchmetrics/stable/pages/implement.html) for a step-by-step walkthrough of adding a new metric
+
+#### Metric implementation checklist
+
+New metrics follow a consistent structure across the codebase:
+
+1. **Functional helpers** in `src/torchmetrics/functional/<domain>/<metric>.py` — pure functions named
+   `_<metric>_update(...)` and `_<metric>_compute(...)` / `_<metric>_reduce(...)`.
+2. **Module class** in `src/torchmetrics/<domain>/<metric>.py` — subclass `Metric`, register state via
+   `self.add_state(...)` in `__init__`, delegate to the functional helpers in `update()` and `compute()`.
+3. **Classification metrics** exist as three task-specific variants (`BinaryXxx`, `MulticlassXxx`,
+   `MultilabelXxx`) plus a public wrapper class (e.g. `Accuracy`) that accepts a `task` argument and
+   dispatches to the right variant.
+4. **Exports** — add to both `src/torchmetrics/<domain>/__init__.py` and
+   `src/torchmetrics/functional/<domain>/__init__.py`.
+5. **Optional dependencies** — if the metric requires an optional package, gate it with the
+   `RequirementCache` flags from `torchmetrics.utilities.imports` and add a module-level
+   `__doctest_skip__` guard so doctests are skipped when the dependency is absent.
+6. **Tests** in `tests/unittests/<domain>/test_<metric>.py` using `MetricTester` as the base class.
 
 ### Test cases:
 
-Want to keep Torchmetrics healthy? Love seeing those green tests? So do we! How to we keep it that way?
+Want to keep Torchmetrics healthy? Love seeing those green tests? So do we! How do we keep it that way?
 We write tests! We value tests contribution even more than new features. One of the core values of torchmetrics
 is that our users can trust our metric implementation. We can only guarantee this if our metrics are well tested.
 
@@ -57,7 +75,7 @@ ______________________________________________________________________
 To build the documentation locally, simply execute the following commands from project root (only for Unix):
 
 - `make clean` cleans repo from temp/generated files
-- `make docs` builds documentation under _docs/build/html_
+- `make docs` builds documentation under _docs/build/html_ (open `docs/build/html/index.html` in a browser)
 - `make test` runs all project's tests with coverage
 
 By default all make commands will use `python`/`pip` but if you are using [uv](https://docs.astral.sh/uv/)
@@ -88,17 +106,14 @@ Moreover, we set Google style to follow with type convention.
 See following short example of a sample function taking one position string and optional
 
 ```python
-from typing import Optional
-
-
-def my_func(param_a: int, param_b: Optional[float] = None) -> str:
+def my_func(param_a: int, param_b: float | None = None) -> str:
     """Sample function.
 
     Args:
         param_a: first parameter
         param_b: second parameter
 
-    Return:
+    Returns:
         sum of both numbers
 
     Example:
@@ -112,44 +127,52 @@ def my_func(param_a: int, param_b: Optional[float] = None) -> str:
     return str(param_a + p)
 ```
 
-When updating the docs make sure to build them first locally and visually inspect the html files (in the browser) for
-formatting errors. In certain cases, a missing blank line or a wrong indent can lead to a broken layout.
-Run these commands
-
-```bash
-make docs
-```
-
-and open `docs/build/html/index.html` in your browser.
+When updating the docs make sure to build them first locally and visually inspect the HTML files in a browser for
+formatting errors. A missing blank line or a wrong indent can break the layout. Run `make docs` and open
+`docs/build/html/index.html`.
 
 Notes:
 
 - You need to have LaTeX installed for rendering math equations. You can for example install TeXLive by doing one of the following:
   - on Ubuntu (Linux) run `apt-get install texlive` or otherwise follow the instructions on the TeXLive website
   - use the [RTD docker image](https://hub.docker.com/r/readthedocs/build)
-- with PL used class meta you need to use python 3.7 or higher
+- Python 3.10 or higher is required
 
 When you send a PR the continuous integration will run tests and build the docs.
 
 ### Testing
 
 **Local:** Testing your work locally will help you speed up the process since it allows you to focus on particular (failing) test-cases.
-To setup a local development environment, install both local and test dependencies:
+To setup a local development environment, install the package in editable mode with all development dependencies:
 
 ```bash
-python -m pip install -r requirements/_tests.txt
-python -m pip install pre-commit
+pip install -e . -r requirements/_devel.txt
+# or with uv:
+make USE_UV=1 env
 ```
 
-You can run the full test-case in your terminal via this make script:
+The source lives in `src/torchmetrics/` and unit tests in `tests/unittests/`, mirroring the domain structure.
+
+You can run the full test suite via:
 
 ```bash
 make test
-# or natively
-python -m pytest torchmetrics tests
+# or natively (two separate steps matching the src layout):
+cd src && python -m pytest torchmetrics          # doctests inside the package
+cd tests && python -m pytest unittests -v        # unit tests
+
+# run tests for a specific domain only
+pytest tests/unittests/classification/ -v
+
+# run DDP tests (requires process pool)
+USE_PYTEST_POOL="1" pytest -m DDP tests/
 ```
 
-Note: if your computer does not have multi-GPU nor TPU these tests are skipped.
+Note: if your computer does not have multi-GPU nor TPU, DDP and GPU tests are skipped automatically.
+
+All metric test classes use `MetricTester` from `tests/unittests/_helpers/testers.py`, which runs each metric
+in both single-process and DDP modes and compares results against a reference implementation (usually scikit-learn).
+Use it as the base for any new metric test.
 
 **GitHub Actions:** For convenience, you can also use your own GHActions building which will be triggered with each commit.
 This is useful if you do not test against all required dependency versions.
