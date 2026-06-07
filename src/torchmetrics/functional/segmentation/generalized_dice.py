@@ -56,9 +56,11 @@ def _generalized_dice_update(
     """Update the state with the current prediction and target.
 
     Returns:
-    numerator: Weighted intersection terms, shape ``(N, C)``.
-    denominator: Weighted cardinality terms, shape ``(N, C)``.
-    support: Number of voxels per class in the target, shape ``(N, C)``. Used to detect absent classes.
+        Tuple of (numerator, denominator, support):
+
+        - numerator: Weighted intersection terms, shape ``(N, C)``.
+        - denominator: Weighted cardinality terms, shape ``(N, C)``.
+        - support: Number of voxels per class in the target, shape ``(N, C)``.
 
     """
     preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
@@ -114,8 +116,10 @@ def _generalized_dice_compute(
             ``(numerator == 0) & (denominator == 0)`` directly.
 
     Returns:
-        - ``per_class=True``: ``(N, C)`` tensor with ``nan`` for classes absent from both pred and target.
-        - ``per_class=False``: ``(N,)`` tensor with ``nan`` only when ALL classes are absent.
+        Score tensor. Shape and values depend on ``per_class``:
+
+        - ``per_class=True``: shape ``(N, C)`` with ``nan`` for classes absent from both pred and target.
+        - ``per_class=False``: shape ``(N,)`` with ``nan`` only when ALL classes are absent in a sample.
 
     """
     if per_class:
