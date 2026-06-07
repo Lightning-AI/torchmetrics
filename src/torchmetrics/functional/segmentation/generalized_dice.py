@@ -100,37 +100,36 @@ def _generalized_dice_compute(
 ) -> Tensor:
     """Compute the generalized dice score.
 
-    When ``support`` is provided, classes with zero volume (absent from both prediction and target) in a
+    Classes absent from both prediction and target (``numerator == 0`` and ``denominator == 0``) in a
     given sample produce ``nan`` instead of ``0.0``. This ensures that absent classes are excluded from
-    averages (via ``nanmean``) rather than unfairly dragging scores down.
+    averages (via ``nanmean``) rather than unfairly dragging scores down. Classes with false positive
+    predictions (present in prediction but absent from target) retain their ``0.0`` penalty score.
 
     Args:
         numerator: Weighted intersection, shape ``(N, C)``.
         denominator: Weighted cardinality, shape ``(N, C)``.
         per_class: If ``True``, return per-sample per-class scores ``(N, C)``.
             If ``False``, return per-sample aggregate scores ``(N,)``.
-        support: Target class volumes, shape ``(N, C)``. Used to identify absent classes.
+        support: Unused. Retained for API compatibility; absent-class detection uses
+            ``(numerator == 0) & (denominator == 0)`` directly.
 
     Returns:
-        - ``per_class=True``: ``(N, C)`` tensor with ``nan`` for absent classes.
+        - ``per_class=True``: ``(N, C)`` tensor with ``nan`` for classes absent from both pred and target.
         - ``per_class=False``: ``(N,)`` tensor with ``nan`` only when ALL classes are absent.
 
     """
     if per_class:
-        # Per-sample per-class scores: nan for absent classes (zero volume)
-        absent = support == 0 if support is not None else (numerator == 0) & (denominator == 0)
+        absent = (numerator == 0) & (denominator == 0)
         score = _safe_divide(numerator, denominator, zero_division="nan")
-        # Absent classes that had both numerator and denominator as 0 (from weight inf-to-0 replacement)
-        # may still get 0.0 from _safe_divide if both are exactly 0; force nan for those.
+        # Classes absent from both prediction and target: force nan so nanmean excludes them.
         score[absent] = float("nan")
         return score
-    # Per-sample aggregate: sum weighted numerators and denominators across present classes,
-    # then divide (ratio of sums = true Generalized Dice formula).
-    # Zero out absent-class contributions so they don't affect the sums.
-    present = support != 0 if support is not None else ~((numerator == 0) & (denominator == 0))
-    # Where a class is absent, zero out its numerator/denominator contribution
-    numerator_clean = numerator * present.float()
-    denominator_clean = denominator * present.float()
+    # Per-sample aggregate: include FP-on-absent classes in the denominator (they carry a penalty),
+    # but exclude classes absent from both pred and target.
+    present = (numerator != 0) | (denominator != 0)
+    present_f = present.float()
+    numerator_clean = numerator * present_f
+    denominator_clean = denominator * present_f
     return _safe_divide(numerator_clean.sum(dim=1), denominator_clean.sum(dim=1), zero_division="nan")
 
 
