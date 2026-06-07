@@ -255,3 +255,93 @@ class TestGeneralizedDiceScoreAbsentClasses:
         assert torch.isnan(result[0, 2])
         assert torch.isnan(result[2, 0])
         assert torch.isnan(result[2, 2])
+
+    def test_functional_fp_on_absent_per_class_true(self):
+        """FP-on-absent class should score 0.0 (not NaN) in per_class=True mode.
+
+        Regression test for F2: absent = support == 0 silently set FP-on-absent to NaN.
+
+        """
+        preds = torch.zeros(1, 2, 4, 4, dtype=torch.int8)
+        target = torch.zeros(1, 2, 4, 4, dtype=torch.int8)
+        target[0, 0] = 1  # class 0 present in target
+        preds[0, 0] = 1  # class 0 perfectly predicted
+        preds[0, 1, :2] = 1  # class 1: FP (8 pixels predicted, absent from target)
+        result = generalized_dice_score(preds, target, num_classes=2, per_class=True)
+        assert result[0, 0] == 1.0
+        assert not torch.isnan(result[0, 1]), "FP-on-absent must not be NaN"
+        assert result[0, 1] == 0.0, "FP-on-absent should score 0.0"
+
+    def test_functional_fp_on_absent_per_class_false(self):
+        """FP-on-absent class must lower the aggregate score below 1.0.
+
+        Regression test for F3: present mask dropped FP-on-absent denominator, inflating
+        score to 1.0. With linear weights: (2N)/(2N+M) where N=M=1 -> 2/3 ~= 0.667.
+
+        """
+        preds = torch.zeros(1, 2, 1, 1, dtype=torch.int8)
+        target = torch.zeros(1, 2, 1, 1, dtype=torch.int8)
+        target[0, 0] = 1  # class 0: 1 pixel in target
+        preds[0, 0] = 1  # class 0: correctly predicted
+        preds[0, 1] = 1  # class 1: 1 FP pixel, absent from target
+        result = generalized_dice_score(preds, target, num_classes=2, per_class=False, weight_type="linear")
+        expected = torch.tensor(2.0 / 3.0)
+        assert torch.isclose(result[0], expected, atol=1e-4), f"expected {expected:.4f}, got {result[0]:.4f}"
+        assert result[0] < 1.0, "FP predictions must lower the aggregate score below 1.0"
+
+    def test_functional_nontrivial_score_with_fp_on_absent(self):
+        """Per_class=True: non-trivial present-class score coexists with FP-on-absent 0.0.
+
+        Verifies that a partially-correct present class is not contaminated by NaN from the adjacent FP-on-absent class
+        (F2 regression).
+
+        """
+        preds = torch.zeros(1, 2, 4, 1, dtype=torch.int8)
+        target = torch.zeros(1, 2, 4, 1, dtype=torch.int8)
+        target[0, 0, :4] = 1  # class 0: 4 pixels in target
+        preds[0, 0, :3] = 1  # class 0: 3/4 correct (partial prediction)
+        preds[0, 1, :2] = 1  # class 1: 2 FP pixels, absent from target
+        result = generalized_dice_score(preds, target, num_classes=2, per_class=True, weight_type="linear")
+        # class 0: intersection=3, target_sum=4, pred_sum=3 -> 2*3/(4+3) = 6/7
+        expected_c0 = torch.tensor(6.0 / 7.0)
+        assert torch.isclose(result[0, 0], expected_c0, atol=1e-4), (
+            f"expected {expected_c0:.4f}, got {result[0, 0]:.4f}"
+        )
+        assert not torch.isnan(result[0, 0]), "partially-correct class must not be NaN"
+        assert result[0, 1] == 0.0, "FP-on-absent must score 0.0"
+        assert not torch.isnan(result[0, 1]), "FP-on-absent must not be NaN"
+
+    def test_class_metric_fp_on_absent(self):
+        """GeneralizedDiceScore module metric should average FP-on-absent as 0.0, not NaN.
+
+        Regression test for F4: module compute() inherits per-sample NaN from _generalized_dice_compute.
+
+        """
+        preds = torch.zeros(1, 2, 4, 4, dtype=torch.int8)
+        target = torch.zeros(1, 2, 4, 4, dtype=torch.int8)
+        target[0, 0] = 1
+        preds[0, 0] = 1
+        preds[0, 1, :2] = 1  # class 1: FP on 8 pixels, absent from target
+        gds = GeneralizedDiceScore(num_classes=2, per_class=True)
+        result = gds(preds, target)
+        assert result[0] == 1.0
+        assert not torch.isnan(result[1]), "FP-on-absent class must not produce NaN in module compute()"
+        assert result[1] == 0.0
+
+    def test_functional_fp_on_absent_include_background_false(self):
+        """FP-on-absent handling is consistent when include_background=False.
+
+        Regression test for F6e: combined include_background=False x absent-class path.
+
+        """
+        preds = torch.zeros(1, 3, 4, 4, dtype=torch.int8)
+        target = torch.zeros(1, 3, 4, 4, dtype=torch.int8)
+        target[0, 1] = 1  # class 1 (non-background) present in target
+        preds[0, 1] = 1  # class 1 perfectly predicted
+        preds[0, 2, :2] = 1  # class 2: FP (absent from target)
+        result = generalized_dice_score(preds, target, num_classes=3, per_class=True, include_background=False)
+        # With include_background=False, class 0 (background) is excluded; result has C-1=2 columns
+        assert result.shape[1] == 2, "include_background=False should exclude background class"
+        assert result[0, 0] == 1.0, "class 1 (non-background, present) should score 1.0"
+        assert result[0, 1] == 0.0, "class 2 (non-background, FP-on-absent) should score 0.0"
+        assert not torch.isnan(result[0, 1])
