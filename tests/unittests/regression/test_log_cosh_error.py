@@ -88,3 +88,17 @@ class TestLogCoshError(MetricTester):
             metric_module=partial(LogCoshError, num_outputs=num_outputs),
             metric_functional=log_cosh_error,
         )
+
+
+@pytest.mark.parametrize("num_outputs", [0, -5])
+def test_error_on_invalid_num_outputs_negative_or_zero(num_outputs):
+    """Test that ValueError is raised when num_outputs is a non-positive integer."""
+    with pytest.raises(ValueError, match="Expected argument `num_outputs` to be an int larger than 0"):
+        LogCoshError(num_outputs=num_outputs)
+
+
+@pytest.mark.parametrize("num_outputs", [1.5, "foo"])
+def test_error_on_invalid_num_outputs_non_int(num_outputs):
+    """Test that ValueError is raised when num_outputs is not an integer."""
+    with pytest.raises(ValueError, match="Expected argument `num_outputs` to be an int larger than 0"):
+        LogCoshError(num_outputs=num_outputs)

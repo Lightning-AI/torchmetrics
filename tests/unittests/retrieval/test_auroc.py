@@ -203,3 +203,17 @@ class TestAUROC(RetrievalMetricTester):
             exception_type=ValueError,
             kwargs_update=metric_args,
         )
+
+
+@pytest.mark.parametrize("max_fpr", [0.0, 1.5, -0.1])
+def test_error_on_invalid_max_fpr_out_of_range(max_fpr):
+    """Test that ValueError is raised when max_fpr is out of (0, 1] range for RetrievalAUROC."""
+    with pytest.raises(ValueError, match="Arguments `max_fpr` should be a float in range \\(0, 1\\]"):
+        RetrievalAUROC(max_fpr=max_fpr)
+
+
+@pytest.mark.parametrize("max_fpr", [1, "foo"])
+def test_error_on_invalid_max_fpr_non_float(max_fpr):
+    """Test that ValueError is raised when max_fpr is not a float for RetrievalAUROC."""
+    with pytest.raises(ValueError, match="Arguments `max_fpr` should be a float in range \\(0, 1\\]"):
+        RetrievalAUROC(max_fpr=max_fpr)

@@ -313,3 +313,35 @@ class TestBinaryFairness(BinaryFairnessTester):
             dtype=dtype,
             groups=groups,
         )
+
+
+@pytest.mark.parametrize("num_groups", [0, 1, -5])
+def test_error_on_invalid_num_groups_less_than_2(num_groups):
+    """Test that ValueError is raised when num_groups is less than 2."""
+    with pytest.raises(ValueError, match="Expected argument `num_groups` to be an int larger than 1"):
+        BinaryFairness(num_groups=num_groups)
+
+
+@pytest.mark.parametrize("num_groups", [1.5, "foo"])
+def test_error_on_invalid_num_groups_non_int(num_groups):
+    """Test that ValueError is raised when num_groups is not an integer."""
+    with pytest.raises(ValueError, match="Expected argument `num_groups` to be an int larger than 1"):
+        BinaryFairness(num_groups=num_groups)
+
+
+@pytest.mark.parametrize("num_groups", [0, 1, -5])
+def test_error_on_invalid_num_groups_stat_rates_less_than_2(num_groups):
+    """Test that ValueError is raised for BinaryGroupStatRates when num_groups is less than 2."""
+    from torchmetrics.classification.group_fairness import BinaryGroupStatRates
+
+    with pytest.raises(ValueError, match="Expected argument `num_groups` to be an int larger than 1"):
+        BinaryGroupStatRates(num_groups=num_groups)
+
+
+@pytest.mark.parametrize("num_groups", [1.5, "foo"])
+def test_error_on_invalid_num_groups_stat_rates_non_int(num_groups):
+    """Test that ValueError is raised for BinaryGroupStatRates when num_groups is not an integer."""
+    from torchmetrics.classification.group_fairness import BinaryGroupStatRates
+
+    with pytest.raises(ValueError, match="Expected argument `num_groups` to be an int larger than 1"):
+        BinaryGroupStatRates(num_groups=num_groups)

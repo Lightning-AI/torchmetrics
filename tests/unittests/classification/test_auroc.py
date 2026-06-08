@@ -432,3 +432,17 @@ def test_wrapper_class(metric, kwargs, base_metric=AUROC):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+@pytest.mark.parametrize("max_fpr", [0.0, 1.5, -0.1])
+def test_error_on_invalid_max_fpr_out_of_range(max_fpr):
+    """Test that ValueError is raised when max_fpr is out of (0, 1] range."""
+    with pytest.raises(ValueError, match="Arguments `max_fpr` should be a float in range \\(0, 1\\]"):
+        BinaryAUROC(max_fpr=max_fpr)
+
+
+@pytest.mark.parametrize("max_fpr", [1, "foo"])
+def test_error_on_invalid_max_fpr_non_float(max_fpr):
+    """Test that ValueError is raised when max_fpr is not a float."""
+    with pytest.raises(ValueError, match="Arguments `max_fpr` should be a float in range \\(0, 1\\]"):
+        BinaryAUROC(max_fpr=max_fpr)

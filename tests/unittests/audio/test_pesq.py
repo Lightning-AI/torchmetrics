@@ -126,6 +126,20 @@ def test_error_on_different_shape(metric_class=PerceptualEvaluationSpeechQuality
         metric(torch.randn(100), torch.randn(50))
 
 
+@pytest.mark.parametrize("n_processes", [0, -1, -5])
+def test_error_on_invalid_n_processes_non_positive(n_processes):
+    """Test that ValueError is raised when n_processes is not a positive integer."""
+    with pytest.raises(ValueError, match="Expected argument `n_processes` to be an int larger than 0"):
+        PerceptualEvaluationSpeechQuality(16000, "nb", n_processes=n_processes)
+
+
+@pytest.mark.parametrize("n_processes", [1.5, "foo"])
+def test_error_on_invalid_n_processes_non_int(n_processes):
+    """Test that ValueError is raised when n_processes is not an integer."""
+    with pytest.raises(ValueError, match="Expected argument `n_processes` to be an int larger than 0"):
+        PerceptualEvaluationSpeechQuality(16000, "nb", n_processes=n_processes)
+
+
 def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)

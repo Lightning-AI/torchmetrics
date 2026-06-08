@@ -77,7 +77,7 @@ class LogCoshError(Metric):
     def __init__(self, num_outputs: int = 1, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        if not isinstance(num_outputs, int) and num_outputs < 1:
+        if not isinstance(num_outputs, int) or num_outputs < 1:
             raise ValueError(f"Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
         self.num_outputs = num_outputs
         self.add_state("sum_log_cosh_error", default=torch.zeros(num_outputs), dist_reduce_fx="sum")
