@@ -542,9 +542,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
     ) -> None:
         super().__init__()
         self.task = ClassificationTask.from_str(task)
-        self._metric: Union[
-            BinaryClassificationReport, MulticlassClassificationReport, MultilabelClassificationReport
-        ]
+        self._metric: Union[BinaryClassificationReport, MulticlassClassificationReport, MultilabelClassificationReport]
 
         if self.task == ClassificationTask.BINARY:
             self._metric = BinaryClassificationReport(
