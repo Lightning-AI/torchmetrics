@@ -325,8 +325,11 @@ def test_zero_case_in_multiclass():
 @pytest.mark.parametrize(
     ("metric_fn", "preds", "target", "expected"),
     [
-        (binary_matthews_corrcoef, torch.zeros(10), torch.zeros(10), 1.0),
-        (binary_matthews_corrcoef, torch.ones(10), torch.ones(10), 1.0),
+        # When only one class is present in either preds or targets, the MCC
+        # denominator is zero and the metric is undefined. Following sklearn's
+        # convention, we return 0.0 in these degenerate cases (issue #3355).
+        (binary_matthews_corrcoef, torch.zeros(10), torch.zeros(10), 0.0),
+        (binary_matthews_corrcoef, torch.ones(10), torch.ones(10), 0.0),
         (
             binary_matthews_corrcoef,
             torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
@@ -339,32 +342,35 @@ def test_zero_case_in_multiclass():
             torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
             0.0,
         ),
-        (binary_matthews_corrcoef, torch.zeros(10), torch.ones(10), -1.0),
-        (binary_matthews_corrcoef, torch.ones(10), torch.zeros(10), -1.0),
+        (binary_matthews_corrcoef, torch.zeros(10), torch.ones(10), 0.0),
+        (binary_matthews_corrcoef, torch.ones(10), torch.zeros(10), 0.0),
         (
             partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
             torch.zeros(10, NUM_CLASSES).long(),
             torch.zeros(10, NUM_CLASSES).long(),
-            1.0,
+            0.0,
         ),
         (
             partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
             torch.ones(10, NUM_CLASSES).long(),
             torch.ones(10, NUM_CLASSES).long(),
-            1.0,
+            0.0,
         ),
         (
             partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
             torch.zeros(10, NUM_CLASSES).long(),
             torch.ones(10, NUM_CLASSES).long(),
-            -1.0,
+            0.0,
         ),
         (
             partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
             torch.ones(10, NUM_CLASSES).long(),
             torch.zeros(10, NUM_CLASSES).long(),
-            -1.0,
+            0.0,
         ),
+        # True perfect/wrong predictions (both classes present) still work:
+        (binary_matthews_corrcoef, torch.tensor([1, 1, 0, 0]), torch.tensor([1, 1, 0, 0]), 1.0),
+        (binary_matthews_corrcoef, torch.tensor([0, 0, 1, 1]), torch.tensor([1, 1, 0, 0]), -1.0),
     ],
 )
 def test_corner_cases(metric_fn, preds, target, expected):
