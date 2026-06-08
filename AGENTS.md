@@ -156,8 +156,6 @@ from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers.testers import MetricTester
 
 
-
-
 class TestMyMetric(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("preds, target", [...])
