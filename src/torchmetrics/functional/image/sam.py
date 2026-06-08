@@ -58,9 +58,9 @@ def _sam_compute(
         target: ground truth image
         reduction: a method to reduce metric score over labels.
 
-            - ``'elementwise_mean'``: takes the mean (default)
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
+        - ``'elementwise_mean'``: takes the mean (default)
+        - ``'sum'``: takes the sum
+        - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
         >>> from torch import rand
@@ -74,7 +74,13 @@ def _sam_compute(
     dot_product = (preds * target).sum(dim=1)
     preds_norm = preds.norm(dim=1)
     target_norm = target.norm(dim=1)
-    sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
+    # Clamp denominator to avoid NaN from zero-pixel spectral vectors.
+    # When a pixel's spectral vector is all zeros, the cosine similarity is
+    # undefined, but the convention is to produce 0.0 SAM score (cos=1)
+    # rather than NaN, so that a single zero pixel doesn't propagate NaN
+    # through the entire reduction. See issue #3322.
+    denominator = (preds_norm * target_norm).clamp_min(1e-8)
+    sam_score = torch.clamp(dot_product / denominator, -1, 1).acos()
     return reduce(sam_score, reduction)
 
 
