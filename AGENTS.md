@@ -58,7 +58,7 @@ tests/
   unittests/
     _helpers/testers.py   # MetricTester -- base for all metric tests
     text/_helpers.py      # TextTester -- specialised base for text domain tests
-    conftest.py           # BATCH_SIZE=32, NUM_BATCHES=8, NUM_CLASSES=5, NUM_PROCESSES=2
+    conftest.py           # BATCH_SIZE=32, NUM_BATCHES=2 * NUM_PROCESSES, NUM_CLASSES=5, NUM_PROCESSES=2
     <domain>/             # mirrors src/torchmetrics/<domain>/; pairwise/ present here too
 ```
 
@@ -152,10 +152,10 @@ runs DDP synchronization. Tests can be run from repo root (`pytest tests/...`) o
 ```python
 # run as: cd tests && python -m pytest unittests/...
 import pytest
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers.testers import MetricTester
 
-NUM_BATCHES = 8  # or import from unittests (re-exported by tests/unittests/__init__.py)
-BATCH_SIZE = 32
+
 
 
 class TestMyMetric(MetricTester):
@@ -216,8 +216,7 @@ def update(self, preds: Tensor, target: Tensor) -> None:
 ```
 
 Key rules: `Returns:` (plural, not `Return:`), line length 120, f-strings everywhere
-except `logging.*` calls (use `%`-style there). Existing code uses `Optional[float]`
-from `typing`; new code may use `float | None` (Python 3.10+).
+except `logging.*` calls (use `%`-style there). Existing code uses `Optional[float]` from `typing`; prefer that style for consistency.
 
 ______________________________________________________________________
 
