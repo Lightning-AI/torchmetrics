@@ -71,16 +71,18 @@ jobs:
       # PIP_EXTRA_URL: "--find-links=https://download.pytorch.org/whl/cpu/torch_stable.html"
       UV_TORCH_BACKEND: "cpu"
       UNITTEST_TIMEOUT: "" # by default, it is not set
+      # Supply-chain guard: refuse PyPI releases newer than 2 days. See https://docs.astral.sh/uv/reference/settings/#exclude-newer
+      UV_EXCLUDE_NEWER: "2 days"
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that macOS jobs take much more than orger OS
     timeout-minutes: 120
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install uv and set Python version
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           python-version: ${{ matrix.python-version }}
           # TODO: Avoid activating environment like this
@@ -224,7 +226,7 @@ jobs:
       - name: Upload coverage to Codecov
         # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
         if: ${{ env.TEST_DIRS != '' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: "tests/coverage.xml"
