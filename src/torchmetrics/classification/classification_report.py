@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import torch
 from torch import Tensor
@@ -123,7 +123,7 @@ class BinaryClassificationReport(BinaryStatScores):
         )
         self.zero_division = zero_division
 
-    def compute(self) -> Dict[str, Dict[str, Tensor]]:
+    def compute(self) -> Dict[str, Dict[str, Tensor]]:  # type: ignore[override]
         """Compute the classification report."""
         tp, fp, tn, fn = self._final_state()
 
@@ -277,7 +277,7 @@ class MulticlassClassificationReport(MulticlassStatScores):
         self.num_classes = num_classes
         self.zero_division = zero_division
 
-    def compute(self) -> Dict[str, Dict[str, Tensor]]:
+    def compute(self) -> Dict[str, Dict[str, Tensor]]:  # type: ignore[override]
         """Compute the classification report."""
         tp, fp, tn, fn = self._final_state()
         per_class = _compute_per_class_metrics(tp, fp, tn, fn, self.zero_division)
@@ -285,6 +285,7 @@ class MulticlassClassificationReport(MulticlassStatScores):
         result: Dict[str, Dict[str, Tensor]] = {}
 
         # Per-class entries
+        assert self.num_classes is not None  # guaranteed by __init__
         for c in range(self.num_classes):
             result[str(c)] = {
                 "precision": per_class["precision"][c],
@@ -410,7 +411,7 @@ class MultilabelClassificationReport(MultilabelStatScores):
         self.num_labels = num_labels
         self.zero_division = zero_division
 
-    def compute(self) -> Dict[str, Dict[str, Tensor]]:
+    def compute(self) -> Dict[str, Dict[str, Tensor]]:  # type: ignore[override]
         """Compute the classification report."""
         tp, fp, tn, fn = self._final_state()
         per_class = _compute_per_class_metrics(tp, fp, tn, fn, self.zero_division)
@@ -541,6 +542,9 @@ class ClassificationReport(_ClassificationTaskWrapper):
     ) -> None:
         super().__init__()
         self.task = ClassificationTask.from_str(task)
+        self._metric: Union[
+            BinaryClassificationReport, MulticlassClassificationReport, MultilabelClassificationReport
+        ]
 
         if self.task == ClassificationTask.BINARY:
             self._metric = BinaryClassificationReport(
@@ -580,7 +584,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
         """Update metric state."""
         self._metric.update(preds, target)
 
-    def compute(self) -> Dict[str, Dict[str, Tensor]]:
+    def compute(self) -> Dict[str, Dict[str, Tensor]]:  # type: ignore[override]
         """Compute the classification report."""
         return self._metric.compute()
 
