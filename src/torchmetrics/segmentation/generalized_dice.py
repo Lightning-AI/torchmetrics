@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -24,6 +23,7 @@ from torchmetrics.functional.segmentation.generalized_dice import (
     _generalized_dice_validate_args,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -39,7 +39,7 @@ class GeneralizedDiceScore(Metric):
 
     .. math::
         GDS = \frac{2 \\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} p_{ij}}{
-            \\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} + \\sum_{i=1}^{N} w_i \\sum_{j} p_{ij}}
+        \\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} + \\sum_{i=1}^{N} w_i \\sum_{j} p_{ij}}
 
     where :math:`N` is the number of classes, :math:`t_{ij}` is the target tensor, :math:`p_{ij}` is the prediction
     tensor, and :math:`w_i` is the weight for class :math:`i`. The weight can be computed in three different ways:
@@ -52,20 +52,32 @@ class GeneralizedDiceScore(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-        - ``preds`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
-          the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
-          can be provided, where the integer values correspond to the class index. The input type can be controlled
-          with the ``input_format`` argument.
-        - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
-          the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
-          can be provided, where the integer values correspond to the class index. The input type can be controlled
-          with the ``input_format`` argument.
+    - ``preds`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+      the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
+      can be provided, where the integer values correspond to the class index. The input type can be controlled
+      with the ``input_format`` argument.
+    - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+      the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
+      can be provided, where the integer values correspond to the class index. The input type can be controlled
+      with the ``input_format`` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-        - ``gds`` (:class:`~torch.Tensor`): The generalized dice score. If ``per_class`` is set to ``True``, the output
-          will be a tensor of shape ``(C,)`` with the generalized dice score for each class. If ``per_class`` is
-          set to ``False``, the output will be a scalar tensor.
+    - ``gds`` (:class:`~torch.Tensor`): The generalized dice score. If ``per_class`` is set to ``True``, the output
+      will be a tensor of shape ``(C,)`` with the generalized dice score for each class (``nan`` for classes absent
+      from all samples). If ``per_class`` is set to ``False``, the output will be a scalar tensor.
+
+    .. note::
+        When ``per_class=True``, :meth:`compute` returns ``nan`` for classes absent from all samples (zero volume
+        in both prediction and target). Expressions like ``score[i] > threshold`` or ``.mean()`` will silently
+        propagate those ``nan`` values; use ``torch.nanmean()`` or ``~torch.isnan()`` to aggregate or filter.
+        Classes with false positive predictions (predicted but absent from target) return ``0.0``, not ``nan``.
+
+    .. note::
+        This metric stores per-sample numerator, denominator, and support tensors of shape ``(N, C)`` in memory.
+        Memory scales as ``O(N * C)`` per rank. For large datasets or many classes, pass
+        ``compute_on_cpu=True`` to keep accumulated state on CPU and only move to GPU for the final
+        :meth:`compute` call.
 
     Args:
         num_classes: The number of classes in the segmentation problem.
@@ -91,8 +103,9 @@ class GeneralizedDiceScore(Metric):
             If ``input_format`` is not one of ``"one-hot"``, ``"index"`` or ``"mixed"``
 
     Example:
-        >>> from torch import randint
+        >>> from torch import manual_seed, randint
         >>> from torchmetrics.segmentation import GeneralizedDiceScore
+        >>> _ = manual_seed(42)
         >>> gds = GeneralizedDiceScore(num_classes=3)
         >>> preds = randint(0, 2, (10, 3, 128, 128))
         >>> target = randint(0, 2, (10, 3, 128, 128))
@@ -107,8 +120,10 @@ class GeneralizedDiceScore(Metric):
 
     """
 
-    score: Tensor
-    samples: Tensor
+    numerator: List[Tensor]
+    denominator: List[Tensor]
+    support: List[Tensor]
+
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -132,21 +147,38 @@ class GeneralizedDiceScore(Metric):
         self.weight_type = weight_type
         self.input_format = input_format
 
-        num_classes = num_classes - 1 if not include_background else num_classes
-        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
-        self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("numerator", [], dist_reduce_fx="cat")
+        self.add_state("denominator", [], dist_reduce_fx="cat")
+        self.add_state("support", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with new data."""
-        numerator, denominator = _generalized_dice_update(
+        numerator, denominator, support = _generalized_dice_update(
             preds, target, self.num_classes, self.include_background, self.weight_type, self.input_format
         )
-        self.score += _generalized_dice_compute(numerator, denominator, self.per_class).sum(dim=0)
-        self.samples += preds.shape[0]
+        self.numerator.append(numerator)
+        self.denominator.append(denominator)
+        self.support.append(support)
 
     def compute(self) -> Tensor:
-        """Compute the final generalized dice score."""
-        return self.score / self.samples
+        """Compute the final generalized dice score.
+
+        For ``per_class=True``, samples where a class is not present produce NaN values, which are excluded
+        from the average using ``nanmean``. Classes not present in any sample will have a NaN score.
+        For ``per_class=False``, the score is the nanmean across samples of the per-sample aggregate score.
+
+        """
+        result = _generalized_dice_compute(
+            dim_zero_cat(self.numerator),
+            dim_zero_cat(self.denominator),
+            self.per_class,
+            support=dim_zero_cat(self.support),
+        )
+        if self.per_class:
+            # result shape: (N, C) - average across samples, keeping NaN for fully absent classes
+            return result.nanmean(dim=0)
+        # result shape: (N,) - average across samples
+        return result.nanmean()
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -183,7 +215,7 @@ class GeneralizedDiceScore(Metric):
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(
-            ...        metric(torch.randint(0, 2, (10, 3, 128, 128)), torch.randint(0, 2, (10, 3, 128, 128)))
+            ...         metric(torch.randint(0, 2, (10, 3, 128, 128)), torch.randint(0, 2, (10, 3, 128, 128)))
             ...     )
             >>> fig_, ax_ = metric.plot(values)
 
