@@ -20,8 +20,8 @@ pre-commit run --all-files
 mypy src/torchmetrics/
 
 # Tests -- two separate steps (src layout)
-cd src && python -m pytest torchmetrics          # doctests inside package
-cd tests && python -m pytest unittests -v        # unit tests
+python -m pytest src/torchmetrics     # doctests inside package
+python -m pytest tests/ -v            # unit tests
 
 # Single domain (run from repo root)
 pytest tests/unittests/classification/ -v
@@ -54,7 +54,7 @@ src/torchmetrics/
                        # (pairwise has functional API only, no module package)
 
 tests/
-  _cache-references/   # cachier-backed reference output cache
+  _cache-references/   # created during tests; cachier-backed reference output cache (configurable via PYTEST_REFERENCE_CACHE)
   unittests/
     _helpers/testers.py   # MetricTester -- base for all metric tests
     text/_helpers.py      # TextTester -- specialised base for text domain tests
@@ -147,7 +147,7 @@ ______________________________________________________________________
 
 `MetricTester` (in `tests/unittests/_helpers/testers.py`) compares metric output
 against a reference implementation (scikit-learn/scipy), checks pickling, and optionally
-runs DDP synchronization. Run tests from the `tests/` directory; import accordingly:
+runs DDP synchronization. Tests can be run from repo root (`pytest tests/...`) or from the `tests/` directory (`cd tests && python -m pytest unittests/...`); import accordingly:
 
 ```python
 # run as: cd tests && python -m pytest unittests/...
@@ -172,7 +172,7 @@ class TestMyMetric(MetricTester):
 ```
 
 DDP mode only runs when `USE_PYTEST_POOL=1` is set; the `pytest.mark.DDP` marker gates
-it. Reference outputs are cached by `cachier` in `tests/_cache-references/` -- delete
+it. Reference outputs are cached by `cachier` under `tests/_cache-references/` by default (configurable via `PYTEST_REFERENCE_CACHE`) -- delete
 that dir to force recomputation.
 
 ______________________________________________________________________
@@ -234,5 +234,5 @@ ______________________________________________________________________
 | Use `MetricTester` for text metrics            | Text domain uses `TextTester` from `text/_helpers.py`   |
 | Add functional helpers for module-only metrics | FID/KID-style metrics intentionally skip this step      |
 | Hardcode task triple when subset applies       | Check existing metrics -- some omit inapplicable tasks  |
-| Run tests from repo root without `cd tests`    | Import paths assume `tests/` as working directory       |
+| Run `python -m pytest unittests/...` from repo root | Either `cd tests` for `python -m pytest unittests/...`, or run `pytest tests/...` from repo root |
 | `import *`                                     | Explicit imports only                                   |
