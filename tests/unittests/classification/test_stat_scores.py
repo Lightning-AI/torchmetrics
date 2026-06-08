@@ -476,6 +476,46 @@ def test_multiclass_overflow():
     assert torch.allclose(res, torch.tensor(compare))
 
 
+@pytest.mark.parametrize("num_classes", [5, 50, 1_000_000])
+@pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+def test_multiclass_stat_scores_linear_memory(num_classes, average):
+    """Test that multiclass stat scores use O(num_classes) memory instead of O(num_classes**2).
+
+    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3343.
+
+    """
+    n = 500
+    generator = torch.Generator().manual_seed(42)
+    target = torch.randint(0, num_classes, (n,), generator=generator)
+    preds = torch.randint(0, num_classes, (n,), generator=generator)
+
+    # Artificially set 20% of predictions to be correct so TP > 0
+    artificially_correct = torch.randperm(n, generator=generator)[: n // 5]
+    preds[artificially_correct] = target[artificially_correct]
+
+    result = multiclass_stat_scores(preds, target, num_classes=num_classes, average=average)
+
+    # Reference: compute TP/FP/FN/TN directly from preds and target
+    tp_ref = torch.bincount(target[preds == target], minlength=num_classes)
+    fp_ref = torch.bincount(preds, minlength=num_classes) - tp_ref
+    fn_ref = torch.bincount(target, minlength=num_classes) - tp_ref
+    tn_ref = n - (tp_ref + fp_ref + fn_ref)
+    expected = torch.stack([tp_ref, fp_ref, tn_ref, fn_ref, tp_ref + fn_ref], dim=-1)
+
+    if average == "micro":
+        expected = expected.sum(0)
+    elif average == "macro":
+        expected = expected.float().mean(0)
+    elif average == "weighted":
+        weights = (tp_ref + fn_ref).float()
+        weights = weights / weights.sum()
+        expected = (expected.float() * weights.unsqueeze(-1)).sum(0)
+
+    assert torch.allclose(result, expected, atol=1e-4, rtol=1e-4), (
+        f"num_classes={num_classes}, average={average}: result={result}, expected={expected}"
+    )
+
+
 def _reference_sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
