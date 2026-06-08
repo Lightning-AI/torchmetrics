@@ -51,7 +51,8 @@ def retrieval_auroc(
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
-    top_k = top_k or preds.shape[-1]
+    if top_k is None:
+        top_k = preds.shape[-1]
     if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`top_k` has to be a positive integer or None")
 
