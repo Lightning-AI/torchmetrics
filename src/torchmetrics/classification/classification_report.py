@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -53,9 +53,9 @@ class BinaryClassificationReport(BinaryStatScores):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``report`` (:class:`dict`): A dictionary with keys ``"0"``, ``"1"``, ``"macro"``,
-      ``"weighted"``. Each value is a dict with keys ``"precision"``, ``"recall"``,
-      ``"f1_score"``, ``"support"``.
+    - ``report`` (:class:`dict`): A dictionary with keys ``"0"``, ``"1"``, and optionally
+      ``"macro"``, ``"weighted"``. Each value is a dict with keys ``"precision"``,
+      ``"recall"``, ``"f1_score"``, ``"support"``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -70,6 +70,8 @@ class BinaryClassificationReport(BinaryStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Value to return when there is a zero division. Should be 0 or 1.
+        averages: List of averaging methods to include in the report. Options are ``"macro"``
+            and ``"weighted"``. If ``None`` (default), both are included.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -111,6 +113,7 @@ class BinaryClassificationReport(BinaryStatScores):
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         zero_division: float = 0.0,
+        averages: Optional[List[Literal["macro", "weighted"]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -122,6 +125,7 @@ class BinaryClassificationReport(BinaryStatScores):
             **kwargs,
         )
         self.zero_division = zero_division
+        self.averages = averages
 
     def compute(self) -> Dict[str, Dict[str, Tensor]]:  # type: ignore[override]
         """Compute the classification report."""
@@ -141,18 +145,25 @@ class BinaryClassificationReport(BinaryStatScores):
         per_class = _compute_per_class_metrics(
             tp_per_class, fp_per_class, tn_per_class, fn_per_class, self.zero_division
         )
-        macro_avg = _compute_average(per_class, "macro", tp_per_class, fp_per_class, fn_per_class)
-        weighted_avg = _compute_average(per_class, "weighted", tp_per_class, fp_per_class, fn_per_class)
+
+        # Determine which averages to compute
+        averages = self.averages if self.averages is not None else ["macro", "weighted"]
 
         def _extract(d: Dict[str, Tensor], idx: int) -> Dict[str, Tensor]:
             return {k: v[idx] if v.ndim > 0 else v for k, v in d.items()}
 
-        return {
+        result: Dict[str, Dict[str, Tensor]] = {
             "0": _extract(per_class, 0),
             "1": _extract(per_class, 1),
-            "macro": dict(macro_avg),
-            "weighted": dict(weighted_avg),
         }
+
+        for avg in averages:
+            if avg == "macro":
+                result["macro"] = dict(_compute_average(per_class, "macro", tp_per_class, fp_per_class, fn_per_class))
+            elif avg == "weighted":
+                result["weighted"] = dict(_compute_average(per_class, "weighted", tp_per_class, fp_per_class, fn_per_class))
+
+        return result
 
     def plot(self, val: Optional[Dict[str, Dict[str, Tensor]]] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot the classification report as a table.
@@ -203,8 +214,9 @@ class MulticlassClassificationReport(MulticlassStatScores):
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``report`` (:class:`dict`): A dictionary with per-class keys ``"0"``, ``"1"``, ...,
-      ``"{C-1}"`` and summary keys ``"micro"``, ``"macro"``, ``"weighted"``.
-      Each value is a dict with keys ``"precision"``, ``"recall"``, ``"f1_score"``, ``"support"``.
+      ``"{C-1}"`` and summary keys for the requested averages (``"micro"``, ``"macro"``,
+      ``"weighted"``). Each value is a dict with keys ``"precision"``, ``"recall"``,
+      ``"f1_score"``, ``"support"``.
 
     Args:
         num_classes: Integer specifying the number of classes
@@ -222,6 +234,8 @@ class MulticlassClassificationReport(MulticlassStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Value to return when there is a zero division. Should be 0 or 1.
+        averages: List of averaging methods to include in the report. Options are ``"micro"``,
+            ``"macro"``, and ``"weighted"``. If ``None`` (default), all three are included.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -262,6 +276,7 @@ class MulticlassClassificationReport(MulticlassStatScores):
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         zero_division: float = 0.0,
+        averages: Optional[List[Literal["micro", "macro", "weighted"]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -276,6 +291,7 @@ class MulticlassClassificationReport(MulticlassStatScores):
         )
         self.num_classes = num_classes
         self.zero_division = zero_division
+        self.averages = averages
 
     def compute(self) -> Dict[str, Dict[str, Tensor]]:  # type: ignore[override]
         """Compute the classification report."""
@@ -295,9 +311,15 @@ class MulticlassClassificationReport(MulticlassStatScores):
             }
 
         # Summary averages
-        result["micro"] = _compute_average(per_class, "micro", tp, fp, fn)
-        result["macro"] = _compute_average(per_class, "macro", tp, fp, fn)
-        result["weighted"] = _compute_average(per_class, "weighted", tp, fp, fn)
+        averages = self.averages if self.averages is not None else ["micro", "macro", "weighted"]
+
+        for avg in averages:
+            if avg == "micro":
+                result["micro"] = _compute_average(per_class, "micro", tp, fp, fn)
+            elif avg == "macro":
+                result["macro"] = _compute_average(per_class, "macro", tp, fp, fn)
+            elif avg == "weighted":
+                result["weighted"] = _compute_average(per_class, "weighted", tp, fp, fn)
 
         return result
 
@@ -350,9 +372,9 @@ class MultilabelClassificationReport(MultilabelStatScores):
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``report`` (:class:`dict`): A dictionary with per-label keys ``"label_0"``,
-      ``"label_1"``, ..., ``"label_{L-1}"`` and summary keys ``"micro"``, ``"macro"``,
-      ``"weighted"``. Each value is a dict with keys ``"precision"``, ``"recall"``,
-      ``"f1_score"``, ``"support"``.
+      ``"label_1"``, ..., ``"label_{L-1}"`` and summary keys for the requested averages
+      (``"micro"``, ``"macro"``, ``"weighted"``). Each value is a dict with keys
+      ``"precision"``, ``"recall"``, ``"f1_score"``, ``"support"``.
 
     Args:
         num_labels: Integer specifying the number of labels
@@ -368,6 +390,8 @@ class MultilabelClassificationReport(MultilabelStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Value to return when there is a zero division. Should be 0 or 1.
+        averages: List of averaging methods to include in the report. Options are ``"micro"``,
+            ``"macro"``, and ``"weighted"``. If ``None`` (default), all three are included.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -396,6 +420,7 @@ class MultilabelClassificationReport(MultilabelStatScores):
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         zero_division: float = 0.0,
+        averages: Optional[List[Literal["micro", "macro", "weighted"]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -410,6 +435,7 @@ class MultilabelClassificationReport(MultilabelStatScores):
         )
         self.num_labels = num_labels
         self.zero_division = zero_division
+        self.averages = averages
 
     def compute(self) -> Dict[str, Dict[str, Tensor]]:  # type: ignore[override]
         """Compute the classification report."""
@@ -428,9 +454,15 @@ class MultilabelClassificationReport(MultilabelStatScores):
             }
 
         # Summary averages
-        result["micro"] = _compute_average(per_class, "micro", tp, fp, fn)
-        result["macro"] = _compute_average(per_class, "macro", tp, fp, fn)
-        result["weighted"] = _compute_average(per_class, "weighted", tp, fp, fn)
+        averages = self.averages if self.averages is not None else ["micro", "macro", "weighted"]
+
+        for avg in averages:
+            if avg == "micro":
+                result["micro"] = _compute_average(per_class, "micro", tp, fp, fn)
+            elif avg == "macro":
+                result["macro"] = _compute_average(per_class, "macro", tp, fp, fn)
+            elif avg == "weighted":
+                result["weighted"] = _compute_average(per_class, "weighted", tp, fp, fn)
 
         return result
 
@@ -495,6 +527,10 @@ class ClassificationReport(_ClassificationTaskWrapper):
         ignore_index: Target value that is ignored
         validate_args: Whether to validate input arguments
         zero_division: Value to return when there is a zero division
+        averages: List of averaging methods to include in the report.
+            For binary: ``"macro"``, ``"weighted"``.
+            For multiclass/multilabel: ``"micro"``, ``"macro"``, ``"weighted"``.
+            If ``None`` (default), all applicable averages are included.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (binary):
@@ -538,6 +574,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         zero_division: float = 0.0,
+        averages: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -551,6 +588,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
                 ignore_index=ignore_index,
                 validate_args=validate_args,
                 zero_division=zero_division,
+                averages=averages,  # type: ignore[arg-type]
                 **kwargs,
             )
         elif self.task == ClassificationTask.MULTICLASS:
@@ -563,6 +601,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
                 ignore_index=ignore_index,
                 validate_args=validate_args,
                 zero_division=zero_division,
+                averages=averages,  # type: ignore[arg-type]
                 **kwargs,
             )
         elif self.task == ClassificationTask.MULTILABEL:
@@ -575,6 +614,7 @@ class ClassificationReport(_ClassificationTaskWrapper):
                 ignore_index=ignore_index,
                 validate_args=validate_args,
                 zero_division=zero_division,
+                averages=averages,  # type: ignore[arg-type]
                 **kwargs,
             )
 

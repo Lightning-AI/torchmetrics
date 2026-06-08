@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import torch
 from torch import Tensor
@@ -118,6 +118,7 @@ def binary_classification_report(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
     zero_division: float = 0.0,
+    averages: Optional[List[Literal["macro", "weighted"]]] = None,
 ) -> Dict[str, Dict[str, Tensor]]:
     r"""Compute a classification report for binary tasks.
 
@@ -147,9 +148,11 @@ def binary_classification_report(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Value to return when there is a zero division. Should be 0 or 1.
+        averages: List of averaging methods to include in the report. Options are ``"macro"``
+            and ``"weighted"``. If ``None`` (default), both are included.
 
     Returns:
-        A dictionary with keys ``"0"``, ``"1"``, ``"macro"``, ``"weighted"``.
+        A dictionary with keys ``"0"``, ``"1"``, and optionally ``"macro"``, ``"weighted"``.
         Each value is a dict with keys ``"precision"``, ``"recall"``, ``"f1_score"``, ``"support"``.
 
     Example (preds is int tensor):
@@ -195,18 +198,27 @@ def binary_classification_report(
     tn_per_class = torch.stack([tn, tp])
 
     per_class = _compute_per_class_metrics(tp_per_class, fp_per_class, tn_per_class, fn_per_class, zero_division)
-    macro_avg = _compute_average(per_class, "macro", tp_per_class, fp_per_class, fn_per_class)
-    weighted_avg = _compute_average(per_class, "weighted", tp_per_class, fp_per_class, fn_per_class)
 
-    def _extract(d: Dict[str, Tensor], idx: int) -> Dict[str, Tensor]:
-        return {k: v[idx] if v.ndim > 0 else v for k, v in d.items()}
+    # Determine which averages to compute
+    if averages is None:
+        averages = ["macro", "weighted"]
 
-    return {
+    result: Dict[str, Dict[str, Tensor]] = {
         "0": _extract(per_class, 0),
         "1": _extract(per_class, 1),
-        "macro": dict(macro_avg),
-        "weighted": dict(weighted_avg),
     }
+
+    for avg in averages:
+        if avg == "macro":
+            result["macro"] = dict(_compute_average(per_class, "macro", tp_per_class, fp_per_class, fn_per_class))
+        elif avg == "weighted":
+            result["weighted"] = dict(_compute_average(per_class, "weighted", tp_per_class, fp_per_class, fn_per_class))
+
+    return result
+
+
+def _extract(d: Dict[str, Tensor], idx: int) -> Dict[str, Tensor]:
+    return {k: v[idx] if v.ndim > 0 else v for k, v in d.items()}
 
 
 def multiclass_classification_report(
@@ -218,6 +230,7 @@ def multiclass_classification_report(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
     zero_division: float = 0.0,
+    averages: Optional[List[Literal["micro", "macro", "weighted"]]] = None,
 ) -> Dict[str, Dict[str, Tensor]]:
     r"""Compute a classification report for multiclass tasks.
 
@@ -249,10 +262,12 @@ def multiclass_classification_report(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Value to return when there is a zero division. Should be 0 or 1.
+        averages: List of averaging methods to include in the report. Options are ``"micro"``,
+            ``"macro"``, and ``"weighted"``. If ``None`` (default), all three are included.
 
     Returns:
         A dictionary with per-class keys ``"0"``, ``"1"``, ..., ``"{C-1}"`` and
-        summary keys ``"micro"``, ``"macro"``, ``"weighted"``.
+        summary keys for the requested averages (``"micro"``, ``"macro"``, ``"weighted"``).
         Each value is a dict with keys ``"precision"``, ``"recall"``, ``"f1_score"``, ``"support"``.
 
     Example (preds is int tensor):
@@ -302,10 +317,17 @@ def multiclass_classification_report(
             "support": per_class["support"][c],
         }
 
-    # Summary averages (always include all)
-    result["micro"] = _compute_average(per_class, "micro", tp, fp, fn)
-    result["macro"] = _compute_average(per_class, "macro", tp, fp, fn)
-    result["weighted"] = _compute_average(per_class, "weighted", tp, fp, fn)
+    # Summary averages
+    if averages is None:
+        averages = ["micro", "macro", "weighted"]
+
+    for avg in averages:
+        if avg == "micro":
+            result["micro"] = _compute_average(per_class, "micro", tp, fp, fn)
+        elif avg == "macro":
+            result["macro"] = _compute_average(per_class, "macro", tp, fp, fn)
+        elif avg == "weighted":
+            result["weighted"] = _compute_average(per_class, "weighted", tp, fp, fn)
 
     return result
 
@@ -319,6 +341,7 @@ def multilabel_classification_report(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
     zero_division: float = 0.0,
+    averages: Optional[List[Literal["micro", "macro", "weighted"]]] = None,
 ) -> Dict[str, Dict[str, Tensor]]:
     r"""Compute a classification report for multilabel tasks.
 
@@ -349,10 +372,12 @@ def multilabel_classification_report(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Value to return when there is a zero division. Should be 0 or 1.
+        averages: List of averaging methods to include in the report. Options are ``"micro"``,
+            ``"macro"``, and ``"weighted"``. If ``None`` (default), all three are included.
 
     Returns:
         A dictionary with per-label keys ``"label_0"``, ``"label_1"``, ..., ``"label_{L-1}"``
-        and summary keys ``"micro"``, ``"macro"``, ``"weighted"``.
+        and summary keys for the requested averages (``"micro"``, ``"macro"``, ``"weighted"``).
         Each value is a dict with keys ``"precision"``, ``"recall"``, ``"f1_score"``, ``"support"``.
 
     Example (preds is int tensor):
@@ -388,8 +413,15 @@ def multilabel_classification_report(
         }
 
     # Summary averages
-    result["micro"] = _compute_average(per_class, "micro", tp, fp, fn)
-    result["macro"] = _compute_average(per_class, "macro", tp, fp, fn)
-    result["weighted"] = _compute_average(per_class, "weighted", tp, fp, fn)
+    if averages is None:
+        averages = ["micro", "macro", "weighted"]
+
+    for avg in averages:
+        if avg == "micro":
+            result["micro"] = _compute_average(per_class, "micro", tp, fp, fn)
+        elif avg == "macro":
+            result["macro"] = _compute_average(per_class, "macro", tp, fp, fn)
+        elif avg == "weighted":
+            result["weighted"] = _compute_average(per_class, "weighted", tp, fp, fn)
 
     return result
