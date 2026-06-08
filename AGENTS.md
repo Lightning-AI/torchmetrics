@@ -223,16 +223,16 @@ ______________________________________________________________________
 
 ## Common mistakes to avoid
 
-| Mistake                                        | Correct pattern                                         |
-| ---------------------------------------------- | ------------------------------------------------------- |
-| Override `reset()` on plain metric             | Only wrappers and rare special cases do this            |
-| Override `forward()`                           | Don't -- base class calls `update()` + `compute()`      |
-| Call `add_state()` outside `__init__`          | Only in `__init__`                                      |
-| Return value from `update()`                   | `update()` returns `None`; mutate state in-place        |
-| `Return:` in docstring                         | Use `Returns:`                                          |
-| Export only in one `__init__.py`               | Export in domain + functional + top-level as applicable |
-| Use `MetricTester` for text metrics            | Text domain uses `TextTester` from `text/_helpers.py`   |
-| Add functional helpers for module-only metrics | FID/KID-style metrics intentionally skip this step      |
-| Hardcode task triple when subset applies       | Check existing metrics -- some omit inapplicable tasks  |
+| Mistake                                             | Correct pattern                                                                                  |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Override `reset()` on plain metric                  | Only wrappers and rare special cases do this                                                     |
+| Override `forward()`                                | Don't -- base class calls `update()` + `compute()`                                               |
+| Call `add_state()` outside `__init__`               | Only in `__init__`                                                                               |
+| Return value from `update()`                        | `update()` returns `None`; mutate state in-place                                                 |
+| `Return:` in docstring                              | Use `Returns:`                                                                                   |
+| Export only in one `__init__.py`                    | Export in domain + functional + top-level as applicable                                          |
+| Use `MetricTester` for text metrics                 | Text domain uses `TextTester` from `text/_helpers.py`                                            |
+| Add functional helpers for module-only metrics      | FID/KID-style metrics intentionally skip this step                                               |
+| Hardcode task triple when subset applies            | Check existing metrics -- some omit inapplicable tasks                                           |
 | Run `python -m pytest unittests/...` from repo root | Either `cd tests` for `python -m pytest unittests/...`, or run `pytest tests/...` from repo root |
-| `import *`                                     | Explicit imports only                                   |
+| `import *`                                          | Explicit imports only                                                                            |
