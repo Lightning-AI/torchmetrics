@@ -285,7 +285,7 @@ class MulticlassClassificationReport(MulticlassStatScores):
         result: Dict[str, Dict[str, Tensor]] = {}
 
         # Per-class entries
-        assert self.num_classes is not None  # guaranteed by __init__
+        assert self.num_classes is not None  # guaranteed by __init__  # noqa: S101
         for c in range(self.num_classes):
             result[str(c)] = {
                 "precision": per_class["precision"][c],
