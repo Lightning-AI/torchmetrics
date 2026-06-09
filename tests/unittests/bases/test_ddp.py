@@ -14,6 +14,7 @@
 import os
 from copy import deepcopy
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
@@ -350,8 +351,8 @@ def _test_sync_with_empty_none_reduce_lists(rank):
     class DummyNoneReduceMetric(Metric):
         full_state_update = True
 
-        def __init__(self) -> None:
-            super().__init__()
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
             self.add_state("x", default=[], dist_reduce_fx=None)
 
         def update(self, x):
@@ -360,7 +361,7 @@ def _test_sync_with_empty_none_reduce_lists(rank):
         def compute(self):
             return self.x
 
-    dummy = DummyNoneReduceMetric()
+    dummy = DummyNoneReduceMetric(sync_on_compute=True)
     result = dummy.compute()
     assert result == []
 
@@ -377,8 +378,8 @@ def _test_sync_with_unequal_none_reduce_lists(rank):
     class DummyNoneReduceMetric(Metric):
         full_state_update = True
 
-        def __init__(self) -> None:
-            super().__init__()
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
             self.add_state("x", default=[], dist_reduce_fx=None)
 
         def update(self, x):
@@ -394,11 +395,9 @@ def _test_sync_with_unequal_none_reduce_lists(rank):
         dummy.update(torch.ones(2))
     val = dummy.compute()
     # rank 0 contributed [1, 1], rank 1 had no data
-    # after sync, both ranks should see the same result
-    if isinstance(val, torch.Tensor):
-        assert val.item() == 2.0
-    else:
-        assert val == []
+    # after sync, both ranks should see the same tensor result
+    assert isinstance(val, torch.Tensor), f"Expected tensor after sync, got {type(val)}"
+    assert val.item() == 2.0
 
 
 @pytest.mark.DDP
