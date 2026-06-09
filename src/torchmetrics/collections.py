@@ -326,7 +326,13 @@ class MetricCollection(ModuleDict):
             ):
                 return False
 
-            if isinstance(state1, list) and isinstance(state2, list):
+            # Handle sequence types (list, tuple) but not Tensor, str, bytes
+            if (
+                isinstance(state1, Sequence)
+                and not isinstance(state1, (Tensor, str, bytes))
+                and isinstance(state2, Sequence)
+                and not isinstance(state2, (Tensor, str, bytes))
+            ):
                 if len(state1) != len(state2):
                     return False
                 for s1, s2 in zip(state1, state2):
