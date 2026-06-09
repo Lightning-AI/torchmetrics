@@ -506,13 +506,23 @@ class Metric(Module, ABC):
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
                 input_dict[attr] = [dim_zero_cat(input_dict[attr])]
 
-            # cornor case in distributed settings where a rank have not received any data, create empty to concatenate
+            # corner case in distributed settings where a rank has not received any data,
+            # create empty tensor to concatenate (for dim_zero_cat reduction)
             if (
                 self._TORCH_GREATER_EQUAL_2_1
                 and reduction_fn == dim_zero_cat
                 and isinstance(input_dict[attr], list)
                 and len(input_dict[attr]) == 0
             ):
+                input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
+
+            # same corner case for dist_reduce_fx=None list states: if one rank has an empty
+            # list while others have entries, apply_to_collection will find different numbers
+            # of tensors across ranks, causing mismatched all_gather calls and a deadlock.
+            # Pre-gather length check: insert a zero-element placeholder so the gather
+            # call counts match across ranks. The placeholder is filtered out post-gather
+            # before stacking, so its shape does not need to match real entries.
+            if reduction_fn is None and isinstance(input_dict[attr], list) and len(input_dict[attr]) == 0:
                 input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
 
         output_dict = apply_to_collection(
@@ -528,6 +538,27 @@ class Metric(Module, ABC):
             if isinstance(output_dict[attr], list) and len(output_dict[attr]) == 0:
                 setattr(self, attr, [])
                 continue
+
+            # for dist_reduce_fx=None list states, filter out empty placeholder
+            # tensors that were inserted to prevent all_gather deadlocks.
+            # This must happen before stacking, because placeholder shapes
+            # may not match real entries (e.g., multidimensional list entries).
+            if reduction_fn is None and isinstance(output_dict[attr], list):
+                # Handle nested list structure from all_gather: output_dict[attr] is list of lists
+                # where each inner list corresponds to a rank's list state.
+                # We need to filter empty placeholder tensors from each inner list.
+                filtered_ranks = []
+                for rank_list in output_dict[attr]:
+                    if isinstance(rank_list, list):
+                        filtered = [t for t in rank_list if not (isinstance(t, Tensor) and t.numel() == 0)]
+                        filtered_ranks.append(filtered)
+                    else:
+                        filtered_ranks.append(rank_list)
+                output_dict[attr] = filtered_ranks
+                # Check if all ranks have empty lists after filtering
+                if all(isinstance(r, list) and len(r) == 0 for r in output_dict[attr]):
+                    setattr(self, attr, [])
+                    continue
 
             if isinstance(output_dict[attr][0], Tensor):
                 output_dict[attr] = torch.stack(output_dict[attr])

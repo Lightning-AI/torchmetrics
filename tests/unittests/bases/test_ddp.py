@@ -14,6 +14,7 @@
 import os
 from copy import deepcopy
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
@@ -342,3 +343,80 @@ def _test_sync_with_unequal_size_lists(rank):
 def test_sync_with_unequal_size_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_unequal_size_lists, range(NUM_PROCESSES))
+
+
+def _test_sync_with_empty_none_reduce_lists(rank):
+    """Test sync with dist_reduce_fx=None when all ranks have empty list states."""
+
+    class DummyNoneReduceMetric(Metric):
+        full_state_update = True
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
+            self.add_state("x", default=[], dist_reduce_fx=None)
+
+        def update(self, x):
+            self.x.append(x)
+
+        def compute(self):
+            return self.x
+
+    dummy = DummyNoneReduceMetric(sync_on_compute=True)
+    result = dummy.compute()
+    assert result == []
+
+
+def _test_sync_with_unequal_none_reduce_lists(rank):
+    """Test sync with dist_reduce_fx=None when some ranks have empty list states.
+
+    This is the bug described in https://github.com/Lightning-AI/torchmetrics/issues/3336.
+    Previously, _sync_dist would deadlock because apply_to_collection found different
+    numbers of tensors across ranks, causing mismatched all_gather calls.
+
+    """
+
+    class DummyNoneReduceMetric(Metric):
+        full_state_update = True
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
+            self.add_state("x", default=[], dist_reduce_fx=None)
+
+        def update(self, x):
+            self.x.append(x)
+
+        def compute(self):
+            if len(self.x) == 0:
+                return []
+            return torch.cat(self.x, dim=0).sum()
+
+    dummy = DummyNoneReduceMetric(sync_on_compute=True)
+    if rank == 0:
+        dummy.update(torch.ones(2))
+    val = dummy.compute()
+    # rank 0 contributed [1, 1], rank 1 had no data
+    # after sync, both ranks should see the same tensor result
+    assert isinstance(val, torch.Tensor), f"Expected tensor after sync, got {type(val)}"
+    assert val.item() == 2.0
+
+
+@pytest.mark.DDP
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
+def test_sync_with_empty_none_reduce_lists():
+    """Test that dist_reduce_fx=None list states sync correctly when all ranks are empty."""
+    pytest.pool.map(_test_sync_with_empty_none_reduce_lists, range(NUM_PROCESSES))
+
+
+@pytest.mark.DDP
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
+def test_sync_with_unequal_none_reduce_lists():
+    """Test that dist_reduce_fx=None list states sync correctly when some ranks have no data.
+
+    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3336.
+
+    """
+    pytest.pool.map(_test_sync_with_unequal_none_reduce_lists, range(NUM_PROCESSES))
