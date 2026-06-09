@@ -161,7 +161,9 @@ class BinaryClassificationReport(BinaryStatScores):
             if avg == "macro":
                 result["macro"] = dict(_compute_average(per_class, "macro", tp_per_class, fp_per_class, fn_per_class))
             elif avg == "weighted":
-                result["weighted"] = dict(_compute_average(per_class, "weighted", tp_per_class, fp_per_class, fn_per_class))
+                result["weighted"] = dict(
+                    _compute_average(per_class, "weighted", tp_per_class, fp_per_class, fn_per_class)
+                )
 
         return result
 
