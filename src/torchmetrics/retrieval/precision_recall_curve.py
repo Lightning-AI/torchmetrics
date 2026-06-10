@@ -285,9 +285,11 @@ class RetrievalPrecisionRecallCurve(Metric):
             >>> fig_, ax_ = metric.plot()
 
         """
-        curve = curve or self.compute()
+        curve_computed = curve or self.compute()
+        # switch order as the standard way is recall along x-axis and precision along y-axis
+        curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
         return plot_curve(
-            (curve[1], curve[0], curve[2]),
+            curve_computed,
             ax=ax,
             label_names=("Recall", "Precision"),
             name=self.__class__.__name__,
