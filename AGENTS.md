@@ -94,12 +94,14 @@ ______________________________________________________________________
 ## Adding a new metric
 
 1. **Functional helpers** — `src/torchmetrics/functional/<domain>/<metric>.py`
+
    - `_<metric>_update(...)` → intermediate tensors (tp, fp, …)
    - `_<metric>_compute(...)` / `_<metric>_reduce(...)` → final value
    - `_<metric>_arg_validation(...)` / `_<metric>_tensor_validation(...)` for input checks
    - Skip for module-only metrics (FID/KID style — intentionally no functional layer)
 
 2. **Module class** — `src/torchmetrics/<domain>/<metric>.py`
+
    - Subclass `Metric`; call functional helpers from `update()` and `compute()`
 
 3. **Classification task variants** — implement `BinaryXxx`, `MulticlassXxx`, `MultilabelXxx`
@@ -109,20 +111,24 @@ ______________________________________________________________________
    `task: Literal["binary","multiclass","multilabel"]`.
 
 4. **Exports** — add to all applicable:
+
    - `src/torchmetrics/<domain>/__init__.py`
    - `src/torchmetrics/functional/<domain>/__init__.py`
    - `src/torchmetrics/__init__.py` (top-level)
 
 5. **Optional dependencies** — gate with `RequirementCache`; add `__doctest_skip__`:
+
    ```python
    if not _MATPLOTLIB_AVAILABLE:
        __doctest_skip__ = ["MyMetric.plot"]
    ```
+
    See [Optional dependency pattern](#optional-dependency-pattern).
 
 6. **Docs page** — `docs/source/<domain>/<metric>.rst`
 
 7. **Tests** — `tests/unittests/<domain>/test_<metric>.py`
+
    - All domains: subclass `MetricTester`
    - Text domain only: subclass `TextTester` from `tests/unittests/text/_helpers.py`
 
@@ -136,6 +142,7 @@ ______________________________________________________________________
 # run as: cd tests && python -m pytest unittests/...
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers.testers import MetricTester
+
 
 class TestMyMetric(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
@@ -151,6 +158,7 @@ class TestMyMetric(MetricTester):
 ```
 
 Two equivalent invocation styles:
+
 - `cd tests && python -m pytest unittests/...`
 - `pytest tests/...` from repo root
 
