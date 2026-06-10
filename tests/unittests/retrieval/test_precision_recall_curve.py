@@ -186,3 +186,17 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
             reference_metric=_compute_precision_recall_curve,
             metric_args=metric_args,
         )
+
+
+def test_plot_axis_labels() -> None:
+    """Assert RetrievalPrecisionRecallCurve.plot() uses Recall on x-axis and Precision on y-axis."""
+    pytest.importorskip("matplotlib")
+    metric = RetrievalPrecisionRecallCurve()
+    metric.update(
+        torch.rand(10),
+        torch.randint(2, (10,)),
+        indexes=torch.randint(2, (10,)),
+    )
+    _, ax = metric.plot()
+    assert ax.get_xlabel() == "Recall"
+    assert ax.get_ylabel() == "Precision"
