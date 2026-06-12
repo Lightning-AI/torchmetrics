@@ -301,6 +301,15 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
                 len(output[2]) == (len(none_output[2][0]) if thresholds is None else len(none_output[2])) * NUM_CLASSES
             )
 
+    @pytest.mark.parametrize("average", ["macro", "micro"])
+    def test_multiclass_precision_recall_curve_recall_monotonicity(self, inputs, average):
+        """Tests that recall is monotonically non-increasing"""
+        preds, target = inputs
+        output = multiclass_precision_recall_curve(
+            preds[0], target[0], num_classes=NUM_CLASSES, average=average
+        )
+        assert torch.all(output[1][1:] <= output[1][:-1])
+
 
 def _reference_sklearn_precision_recall_curve_multilabel(preds, target, ignore_index=None):
     precision, recall, thresholds = [], [], []

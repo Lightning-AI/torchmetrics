@@ -573,17 +573,17 @@ def _multiclass_precision_recall_curve_compute(
     if average == "macro":
         thres = thres.repeat(num_classes) if tensor_state else torch.cat(thres_list, 0)
         thres = thres.sort().values
-        mean_precision = precision.flatten() if tensor_state else torch.cat(precision_list, 0)
-        mean_precision = mean_precision.sort().values
-        mean_recall = torch.zeros_like(mean_precision)
+        mean_recall = recall.flatten() if tensor_state else torch.cat(recall_list, 0)
+        mean_recall = mean_recall.sort().values
+        mean_precision = torch.zeros_like(mean_recall)
         for i in range(num_classes):
-            mean_recall += interp(
-                mean_precision,
-                precision[i] if tensor_state else precision_list[i],
-                recall[i] if tensor_state else recall_list[i],
+            mean_precision += interp(
+                mean_recall,
+                recall[i].flip(0) if tensor_state else recall_list[i].flip(0),
+                precision[i].flip(0) if tensor_state else precision_list[i].flip(0),
             )
-        mean_recall /= num_classes
-        return mean_precision, mean_recall, thres
+        mean_precision /= num_classes
+        return mean_precision.flip(0), mean_recall.flip(0), thres
 
     if tensor_state:
         return precision, recall, thres
