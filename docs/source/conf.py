@@ -465,4 +465,6 @@ linkcheck_ignore = [
     "https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173",
     # Character Error Rate (site under maintenance see links.rst)
     "https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de",
+    # minesparis-psl.hal.science - connection timeout
+    "https://minesparis-psl.hal.science/hal-00464703",
 ]
