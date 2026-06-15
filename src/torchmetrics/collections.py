@@ -348,6 +348,15 @@ class MetricCollection(ModuleDict):
         Handles Tensor, tuple, list, and scalar types that may appear in metric states (e.g. MeanAveragePrecision stores
         tuples in list states).
 
+        Args:
+            s1: First state element. May be a Tensor, list, tuple, or scalar.
+            s2: Second state element. Must be the same type as ``s1``.
+
+        Returns:
+            True if both elements are equal by value and shape (for Tensors). Falls back to ``==`` for types not
+            explicitly handled (int, float, str, etc.). Types where ``==`` returns a non-bool (e.g. numpy arrays)
+            are not explicitly supported.
+
         """
         if type(s1) != type(s2):  # noqa: E721
             return False

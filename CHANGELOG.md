@@ -33,8 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
-
+- Fixed `MetricCollection` compute-group detection for metrics with sequence (list/tuple) states, such as `MeanAveragePrecision` ([#3415](https://github.com/Lightning-AI/torchmetrics/pull/3415))
 
 ---
 
