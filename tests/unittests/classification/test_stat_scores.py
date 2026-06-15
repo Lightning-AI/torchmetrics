@@ -683,6 +683,7 @@ def test_multiclass_stat_scores_invalid_top_k(top_k):
     """Test that invalid top_k values raise ValueError for multiclass stat scores.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3405
+
     """
     with pytest.raises(ValueError, match=r"Expected argument `top_k` to be an integer larger than or equal to 1"):
         _multiclass_stat_scores_arg_validation(num_classes=5, top_k=top_k)
@@ -702,6 +703,7 @@ def test_multiclass_stat_scores_class_invalid_top_k(top_k):
     """Test that invalid top_k values raise ValueError for MulticlassStatScores class.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3405
+
     """
     with pytest.raises(ValueError, match=r"Expected argument `top_k` to be an integer larger than or equal to 1"):
         MulticlassStatScores(num_classes=5, top_k=top_k)
@@ -721,6 +723,7 @@ def test_multiclass_accuracy_invalid_top_k(top_k):
     """Test that invalid top_k values raise ValueError for MulticlassAccuracy class.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3405
+
     """
     with pytest.raises(ValueError, match=r"Expected argument `top_k` to be an integer larger than or equal to 1"):
         MulticlassAccuracy(num_classes=5, top_k=top_k)
