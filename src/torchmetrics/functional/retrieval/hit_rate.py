@@ -55,7 +55,7 @@ def retrieval_hit_rate(preds: Tensor, target: Tensor, top_k: Optional[int] = Non
         top_k = preds.shape[-1]
 
     if not (isinstance(top_k, int) and top_k > 0):
-        raise ValueError("`top_k` has to be a positive integer or None")
+        raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}")
 
     relevant = target[torch.argsort(preds, dim=-1, descending=True)][:top_k].sum()
     return (relevant > 0).float()
