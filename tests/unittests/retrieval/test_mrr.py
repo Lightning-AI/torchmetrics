@@ -190,10 +190,12 @@ class TestMRR(RetrievalMetricTester):
             kwargs_update={},
         )
 
-    @pytest.mark.parametrize(**_concat_tests(
-        _errors_test_functional_metric_parameters_default,
-        _errors_test_functional_metric_parameters_k,
-    ))
+    @pytest.mark.parametrize(
+        **_concat_tests(
+            _errors_test_functional_metric_parameters_default,
+            _errors_test_functional_metric_parameters_k,
+        )
+    )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
         """Test that specific errors are raised for incorrect input."""
         self.run_functional_metric_arguments_test(
