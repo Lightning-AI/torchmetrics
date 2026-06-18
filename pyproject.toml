@@ -186,3 +186,9 @@ Raison = "Raison"
 fpr = "fpr"
 mape = "mape"
 wil = "wil"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.0",
+    "pytest-cov>=7.1.0",
+]
