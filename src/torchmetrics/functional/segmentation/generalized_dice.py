@@ -59,6 +59,7 @@ def _generalized_dice_update(
         numerator: per-sample per-class numerator
         denominator: per-sample per-class denominator
         support: per-sample per-class boolean indicating if class is present in target
+
     """
     preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
 
