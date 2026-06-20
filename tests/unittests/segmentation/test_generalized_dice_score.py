@@ -66,7 +66,7 @@ def _reference_generalized_dice(
     return val.squeeze()
 
 
-@ pytest.mark.parametrize(
+@pytest.mark.parametrize(
     ("preds", "target", "input_format"),
     [
         (_one_hot_input_1.preds, _one_hot_input_1.target, "one-hot"),
@@ -78,11 +78,11 @@ def _reference_generalized_dice(
         (_mixed_logits_input.preds, _mixed_logits_input.target, "mixed"),
     ],
 )
-@ pytest.mark.parametrize("include_background", [True, False])
+@pytest.mark.parametrize("include_background", [True, False])
 class TestGeneralizedDiceScore(MetricTester):
     """Test class for `GeneralizedDiceScore` metric."""
 
-    @ pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_generalized_dice_class(self, preds, target, input_format, include_background, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -130,8 +130,9 @@ class TestGeneralizedDiceScoreAbsentClasses:
     def test_generalized_dice_per_class_absent_classes(self):
         """Test per_class handling of absent classes.
 
-        Classes not present in any sample should return NaN.
-        Classes present in only some samples should average over present samples only.
+        Classes not present in any sample should return NaN. Classes present in only some samples should average over
+        present samples only.
+
         """
         n_samples = 4
         n_classes = 3
