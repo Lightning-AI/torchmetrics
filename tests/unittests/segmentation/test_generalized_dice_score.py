@@ -102,7 +102,7 @@ class TestGeneralizedDiceScore(MetricTester):
                 "input_format": input_format,
             },
         )
-
+    
     def test_generalized_dice_functional(self, preds, target, input_format, include_background):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
@@ -122,3 +122,33 @@ class TestGeneralizedDiceScore(MetricTester):
                 "input_format": input_format,
             },
         )
+
+
+class TestGeneralizedDiceScoreAbsentClasses:
+    """Test handling of absent classes in GeneralizedDiceScore (issue #2846)."""
+
+    def test_generalized_dice_per_class_absent_classes(self):
+        """Test per_class handling of absent classes.
+        
+        Classes not present in any sample should return NaN.
+        Classes present in only some samples should average over present samples only.
+        """
+        N_SAMPLES = 4
+        N_CLASSES = 3
+
+        target = torch.full((N_SAMPLES, N_CLASSES, 128, 128), 0, dtype=torch.int8)
+        preds = torch.full((N_SAMPLES, N_CLASSES, 128, 128), 0, dtype=torch.int8)
+
+        target[0, 0], preds[0, 0] = 1, 1
+        target[2, 1], preds[2, 1] = 1, 1
+
+        # Test class metric
+        gds = GeneralizedDiceScore(num_classes=N_CLASSES, per_class=True, include_background=True)
+        result = gds(preds, target)
+        
+        # Class 0 should be 1.0 (perfect match in sample where present)
+        assert result[0].item() == 1.0, f"Class 0 expected 1.0, got {result[0].item()}"
+        # Class 1 should be 1.0 (perfect match in sample where present)
+        assert result[1].item() == 1.0, f"Class 1 expected 1.0, got {result[1].item()}"
+        # Class 2 should be NaN (absent in all samples)
+        assert torch.isnan(result[2]), f"Class 2 expected NaN, got {result[2].item()}"

@@ -133,19 +133,42 @@ class GeneralizedDiceScore(Metric):
         self.input_format = input_format
 
         num_classes = num_classes - 1 if not include_background else num_classes
-        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
+        if per_class:
+            self.add_state("score", default=torch.zeros(num_classes), dist_reduce_fx="sum")
+            self.add_state("support", default=torch.zeros(num_classes), dist_reduce_fx="sum")
+        else:
+            self.add_state("score", default=torch.zeros(1), dist_reduce_fx="sum")
+            self.add_state("support", default=torch.zeros(1), dist_reduce_fx="sum")
         self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with new data."""
-        numerator, denominator = _generalized_dice_update(
+        numerator, denominator, support = _generalized_dice_update(
             preds, target, self.num_classes, self.include_background, self.weight_type, self.input_format
         )
-        self.score += _generalized_dice_compute(numerator, denominator, self.per_class).sum(dim=0)
+
+        if self.per_class:
+            # Compute per-sample per-class score with NaN for unsupported classes
+            from torchmetrics.utilities.compute import _safe_divide
+            score = _safe_divide(numerator, denominator, zero_division="nan")
+            # Sum scores and support per class across samples
+            self.score += torch.nansum(score, dim=0)
+            self.support += support.sum(dim=0).float()
+        else:
+            # Original behavior: use _generalized_dice_compute which sums over classes then divides
+            per_sample_score = _generalized_dice_compute(numerator, denominator, per_class=False, support=support)
+            self.score += per_sample_score.sum()
+            self.support += preds.shape[0]
         self.samples += preds.shape[0]
 
     def compute(self) -> Tensor:
         """Compute the final generalized dice score."""
+        if self.per_class:
+            # Replace 0 support with NaN to get NaN for absent classes
+            support = self.support.clone()
+            support[support == 0] = float("nan")
+            return self.score / support
+        # Score is already averaged over classes, just average over samples
         return self.score / self.samples
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
