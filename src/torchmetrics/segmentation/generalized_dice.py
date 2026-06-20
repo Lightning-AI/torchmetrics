@@ -150,6 +150,7 @@ class GeneralizedDiceScore(Metric):
         if self.per_class:
             # Compute per-sample per-class score with NaN for unsupported classes
             from torchmetrics.utilities.compute import _safe_divide
+
             score = _safe_divide(numerator, denominator, zero_division="nan")
             # Sum scores and support per class across samples
             self.score += torch.nansum(score, dim=0)
