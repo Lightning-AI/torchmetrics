@@ -4,6 +4,12 @@ requires = [
   "wheel",
 ]
 
+[dependency-groups]
+dev = [
+  "pytest>=9.1",
+  "pytest-cov>=7.1",
+]
+
 [tool.ruff]
 target-version = "py39"
 line-length = 120
@@ -186,9 +192,3 @@ Raison = "Raison"
 fpr = "fpr"
 mape = "mape"
 wil = "wil"
-
-[dependency-groups]
-dev = [
-    "pytest>=9.1.0",
-    "pytest-cov>=7.1.0",
-]
