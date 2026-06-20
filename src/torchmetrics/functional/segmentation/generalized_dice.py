@@ -100,13 +100,16 @@ def _generalized_dice_compute(
     numerator: Tensor,
     denominator: Tensor,
     per_class: bool = True,
-    support: Tensor = None,
+    support: Tensor | None = None,
 ) -> Tensor:
     """Compute the generalized dice score."""
     if not per_class:
         numerator = torch.sum(numerator, 1)
         denominator = torch.sum(denominator, 1)
         return _safe_divide(numerator, denominator)
+
+    # For per_class=True, support is required
+    assert support is not None, "support must be provided when per_class=True"
 
     # For per_class=True, compute score per sample per class
     score = _safe_divide(numerator, denominator, zero_division="nan")

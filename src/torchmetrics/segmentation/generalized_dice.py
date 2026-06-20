@@ -107,13 +107,15 @@ class GeneralizedDiceScore(Metric):
 
     """
 
-    score: Tensor
-    samples: Tensor
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
+
+    score: Tensor
+    support: Tensor
+    samples: Tensor
 
     def __init__(
         self,
