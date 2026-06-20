@@ -52,8 +52,14 @@ def _generalized_dice_update(
     include_background: bool,
     weight_type: Literal["square", "simple", "linear"] = "square",
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
-) -> Tuple[Tensor, Tensor]:
-    """Update the state with the current prediction and target."""
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Update the state with the current prediction and target.
+
+    Returns:
+        numerator: per-sample per-class numerator
+        denominator: per-sample per-class denominator
+        support: per-sample per-class boolean indicating if class is present in target
+    """
     preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
 
     reduce_axis = list(range(2, target.ndim))
@@ -82,15 +88,34 @@ def _generalized_dice_update(
 
     numerator = 2.0 * intersection * weights
     denominator = cardinality * weights
-    return numerator, denominator
+
+    # Track which classes are present in the target (support)
+    support = target_sum > 0
+
+    return numerator, denominator, support
 
 
-def _generalized_dice_compute(numerator: Tensor, denominator: Tensor, per_class: bool = True) -> Tensor:
+def _generalized_dice_compute(
+    numerator: Tensor,
+    denominator: Tensor,
+    per_class: bool = True,
+    support: Tensor = None,
+) -> Tensor:
     """Compute the generalized dice score."""
     if not per_class:
         numerator = torch.sum(numerator, 1)
         denominator = torch.sum(denominator, 1)
-    return _safe_divide(numerator, denominator)
+        return _safe_divide(numerator, denominator)
+
+    # For per_class=True, compute score per sample per class
+    score = _safe_divide(numerator, denominator, zero_division="nan")
+
+    # Average over samples where class is present (support)
+    # For samples without support, score is NaN, so we use nansum and divide by support count
+    support_count = support.sum(dim=0).float()
+    # Replace 0 support count with NaN to get NaN result for absent classes
+    support_count[support_count == 0] = float("nan")
+    return torch.nansum(score, dim=0) / support_count
 
 
 def generalized_dice_score(
@@ -146,7 +171,7 @@ def generalized_dice_score(
 
     """
     _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type, input_format)
-    numerator, denominator = _generalized_dice_update(
+    numerator, denominator, support = _generalized_dice_update(
         preds, target, num_classes, include_background, weight_type, input_format
     )
-    return _generalized_dice_compute(numerator, denominator, per_class)
+    return _generalized_dice_compute(numerator, denominator, per_class=per_class, support=support)
