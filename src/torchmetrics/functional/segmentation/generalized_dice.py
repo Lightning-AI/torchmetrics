@@ -109,7 +109,8 @@ def _generalized_dice_compute(
         return _safe_divide(numerator, denominator)
 
     # For per_class=True, support is required
-    assert support is not None, "support must be provided when per_class=True"
+    if support is None:
+        raise ValueError("support must be provided when per_class=True")
 
     # For per_class=True, compute score per sample per class
     score = _safe_divide(numerator, denominator, zero_division="nan")
