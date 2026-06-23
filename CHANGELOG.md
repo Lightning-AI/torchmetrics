@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed `_sync_dist` deadlock for `dist_reduce_fx=None` list states when ranks have different list lengths ([#3336](https://github.com/Lightning-AI/torchmetrics/issues/3336))
 
 
 ---
