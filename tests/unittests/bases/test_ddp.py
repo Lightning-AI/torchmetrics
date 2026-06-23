@@ -14,6 +14,7 @@
 import os
 from copy import deepcopy
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
@@ -349,7 +350,7 @@ class _NoneReductionListMetric(Metric):
 
     full_state_update = True
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("items", default=[], dist_reduce_fx=None)
 

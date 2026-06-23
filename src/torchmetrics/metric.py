@@ -503,7 +503,7 @@ class Metric(Module, ABC):
         if ref is not None:
             if ref.ndim == 0:
                 return torch.zeros(0, device=self.device, dtype=ref.dtype)
-            return torch.zeros((0,) + ref.shape[1:], device=self.device, dtype=ref.dtype)
+            return torch.zeros((0, *ref.shape[1:]), device=self.device, dtype=ref.dtype)
         if ndim <= 1:
             return torch.zeros(0, device=self.device, dtype=self.dtype)
         pad_shape = [0] + [int(tail_shape_vec[i].item()) for i in range(ndim - 1)]
