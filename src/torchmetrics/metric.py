@@ -570,11 +570,7 @@ class Metric(Module, ABC):
                 input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
 
             # equalize list lengths for dist_reduce_fx=None to prevent deadlocks in apply_to_collection
-            if (
-                self._TORCH_GREATER_EQUAL_2_1
-                and reduction_fn is None
-                and isinstance(input_dict[attr], list)
-            ):
+            if self._TORCH_GREATER_EQUAL_2_1 and reduction_fn is None and isinstance(input_dict[attr], list):
                 input_dict[attr] = self._equalize_none_reduction_list(input_dict[attr], group)
 
         if jit_distributed_available():
