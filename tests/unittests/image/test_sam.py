@@ -151,4 +151,5 @@ def test_no_nan_on_zero_pixel():
     assert not torch.isnan(result_cls), f"SpectralAngleMapper returned NaN: {result_cls}"
 
     # Result should be a valid angle in [0, pi/2]
-    assert result >= 0 and result <= torch.pi / 2, f"result out of range: {result}"
+    assert result >= 0, f"result is negative: {result}"
+    assert result <= torch.pi / 2, f"result exceeds pi/2: {result}"
