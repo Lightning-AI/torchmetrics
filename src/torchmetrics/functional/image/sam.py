@@ -74,7 +74,9 @@ def _sam_compute(
     dot_product = (preds * target).sum(dim=1)
     preds_norm = preds.norm(dim=1)
     target_norm = target.norm(dim=1)
-    sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
+    # Clamp denominator to avoid NaN when a pixel has zero norm (all-zero channels)
+    denom = (preds_norm * target_norm).clamp(min=torch.finfo(preds.dtype).eps)
+    sam_score = torch.clamp(dot_product / denom, -1, 1).acos()
     return reduce(sam_score, reduction)
 
 
