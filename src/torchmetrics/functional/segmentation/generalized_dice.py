@@ -149,30 +149,44 @@ def generalized_dice_score(
         The Generalized Dice Score
 
     Example (with one-hot encoded tensors):
-        >>> from torch import randint
+        >>> import torch
         >>> from torchmetrics.functional.segmentation import generalized_dice_score
-        >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
-        >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> preds = torch.tensor([
+        ...     [[[1, 0], [0, 1]], [[0, 1], [1, 0]], [[1, 1], [0, 0]], [[0, 0], [1, 1]], [[1, 0], [0, 1]]],
+        ...     [[[0, 1], [1, 0]], [[1, 0], [0, 1]], [[0, 0], [1, 1]], [[1, 1], [0, 0]], [[0, 1], [1, 0]]],
+        ...     [[[1, 1], [0, 0]], [[0, 0], [1, 1]], [[1, 0], [0, 1]], [[0, 1], [1, 0]], [[1, 1], [0, 0]]],
+        ...     [[[0, 0], [1, 1]], [[1, 1], [0, 0]], [[0, 1], [1, 0]], [[1, 0], [0, 1]], [[0, 0], [1, 1]]],
+        ... ])
+        >>> target = torch.tensor([
+        ...     [[[1, 0], [0, 1]], [[0, 1], [1, 0]], [[1, 1], [0, 0]], [[0, 0], [1, 1]], [[1, 0], [0, 1]]],
+        ...     [[[0, 1], [1, 0]], [[1, 0], [0, 1]], [[0, 0], [1, 1]], [[1, 1], [0, 0]], [[0, 1], [1, 0]]],
+        ...     [[[1, 1], [0, 0]], [[0, 0], [1, 1]], [[1, 0], [0, 1]], [[0, 1], [1, 0]], [[1, 1], [0, 0]]],
+        ...     [[[0, 0], [1, 1]], [[1, 1], [0, 0]], [[0, 1], [1, 0]], [[1, 0], [0, 1]], [[0, 0], [1, 1]]],
+        ... ])
         >>> generalized_dice_score(preds, target, num_classes=5)
-        tensor([0.4830, 0.4935, 0.5044, 0.4880])
+        tensor([1., 1., 1., 1.])
         >>> generalized_dice_score(preds, target, num_classes=5, per_class=True)
-        tensor([[0.4724, 0.5185, 0.4710, 0.5062, 0.4500],
-                [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
-                [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
-                [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
+        tensor([1., 1., 1., 1., 1.])
 
     Example (with index tensors):
-        >>> from torch import randint
+        >>> import torch
         >>> from torchmetrics.functional.segmentation import generalized_dice_score
-        >>> preds = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
-        >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> preds = torch.tensor([
+        ...     [[0, 1], [2, 3]],
+        ...     [[1, 2], [3, 4]],
+        ...     [[2, 3], [4, 0]],
+        ...     [[3, 4], [0, 1]],
+        ... ])
+        >>> target = torch.tensor([
+        ...     [[0, 1], [2, 3]],
+        ...     [[1, 2], [3, 4]],
+        ...     [[2, 3], [4, 0]],
+        ...     [[3, 4], [0, 1]],
+        ... ])
         >>> generalized_dice_score(preds, target, num_classes=5, input_format="index")
-        tensor([0.1991, 0.1971, 0.2350, 0.2216])
+        tensor([1., 1., 1., 1.])
         >>> generalized_dice_score(preds, target, num_classes=5, per_class=True, input_format="index")
-        tensor([[0.1714, 0.2500, 0.1304, 0.2524, 0.2069],
-                [0.1837, 0.2162, 0.0962, 0.2692, 0.1895],
-                [0.3866, 0.1348, 0.2526, 0.2301, 0.2083],
-                [0.1978, 0.2804, 0.1714, 0.1915, 0.2783]])
+        tensor([1., 1., 1., 1., 1.])
 
     """
     _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type, input_format)
