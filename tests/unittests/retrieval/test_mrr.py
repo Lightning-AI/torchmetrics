@@ -223,6 +223,7 @@ def test_retrieval_mrr_invalid_top_k(top_k):
     """Test that invalid top_k values raise ValueError for RetrievalMRR functional API.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3405
+
     """
     with pytest.raises(ValueError, match=r"Argument ``top_k`` has to be a positive integer or None, but got"):
         retrieval_reciprocal_rank(torch.tensor([0.2, 0.3, 0.5]), torch.tensor([False, True, False]), top_k=top_k)
@@ -242,6 +243,7 @@ def test_retrieval_mrr_class_invalid_top_k(top_k):
     """Test that invalid top_k values raise ValueError for RetrievalMRR class.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3405
+
     """
     with pytest.raises(ValueError, match=r"Argument ``top_k`` has to be a positive integer or None, but got"):
         RetrievalMRR(top_k=top_k)
