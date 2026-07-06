@@ -433,10 +433,12 @@ class FrechetInceptionDistance(Metric):
             super().reset()
 
     def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+        """Transfer all metric state to specific dtype.
+
+        Special version of standard `type` method.
 
         Arguments:
-            dst_type: the desired type as ``torch.dtype`` or string
+                    dst_type: the desired type as ``torch.dtype`` or string
 
         """
         out = super().set_dtype(dst_type)

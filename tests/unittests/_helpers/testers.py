@@ -470,17 +470,19 @@ class MetricTester:
         fragment_kwargs: bool = False,
         **kwargs_update: Any,
     ):
-        """Core method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions.
+
+        Call this inside testing method.
 
         Args:
-            preds: torch tensor with predictions
-            target: torch tensor with targets
-            metric_functional: metric class that should be tested
-            reference_metric: callable function that is used for comparison
-            metric_args: dict with additional arguments used for class initialization
-            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
-            kwargs_update: Additional keyword arguments that will be passed with preds and
-                target when running update on the metric.
+                    preds: torch tensor with predictions
+                    target: torch tensor with targets
+                    metric_functional: metric class that should be tested
+                    reference_metric: callable function that is used for comparison
+                    metric_args: dict with additional arguments used for class initialization
+                    fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+                    kwargs_update: Additional keyword arguments that will be passed with preds and
+                        target when running update on the metric.
 
         """
         _functional_test(
@@ -514,28 +516,30 @@ class MetricTester:
         check_ddp_sorting: bool = False,
         **kwargs_update: Any,
     ):
-        """Core method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class.
+
+        Call this inside testing methods.
 
         Args:
-            ddp: bool, if running in ddp mode or not
-            preds: torch tensor with predictions
-            target: torch tensor with targets
-            metric_class: metric class that should be tested
-            reference_metric: callable function that is used for comparison
-            dist_sync_on_step: bool, if true will synchronize metric state across processes at each ``forward()``
-            metric_args: dict with additional arguments used for class initialization
-            check_dist_sync_on_step: bool, if true will check if the metric is also correctly
-                calculated per batch and per device (and not just at the end)
-            check_batch: bool, if true will check if the metric is also correctly
-                calculated across devices for each batch (and not just at the end)
-            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
-            check_scriptable: bool indicating if metric should also be tested if it can be scripted
-            check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
-            check_picklable: bool indicating if metric should be tested that it can be pickled
-            atol: absolute tolerance used for comparison of results, if None will use self.atol
-            check_ddp_sorting: bool indicating if metric output should be sorted before comparison
-            kwargs_update: Additional keyword arguments that will be passed with preds and
-                target when running update on the metric.
+                    ddp: bool, if running in ddp mode or not
+                    preds: torch tensor with predictions
+                    target: torch tensor with targets
+                    metric_class: metric class that should be tested
+                    reference_metric: callable function that is used for comparison
+                    dist_sync_on_step: bool, if true will synchronize metric state across processes at each ``forward()``
+                    metric_args: dict with additional arguments used for class initialization
+                    check_dist_sync_on_step: bool, if true will check if the metric is also correctly
+                        calculated per batch and per device (and not just at the end)
+                    check_batch: bool, if true will check if the metric is also correctly
+                        calculated across devices for each batch (and not just at the end)
+                    fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
+                    check_scriptable: bool indicating if metric should also be tested if it can be scripted
+                    check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
+                    check_picklable: bool indicating if metric should be tested that it can be pickled
+                    atol: absolute tolerance used for comparison of results, if None will use self.atol
+                    check_ddp_sorting: bool indicating if metric output should be sorted before comparison
+                    kwargs_update: Additional keyword arguments that will be passed with preds and
+                        target when running update on the metric.
 
         """
         common_kwargs = {

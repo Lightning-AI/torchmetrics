@@ -104,9 +104,8 @@ class MinMaxMetric(WrapperMetric):
     def reset(self) -> None:
         """Set ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric.
 
-        In contrast to the base ``Metric.reset()``, this method preserves the accumulated
-        ``min_val`` and ``max_val`` across resets so that they survive checkpoint save/load
-        boundaries. Only the wrapped base metric is fully reset.
+        In contrast to the base ``Metric.reset()``, this method preserves the accumulated ``min_val`` and ``max_val``
+        across resets so that they survive checkpoint save/load boundaries. Only the wrapped base metric is fully reset.
 
         """
         # Save current min/max values before the base class resets them to defaults

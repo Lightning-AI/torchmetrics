@@ -90,16 +90,18 @@ def _rmse_sw_update(
 def _rmse_sw_compute(
     rmse_val_sum: Optional[Tensor], rmse_map: Tensor, total_images: Tensor
 ) -> tuple[Optional[Tensor], Tensor]:
-    """Compute RMSE from the aggregated RMSE value. Optionally also computes the mean value for RMSE map.
+    """Compute RMSE from the aggregated RMSE value.
+
+    Optionally also computes the mean value for RMSE map.
 
     Args:
-        rmse_val_sum: Sum of RMSE over all examples
-        rmse_map: Sum of RMSE map values over all examples
-        total_images: Total number of images
+            rmse_val_sum: Sum of RMSE over all examples
+            rmse_map: Sum of RMSE map values over all examples
+            total_images: Total number of images
 
     Return:
-        RMSE using sliding window
-        (Optionally) RMSE map
+            RMSE using sliding window
+            (Optionally) RMSE map
 
     """
     rmse = rmse_val_sum / total_images if rmse_val_sum is not None else None

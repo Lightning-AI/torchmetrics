@@ -15,7 +15,7 @@
 import re
 from collections.abc import Sequence
 from functools import partial
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 import pytest
 import torch
@@ -50,7 +50,7 @@ def _reference_rouge_score(
     use_stemmer: bool,
     rouge_level: str,
     metric: str,
-    accumulate: Literal["avg", "best", None],
+    accumulate: Optional[Literal["avg", "best"]],
 ) -> Tensor:
     """Evaluate rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):

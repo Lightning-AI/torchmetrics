@@ -205,57 +205,58 @@ class Metric(Module, ABC):
         dist_reduce_fx: Optional[Union[str, Callable]] = None,
         persistent: bool = False,
     ) -> None:
-        """Add metric state variable. Only used by subclasses.
+        """Add metric state variable.
 
-        Metric state variables are either `:class:`~torch.Tensor` or an empty list, which can be appended to by the
-        metric. Each state variable must have a unique name associated with it. State variables are accessible as
-        attributes of the metric i.e, if ``name`` is ``"my_state"`` then its value can be accessed from an instance
-        ``metric`` as ``metric.my_state``. Metric states behave like buffers and parameters of :class:`~torch.nn.Module`
-        as they are also updated when ``.to()`` is called. Unlike parameters and buffers, metric states are not by
-        default saved in the modules :attr:`~torch.nn.Module.state_dict`.
+        Only used by subclasses.
+                Metric state variables are either `:class:`~torch.Tensor` or an empty list, which can be appended to by the
+                metric. Each state variable must have a unique name associated with it. State variables are accessible as
+                attributes of the metric i.e, if ``name`` is ``"my_state"`` then its value can be accessed from an instance
+                ``metric`` as ``metric.my_state``. Metric states behave like buffers and parameters of :class:`~torch.nn.Module`
+                as they are also updated when ``.to()`` is called. Unlike parameters and buffers, metric states are not by
+                default saved in the modules :attr:`~torch.nn.Module.state_dict`.
 
         Args:
-            name: The name of the state variable. The variable will then be accessible at ``self.name``.
-            default: Default value of the state; can either be a :class:`~torch.Tensor` or an empty list.
-                The state will be reset to this value when ``self.reset()`` is called.
-            dist_reduce_fx (Optional): Function to reduce state across multiple processes in distributed mode.
-                If value is ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"`` we will use ``torch.sum``,
-                ``torch.mean``, ``torch.cat``, ``torch.min`` and ``torch.max``` respectively, each with argument
-                ``dim=0``. Note that the ``"cat"`` reduction only makes sense if the state is a list, and not
-                a tensor. The user can also pass a custom function in this parameter.
-            persistent (Optional): whether the state will be saved as part of the modules ``state_dict``.
-                Default is ``False``.
+                    name: The name of the state variable. The variable will then be accessible at ``self.name``.
+                    default: Default value of the state; can either be a :class:`~torch.Tensor` or an empty list.
+                        The state will be reset to this value when ``self.reset()`` is called.
+                    dist_reduce_fx (Optional): Function to reduce state across multiple processes in distributed mode.
+                        If value is ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"`` we will use ``torch.sum``,
+                        ``torch.mean``, ``torch.cat``, ``torch.min`` and ``torch.max``` respectively, each with argument
+                        ``dim=0``. Note that the ``"cat"`` reduction only makes sense if the state is a list, and not
+                        a tensor. The user can also pass a custom function in this parameter.
+                    persistent (Optional): whether the state will be saved as part of the modules ``state_dict``.
+                        Default is ``False``.
 
-        .. note::
-            Setting ``dist_reduce_fx`` to None will return the metric state synchronized across different processes.
-            However, there won't be any reduction function applied to the synchronized metric state.
+                .. note::
+                    Setting ``dist_reduce_fx`` to None will return the metric state synchronized across different processes.
+                    However, there won't be any reduction function applied to the synchronized metric state.
 
-            The metric states would be synced as follows
+                    The metric states would be synced as follows
 
-            - If the metric state is :class:`~torch.Tensor`, the synced value will be a stacked :class:`~torch.Tensor`
-              across the process dimension if the metric state was a :class:`~torch.Tensor`. The original
-              :class:`~torch.Tensor` metric state retains dimension and hence the synchronized output will be of shape
-              ``(num_process, ...)``.
+                    - If the metric state is :class:`~torch.Tensor`, the synced value will be a stacked :class:`~torch.Tensor`
+                      across the process dimension if the metric state was a :class:`~torch.Tensor`. The original
+                      :class:`~torch.Tensor` metric state retains dimension and hence the synchronized output will be of shape
+                      ``(num_process, ...)``.
 
-            - If the metric state is a ``list``, the synced value will be a ``list`` containing the
-              combined elements from all processes.
+                    - If the metric state is a ``list``, the synced value will be a ``list`` containing the
+                      combined elements from all processes.
 
-        .. important::
-            When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
-            the format discussed in the above note.
+                .. important::
+                    When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
+                    the format discussed in the above note.
 
-        .. caution::
-            The values inserted into a list state are deleted whenever :meth:`~Metric.reset` is called. This allows
-            device memory to be automatically reallocated, but may produce unexpected effects when referencing list
-            states. To retain such values after :meth:`~Metric.reset` is called, you must first copy them to another
-            object.
+                .. caution::
+                    The values inserted into a list state are deleted whenever :meth:`~Metric.reset` is called. This allows
+                    device memory to be automatically reallocated, but may produce unexpected effects when referencing list
+                    states. To retain such values after :meth:`~Metric.reset` is called, you must first copy them to another
+                    object.
 
         Raises:
-            ValueError:
-                If ``default`` is not a ``tensor`` or an ``empty list``.
-            ValueError:
-                If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``"min"``,
-                ``"max"`` or ``None``.
+                    ValueError:
+                        If ``default`` is not a ``tensor`` or an ``empty list``.
+                    ValueError:
+                        If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``"min"``,
+                        ``"max"`` or ``None``.
 
         """
         if not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default):
@@ -853,10 +854,12 @@ class Metric(Module, ABC):
         return self
 
     def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+        """Transfer all metric state to specific dtype.
+
+        Special version of standard `type` method.
 
         Arguments:
-            dst_type: the desired type as string or dtype object
+                    dst_type: the desired type as string or dtype object
 
         """
         self._dtype_convert = True
