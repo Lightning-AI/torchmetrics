@@ -59,6 +59,8 @@ def _reference_sklearn_stat_scores_binary(preds, target, ignore_index, multidim_
 
     if multidim_average == "global":
         target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
+        if len(target) == 0:
+            return np.array([0, 0, 0, 0, 0])
         tn, fp, fn, tp = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
         return np.array([tp, fp, tn, fn, tp + fn])
 
@@ -67,6 +69,9 @@ def _reference_sklearn_stat_scores_binary(preds, target, ignore_index, multidim_
         pred = pred.flatten()
         true = true.flatten()
         true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+        if len(true) == 0:
+            res.append(np.array([0, 0, 0, 0, 0]))
+            continue
         tn, fp, fn, tp = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
         res.append(np.array([tp, fp, tn, fn, tp + fn]))
     return np.stack(res)
@@ -169,6 +174,8 @@ def _reference_sklearn_stat_scores_multiclass_global(preds, target, ignore_index
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
     target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
+    if len(target) == 0:
+        return np.array([0, 0, 0, 0, 0])
     confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
     tp = np.diag(confmat)
     fp = confmat.sum(0) - tp
@@ -197,6 +204,12 @@ def _reference_sklearn_stat_scores_multiclass_local(preds, target, ignore_index,
         pred = pred.flatten()
         true = true.flatten()
         true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+        if len(true) == 0:
+            if average is None or average == "none":
+                res.append(np.zeros((NUM_CLASSES, 5)))
+            else:
+                res.append(np.array([0, 0, 0, 0, 0]))
+            continue
         confmat = sk_confusion_matrix(y_true=true, y_pred=pred, labels=list(range(NUM_CLASSES)))
         tp = np.diag(confmat)
         fp = confmat.sum(0) - tp
@@ -492,6 +505,9 @@ def _reference_sklearn_stat_scores_multilabel(preds, target, ignore_index, multi
         for i in range(preds.shape[1]):
             pred, true = preds[:, i].flatten(), target[:, i].flatten()
             true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+            if len(true) == 0:
+                stat_scores.append(np.array([0, 0, 0, 0, 0]))
+                continue
             tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
             stat_scores.append(np.array([tp, fp, tn, fn, tp + fn]))
         res = np.stack(stat_scores, axis=0)
@@ -513,6 +529,9 @@ def _reference_sklearn_stat_scores_multilabel(preds, target, ignore_index, multi
         for j in range(preds.shape[1]):
             pred, true = preds[i, j], target[i, j]
             true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+            if len(true) == 0:
+                scores.append(np.array([0, 0, 0, 0, 0]))
+                continue
             tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
             scores.append(np.array([tp, fp, tn, fn, tp + fn]))
         stat_scores.append(np.stack(scores, 1))
