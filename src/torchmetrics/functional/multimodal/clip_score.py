@@ -147,7 +147,9 @@ def _get_features(
                 )
                 processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
                 processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
-        text_features = model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
+        text_features = model.get_text_features(
+            processed["input_ids"].to(device), processed["attention_mask"].to(device)
+        )
         # transformers >= 5.0 changed get_image_features / get_text_features to return
         # BaseModelOutputWithPooling instead of a raw tensor; unwrap when needed.
         return text_features if isinstance(text_features, Tensor) else text_features.pooler_output
