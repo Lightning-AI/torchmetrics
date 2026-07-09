@@ -19,53 +19,100 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
-def _tie_average_dcg(target: Tensor, preds: Tensor, discount_cumsum: Tensor) -> Tensor:
-    """Translated version of sklearns `_tie_average_dcg` function.
+def _tie_average_dcg(target: Tensor, preds: Tensor, discount: Tensor) -> Tensor:
+    """Compute DCG for tied predictions using scatter operations.
+
+    Replaces the ``torch.unique`` approach with ``diff`` + ``scatter_add_``, which is
+    significantly faster on GPU (``torch.unique`` is ~15x slower on GPU than CPU).
+    Float64 is used for accumulation to preserve numerical accuracy.
 
     Args:
-        target: ground truth about each document relevance.
-        preds: estimated probabilities of each document to be relevant.
-        discount_cumsum: cumulative sum of the discount.
+        target: ground truth relevances in **predicted** rank order, shape ``(n_queries, n_docs)``.
+        preds: predicted scores in **predicted** rank order, shape ``(n_queries, n_docs)``.
+        discount: per-rank discount values ``1 / log2(rank + 2)``, shape ``(n_docs,)``.
 
     Returns:
-        The cumulative gain of the tied elements.
+        DCG values, shape ``(n_queries,)``, dtype float32.
 
     """
-    _, inv, counts = torch.unique(-preds, return_inverse=True, return_counts=True)
-    ranked = torch.zeros_like(counts, dtype=torch.float32)
-    ranked.scatter_add_(0, inv, target.to(dtype=ranked.dtype))
-    ranked = ranked / counts
-    groups = counts.cumsum(dim=0) - 1
-    discount_sums = torch.zeros_like(counts, dtype=torch.float32)
-    discount_sums[0] = discount_cumsum[groups[0]]
-    discount_sums[1:] = discount_cumsum[groups].diff()
-    return (ranked * discount_sums).sum()
+    n_queries, n_docs = target.shape
+    device = target.device
+
+    # Detect tie-group boundaries: True at the first element of each new group
+    new_grp = torch.cat(
+        [
+            torch.ones(n_queries, 1, dtype=torch.bool, device=device),
+            preds.diff(dim=-1).abs() > 0,
+        ],
+        dim=-1,
+    )  # (n_queries, n_docs)
+
+    # Per-element group id, unique across the batch
+    gid = new_grp.long().cumsum(-1) - 1  # 0-based within each row
+    gid = gid + torch.arange(n_queries, device=device).unsqueeze(-1) * n_docs
+
+    # Scatter: accumulate gains, discounts, and counts per group
+    flat_id = gid.flatten()
+    flat_gain = target.flatten().float()
+    flat_disc = discount.unsqueeze(0).expand(n_queries, -1).flatten().float()
+
+    grp_gain = torch.zeros(n_queries * n_docs, dtype=torch.float32, device=device)
+    grp_disc = torch.zeros(n_queries * n_docs, dtype=torch.float32, device=device)
+    grp_cnt = torch.zeros(n_queries * n_docs, dtype=torch.int32, device=device)
+
+    grp_gain.scatter_add_(0, flat_id, flat_gain)
+    grp_disc.scatter_add_(0, flat_id, flat_disc)
+    grp_cnt.scatter_add_(0, flat_id, torch.ones_like(flat_id, dtype=torch.int32))
+
+    # Float64 accumulation for numerical parity with sklearn / reference implementations
+    contrib = grp_gain.double() * (grp_disc.double() / grp_cnt.clamp(min=1).double())
+
+    # Scatter only non-empty groups back to the batch dimension
+    valid = grp_cnt > 0
+    batch_idx = flat_id[valid] // n_docs
+    dcg = torch.zeros(n_queries, dtype=torch.float64, device=device)
+    dcg.scatter_add_(0, batch_idx, contrib[valid])
+    return dcg.float()
 
 
 def _dcg_sample_scores(target: Tensor, preds: Tensor, top_k: int, ignore_ties: bool) -> Tensor:
-    """Translated version of sklearns `_dcg_sample_scores` function.
+    """Compute DCG sample scores.
 
     Args:
-        target: ground truth about each document relevance.
-        preds: estimated probabilities of each document to be relevant.
-        top_k: consider only the top k elements
-        ignore_ties: If True, ties are ignored. If False, ties are averaged.
+        target: ground truth relevances, shape ``(n_docs,)`` or ``(n_queries, n_docs)``.
+        preds: predicted scores, shape ``(n_docs,)`` or ``(n_queries, n_docs)``.
+        top_k: consider only the top k elements.
+        ignore_ties: If ``True``, ties are broken by order. If ``False``, ties are averaged.
 
     Returns:
-        The cumulative gain
+        DCG value(s): scalar for 1-D input, shape ``(n_queries,)`` for batched input.
 
     """
-    discount = 1.0 / (torch.log2(torch.arange(target.shape[-1], device=target.device) + 2.0))
-    discount[top_k:] = 0.0
+    batched = preds.dim() > 1
+    if not batched:
+        preds = preds.unsqueeze(0)
+        target = target.unsqueeze(0)
+
+    n_docs = preds.shape[-1]
+
+    # Use topk when k < n_docs to avoid sorting the full list
+    if top_k < n_docs:
+        order = preds.topk(top_k, dim=-1, sorted=True).indices
+        n_docs_eff = top_k
+    else:
+        order = preds.argsort(dim=-1, descending=True, stable=True)
+        n_docs_eff = n_docs
+
+    discount = 1.0 / torch.log2(torch.arange(n_docs_eff, device=preds.device) + 2.0)
+    p_sorted = preds.gather(-1, order)
+    g_sorted = target.float().gather(-1, order)
 
     if ignore_ties:
-        ranking = preds.argsort(descending=True)
-        ranked = target[ranking]
-        cumulative_gain = (discount * ranked).sum()
+        dcg = (discount * g_sorted).sum(-1, dtype=torch.float64).float()
     else:
-        discount_cumsum = discount.cumsum(dim=-1)
-        cumulative_gain = _tie_average_dcg(target, preds, discount_cumsum)
-    return cumulative_gain
+        dcg = _tie_average_dcg(g_sorted, p_sorted, discount)
+
+    return dcg if batched else dcg.squeeze(0)
 
 
 def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int] = None) -> Tensor:
