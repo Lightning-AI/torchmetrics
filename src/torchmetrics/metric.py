@@ -1224,6 +1224,16 @@ class CompositionalMetric(Metric):
         else:
             self.metric_b = metric_b
 
+    @property
+    def metric_state(self) -> dict[str, Union[List[Tensor], Tensor]]:
+        """Return the metric state of the compositional metric."""
+        state = {}
+        if isinstance(self.metric_a, Metric):
+            state.update(self.metric_a.metric_state)
+        if isinstance(self.metric_b, Metric):
+            state.update(self.metric_b.metric_state)
+        return state
+
     def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
         """No syncing required here.
 
