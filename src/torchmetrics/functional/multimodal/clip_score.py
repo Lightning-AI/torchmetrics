@@ -130,7 +130,10 @@ def _get_features(
     if modality == "image":
         image_data = [i for i in data if isinstance(i, Tensor)]  # Add type checking for images
         processed = processor(images=[i.cpu() for i in image_data], return_tensors="pt", padding=True)
-        return model.get_image_features(processed["pixel_values"].to(device))
+        image_features = model.get_image_features(processed["pixel_values"].to(device))
+        # transformers >= 5.0 changed get_image_features / get_text_features to return
+        # BaseModelOutputWithPooling instead of a raw tensor; unwrap when needed.
+        return image_features if isinstance(image_features, Tensor) else image_features.pooler_output
     if modality == "text":
         processed = processor(text=data, return_tensors="pt", padding=True)
         if hasattr(model.config, "text_config") and hasattr(model.config.text_config, "max_position_embeddings"):
@@ -144,7 +147,12 @@ def _get_features(
                 )
                 processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
                 processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
-        return model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
+        text_features = model.get_text_features(
+            processed["input_ids"].to(device), processed["attention_mask"].to(device)
+        )
+        # transformers >= 5.0 changed get_image_features / get_text_features to return
+        # BaseModelOutputWithPooling instead of a raw tensor; unwrap when needed.
+        return text_features if isinstance(text_features, Tensor) else text_features.pooler_output
     raise ValueError(f"invalid modality {modality}")
 
 
