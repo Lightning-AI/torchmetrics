@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `iou_type="keypoints"` support to `MeanAveragePrecision` for COCO-style Object Keypoint Similarity (OKS) evaluation ([#3348](https://github.com/Lightning-AI/torchmetrics/pull/3348))
 
 
 ### Changed
