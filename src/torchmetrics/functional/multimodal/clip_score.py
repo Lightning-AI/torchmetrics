@@ -272,7 +272,7 @@ def clip_score(
     to be highly correlated with human judgement. The metric is defined as:
 
     .. math::
-        \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
+        \text{CLIPScore}(I, C) = max(100 * cos(E_I, E_C), 0)
 
     which corresponds to the cosine similarity between visual `CLIP`_ embedding :math:`E_i` for an image :math:`i` and
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
@@ -281,12 +281,12 @@ def clip_score(
     Additionally, the CLIP Score can be calculated for the same modalities:
 
     .. math::
-        \text{CLIPScore(I_1, I_2)} = max(100 * cos(E_{I_1}, E_{I_2}), 0)
+        \text{CLIPScore}(I_1, I_2) = max(100 * cos(E_{I_1}, E_{I_2}), 0)
 
     where :math:`E_{I_1}` and :math:`E_{I_2}` are the visual embeddings for images :math:`I_1` and :math:`I_2`.
 
     .. math::
-        \text{CLIPScore(T_1, T_2)} = max(100 * cos(E_{T_1}, E_{T_2}), 0)
+        \text{CLIPScore}(T_1, T_2) = max(100 * cos(E_{T_1}, E_{T_2}), 0)
 
     where :math:`E_{T_1}` and :math:`E_{T_2}` are the textual embeddings for texts :math:`T_1` and :math:`T_2`.
 
