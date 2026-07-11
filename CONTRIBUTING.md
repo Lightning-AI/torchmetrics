@@ -19,6 +19,7 @@ Thank you for your interest in contributing!
 ## Reporting Issues
 
 Use GitHub Issues to report bugs or request features. Please include:
+
 - Steps to reproduce
 - Expected vs actual behavior
 - Environment details
@@ -29,5 +30,6 @@ Use GitHub Issues to report bugs or request features. Please include:
 - Update documentation as needed
 - Ensure all tests pass
 
----
+______________________________________________________________________
+
 *[Mukller](https://github.com/Mukller)*
