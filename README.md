@@ -377,3 +377,7 @@ If you want to cite this framework feel free to use GitHub's built-in citation o
 
 Please observe the Apache 2.0 license that is listed in this repository.
 In addition, the Lightning framework is Patent Pending.
+
+---
+
+*[Mukller](https://github.com/Mukller)*
