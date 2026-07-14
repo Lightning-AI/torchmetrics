@@ -96,6 +96,8 @@ run: |
 
   #  python -m coverage report
   #  python -m coverage xml
+  #  python -m codecov --token=$(CODECOV_TOKEN) --name="GPU-coverage" \
+  #    --commit=$(Build.SourceVersion) --flags=gpu,unittest --env=linux,azure
 
   # Examples
   cd _samples/
