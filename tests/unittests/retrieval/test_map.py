@@ -188,3 +188,43 @@ class TestMAP(RetrievalMetricTester):
         metric = RetrievalMAP()
         result = metric(preds, target, indexes=indexes)
         assert result == 0.0, f"Expected MAP to be 0.0, got {result}"
+
+
+@pytest.mark.parametrize(
+    "top_k",
+    [
+        -1,
+        0,
+        4.5,
+        -10,
+        3.14,
+    ],
+)
+def test_retrieval_map_invalid_top_k(top_k):
+    """Test that invalid top_k values raise ValueError for RetrievalMAP functional API.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/3405
+
+    """
+    with pytest.raises(ValueError, match=r"Argument ``top_k`` has to be a positive integer or None, but got"):
+        retrieval_average_precision(torch.tensor([0.2, 0.3, 0.5]), torch.tensor([True, False, True]), top_k=top_k)
+
+
+@pytest.mark.parametrize(
+    "top_k",
+    [
+        -1,
+        0,
+        4.5,
+        -10,
+        3.14,
+    ],
+)
+def test_retrieval_map_class_invalid_top_k(top_k):
+    """Test that invalid top_k values raise ValueError for RetrievalMAP class.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/3405
+
+    """
+    with pytest.raises(ValueError, match=r"Argument ``top_k`` has to be a positive integer or None, but got"):
+        RetrievalMAP(top_k=top_k)
