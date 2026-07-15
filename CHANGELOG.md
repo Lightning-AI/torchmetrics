@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed numerical overflow in `normalize_logits_if_needed` causing `binary_auroc` and other ranking-based classification metrics to return incorrect results (e.g. always 0.5) when all input logits are large (>~16.64 for float32). Logits are now mean-shifted before applying sigmoid, preserving relative ordering while preventing saturation ([#2819](https://github.com/Lightning-AI/torchmetrics/issues/2819))
 
 
+- Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
