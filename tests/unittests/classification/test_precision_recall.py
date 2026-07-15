@@ -45,7 +45,12 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
-from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    get_input_format_from_request,
+)
 
 seed_all(42)
 
@@ -95,10 +100,20 @@ class TestBinaryPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("zero_division", [0, 1])
     def test_binary_precision_recall(
-        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, zero_division
+        self,
+        ddp,
+        inputs,
+        module,
+        functional,
+        compare,
+        ignore_index,
+        multidim_average,
+        zero_division,
+        request,
     ):
         """Test class implementation of metric."""
         preds, target = inputs
+        input_format = get_input_format_from_request(request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -123,6 +138,7 @@ class TestBinaryPrecisionRecall(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "zero_division": zero_division,
+                "input_format": input_format,
             },
         )
 
@@ -130,10 +146,11 @@ class TestBinaryPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("zero_division", [0, 1])
     def test_binary_precision_recall_functional(
-        self, inputs, module, functional, compare, ignore_index, multidim_average, zero_division
+        self, inputs, module, functional, compare, ignore_index, multidim_average, zero_division, request
     ):
         """Test functional implementation of metric."""
         preds, target = inputs
+        input_format = get_input_format_from_request(request)
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -155,24 +172,27 @@ class TestBinaryPrecisionRecall(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "zero_division": zero_division,
+                "input_format": input_format,
             },
         )
 
-    def test_binary_precision_recall_differentiability(self, inputs, module, functional, compare):
+    def test_binary_precision_recall_differentiability(self, inputs, module, functional, compare, request):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
+        input_format = get_input_format_from_request(request)
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=module,
             metric_functional=functional,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_precision_recall_half_cpu(self, inputs, module, functional, compare, dtype):
+    def test_binary_precision_recall_half_cpu(self, inputs, module, functional, compare, dtype, request):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
+        input_format = get_input_format_from_request(request)
         if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
@@ -180,21 +200,22 @@ class TestBinaryPrecisionRecall(MetricTester):
             target=target,
             metric_module=module,
             metric_functional=functional,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
             dtype=dtype,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_precision_recall_half_gpu(self, inputs, module, functional, compare, dtype):
+    def test_binary_precision_recall_half_gpu(self, inputs, module, functional, compare, dtype, request):
         """Test dtype support of the metric on GPU."""
         preds, target = inputs
+        input_format = get_input_format_from_request(request)
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
             metric_module=module,
             metric_functional=functional,
-            metric_args={"threshold": THRESHOLD},
+            metric_args={"threshold": THRESHOLD, "input_format": input_format},
             dtype=dtype,
         )
 

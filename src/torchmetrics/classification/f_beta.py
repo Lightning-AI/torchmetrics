@@ -93,7 +93,7 @@ class BinaryFBetaScore(BinaryStatScores):
         >>> from torchmetrics.classification import BinaryFBetaScore
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryFBetaScore(beta=2.0)
+        >>> metric = BinaryFBetaScore(beta=2.0, input_format="labels")
         >>> metric(preds, target)
         tensor(0.6667)
 
@@ -645,7 +645,7 @@ class BinaryF1Score(BinaryFBetaScore):
         >>> from torchmetrics.classification import BinaryF1Score
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryF1Score()
+        >>> metric = BinaryF1Score(input_format="labels")
         >>> metric(preds, target)
         tensor(0.6667)
 
