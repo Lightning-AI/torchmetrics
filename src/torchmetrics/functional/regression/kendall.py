@@ -71,7 +71,8 @@ def _count_concordant_pairs(preds: Tensor, target: Tensor) -> Tensor:
 def _discordant_element_sum(x: Tensor, y: Tensor, i: int) -> Tensor:
     """Count a total number of discordant pairs in a single sequences."""
     return (
-        torch.logical_or(
+        torch
+        .logical_or(
             torch.logical_and(x[i] > x[(i + 1) :], y[i] < y[(i + 1) :]),
             torch.logical_and(x[i] < x[(i + 1) :], y[i] > y[(i + 1) :]),
         )
@@ -179,9 +180,10 @@ def _calculate_tau(
 
 
 def _get_p_value_for_t_value_from_dist(t_value: Tensor) -> Tensor:
-    """Obtain p-value for a given Tensor of t-values. Handle ``nan`` which cannot be passed into torch distributions.
+    """Obtain p-value for a given Tensor of t-values.
 
-    When t-value is ``nan``, a resulted p-value should be alson ``nan``.
+    Handle ``nan`` which cannot be passed into torch distributions.     When t-value is ``nan``, a resulted p-value
+    should be alson ``nan``.
 
     """
     device = t_value

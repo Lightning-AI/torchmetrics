@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -53,7 +53,7 @@ def _jsd_update(p: Tensor, q: Tensor, log_prob: bool) -> tuple[Tensor, int]:
 
 
 def _jsd_compute(
-    measures: Tensor, total: Union[int, Tensor], reduction: Literal["mean", "sum", "none", None] = "mean"
+    measures: Tensor, total: Union[int, Tensor], reduction: Optional[Literal["mean", "sum", "none"]] = "mean"
 ) -> Tensor:
     """Compute and reduce the Jensen-Shannon divergence based on the type of reduction."""
     if reduction == "sum":
@@ -66,7 +66,7 @@ def _jsd_compute(
 
 
 def jensen_shannon_divergence(
-    p: Tensor, q: Tensor, log_prob: bool = False, reduction: Literal["mean", "sum", "none", None] = "mean"
+    p: Tensor, q: Tensor, log_prob: bool = False, reduction: Optional[Literal["mean", "sum", "none"]] = "mean"
 ) -> Tensor:
     r"""Compute `Jensen-Shannon divergence`_.
 

@@ -165,16 +165,18 @@ def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
 def _load_tokenizer_and_model(
     model_name_or_path: Union[str, os.PathLike], device: Optional[Union[str, torch.device]] = None
 ) -> tuple["PreTrainedTokenizerBase", "PreTrainedModel"]:
-    """Load HuggingFace `transformers`' tokenizer and model. This function also handle a device placement.
+    """Load HuggingFace `transformers`' tokenizer and model.
+
+    This function also handle a device placement.
 
     Args:
-        model_name_or_path:
-            A name or a model path used to load `transformers` pretrained model.
-        device:
-            A device to be used for calculation.
+            model_name_or_path:
+                A name or a model path used to load `transformers` pretrained model.
+            device:
+                A device to be used for calculation.
 
     Return:
-        Initialized `transformers`' tokenizer and model.
+            Initialized `transformers`' tokenizer and model.
 
     """
     from transformers import AutoModelForMaskedLM, AutoTokenizer

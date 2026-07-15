@@ -7,15 +7,14 @@ requires = [
 [tool.ruff]
 target-version = "py39"
 line-length = 120
-
-#[tool.ruff.pycodestyle]
-#ignore-overlong-task-comments = true
+# [tool.ruff.pycodestyle]
+# ignore-overlong-task-comments = true
 format.preview = true
 lint.select = [
   "D",  # see: https://pypi.org/project/pydocstyle
   "E",
   "F",  # see: https://pypi.org/project/pyflakes
-  "I",  #see: https://pypi.org/project/isort/
+  "I",  # see: https://pypi.org/project/isort/
   "N",  # see: https://pypi.org/project/pep8-naming
   "S",  # see: https://pypi.org/project/flake8-bandit
   "UP", # see: https://docs.astral.sh/ruff/rules/#pyupgrade-up
@@ -85,8 +84,6 @@ lint.mccabe.max-complexity = 10
 lint.pydocstyle.convention = "google"
 
 [tool.codespell]
-#skip = '*.py'
-quiet-level = 3
 # Todo: comma separated list of words; waiting for:
 #  https://github.com/codespell-project/codespell/issues/2839#issuecomment-1731601603
 # Todo: also adding links until they ignored by its: nature
@@ -100,6 +97,8 @@ ignore-words-list = """
   archiv, \
   lins
 """
+# skip = "*.py"
+quiet-level = 3
 
 [tool.docformatter]
 recursive = true
@@ -115,74 +114,69 @@ ignore = [
   ".github/*",
 ]
 
-[tool.pytest.ini_options]
-norecursedirs = [
+[tool.typos]
+default.extend-ignore-identifiers-re = [
+  # *sigh* this just isn't worth the cost of fixing
+  "AttributeID.*Supress.*",
+  "Levenhstein",
+]
+# *sigh* this just isn't worth the cost of fixing
+default.extend-identifiers.MAPE = "MAPE"
+default.extend-identifiers.WIL = "WIL"
+default.extend-identifiers.Raison = "Raison"
+# Don't correct the surname "Teh"
+default.extend-words.fpr = "fpr"
+default.extend-words.mape = "mape"
+default.extend-words.wil = "wil"
+
+[tool.mypy]
+files = [
+  "src/torchmetrics",
+]
+ignore_missing_imports = "True"
+disallow_untyped_defs = "True"
+warn_redundant_casts = "True"
+warn_unused_ignores = "True"
+# style choices
+warn_no_return = "False"
+allow_redefinition = "True"
+# disable this rule as the Trainer attributes are defined in the connectors, not in its __init__
+disable_error_code = "attr-defined"
+warn_unused_configs = "True"
+install_types = "True"
+non_interactive = "True"
+show_error_codes = "True"
+
+[tool.pytest]
+ini_options.norecursedirs = [
   ".git",
   ".github",
-  "dist",
   "build",
+  "dist",
   "docs",
 ]
-addopts = [
+ini_options.addopts = [
   "--strict-markers",
   "--doctest-modules",
   "--doctest-plus",
   "--color=yes",
   "--disable-pytest-warnings",
 ]
-markers = [
+ini_options.markers = [
   "DDP: mark a test as Distributed Data Parallel",
 ]
-filterwarnings = [
-  "ignore::FutureWarning",
+ini_options.xfail_strict = true
+ini_options.filterwarnings = [
   "default:::torchmetrics",
+  "ignore::FutureWarning",
 ]
-xfail_strict = true
-junit_duration_report = "call"
+ini_options.junit_duration_report = "call"
 
-[tool.coverage.report]
-exclude_lines = [
-  "pragma: no cover",
+[tool.coverage]
+run.concurrency = "thread"
+run.parallel = true
+run.relative_files = true
+report.exclude_lines = [
   "pass",
+  "pragma: no cover",
 ]
-[tool.coverage.run]
-parallel = true
-concurrency = "thread"
-relative_files = true
-
-[tool.mypy]
-files = [
-  "src/torchmetrics",
-]
-install_types = "True"
-non_interactive = "True"
-disallow_untyped_defs = "True"
-ignore_missing_imports = "True"
-show_error_codes = "True"
-warn_redundant_casts = "True"
-warn_unused_configs = "True"
-warn_unused_ignores = "True"
-allow_redefinition = "True"
-# disable this rule as the Trainer attributes are defined in the connectors, not in its __init__
-disable_error_code = "attr-defined"
-# style choices
-warn_no_return = "False"
-
-[tool.typos.default]
-extend-ignore-identifiers-re = [
-  # *sigh* this just isn't worth the cost of fixing
-  "AttributeID.*Supress.*",
-  "Levenhstein",
-]
-
-[tool.typos.default.extend-identifiers]
-# *sigh* this just isn't worth the cost of fixing
-MAPE = "MAPE"
-WIL = "WIL"
-Raison = "Raison"
-
-[tool.typos.default.extend-words]
-# Don't correct the surname "Teh"
-fpr = "fpr"
-mape = "mape"
-wil = "wil"

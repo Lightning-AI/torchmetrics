@@ -372,24 +372,26 @@ def _get_batch_distribution(
     idf: bool,
     special_tokens_map: dict[str, int],
 ) -> Tensor:
-    """Calculate a discrete probability distribution for a batch of examples. See `InfoLM`_ for details.
+    """Calculate a discrete probability distribution for a batch of examples.
+
+    See `InfoLM`_ for details.
 
     Args:
-        model:
-            Initialized model from HuggingFace's `transformers package.
-        batch:
-            An input batch dictionary containing ``input_ids`` and ``attention_mask``.
-        temperature:
-            A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
-        max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
-        idf:
-            An indication of whether normalization using inverse document frequencies should be used.
-        special_tokens_map:
-            A dictionary mapping tokenizer special tokens into the corresponding integer values.
+            model:
+                Initialized model from HuggingFace's `transformers package.
+            batch:
+                An input batch dictionary containing ``input_ids`` and ``attention_mask``.
+            temperature:
+                A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
+            max_length:
+                A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
+            idf:
+                An indication of whether normalization using inverse document frequencies should be used.
+            special_tokens_map:
+                A dictionary mapping tokenizer special tokens into the corresponding integer values.
 
     Return:
-        A discrete probability distribution.
+            A discrete probability distribution.
 
     """
     seq_len = batch["input_ids"].shape[1]

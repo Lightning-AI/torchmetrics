@@ -41,7 +41,7 @@ def _pairwise_manhattan_distance_update(
 def pairwise_manhattan_distance(
     x: Tensor,
     y: Optional[Tensor] = None,
-    reduction: Literal["mean", "sum", "none", None] = None,
+    reduction: Optional[Literal["mean", "sum", "none"]] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
     r"""Calculate pairwise manhattan distance.
