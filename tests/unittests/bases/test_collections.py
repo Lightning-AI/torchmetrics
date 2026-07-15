@@ -855,3 +855,127 @@ def test_collection_state_being_re_established_after_copy():
     assert not m12._state_is_copy
     assert m12.m1.mean_x.data_ptr() == m12.m2.mean_x.data_ptr(), "States should point to the same location"
     assert m12._equal_metric_states(m12.m1, m12.m2)
+
+
+class TestEqualMetricStatesWithTuples:
+    """Test that _equal_metric_states handles list states containing non-Tensor elements (e.g. tuples).
+
+    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3335
+    MeanAveragePrecision stores tuples in list states, which caused AttributeError
+    because the original implementation assumed all list elements were Tensors.
+
+    """
+
+    def test_equal_state_elements_tensor(self):
+        """Tensor elements should compare by shape and value."""
+        assert MetricCollection._equal_state_elements(torch.tensor([1.0]), torch.tensor([1.0]))
+        assert not MetricCollection._equal_state_elements(torch.tensor([1.0]), torch.tensor([1.0, 2.0]))
+
+    def test_equal_state_elements_tuple_of_tensors(self):
+        """Tuple elements should be recursively compared."""
+        assert MetricCollection._equal_state_elements(
+            (torch.tensor([1.0]), torch.tensor([2.0])),
+            (torch.tensor([1.0]), torch.tensor([2.0])),
+        )
+        assert not MetricCollection._equal_state_elements(
+            (torch.tensor([1.0]), torch.tensor([2.0])),
+            (torch.tensor([1.0]), torch.tensor([3.0])),
+        )
+
+    def test_equal_state_elements_different_types(self):
+        """Different types should not be equal."""
+        assert not MetricCollection._equal_state_elements(torch.tensor([1.0]), (torch.tensor([1.0]),))
+        assert not MetricCollection._equal_state_elements(5, "5")
+
+    def test_equal_state_elements_scalars(self):
+        """Scalar values should compare directly."""
+        assert MetricCollection._equal_state_elements(5, 5)
+        assert not MetricCollection._equal_state_elements(5, 6)
+
+    def test_equal_state_elements_nested(self):
+        """Nested structures should be recursively compared."""
+        assert MetricCollection._equal_state_elements(
+            (torch.tensor([1.0]), (torch.tensor([2.0]),)),
+            (torch.tensor([1.0]), (torch.tensor([2.0]),)),
+        )
+
+    def test_equal_state_elements_mismatched_length(self):
+        """Different-length sequences should not be equal."""
+        assert not MetricCollection._equal_state_elements(
+            (torch.tensor([1.0]),), (torch.tensor([1.0]), torch.tensor([2.0]))
+        )
+        assert not MetricCollection._equal_state_elements(
+            [torch.tensor([1.0])], [torch.tensor([1.0]), torch.tensor([2.0])]
+        )
+
+    @pytest.mark.parametrize(
+        ("s1", "s2", "expected"),
+        [
+            pytest.param([], [], True, id="empty-list-equal"),
+            pytest.param((), (), True, id="empty-tuple-equal"),
+            pytest.param([], (), False, id="list-vs-tuple-type-mismatch"),
+            pytest.param(None, None, True, id="none-equal"),
+            pytest.param(1.0, 1, False, id="float-vs-int-type-mismatch"),
+        ],
+    )
+    def test_equal_state_elements_empty_and_type_guards(self, s1: Any, s2: Any, expected: bool):
+        """Empty containers and type-mismatched scalars are handled correctly."""
+        assert MetricCollection._equal_state_elements(s1, s2) == expected
+
+    def test_equal_metric_states_direct_with_tuple_state(self):
+        """_equal_metric_states returns True for equal and False for unequal tuple-list states."""
+
+        class MetricWithTupleState(Metric):
+            """A metric whose list state contains tuples (like MeanAveragePrecision)."""
+
+            def __init__(self) -> None:
+                super().__init__()
+                self.add_state("items", default=[], dist_reduce_fx=None)
+
+            def update(self, val):
+                self.items.append(val)
+
+            def compute(self):
+                return 0
+
+        m1 = MetricWithTupleState()
+        m2 = MetricWithTupleState()
+        # Empty states are equal
+        assert MetricCollection._equal_metric_states(m1, m2)
+
+        val = (torch.tensor([1.0]), torch.tensor([2.0]))
+        m1.update(val)
+        m2.update(val)
+        # Same tuple-state content → equal
+        assert MetricCollection._equal_metric_states(m1, m2)
+
+        m3 = MetricWithTupleState()
+        m3.update((torch.tensor([1.0]), torch.tensor([99.0])))
+        # Different tuple content → not equal
+        assert not MetricCollection._equal_metric_states(m1, m3)
+
+    def test_metric_collection_with_tuple_list_states(self):
+        """MetricCollection.update should work when metrics have tuple elements in list states."""
+
+        class MetricWithTupleState(Metric):
+            """A metric whose list state contains tuples (like MeanAveragePrecision)."""
+
+            def __init__(self) -> None:
+                super().__init__()
+                self.add_state("items", default=[], dist_reduce_fx=None)
+
+            def update(self, val):
+                self.items.append(val)
+
+            def compute(self):
+                return 0
+
+        m1 = MetricWithTupleState()
+        m2 = MetricWithTupleState()
+        mc = MetricCollection({"a": m1, "b": m2})
+
+        # This should not raise AttributeError: 'tuple' object has no attribute 'shape'
+        mc.update((torch.tensor([1.0]), torch.tensor([2.0])))
+        # Second update exercises _compute_groups_create_state_ref (state sharing with tuple elements)
+        mc.update((torch.tensor([3.0]), torch.tensor([4.0])))
+        assert mc.compute() == {"a": 0, "b": 0}
