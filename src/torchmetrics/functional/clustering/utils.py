@@ -227,7 +227,7 @@ def calculate_pair_cluster_confusion_matrix(
     Note that the matrix is not symmetric.
 
     Inspired by:
-    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.cluster.pair_confusion_matrix.html
+    https://scikit-learn.org/1.7/modules/generated/sklearn.metrics.cluster.pair_confusion_matrix.html
 
     Args:
         preds: predicted cluster labels
