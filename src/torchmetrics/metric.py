@@ -498,7 +498,61 @@ class Metric(Module, ABC):
                 raise TypeError(f"Unsupported reduce_fn: {reduce_fn}")
             setattr(self, attr, reduced)
 
+    def _make_empty_pad_tensor(self, ref: Optional[Tensor], ndim: int, tail_shape_vec: Tensor) -> Tensor:
+        """Create an empty tensor with the same trailing dimensions as ``ref`` for list-state padding."""
+        if ref is not None:
+            if ref.ndim == 0:
+                return torch.zeros(0, device=self.device, dtype=ref.dtype)
+            return torch.zeros((0, *ref.shape[1:]), device=self.device, dtype=ref.dtype)
+        if ndim <= 1:
+            return torch.zeros(0, device=self.device, dtype=self.dtype)
+        pad_shape = [0] + [int(tail_shape_vec[i].item()) for i in range(ndim - 1)]
+        return torch.zeros(pad_shape, device=self.device, dtype=self.dtype)
+
+    def _equalize_none_reduction_list(self, state: list, process_group: Optional[Any] = None) -> list:
+        """Pad ``dist_reduce_fx=None`` list states so all ranks perform the same number of collectives."""
+        if not isinstance(state, list) or not jit_distributed_available():
+            return state
+
+        group = process_group or self.process_group
+        world_size = torch.distributed.get_world_size(group)
+        local_len = len(state)
+
+        local_len_t = torch.tensor([local_len], device=self.device, dtype=torch.long)
+        all_lens = [torch.zeros_like(local_len_t) for _ in range(world_size)]
+        torch.distributed.all_gather(all_lens, local_len_t, group=group)
+        max_len = max(int(t.item()) for t in all_lens)
+
+        if max_len == 0:
+            return state
+
+        local_ndim = state[0].ndim if local_len > 0 else 0
+        ndim_t = torch.tensor([local_ndim], device=self.device, dtype=torch.long)
+        torch.distributed.all_reduce(ndim_t, op=torch.distributed.ReduceOp.MAX, group=group)
+        ndim = int(ndim_t.item())
+
+        max_tail_dims = 7
+        tail_shape_vec = torch.zeros(max_tail_dims, device=self.device, dtype=torch.long)
+        if local_len > 0:
+            for i, dim_size in enumerate(state[0].shape[1:]):
+                tail_shape_vec[i] = dim_size
+        torch.distributed.all_reduce(tail_shape_vec, op=torch.distributed.ReduceOp.MAX, group=group)
+
+        if local_len == max_len:
+            return state
+
+        while len(state) < max_len:
+            ref = state[-1] if state else None
+            state.append(self._make_empty_pad_tensor(ref, ndim, tail_shape_vec))
+        return state
+
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
+        group = process_group or self.process_group
+        if jit_distributed_available():
+            torch.distributed.barrier(group=group)
+
+        input_dict = {attr: getattr(self, attr) for attr in self._reductions}
+
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
 
         for attr, reduction_fn in self._reductions.items():
@@ -514,6 +568,13 @@ class Metric(Module, ABC):
                 and len(input_dict[attr]) == 0
             ):
                 input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
+
+            # equalize list lengths for dist_reduce_fx=None to prevent deadlocks in apply_to_collection
+            if self._TORCH_GREATER_EQUAL_2_1 and reduction_fn is None and isinstance(input_dict[attr], list):
+                input_dict[attr] = self._equalize_none_reduction_list(input_dict[attr], group)
+
+        if jit_distributed_available():
+            torch.distributed.barrier(group=group)
 
         output_dict = apply_to_collection(
             input_dict,
