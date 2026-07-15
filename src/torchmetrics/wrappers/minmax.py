@@ -76,8 +76,8 @@ class MinMaxMetric(WrapperMetric):
                 f"Expected base metric to be an instance of `torchmetrics.Metric` but received {base_metric}"
             )
         self._base_metric = base_metric
-        self.min_val = torch.tensor(float("inf"))
-        self.max_val = torch.tensor(float("-inf"))
+        self.add_state("min_val", default=torch.tensor(float("inf")), dist_reduce_fx="min", persistent=True)
+        self.add_state("max_val", default=torch.tensor(float("-inf")), dist_reduce_fx="max", persistent=True)
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update the underlying metric."""
@@ -102,8 +102,20 @@ class MinMaxMetric(WrapperMetric):
         return super(WrapperMetric, self).forward(*args, **kwargs)
 
     def reset(self) -> None:
-        """Set ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
+        """Set ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric.
+
+        In contrast to the base ``Metric.reset()``, this method preserves the accumulated
+        ``min_val`` and ``max_val`` across resets so that they survive checkpoint save/load
+        boundaries. Only the wrapped base metric is fully reset.
+
+        """
+        # Save current min/max values before the base class resets them to defaults
+        _min = self.min_val.clone()
+        _max = self.max_val.clone()
         super().reset()
+        # Restore the accumulated min/max so they persist across epochs
+        self.min_val = _min
+        self.max_val = _max
         self._base_metric.reset()
 
     @staticmethod
