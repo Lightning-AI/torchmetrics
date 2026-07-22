@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import subprocess
+import sys
 from functools import partial
 
 import pytest
@@ -172,3 +174,22 @@ def test_check_for_backprop():
     loss.backward()
     assert metric.model.encoder[0].weight.grad is None
     assert metric.model.regressor.weight.grad is None
+
+
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
+def test_import_does_not_eagerly_load_torchvision():
+    """Importing the ARNIQA modules must not eagerly import ``torchvision`` (regression for #3314).
+
+    A module-level ``torchvision`` import triggers a ``partially initialized module 'torchvision'`` circular
+    import in some ``torchvision`` versions. ``torchvision`` must therefore be imported lazily, only when the
+    metric is actually instantiated. Run in a fresh interpreter so previously imported modules do not hide a
+    regression.
+    """
+    script = (
+        "import sys\n"
+        "import torchmetrics.functional.image.arniqa\n"
+        "import torchmetrics.image.arniqa\n"
+        "assert 'torchvision' not in sys.modules, "
+        "'torchvision imported at module load: %s' % sorted(m for m in sys.modules if 'torchvision' in m)\n"
+    )
+    subprocess.run([sys.executable, "-c", script], check=True)  # noqa: S603
