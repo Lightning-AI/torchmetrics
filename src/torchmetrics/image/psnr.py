@@ -48,7 +48,7 @@ class PeakSignalNoiseRatio(Metric):
 
     Args:
         data_range:
-            the range of the data. If a tuple is provided, then the range is calculated as the difference and
+            the range of the data. If a Sequence is provided, then the range is calculated as the difference and
             input is clamped between the values.
         base: a base of a logarithm to use.
         reduction: a method to reduce metric score over labels.
@@ -80,10 +80,10 @@ class PeakSignalNoiseRatio(Metric):
 
     def __init__(
         self,
-        data_range: Union[float, tuple[float, float]],
+        data_range: Union[float, Sequence[float]],
         base: float = 10.0,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        dim: Optional[Union[int, tuple[int, ...]]] = None,
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
+        dim: Optional[Union[int, Sequence[int]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -99,7 +99,7 @@ class PeakSignalNoiseRatio(Metric):
             self.add_state("total", default=[], dist_reduce_fx="cat")
 
         self.clamping_fn = None
-        if isinstance(data_range, tuple):
+        if isinstance(data_range, Sequence):
             self.add_state("data_range", default=tensor(data_range[1] - data_range[0]), dist_reduce_fx="mean")
             self.clamping_fn = partial(torch.clamp, min=data_range[0], max=data_range[1])
         else:
@@ -107,7 +107,7 @@ class PeakSignalNoiseRatio(Metric):
 
         self.base = base
         self.reduction = reduction
-        self.dim = tuple(dim) if isinstance(dim, Sequence) else dim
+        self.dim = dim
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""

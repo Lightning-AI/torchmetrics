@@ -48,7 +48,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     - ``psnrb`` (:class:`~torch.Tensor`): float scalar tensor with aggregated PSNRB value
 
     Args:
-        data_range: the range of the data. If a tuple is provided then the range is calculated as the difference and
+        data_range: the range of the data. If a Sequence is provided then the range is calculated as the difference and
             input is clamped between the values.
         block_size: integer indication the block size
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -74,7 +74,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
 
     def __init__(
         self,
-        data_range: Union[float, tuple[float, float]],
+        data_range: Union[float, Sequence[float]],
         block_size: int = 8,
         **kwargs: Any,
     ) -> None:
@@ -87,7 +87,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("bef", default=tensor(0.0), dist_reduce_fx="sum")
 
-        if isinstance(data_range, tuple):
+        if isinstance(data_range, Sequence):
             self.add_state("data_range", default=tensor(data_range[1] - data_range[0]), dist_reduce_fx="mean")
             self.clamping_fn = lambda x: torch.clamp(x, min=data_range[0], max=data_range[1])
         else:
