@@ -116,6 +116,7 @@ def test_import_does_not_eagerly_load_torchvision():
     import in some ``torchvision`` versions. ``torchvision`` must therefore be imported lazily, only when the
     metric is actually instantiated. Run in a fresh interpreter so previously imported modules do not hide a
     regression.
+
     """
     script = (
         "import sys\n"
