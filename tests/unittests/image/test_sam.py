@@ -138,18 +138,19 @@ def test_no_nan_on_zero_pixel():
     spectral_angle_mapper should not produce NaN when a pixel has zero norm
     (all channels zero).  Previously, the zero-norm denominator caused 0/0 = NaN.
     """
-    a, b = torch.ones(2, 1, 3, 8, 8)
-    a[:, :, 5, 3] = 0  # zero-norm pixel — exact reproducer from the issue
+    preds = torch.ones(1, 3, 8, 8)  # N, C, H, W
+    target = torch.ones(1, 3, 8, 8)
+    preds[:, :, 5, 3] = 0  # zero-norm pixel — exact reproducer from the issue
 
     # functional interface
-    result = spectral_angle_mapper(a, b)
-    assert not torch.isnan(result), f"spectral_angle_mapper returned NaN: {result}"
+    result = spectral_angle_mapper(preds, target)
+    assert torch.isfinite(result).all(), f"spectral_angle_mapper returned non-finite value: {result}"
 
     # class interface
     metric = SpectralAngleMapper()
-    result_cls = metric(a, b)
-    assert not torch.isnan(result_cls), f"SpectralAngleMapper returned NaN: {result_cls}"
+    result_cls = metric(preds, target)
+    assert torch.isfinite(result_cls).all(), f"SpectralAngleMapper returned non-finite value: {result_cls}"
 
     # Result should be a valid angle in [0, pi/2]
-    assert result >= 0, f"result is negative: {result}"
-    assert result <= torch.pi / 2, f"result exceeds pi/2: {result}"
+    assert (result >= 0).all(), f"result is negative: {result}"
+    assert (result <= torch.pi / 2).all(), f"result exceeds pi/2: {result}"
