@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
+- Fixed `NaN` in `SpectralAngleMapper` / `spectral_angle_mapper` when a pixel has zero norm ([#3424](https://github.com/Lightning-AI/torchmetrics/pull/3424))
 
 
 ---

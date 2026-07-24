@@ -130,3 +130,27 @@ def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
     metric = metric_class()
     with pytest.raises(ValueError, match="Expected channel dimension of `preds` and `target` to be larger than 1.*"):
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))
+
+
+def test_no_nan_on_zero_pixel():
+    """Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3322.
+
+    spectral_angle_mapper should not produce NaN when a pixel has zero norm
+    (all channels zero).  Previously, the zero-norm denominator caused 0/0 = NaN.
+    """
+    preds = torch.ones(1, 3, 8, 8)  # N, C, H, W
+    target = torch.ones(1, 3, 8, 8)
+    preds[:, :, 5, 3] = 0  # zero-norm pixel — exact reproducer from the issue
+
+    # functional interface
+    result = spectral_angle_mapper(preds, target)
+    assert torch.isfinite(result).all(), f"spectral_angle_mapper returned non-finite value: {result}"
+
+    # class interface
+    metric = SpectralAngleMapper()
+    result_cls = metric(preds, target)
+    assert torch.isfinite(result_cls).all(), f"SpectralAngleMapper returned non-finite value: {result_cls}"
+
+    # Result should be a valid angle in [0, pi/2]
+    assert (result >= 0).all(), f"result is negative: {result}"
+    assert (result <= torch.pi / 2).all(), f"result exceeds pi/2: {result}"
