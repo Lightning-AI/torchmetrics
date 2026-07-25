@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, NamedTuple
 
 import pytest
 import torch
@@ -249,6 +249,32 @@ _group_cases = (
             preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
             groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+        ),
+        id="input[single_dim-logits]",
+    ),
+)
+
+
+class _MaskInput(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    mask: Tensor
+
+
+_masked_binary_cases = (
+    pytest.param(
+        _MaskInput(
+            preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            mask=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
+        ),
+        id="input[single_dim-probs]",
+    ),
+    pytest.param(
+        _MaskInput(
+            preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
+            target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
+            mask=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.bool),
         ),
         id="input[single_dim-logits]",
     ),

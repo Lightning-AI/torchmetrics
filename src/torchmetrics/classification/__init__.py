@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
-from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAUROC, MultilabelAUROC
+from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MaskedBinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.classification.average_precision import (
     AveragePrecision,
     BinaryAveragePrecision,
@@ -172,6 +172,7 @@ __all__ = [
     "HingeLoss",
     "JaccardIndex",
     "LogAUC",
+    "MaskedBinaryAUROC",
     "MatthewsCorrCoef",
     "MulticlassAUROC",
     "MulticlassAccuracy",
