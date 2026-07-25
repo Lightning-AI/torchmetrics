@@ -56,6 +56,23 @@ def _remove_suffix(string: str, suffix: str) -> str:
     return string[: -len(suffix)] if string.endswith(suffix) else string
 
 
+def _equal_state_value(state1: Any, state2: Any) -> bool:
+    """Recursively compare metric state values while preserving structure checks."""
+    if type(state1) is not type(state2):
+        return False
+
+    if isinstance(state1, Tensor):
+        return state1.shape == state2.shape and allclose(state1, state2)
+
+    if isinstance(state1, Mapping):
+        return state1.keys() == state2.keys() and all(_equal_state_value(state1[k], state2[k]) for k in state1)
+
+    if isinstance(state1, Sequence) and not isinstance(state1, str):
+        return len(state1) == len(state2) and all(_equal_state_value(s1, s2) for s1, s2 in zip(state1, state2))
+
+    return state1 == state2
+
+
 class MetricCollection(ModuleDict):
     """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
@@ -316,21 +333,7 @@ class MetricCollection(ModuleDict):
             state1 = getattr(metric1, key)
             state2 = getattr(metric2, key)
 
-            if type(state1) != type(state2):  # noqa: E721
-                return False
-
-            if (
-                isinstance(state1, Tensor)
-                and isinstance(state2, Tensor)
-                and not (state1.shape == state2.shape and allclose(state1, state2))
-            ):
-                return False
-
-            if (
-                isinstance(state1, list)
-                and isinstance(state2, list)
-                and not (all(s1.shape == s2.shape and allclose(s1, s2) for s1, s2 in zip(state1, state2)))
-            ):
+            if not _equal_state_value(state1, state2):
                 return False
 
         return True
