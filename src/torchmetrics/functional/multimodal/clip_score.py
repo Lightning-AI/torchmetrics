@@ -130,7 +130,9 @@ def _get_features(
     if modality == "image":
         image_data = [i for i in data if isinstance(i, Tensor)]  # Add type checking for images
         processed = processor(images=[i.cpu() for i in image_data], return_tensors="pt", padding=True)
-        return model.get_image_features(processed["pixel_values"].to(device))
+        features = model.get_image_features(processed["pixel_values"].to(device))
+        pooled = getattr(features, "pooler_output", None)
+        return pooled if pooled is not None else features
     if modality == "text":
         processed = processor(text=data, return_tensors="pt", padding=True)
         if hasattr(model.config, "text_config") and hasattr(model.config.text_config, "max_position_embeddings"):
@@ -144,7 +146,9 @@ def _get_features(
                 )
                 processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
                 processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
-        return model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
+        features = model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
+        pooled = getattr(features, "pooler_output", None)
+        return pooled if pooled is not None else features
     raise ValueError(f"invalid modality {modality}")
 
 
@@ -268,7 +272,7 @@ def clip_score(
     to be highly correlated with human judgement. The metric is defined as:
 
     .. math::
-        \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
+        \text{CLIPScore}(I, C) = max(100 * cos(E_I, E_C), 0)
 
     which corresponds to the cosine similarity between visual `CLIP`_ embedding :math:`E_i` for an image :math:`i` and
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
@@ -277,12 +281,12 @@ def clip_score(
     Additionally, the CLIP Score can be calculated for the same modalities:
 
     .. math::
-        \text{CLIPScore(I_1, I_2)} = max(100 * cos(E_{I_1}, E_{I_2}), 0)
+        \text{CLIPScore}(I_1, I_2) = max(100 * cos(E_{I_1}, E_{I_2}), 0)
 
     where :math:`E_{I_1}` and :math:`E_{I_2}` are the visual embeddings for images :math:`I_1` and :math:`I_2`.
 
     .. math::
-        \text{CLIPScore(T_1, T_2)} = max(100 * cos(E_{T_1}, E_{T_2}), 0)
+        \text{CLIPScore}(T_1, T_2) = max(100 * cos(E_{T_1}, E_{T_2}), 0)
 
     where :math:`E_{T_1}` and :math:`E_{T_2}` are the textual embeddings for texts :math:`T_1` and :math:`T_2`.
 
