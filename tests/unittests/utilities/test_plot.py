@@ -183,6 +183,7 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
+from torchmetrics.timeseries import SoftDTW
 from torchmetrics.utilities.plot import _get_col_row_split
 from torchmetrics.wrappers import (
     BootStrapper,
@@ -691,6 +692,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             lambda: torch.randn(10, 100, 3),
             lambda: torch.randn(10, 100, 3),
             id="lip vertex error",
+        ),
+        pytest.param(
+            SoftDTW,
+            lambda: torch.randn(10, 4, 3),
+            lambda: torch.randn(10, 6, 3),
+            id="soft dtw",
         ),
     ],
 )
