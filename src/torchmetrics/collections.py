@@ -282,7 +282,6 @@ class MetricCollection(ModuleDict):
 
                     metric1 = getattr(self, cg_members1[0])
                     metric2 = getattr(self, cg_members2[0])
-
                     if self._equal_metric_states(metric1, metric2):
                         self._groups[cg_idx1].extend(self._groups.pop(cg_idx2))
                         break
@@ -306,15 +305,17 @@ class MetricCollection(ModuleDict):
     def _equal_metric_states(metric1: Metric, metric2: Metric) -> bool:
         """Check if the metric state of two metrics are the same."""
         # empty state
-        if len(metric1._defaults) == 0 or len(metric2._defaults) == 0:
+        metric1_state = metric1.metric_state
+        metric2_state = metric2.metric_state
+        if len(metric1_state) == 0 or len(metric2_state) == 0:
             return False
 
-        if metric1._defaults.keys() != metric2._defaults.keys():
+        if metric1_state.keys() != metric2_state.keys():
             return False
 
-        for key in metric1._defaults:
-            state1 = getattr(metric1, key)
-            state2 = getattr(metric2, key)
+        for key in metric1_state:
+            state1 = metric1_state[key]
+            state2 = metric2_state[key]
 
             if type(state1) != type(state2):  # noqa: E721
                 return False
