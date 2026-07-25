@@ -476,6 +476,35 @@ def test_multiclass_overflow():
     assert torch.allclose(res, torch.tensor(compare))
 
 
+# test both small and larger number of classes to test both linear and quadratic code paths
+@pytest.mark.parametrize("num_classes", [2, 6, 2000, 1_000_000])
+@pytest.mark.parametrize("average", ["micro", "macro", None])
+def test_multiclass_stat_scores_large_num_classes(num_classes, average):
+    """Test that stat scores are correct when num_classes>=1000, exercising the linear-space code path."""
+    n = 500
+    generator = torch.Generator().manual_seed(42)
+    target = torch.randint(0, num_classes, (n,), generator=generator)
+    preds = torch.randint(0, num_classes, (n,), generator=generator)
+
+    # We have so many classes that it's most likely tp=0 in this test, so we artificially
+    # set 20% of the predictions to be correct.
+    artificially_correct = torch.randperm(n, generator=generator)[: n // 5]
+    preds[artificially_correct] = target[artificially_correct]
+
+    result = multiclass_stat_scores(preds, target, num_classes=num_classes, average=average)
+
+    tp = torch.bincount(target[preds == target], minlength=num_classes)
+    fp = torch.bincount(preds, minlength=num_classes) - tp
+    fn = torch.bincount(target, minlength=num_classes) - tp
+    tn = n - tp - fp - fn
+    expected = torch.stack([tp, fp, tn, fn, tp + fn], dim=1)
+    if average == "micro":
+        expected = expected.sum(0)
+    elif average == "macro":
+        expected = expected.float().mean(0)
+    assert torch.allclose(result, expected, atol=1e-4, rtol=1e-4)
+
+
 def _reference_sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()

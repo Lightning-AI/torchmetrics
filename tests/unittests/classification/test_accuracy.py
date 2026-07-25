@@ -408,6 +408,25 @@ class TestMulticlassAccuracy(MetricTester):
             )
 
 
+def test_multiclass_accuracy_large_num_classes():
+    """Test that accuracy is correct when num_classes>=1000, exercising the linear-space code path."""
+    num_classes = 1_000_000
+    n = 500
+    generator = torch.Generator().manual_seed(42)
+    target = torch.randint(0, num_classes, (n,), generator=generator)
+    preds = torch.randint(0, num_classes, (n,), generator=generator)
+
+    # We have so many classes that its most likely the accuracy is 0 in this test, so we artificially
+    # set 20% of the predictions to be correct.
+    artificially_correct = torch.randperm(n, generator=generator)[: n // 5]
+    preds[artificially_correct] = target[artificially_correct]
+
+    # Expected: fraction of exactly correct predictions
+    expected = (preds == target).float().mean()
+    result = multiclass_accuracy(preds, target, num_classes=num_classes, average="micro")
+    assert torch.isclose(result, expected), f"Expected {expected}, got {result}"
+
+
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
