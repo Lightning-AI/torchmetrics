@@ -79,10 +79,9 @@ def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_l
 def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> tuple[Tensor, Tensor, Tensor]:
     """Sort tokenized sentence from the shortest to the longest one.
 
-    Uses a stable sort to ensure that sentences with equal length preserve their original relative order.
-    This is critical for correctness when preds and target contain sentences of the same length, as an
-    unstable sort could produce different orderings for preds vs target, breaking symmetry and
-    batch-size invariance of BERTScore.
+    Uses a stable sort to ensure that sentences with equal length preserve their original relative order. This is
+    critical for correctness when preds and target contain sentences of the same length, as an unstable sort could
+    produce different orderings for preds vs target, breaking symmetry and batch-size invariance of BERTScore.
 
     """
     sorted_indices = attention_mask.sum(1).argsort(stable=True)
