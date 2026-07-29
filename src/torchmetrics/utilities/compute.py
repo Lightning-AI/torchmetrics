@@ -250,6 +250,7 @@ def _normalize_sigmoid(tensor: Tensor) -> Tensor:
 
     Returns:
         sigmoid-normalized tensor
+
     """
     # Check if tensor is already in [0, 1] probability range
     # Use torch.where to minimize device-host sync
@@ -287,6 +288,7 @@ def _normalize_softmax(tensor: Tensor) -> Tensor:
 
     Returns:
         softmax-normalized tensor
+
     """
     if tensor.device == torch.device("cpu"):
         if torch.all((tensor >= 0) * (tensor <= 1)):
