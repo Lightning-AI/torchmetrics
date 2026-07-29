@@ -228,16 +228,74 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
     # if not specified, do nothing.
     if not normalization:
         return tensor
-    # decrease sigmoid on cpu .
+
+    if normalization == "sigmoid":
+        return _normalize_sigmoid(tensor)
+    return _normalize_softmax(tensor)
+
+
+def _normalize_sigmoid(tensor: Tensor) -> Tensor:
+    """Apply sigmoid normalization with numerical stability for large logits.
+
+    When logits are very large (e.g., > 16.64 for float32), sigmoid saturates
+    to exactly 1.0 or 0.0, losing all discriminative power. For ranking-based
+    metrics like AUROC, this causes incorrect results.
+
+    To prevent saturation while preserving ordering (monotonicity), we scale
+    large logits down to a range where sigmoid is well-behaved before applying it.
+    The linear scaling factor is chosen to preserve the relative ordering of values.
+
+    Args:
+        tensor: input tensor that may be logits or probabilities
+
+    Returns:
+        sigmoid-normalized tensor
+    """
+    # Check if tensor is already in [0, 1] probability range
+    # Use torch.where to minimize device-host sync
     if tensor.device == torch.device("cpu"):
-        if not torch.all((tensor >= 0) * (tensor <= 1)):
-            tensor = tensor.sigmoid() if normalization == "sigmoid" else torch.softmax(tensor, dim=1)
+        if torch.all((tensor >= 0) * (tensor <= 1)):
+            return tensor
+        _sigmoid_max_abs = tensor.abs().max()
+        if _sigmoid_max_abs > 16.0:
+            tensor = tensor / (_sigmoid_max_abs / 16.0)
+        return tensor.sigmoid()
+
+    # GPU path: reduce host-device sync
+    condition = ((tensor < 0) | (tensor > 1)).any()
+    if not condition:
         return tensor
 
-    # decrease device-host sync on device .
+    # Check if logits are large enough to cause sigmoid saturation
+    max_abs = tensor.abs().max()
+    if max_abs > 16.0:
+        # Scale to safe range while preserving ordering
+        tensor = tensor / (max_abs / 16.0)
+
+    return torch.where(
+        condition,
+        torch.sigmoid(tensor),
+        tensor,
+    )
+
+
+def _normalize_softmax(tensor: Tensor) -> Tensor:
+    """Apply softmax normalization.
+
+    Args:
+        tensor: input tensor
+
+    Returns:
+        softmax-normalized tensor
+    """
+    if tensor.device == torch.device("cpu"):
+        if torch.all((tensor >= 0) * (tensor <= 1)):
+            return tensor
+        return torch.softmax(tensor, dim=1)
+
     condition = ((tensor < 0) | (tensor > 1)).any()
     return torch.where(
         condition,
-        torch.sigmoid(tensor) if normalization == "sigmoid" else torch.softmax(tensor, dim=1),
+        torch.softmax(tensor, dim=1),
         tensor,
     )
