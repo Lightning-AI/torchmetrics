@@ -82,7 +82,7 @@ def _binary_recall_at_fixed_precision_arg_validation(
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-    if not isinstance(min_precision, float) and not (0 <= min_precision <= 1):
+    if not isinstance(min_precision, float) or not (0 <= min_precision <= 1):
         raise ValueError(
             f"Expected argument `min_precision` to be an float in the [0,1] range, but got {min_precision}"
         )
@@ -179,7 +179,7 @@ def _multiclass_recall_at_fixed_precision_arg_validation(
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
-    if not isinstance(min_precision, float) and not (0 <= min_precision <= 1):
+    if not isinstance(min_precision, float) or not (0 <= min_precision <= 1):
         raise ValueError(
             f"Expected argument `min_precision` to be an float in the [0,1] range, but got {min_precision}"
         )
@@ -289,7 +289,7 @@ def _multilabel_recall_at_fixed_precision_arg_validation(
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
-    if not isinstance(min_precision, float) and not (0 <= min_precision <= 1):
+    if not isinstance(min_precision, float) or not (0 <= min_precision <= 1):
         raise ValueError(
             f"Expected argument `min_precision` to be an float in the [0,1] range, but got {min_precision}"
         )
