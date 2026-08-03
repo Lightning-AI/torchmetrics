@@ -438,6 +438,8 @@ linkcheck_ignore = [
     "https://ieeexplore.ieee.org/abstract/document/5547575",
     # An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated Noise Maskers
     "https://ieeexplore.ieee.org/abstract/document/7539284",
+    # NIST link check
+    "https://www.nist.gov",
     # A short-time objective intelligibility measure for time-frequency weighted noisy speech
     "https://ieeexplore.ieee.org/abstract/document/5495701",
     # An Algorithm for Intelligibility Prediction of Time-Frequency Weighted Noisy Speech
