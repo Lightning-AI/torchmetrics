@@ -525,6 +525,7 @@ class Metric(Module, ABC):
         states are commonly integer typed (``MeanAveragePrecision`` labels, for example) while the
         metric dtype is floating point. A rank holding no elements has no ``ref`` to copy from, so
         padding with ``self.dtype`` there would make the collectives disagree on dtype.
+
         """
         if ref is not None:
             if ref.ndim == 0:

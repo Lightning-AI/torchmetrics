@@ -367,6 +367,7 @@ class _NoneReductionObjectListMetric(Metric):
     """Metric whose dist_reduce_fx=None list state holds non-tensor objects.
 
     Mirrors states like ``MeanAveragePrecision.detection_mask``, which stores RLE tuples.
+
     """
 
     full_state_update = True
@@ -407,6 +408,7 @@ def _test_sync_none_reduction_non_default_dtype(rank):
     List states are commonly integer typed while the metric dtype is floating point --
     ``MeanAveragePrecision`` labels, for example. A rank with no elements has nothing to copy a
     dtype from, so padding with the metric dtype would make the collectives disagree.
+
     """
     metric = _NoneReductionListMetric(sync_on_compute=True)
     if rank == 1:
