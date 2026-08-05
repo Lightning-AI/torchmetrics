@@ -49,6 +49,24 @@ def jit_distributed_available() -> bool:
     return torch.distributed.is_available() and torch.distributed.is_initialized()
 
 
+# Dtypes that a list state can hold, indexed so ranks can agree on one over a collective without
+# sending a Python object. Order is fixed: an index is only meaningful against this exact tuple.
+_DTYPE_CODES: tuple[torch.dtype, ...] = (
+    torch.bool,
+    torch.uint8,
+    torch.int8,
+    torch.int16,
+    torch.int32,
+    torch.int64,
+    torch.float16,
+    torch.bfloat16,
+    torch.float32,
+    torch.float64,
+    torch.complex64,
+    torch.complex128,
+)
+
+
 class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
@@ -498,20 +516,34 @@ class Metric(Module, ABC):
                 raise TypeError(f"Unsupported reduce_fn: {reduce_fn}")
             setattr(self, attr, reduced)
 
-    def _make_empty_pad_tensor(self, ref: Optional[Tensor], ndim: int, tail_shape_vec: Tensor) -> Tensor:
-        """Create an empty tensor with the same trailing dimensions as ``ref`` for list-state padding."""
+    def _make_empty_pad_tensor(
+        self, ref: Optional[Tensor], ndim: int, tail_shape_vec: Tensor, dtype: torch.dtype
+    ) -> Tensor:
+        """Create an empty tensor with the same trailing dimensions as ``ref`` for list-state padding.
+
+        ``dtype`` is the dtype agreed across ranks, which is not necessarily ``self.dtype``: list
+        states are commonly integer typed (``MeanAveragePrecision`` labels, for example) while the
+        metric dtype is floating point. A rank holding no elements has no ``ref`` to copy from, so
+        padding with ``self.dtype`` there would make the collectives disagree on dtype.
+        """
         if ref is not None:
             if ref.ndim == 0:
                 return torch.zeros(0, device=self.device, dtype=ref.dtype)
             return torch.zeros((0, *ref.shape[1:]), device=self.device, dtype=ref.dtype)
         if ndim <= 1:
-            return torch.zeros(0, device=self.device, dtype=self.dtype)
+            return torch.zeros(0, device=self.device, dtype=dtype)
         pad_shape = [0] + [int(tail_shape_vec[i].item()) for i in range(ndim - 1)]
-        return torch.zeros(pad_shape, device=self.device, dtype=self.dtype)
+        return torch.zeros(pad_shape, device=self.device, dtype=dtype)
 
     def _equalize_none_reduction_list(self, state: list, process_group: Optional[Any] = None) -> list:
         """Pad ``dist_reduce_fx=None`` list states so all ranks perform the same number of collectives."""
         if not isinstance(state, list) or not jit_distributed_available():
+            return state
+
+        # Only tensor entries are gathered: `apply_to_collection` below dispatches on `Tensor`, so a
+        # list of non-tensors (`MeanAveragePrecision.detection_mask` holds RLE tuples, for example)
+        # runs no collectives and needs no equalizing. Reading `state[0].ndim` on one would also fail.
+        if not all(isinstance(item, Tensor) for item in state):
             return state
 
         group = process_group or self.process_group
@@ -538,20 +570,26 @@ class Metric(Module, ABC):
                 tail_shape_vec[i] = dim_size
         torch.distributed.all_reduce(tail_shape_vec, op=torch.distributed.ReduceOp.MAX, group=group)
 
+        # Agree on the element dtype. Ranks holding elements all carry the same one, so a MAX over
+        # their codes picks it, while a rank with nothing to contribute sends -1 and defers.
+        local_code = _DTYPE_CODES.index(state[0].dtype) if local_len > 0 and state[0].dtype in _DTYPE_CODES else -1
+        code_t = torch.tensor([local_code], device=self.device, dtype=torch.long)
+        torch.distributed.all_reduce(code_t, op=torch.distributed.ReduceOp.MAX, group=group)
+        code = int(code_t.item())
+        dtype = _DTYPE_CODES[code] if code >= 0 else self.dtype
+
         if local_len == max_len:
             return state
 
         while len(state) < max_len:
             ref = state[-1] if state else None
-            state.append(self._make_empty_pad_tensor(ref, ndim, tail_shape_vec))
+            state.append(self._make_empty_pad_tensor(ref, ndim, tail_shape_vec, dtype))
         return state
 
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         group = process_group or self.process_group
         if jit_distributed_available():
             torch.distributed.barrier(group=group)
-
-        input_dict = {attr: getattr(self, attr) for attr in self._reductions}
 
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
 

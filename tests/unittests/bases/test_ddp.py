@@ -363,6 +363,25 @@ class _NoneReductionListMetric(Metric):
         return torch.cat(self.items, dim=0).sum()
 
 
+class _NoneReductionObjectListMetric(Metric):
+    """Metric whose dist_reduce_fx=None list state holds non-tensor objects.
+
+    Mirrors states like ``MeanAveragePrecision.detection_mask``, which stores RLE tuples.
+    """
+
+    full_state_update = True
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.add_state("objects", default=[], dist_reduce_fx=None)
+
+    def update(self, obj: Any) -> None:
+        self.objects.append(obj)
+
+    def compute(self) -> int:
+        return len(self.objects)
+
+
 def _test_sync_none_reduction_unequal_list_lengths(rank):
     """Regression test for #3336: ranks with different list lengths must not deadlock on compute()."""
     metric = _NoneReductionListMetric(sync_on_compute=True)
@@ -382,13 +401,42 @@ def _test_sync_none_reduction_multidim_list(rank):
     assert val == 10.0
 
 
+def _test_sync_none_reduction_non_default_dtype(rank):
+    """Padding must use the element dtype, not the metric dtype.
+
+    List states are commonly integer typed while the metric dtype is floating point --
+    ``MeanAveragePrecision`` labels, for example. A rank with no elements has nothing to copy a
+    dtype from, so padding with the metric dtype would make the collectives disagree.
+    """
+    metric = _NoneReductionListMetric(sync_on_compute=True)
+    if rank == 1:
+        metric.update(torch.tensor([1, 2], dtype=torch.long))
+        metric.update(torch.tensor([3], dtype=torch.long))
+    val = metric.compute()
+    assert val == 6
+    assert val.dtype == torch.long
+
+
+def _test_sync_none_reduction_non_tensor_list(rank):
+    """Non-tensor list states are not gathered, so they must pass through untouched."""
+    metric = _NoneReductionObjectListMetric(sync_on_compute=True)
+    if rank == 1:
+        metric.update(("rle", 1))
+    assert metric.compute() == (1 if rank == 1 else 0)
+
+
 @pytest.mark.DDP
 @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
 @pytest.mark.skipif(_IS_WINDOWS, reason="DDP not available on windows")
 @pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 @pytest.mark.parametrize(
     "process",
-    [_test_sync_none_reduction_unequal_list_lengths, _test_sync_none_reduction_multidim_list],
+    [
+        _test_sync_none_reduction_unequal_list_lengths,
+        _test_sync_none_reduction_multidim_list,
+        _test_sync_none_reduction_non_default_dtype,
+        _test_sync_none_reduction_non_tensor_list,
+    ],
 )
 def test_sync_none_reduction_unequal_list_lengths(process):
     """Test that dist_reduce_fx=None list states sync without deadlocking."""
