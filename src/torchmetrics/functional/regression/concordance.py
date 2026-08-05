@@ -61,7 +61,14 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> concordance_corrcoef(preds, target)
         tensor([0.7273, 0.9887])
 
-    """
+    
+    Example::
+        >>> import torch
+        >>> from torchmetrics.functional.regression import concordance_corrcoef
+        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> concordance_corrcoef(preds, target)
+        tensor(0.9683)"""
     d = preds.shape[1] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
