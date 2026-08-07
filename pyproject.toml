@@ -186,3 +186,20 @@ Raison = "Raison"
 fpr = "fpr"
 mape = "mape"
 wil = "wil"
+
+[dependency-groups]
+dev = [
+    "ty>=0.0.69",
+]
+test = [
+    "cachier==4.2.0",
+    "cloudpickle>=3.1.2",
+    "einops>=0.8.2",
+    "jiwer>=4.0.0",
+    "librosa>=0.11.0",
+    "pandas>=3.0.3",
+    "pesq>=0.0.4",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "torch>=2.13.0",
+]
