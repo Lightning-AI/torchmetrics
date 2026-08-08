@@ -47,4 +47,4 @@ __all__ = [
 ]
 
 if not sys.platform.startswith("win32"):
-    __all__.append("ClusterAccuracy")
+    __all__ += ["ClusterAccuracy"]
