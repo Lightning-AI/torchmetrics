@@ -541,12 +541,6 @@ class Metric(Module, ABC):
         if not isinstance(state, list) or not jit_distributed_available():
             return state
 
-        # Only tensor entries are gathered: `apply_to_collection` below dispatches on `Tensor`, so a
-        # list of non-tensors (`MeanAveragePrecision.detection_mask` holds RLE tuples, for example)
-        # runs no collectives and needs no equalizing. Reading `state[0].ndim` on one would also fail.
-        if not all(isinstance(item, Tensor) for item in state):
-            return state
-
         group = process_group or self.process_group
         world_size = torch.distributed.get_world_size(group)
         local_len = len(state)
@@ -557,6 +551,21 @@ class Metric(Module, ABC):
         max_len = max(int(t.item()) for t in all_lens)
 
         if max_len == 0:
+            return state
+
+        # Only tensor entries are gathered: `apply_to_collection` dispatches on `Tensor`, so a list of
+        # non-tensors (`MeanAveragePrecision.detection_mask` holds RLE tuples, for example) runs no
+        # collectives and needs no equalizing; reading `state[0].ndim` on one would also fail.
+        #
+        # This has to be decided together, not per rank. A rank holding nothing sees a vacuously
+        # all-tensor list, so if it decided locally it would go on to run the collectives below while
+        # a rank holding non-tensors returned early -- the very deadlock this method prevents. MIN
+        # means any rank holding a non-tensor makes every rank skip.
+        all_tensor_t = torch.tensor(
+            [int(all(isinstance(item, Tensor) for item in state))], device=self.device, dtype=torch.long
+        )
+        torch.distributed.all_reduce(all_tensor_t, op=torch.distributed.ReduceOp.MIN, group=group)
+        if int(all_tensor_t.item()) == 0:
             return state
 
         local_ndim = state[0].ndim if local_len > 0 else 0
