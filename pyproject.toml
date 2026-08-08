@@ -18,6 +18,7 @@ test = [
   "pesq>=0.0.4",
   "pytest>=9.1.1",
   "pytest-cov>=7.1",
+  "pytest-doctestplus>=1.7.1",
   "torch>=2.13",
 ]
 
