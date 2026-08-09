@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.functional.classification.confusion_matrix import _multiclass_confusion_matrix_update
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
@@ -138,6 +139,26 @@ def _handle_nan_in_data(
         return preds.nan_to_num(nan_replace_value), target.nan_to_num(nan_replace_value)
     rows_contain_nan = torch.logical_or(preds.isnan(), target.isnan())
     return preds[~rows_contain_nan], target[~rows_contain_nan]
+
+
+def _nominal_confusion_matrix_update(
+    preds: Tensor,
+    target: Tensor,
+    num_classes: Optional[int],
+    nan_strategy: Literal["replace", "drop"] = "replace",
+    nan_replace_value: Optional[float] = 0.0,
+) -> Tensor:
+    """Create a confusion matrix from nominal data."""
+    preds = preds.argmax(1) if preds.ndim == 2 else preds
+    target = target.argmax(1) if target.ndim == 2 else target
+    preds, target = _handle_nan_in_data(preds, target, nan_strategy, nan_replace_value)
+
+    if num_classes is None:
+        categories, inverse = torch.unique(torch.cat([preds, target]), return_inverse=True)
+        preds, target = inverse.split([preds.numel(), target.numel()])
+        num_classes = categories.numel()
+
+    return _multiclass_confusion_matrix_update(preds, target, num_classes)
 
 
 def _unable_to_use_bias_correction_warning(metric_name: str) -> None:
