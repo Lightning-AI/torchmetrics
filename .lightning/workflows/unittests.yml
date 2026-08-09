@@ -8,8 +8,8 @@ timeout: "300" # minutes
 machine: "L4_X_2"
 parametrize:
   matrix:
-    image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
-      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.10-torch2.0"
+    image: # the lowest torch here must match the floor in requirements/base.txt, as it also drives the oldest requirements
+      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.4.1-py3.11-torch2.6"
       - "pytorchlightning/torchmetrics:ubuntu24.04-cuda12.6.3-py3.12-torch2.8"
     # testing: ["doctest", "common", "distributed"] # todo
   include: []
@@ -54,7 +54,17 @@ run: |
       python adjust-torch-versions.py $fpath
   done
 
-  if [ "${TORCH_VER}" == "2.0" ]; then
+  # Source the supported floor from the requirements rather than hardcoding it here, so that raising
+  # the floor on the CPU side cannot silently leave these GPU lanes testing the wrong "oldest" config.
+  TORCH_MIN=$(grep -oE '^torch >=[0-9]+\.[0-9]+' requirements/base.txt | grep -oE '[0-9]+\.[0-9]+$')
+  echo "Torch floor from requirements/base.txt: ${TORCH_MIN}"
+  python -c "import sys; from packaging.version import Version; sys.exit(Version('${TORCH_VER}') < Version('${TORCH_MIN}'))" || {
+    echo "ERROR: image provides torch ${TORCH_VER}, below the ${TORCH_MIN} floor in requirements/base.txt."
+    echo "       Bump the images in .lightning/workflows/ together with the floor."
+    exit 1
+  }
+
+  if [ "${TORCH_VER}" == "${TORCH_MIN}" ]; then
     # Set oldest versions
     python .github/assistant.py set-oldest-versions
   fi

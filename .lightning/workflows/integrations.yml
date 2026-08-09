@@ -8,8 +8,8 @@ machine: "L4"
 timeout: "35" # minutes
 parametrize:
   matrix:
-    image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
-      - "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
+    image: # the lowest torch here must match the floor in requirements/base.txt, as it also drives the oldest requirements
+      - "pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime"
       - "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
 
 run: |
@@ -29,7 +29,17 @@ run: |
   TORCH_URL="https://download.pytorch.org/whl/cu${CUDA_VERSION_MM}/torch_stable.html"
   echo ${TORCH_URL}
 
-  if [ "${TORCH_VER_M_M}" == "2.0" ]; then
+  # Source the supported floor from the requirements rather than hardcoding it here, so that raising
+  # the floor on the CPU side cannot silently leave these GPU lanes testing the wrong "oldest" config.
+  TORCH_MIN=$(grep -oE '^torch >=[0-9]+\.[0-9]+' requirements/base.txt | grep -oE '[0-9]+\.[0-9]+$')
+  echo "Torch floor from requirements/base.txt: ${TORCH_MIN}"
+  python -c "import sys; from packaging.version import Version; sys.exit(Version('${TORCH_VER_M_M}') < Version('${TORCH_MIN}'))" || {
+    echo "ERROR: image provides torch ${TORCH_VER_M_M}, below the ${TORCH_MIN} floor in requirements/base.txt."
+    echo "       Bump the images in .lightning/workflows/ together with the floor."
+    exit 1
+  }
+
+  if [ "${TORCH_VER_M_M}" == "${TORCH_MIN}" ]; then
     pip install -q 'lightning-utilities[cli]'
     python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
     cat requirements/_integrate.txt
