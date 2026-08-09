@@ -18,11 +18,10 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.classification.confusion_matrix import _multiclass_confusion_matrix_update
 from torchmetrics.functional.nominal.utils import (
     _compute_chi_squared,
     _drop_empty_rows_and_cols,
-    _handle_nan_in_data,
+    _nominal_confusion_matrix_update,
     _nominal_input_validation,
 )
 
@@ -30,7 +29,7 @@ from torchmetrics.functional.nominal.utils import (
 def _pearsons_contingency_coefficient_update(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    num_classes: Optional[int],
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
@@ -47,10 +46,7 @@ def _pearsons_contingency_coefficient_update(
         Non-reduced confusion matrix
 
     """
-    preds = preds.argmax(1) if preds.ndim == 2 else preds
-    target = target.argmax(1) if target.ndim == 2 else target
-    preds, target = _handle_nan_in_data(preds, target, nan_strategy, nan_replace_value)
-    return _multiclass_confusion_matrix_update(preds, target, num_classes)
+    return _nominal_confusion_matrix_update(preds, target, num_classes, nan_strategy, nan_replace_value)
 
 
 def _pearsons_contingency_coefficient_compute(confmat: Tensor) -> Tensor:
@@ -123,8 +119,7 @@ def pearsons_contingency_coefficient(
 
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
-    num_classes = len(torch.cat([preds, target]).unique())
-    confmat = _pearsons_contingency_coefficient_update(preds, target, num_classes, nan_strategy, nan_replace_value)
+    confmat = _pearsons_contingency_coefficient_update(preds, target, None, nan_strategy, nan_replace_value)
     return _pearsons_contingency_coefficient_compute(confmat)
 
 
@@ -167,8 +162,7 @@ def pearsons_contingency_coefficient_matrix(
     pearsons_cont_coef_matrix_value = torch.ones(num_variables, num_variables, device=matrix.device)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        num_classes = len(torch.cat([x, y]).unique())
-        confmat = _pearsons_contingency_coefficient_update(x, y, num_classes, nan_strategy, nan_replace_value)
+        confmat = _pearsons_contingency_coefficient_update(x, y, None, nan_strategy, nan_replace_value)
         val = _pearsons_contingency_coefficient_compute(confmat)
         pearsons_cont_coef_matrix_value[i, j] = pearsons_cont_coef_matrix_value[j, i] = val
     return pearsons_cont_coef_matrix_value
