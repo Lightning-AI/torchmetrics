@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from functools import partial
+from unittest import mock
 
 import numpy as np
 import pytest
@@ -31,6 +32,14 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     binary_precision_recall_curve,
     multiclass_precision_recall_curve,
     multilabel_precision_recall_curve,
+)
+from torchmetrics.functional.classification.precision_recall_curve import (
+    _MAX_VECTORIZED_ELEMENTS,
+    _binary_precision_recall_curve_update_loop,
+    _binary_precision_recall_curve_update_vectorized,
+    _multiclass_precision_recall_curve_update,
+    _multiclass_precision_recall_curve_update_loop,
+    _multiclass_precision_recall_curve_update_vectorized,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
@@ -489,3 +498,51 @@ def test_precision_nan_when_no_preds_meet_threshold(thresholds):
     assert torch.isnan(precision_bins[mask]).all(), f"Precision not NaN for thresholds {thres[mask]}"
 
     assert torch.all(recall_bins[mask] == 0.0), f"Recall not zero for thresholds {thres[mask]}"
+
+
+@pytest.mark.parametrize("num_thresholds", [5, 200])
+def test_multiclass_update_memory_does_not_scale_with_thresholds(num_thresholds):
+    """The vectorized path allocates ``preds.numel() * len(thresholds)`` elements.
+
+    Passing ``thresholds`` is documented to bound memory, so the dispatch must take the
+    number of thresholds into account rather than looking at the input size alone.
+    See https://github.com/Lightning-AI/torchmetrics/issues/3299.
+
+    """
+    preds = torch.randn(60000, 3)
+    target = torch.randint(0, 3, (60000,))
+    thresholds = torch.linspace(0, 1, num_thresholds)
+
+    intermediate = preds.numel() * num_thresholds
+    expected_vectorized = intermediate <= _MAX_VECTORIZED_ELEMENTS
+
+    with mock.patch(
+        "torchmetrics.functional.classification.precision_recall_curve"
+        "._multiclass_precision_recall_curve_update_vectorized",
+        wraps=_multiclass_precision_recall_curve_update_vectorized,
+    ) as vectorized:
+        _multiclass_precision_recall_curve_update(preds, target, 3, thresholds, average=None)
+
+    assert vectorized.called is expected_vectorized
+
+
+def test_multiclass_update_paths_agree():
+    """Falling back to the loop is only safe if it returns the same state."""
+    preds = torch.randn(2000, 3)
+    target = torch.randint(0, 3, (2000,))
+    for num_thresholds in (3, 20, 200):
+        thresholds = torch.linspace(0, 1, num_thresholds)
+        vectorized = _multiclass_precision_recall_curve_update_vectorized(preds, target, 3, thresholds)
+        looped = _multiclass_precision_recall_curve_update_loop(preds, target, 3, thresholds)
+        assert torch.equal(vectorized, looped)
+
+
+def test_binary_update_paths_agree():
+    """Same invariant for the binary dispatch."""
+    preds = torch.randn(2000)
+    target = torch.randint(0, 2, (2000,))
+    for num_thresholds in (3, 20, 200):
+        thresholds = torch.linspace(0, 1, num_thresholds)
+        vectorized = _binary_precision_recall_curve_update_vectorized(preds, target, thresholds)
+        looped = _binary_precision_recall_curve_update_loop(preds, target, thresholds)
+        assert torch.equal(vectorized, looped)

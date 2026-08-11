@@ -189,6 +189,14 @@ def _binary_precision_recall_curve_format(
     return preds, target, thresholds
 
 
+# The vectorized update paths materialise an intermediate holding
+# ``preds.numel() * len(thresholds)`` elements, so their peak memory grows with the
+# number of thresholds. The input-size checks below cannot see that on their own, so a
+# large ``thresholds`` silently defeats the constant-memory behaviour that argument is
+# documented to provide. Bound the intermediate as well as the input.
+_MAX_VECTORIZED_ELEMENTS = 1_000_000
+
+
 def _binary_precision_recall_curve_update(
     preds: Tensor,
     target: Tensor,
@@ -202,7 +210,7 @@ def _binary_precision_recall_curve_update(
     """
     if thresholds is None:
         return preds, target
-    if preds.numel() <= 50_000:
+    if preds.numel() <= 50_000 and preds.numel() * len(thresholds) <= _MAX_VECTORIZED_ELEMENTS:
         update_fn = _binary_precision_recall_curve_update_vectorized
     else:
         update_fn = _binary_precision_recall_curve_update_loop
@@ -479,7 +487,10 @@ def _multiclass_precision_recall_curve_update(
         return preds, target
     if average == "micro":
         return _binary_precision_recall_curve_update(preds, target, thresholds)
-    if preds.numel() * num_classes <= 1_000_000:
+    if (
+        preds.numel() * num_classes <= 1_000_000
+        and preds.numel() * len(thresholds) <= _MAX_VECTORIZED_ELEMENTS
+    ):
         update_fn = _multiclass_precision_recall_curve_update_vectorized
     else:
         update_fn = _multiclass_precision_recall_curve_update_loop
