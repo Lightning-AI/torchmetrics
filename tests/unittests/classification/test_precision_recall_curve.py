@@ -29,17 +29,15 @@ from torchmetrics.classification.precision_recall_curve import (
     PrecisionRecallCurve,
 )
 from torchmetrics.functional.classification.precision_recall_curve import (
-    binary_precision_recall_curve,
-    multiclass_precision_recall_curve,
-    multilabel_precision_recall_curve,
-)
-from torchmetrics.functional.classification.precision_recall_curve import (
     _MAX_VECTORIZED_ELEMENTS,
     _binary_precision_recall_curve_update_loop,
     _binary_precision_recall_curve_update_vectorized,
     _multiclass_precision_recall_curve_update,
     _multiclass_precision_recall_curve_update_loop,
     _multiclass_precision_recall_curve_update_vectorized,
+    binary_precision_recall_curve,
+    multiclass_precision_recall_curve,
+    multilabel_precision_recall_curve,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1

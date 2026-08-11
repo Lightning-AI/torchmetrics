@@ -487,10 +487,7 @@ def _multiclass_precision_recall_curve_update(
         return preds, target
     if average == "micro":
         return _binary_precision_recall_curve_update(preds, target, thresholds)
-    if (
-        preds.numel() * num_classes <= 1_000_000
-        and preds.numel() * len(thresholds) <= _MAX_VECTORIZED_ELEMENTS
-    ):
+    if preds.numel() * num_classes <= 1_000_000 and preds.numel() * len(thresholds) <= _MAX_VECTORIZED_ELEMENTS:
         update_fn = _multiclass_precision_recall_curve_update_vectorized
     else:
         update_fn = _multiclass_precision_recall_curve_update_loop
