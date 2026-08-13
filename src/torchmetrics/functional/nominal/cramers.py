@@ -24,8 +24,8 @@ from torchmetrics.functional.nominal.utils import (
     _compute_chi_squared,
     _drop_empty_rows_and_cols,
     _handle_nan_in_data,
-    _normalize_categorical_labels,
     _nominal_input_validation,
+    _normalize_categorical_labels,
     _unable_to_use_bias_correction_warning,
 )
 

@@ -150,6 +150,7 @@ def _normalize_categorical_labels(preds: Tensor, target: Tensor) -> tuple[Tensor
     Returns:
         preds and target relabeled as contiguous 0-based IDs, or the
         originals when they are already contiguous from zero.
+
     """
     all_vals = torch.cat([preds, target])
     unique_vals = all_vals.unique()
