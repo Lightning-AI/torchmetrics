@@ -55,8 +55,15 @@ def perceptual_evaluation_speech_quality(
         n_processes: integer specifying the number of processes to run in parallel for the metric calculation.
             Only applies to batches of data and if ``multiprocessing`` package is installed.
 
+    .. note::
+        Samples that the ``pesq`` backend cannot score, e.g. a silent reference for which no utterance can be
+        detected, are returned as ``nan`` instead of raising an error, so that a single degenerate sample does not
+        abort the calculation for the rest of the batch. The class based metric
+        :class:`~torchmetrics.audio.pesq.PerceptualEvaluationSpeechQuality` excludes such samples from its average.
+
     Returns:
-        Float tensor with shape ``(...,)`` of PESQ values per sample
+        Float tensor with shape ``(...,)`` of PESQ values per sample, with ``nan`` for samples the backend
+        could not score
 
     Raises:
         ModuleNotFoundError:
@@ -89,7 +96,28 @@ def perceptual_evaluation_speech_quality(
     def _issubtype_number(x: Any) -> bool:
         return np.issubdtype(type(x), np.number)
 
-    _filter_error_msg = np.vectorize(_issubtype_number)
+    _filter_error_msg = np.vectorize(_issubtype_number, otypes=[bool])
+
+    # with ``on_error=PesqError.RETURN_VALUES`` the backend reports a failure as one of these negative codes
+    # instead of raising; all valid PESQ scores are >= -0.5 so the codes cannot collide with a real score
+    error_codes = [
+        code
+        for name, code in vars(pesq_backend.PesqError).items()
+        if not name.startswith("_") and isinstance(code, int) and code < 0
+    ]
+
+    def _errors_to_nan(values: Any) -> np.ndarray:
+        """Convert raw backend outputs into float scores, mapping every failure onto ``nan``.
+
+        A failure is reported either as an error code (``pesq``/``pesq_batch`` with
+        ``on_error=PesqError.RETURN_VALUES``) or as an exception object (``pesq_batch`` collects exceptions
+        raised inside its worker processes). Both are replaced by ``nan``, keeping one entry per input sample.
+
+        """
+        values = np.asarray(values, dtype=object).reshape(-1)
+        scores = np.where(_filter_error_msg(values), values, np.nan).astype(np.float32)
+        scores[np.isin(scores, error_codes)] = np.nan
+        return scores
 
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
@@ -98,21 +126,40 @@ def perceptual_evaluation_speech_quality(
     _check_same_shape(preds, target)
 
     if preds.ndim == 1:
-        pesq_val_np = pesq_backend.pesq(fs, target.detach().cpu().numpy(), preds.detach().cpu().numpy(), mode)
-        pesq_val = torch.tensor(pesq_val_np)
+        pesq_val_np = pesq_backend.pesq(
+            fs,
+            target.detach().cpu().numpy(),
+            preds.detach().cpu().numpy(),
+            mode,
+            on_error=pesq_backend.PesqError.RETURN_VALUES,
+        )
+        pesq_val = torch.tensor(_errors_to_nan(pesq_val_np)[0])
     else:
         preds_np = preds.reshape(-1, preds.shape[-1]).detach().cpu().numpy()
         target_np = target.reshape(-1, preds.shape[-1]).detach().cpu().numpy()
 
         if _MULTIPROCESSING_AVAILABLE and n_processes != 1:
-            pesq_val_np = pesq_backend.pesq_batch(fs, target_np, preds_np, mode, n_processor=n_processes)
-            pesq_val_np = np.array(pesq_val_np)
+            pesq_val_np = pesq_backend.pesq_batch(
+                fs,
+                target_np,
+                preds_np,
+                mode,
+                n_processor=n_processes,
+                on_error=pesq_backend.PesqError.RETURN_VALUES,
+            )
         else:
-            pesq_val_np = np.empty(shape=(preds_np.shape[0]))
-            for b in range(preds_np.shape[0]):
-                pesq_val_np[b] = pesq_backend.pesq(fs, target_np[b, :], preds_np[b, :], mode)
-        pesq_val = torch.from_numpy(pesq_val_np[_filter_error_msg(pesq_val_np)].astype(np.float32))
-        pesq_val = pesq_val.reshape(len(pesq_val))
+            pesq_val_np = [
+                pesq_backend.pesq(
+                    fs,
+                    target_np[b, :],
+                    preds_np[b, :],
+                    mode,
+                    on_error=pesq_backend.PesqError.RETURN_VALUES,
+                )
+                for b in range(preds_np.shape[0])
+            ]
+        pesq_val = torch.from_numpy(_errors_to_nan(pesq_val_np))
+        pesq_val = pesq_val.reshape(preds.shape[:-1])
 
     if keep_same_device:
         return pesq_val.to(preds.device)

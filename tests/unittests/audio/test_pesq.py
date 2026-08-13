@@ -126,6 +126,45 @@ def test_error_on_different_shape(metric_class=PerceptualEvaluationSpeechQuality
         metric(torch.randn(100), torch.randn(50))
 
 
+@pytest.mark.parametrize("num_processes", [1, 2])
+def test_degenerate_sample_does_not_abort_batch(num_processes):
+    """Test that a single sample the backend cannot score does not abort the rest of the batch.
+
+    A silent reference makes the ``pesq`` backend fail with ``NoUtterancesError``. The batch should still be
+    scored, with ``nan`` in place of the offending sample so that the returned tensor keeps one value per input
+    sample.
+
+    """
+    preds = torch.rand(3, 2100)
+    target = torch.rand(3, 2100)
+    target[1] = 0.0  # silent reference -> no utterances can be detected
+
+    pesq_val = perceptual_evaluation_speech_quality(preds, target, 8000, "nb", n_processes=num_processes)
+    assert pesq_val.shape == (3,)
+    assert not torch.isnan(pesq_val[0])
+    assert torch.isnan(pesq_val[1])
+    assert not torch.isnan(pesq_val[2])
+
+    # the class metric averages over the samples that could be scored
+    metric = PerceptualEvaluationSpeechQuality(8000, "nb", n_processes=num_processes)
+    metric.update(preds, target)
+    assert metric.total == 2
+    assert torch.allclose(metric.compute(), pesq_val[[0, 2]].mean())
+
+
+def test_degenerate_sample_returns_nan_for_single_sample():
+    """Test that an unscorable single (non-batched) sample yields ``nan`` instead of raising."""
+    pesq_val = perceptual_evaluation_speech_quality(torch.rand(2100), torch.zeros(2100), 8000, "nb")
+    assert pesq_val.ndim == 0
+    assert torch.isnan(pesq_val)
+
+
+def test_multidim_input_keeps_shape():
+    """Test that the returned tensor has shape ``preds.shape[:-1]``, as documented."""
+    pesq_val = perceptual_evaluation_speech_quality(torch.rand(2, 3, 2100), torch.rand(2, 3, 2100), 8000, "nb")
+    assert pesq_val.shape == (2, 3)
+
+
 def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
