@@ -140,6 +140,27 @@ def _handle_nan_in_data(
     return preds[~rows_contain_nan], target[~rows_contain_nan]
 
 
+def _normalize_categorical_labels(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
+    """Map observed labels to contiguous 0-based IDs.
+
+    Nominal association metrics are invariant to renaming categories, but the
+    confusion-matrix updater uses raw label values as bin indices. Labels like
+    [1, 2] (instead of [0, 1]) would create an out-of-range bin.
+
+    Returns:
+        preds and target relabeled as contiguous 0-based IDs, or the
+        originals when they are already contiguous from zero.
+    """
+    all_vals = torch.cat([preds, target])
+    unique_vals = all_vals.unique()
+    expected = torch.arange(len(unique_vals), device=unique_vals.device, dtype=unique_vals.dtype)
+    if torch.equal(unique_vals, expected):
+        return preds, target
+    preds = torch.searchsorted(unique_vals, preds)
+    target = torch.searchsorted(unique_vals, target)
+    return preds, target
+
+
 def _unable_to_use_bias_correction_warning(metric_name: str) -> None:
     rank_zero_warn(
         f"Unable to compute {metric_name} using bias correction. Please consider to set `bias_correction=False`."
