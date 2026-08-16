@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.detection.mean_ap_3d import MeanAveragePrecision3D
 from torchmetrics.detection.panoptic_qualities import ModifiedPanopticQuality, PanopticQuality
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-__all__ = ["ModifiedPanopticQuality", "PanopticQuality"]
+__all__ = ["MeanAveragePrecision3D", "ModifiedPanopticQuality", "PanopticQuality"]
 
 if _TORCHVISION_AVAILABLE:
     from torchmetrics.detection.ciou import CompleteIntersectionOverUnion
