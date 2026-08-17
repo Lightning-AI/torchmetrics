@@ -160,3 +160,13 @@ def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     tm_score = theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     reference_score = _reference_dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score, atol=1e-6)
+
+
+def test_theils_u_nonzero_labels():
+    """Test that theils_u works with non-zero-based category labels."""
+    preds = torch.tensor([5, 6, 5, 6, 5, 6, 5, 6])
+    target = torch.tensor([5, 6, 5, 5, 6, 6, 5, 6])
+    res = theils_u(preds, target)
+    ref = _reference_dython_theils_u(preds, target, nan_strategy="replace", nan_replace_value=0.0)
+    assert torch.allclose(res, ref.float())
+

@@ -169,3 +169,19 @@ def test_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, n
     tm_score = cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
     reference_score = _dython_cramers_v_matrix(cramers_matrix_input, bias_correction, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score)
+
+
+def test_cramers_v_nonzero_labels():
+    """Test that cramers_v works with non-zero-based category labels."""
+    preds = torch.tensor([5, 6, 7, 8, 5, 6, 7, 8])
+    target = torch.tensor([5, 6, 7, 7, 6, 6, 5, 8])
+    res = cramers_v(preds, target, bias_correction=False)
+    preds_0 = preds - 5
+    target_0 = target - 5
+    res_0 = cramers_v(preds_0, target_0, bias_correction=False)
+    assert torch.allclose(res, res_0)
+    ref = _reference_dython_cramers_v(
+        preds_0, target_0, bias_correction=False, nan_strategy="replace", nan_replace_value=0.0
+    )
+    assert torch.allclose(res, ref.float())
+
