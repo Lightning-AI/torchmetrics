@@ -184,4 +184,3 @@ def test_cramers_v_nonzero_labels():
         preds_0, target_0, bias_correction=False, nan_strategy="replace", nan_replace_value=0.0
     )
     assert torch.allclose(res, ref.float())
-

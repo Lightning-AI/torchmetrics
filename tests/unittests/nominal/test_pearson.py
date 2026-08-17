@@ -132,4 +132,3 @@ def test_pearsons_nonzero_labels():
     res = pearsons_contingency_coefficient(preds, target)
     ref = _reference_pd_pearsons_t(preds, target)
     assert torch.allclose(res, ref)
-

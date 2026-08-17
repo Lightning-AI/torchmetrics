@@ -134,4 +134,3 @@ def test_tschuprows_t_nonzero_labels():
     res = tschuprows_t(preds, target, bias_correction=False)
     ref = _reference_pd_tschuprows_t(preds, target)
     assert torch.allclose(res, ref)
-

@@ -169,4 +169,3 @@ def test_theils_u_nonzero_labels():
     res = theils_u(preds, target)
     ref = _reference_dython_theils_u(preds, target, nan_strategy="replace", nan_replace_value=0.0)
     assert torch.allclose(res, ref.float())
-
