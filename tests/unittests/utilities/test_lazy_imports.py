@@ -13,9 +13,10 @@
 # limitations under the License.
 """Optional heavy dependencies must not be imported just because they happen to be installed.
 
-`import torchmetrics` is on the critical path for downstream libraries — Lightning imports it merely to compare
-versions — so eagerly pulling in plotting or signal-processing stacks costs every user, including those who never
-touch the features that need them. See https://github.com/Lightning-AI/torchmetrics/issues/3457.
+`import torchmetrics` is on the critical path for downstream libraries — Lightning imports it merely to compare versions
+— so eagerly pulling in plotting or signal-processing stacks costs every user, including those who never touch the
+features that need them. See
+https://github.com/Lightning-AI/torchmetrics/issues/3457.
 
 """
 
