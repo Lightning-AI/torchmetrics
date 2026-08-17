@@ -25,6 +25,7 @@ from torchmetrics.functional.nominal.utils import (
     _drop_empty_rows_and_cols,
     _handle_nan_in_data,
     _nominal_input_validation,
+    _remap_nominal_labels,
     _unable_to_use_bias_correction_warning,
 )
 
@@ -139,7 +140,7 @@ def tschuprows_t(
 
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
-    num_classes = len(torch.cat([preds, target]).unique())
+    preds, target, num_classes = _remap_nominal_labels(preds, target, nan_strategy, nan_replace_value)
     confmat = _tschuprows_t_update(preds, target, num_classes, nan_strategy, nan_replace_value)
     return _tschuprows_t_compute(confmat, bias_correction)
 
@@ -185,7 +186,7 @@ def tschuprows_t_matrix(
     tschuprows_t_matrix_value = torch.ones(num_variables, num_variables, device=matrix.device)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        num_classes = len(torch.cat([x, y]).unique())
+        x, y, num_classes = _remap_nominal_labels(x, y, nan_strategy, nan_replace_value)
         confmat = _tschuprows_t_update(x, y, num_classes, nan_strategy, nan_replace_value)
         tschuprows_t_matrix_value[i, j] = tschuprows_t_matrix_value[j, i] = _tschuprows_t_compute(
             confmat, bias_correction

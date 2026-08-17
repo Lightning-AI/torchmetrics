@@ -53,7 +53,9 @@ def _compute_chi_squared(confmat: Tensor, bias_correction: bool) -> Tensor:
     if df == 1 and bias_correction:
         diff = expected_freqs - confmat
         direction = diff.sign()
-        confmat += direction * torch.minimum(0.5 * torch.ones_like(direction), direction.abs())
+        # not in-place: ``confmat`` may be an integer tensor, which cannot hold the float correction, and the caller
+        # should not observe its input being mutated
+        confmat = confmat + direction * torch.minimum(0.5 * torch.ones_like(direction), direction.abs())
 
     return torch.sum((confmat - expected_freqs) ** 2 / expected_freqs)
 
@@ -138,6 +140,42 @@ def _handle_nan_in_data(
         return preds.nan_to_num(nan_replace_value), target.nan_to_num(nan_replace_value)
     rows_contain_nan = torch.logical_or(preds.isnan(), target.isnan())
     return preds[~rows_contain_nan], target[~rows_contain_nan]
+
+
+def _remap_nominal_labels(
+    preds: Tensor,
+    target: Tensor,
+    nan_strategy: Literal["replace", "drop"] = "replace",
+    nan_replace_value: Optional[float] = 0.0,
+) -> tuple[Tensor, Tensor, int]:
+    """Map categorical labels onto contiguous zero-based indices.
+
+    The nominal metrics bin their inputs into a ``num_classes x num_classes`` confusion matrix, which requires the
+    category labels to be exactly ``0, ..., num_classes - 1``. Categorical data is frequently encoded differently, for
+    example as ``[1, 2]`` or ``[5, 6]``, which would otherwise index outside the matrix. Categories are ranked by
+    sorted order, so inputs that are already zero-based and contiguous are left unchanged.
+
+    Args:
+        preds: 1D or 2D tensor of categorical (nominal) data
+        target: 1D or 2D tensor of categorical (nominal) data
+        nan_strategy: Indication of whether to replace or drop ``NaN`` values
+        nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
+
+    Returns:
+        Remapped ``preds`` and ``target`` tensors, and the number of distinct categories across both
+
+    Example:
+        >>> from torch import tensor
+        >>> from torchmetrics.functional.nominal.utils import _remap_nominal_labels
+        >>> _remap_nominal_labels(tensor([5, 6, 5]), tensor([6, 6, 5]))
+        (tensor([0, 1, 0]), tensor([1, 1, 0]), 2)
+
+    """
+    preds = preds.argmax(1) if preds.ndim == 2 else preds
+    target = target.argmax(1) if target.ndim == 2 else target
+    preds, target = _handle_nan_in_data(preds, target, nan_strategy, nan_replace_value)
+    classes = torch.cat([preds, target]).unique()
+    return torch.bucketize(preds, classes), torch.bucketize(target, classes), classes.numel()
 
 
 def _unable_to_use_bias_correction_warning(metric_name: str) -> None:
