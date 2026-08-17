@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Stopped importing `scipy.signal` and `matplotlib` at `import torchmetrics` time, resolving both on first use instead ([#3463](https://github.com/Lightning-AI/torchmetrics/pull/3463))
 
 
 ### Deprecated

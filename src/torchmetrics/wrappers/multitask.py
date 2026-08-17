@@ -21,7 +21,7 @@ from torch import Tensor, nn
 from torchmetrics.collections import MetricCollection
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, _is_axes
 from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
@@ -358,7 +358,7 @@ class MultitaskWrapper(WrapperMetric):
             if not isinstance(axes, Sequence):
                 raise TypeError(f"Expected argument `axes` to be a Sequence. Found type(axes) = {type(axes)}")
 
-            if not all(isinstance(ax, _AX_TYPE) for ax in axes):
+            if not all(_is_axes(ax) for ax in axes):
                 raise TypeError("Expected each ax in argument `axes` to be a matplotlib axis object")
 
             if len(axes) != len(self.task_metrics):

@@ -26,7 +26,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import _flatten, _flatten_dict, allclose
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, _is_axes, plot_single_or_multi_val
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricCollection.plot", "MetricCollection.plot_all"]
@@ -706,12 +706,12 @@ class MetricCollection(ModuleDict):
         if not isinstance(together, bool):
             raise ValueError(f"Expected argument `together` to be a boolean, but got {type(together)}")
         if ax is not None:
-            if together and not isinstance(ax, _AX_TYPE):
+            if together and not _is_axes(ax):
                 raise ValueError(
                     f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`"
                 )
             if not together and not (
-                isinstance(ax, Sequence) and all(isinstance(a, _AX_TYPE) for a in ax) and len(ax) == len(self)
+                isinstance(ax, Sequence) and all(_is_axes(a) for a in ax) and len(ax) == len(self)
             ):
                 raise ValueError(
                     f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "
