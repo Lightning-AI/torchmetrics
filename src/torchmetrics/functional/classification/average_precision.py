@@ -52,7 +52,14 @@ def _reduce_average_precision(
         recall = torch.where(torch.isnan(recall), torch.zeros_like(recall), recall)
         res = -torch.sum((recall[:, 1:] - recall[:, :-1]) * precision[:, :-1], 1)
     else:
-        res = torch.stack([-torch.sum((r[1:] - r[:-1]) * p[:-1]) for p, r in zip(precision, recall)])
+        res = torch.stack([
+            # A class with fewer than two curve points had no samples, so its score is undefined.
+            # Summing the empty slices below would otherwise report it as 0.
+            torch.tensor(float("nan"), device=r.device, dtype=r.dtype)
+            if r.numel() < 2
+            else -torch.sum((r[1:] - r[:-1]) * p[:-1])
+            for p, r in zip(precision, recall)
+        ])
     if average is None or average == "none":
         return res
     if torch.isnan(res).any():
@@ -74,6 +81,11 @@ def _binary_average_precision_compute(
     thresholds: Optional[Tensor],
 ) -> Tensor:
     precision, recall, _ = _binary_precision_recall_curve_compute(state, thresholds)
+    if torch.isnan(precision).all() and torch.isnan(recall).all():
+        # An undefined curve (no samples) must not collapse to 0.0 through the `nan` -> 0 filling
+        # below, which would be indistinguishable from a genuinely zero score.
+        return torch.tensor(float("nan"), device=precision.device)
+
     precision = torch.where(torch.isnan(precision), torch.zeros_like(precision), precision)
     recall = torch.where(torch.isnan(recall), torch.zeros_like(recall), recall)
     return -torch.sum((recall[1:] - recall[:-1]) * precision[:-1])

@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
 
+- Fixed `IndexError` in curve-based classification metrics when `ignore_index` removed every sample of a class, which now score as `nan` ([#3444](https://github.com/Lightning-AI/torchmetrics/pull/3444))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
