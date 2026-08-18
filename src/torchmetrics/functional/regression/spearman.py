@@ -35,7 +35,10 @@ def _rank_data(data: Tensor) -> Tensor:
     uniq, inv, counts = torch.unique(data, sorted=True, return_inverse=True, return_counts=True)
     sum_ranks = torch.zeros_like(uniq, dtype=torch.int32)
     sum_ranks.scatter_add_(0, inv, rank.to(torch.int32))
-    mean_ranks = sum_ranks / counts
+    # both operands are integers, so the division would otherwise fall back to the global default dtype and silently
+    # downcast a float64 input; float16/bfloat16 are promoted since ranks need more mantissa than they can hold
+    dtype = torch.promote_types(data.dtype, torch.float32)
+    mean_ranks = sum_ranks.to(dtype) / counts.to(dtype)
     return mean_ranks[inv]
 
 
