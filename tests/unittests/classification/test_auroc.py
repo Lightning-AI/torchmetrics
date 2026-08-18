@@ -448,8 +448,8 @@ def test_corner_case_all_samples_ignored():
 def test_corner_case_single_label_ignored():
     """Check that ignoring every sample of one label leaves the other labels untouched.
 
-    The per-label curves are computed independently, so an empty label must not affect labels that
-    still have samples, and must not raise. See issue
+    The per-label curves are computed independently, so an empty label must not affect labels that still have samples,
+    and must not raise. See issue
     https://github.com/Lightning-AI/torchmetrics/issues/2685.
 
     """
