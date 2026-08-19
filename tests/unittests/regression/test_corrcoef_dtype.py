@@ -25,14 +25,21 @@ import torch
 
 from torchmetrics.functional import kendall_rank_corrcoef, pearson_corrcoef, spearman_corrcoef
 from torchmetrics.functional.regression.spearman import _rank_data
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 NUM_SAMPLES = 100
 KENDALL_VARIANTS = ["a", "b", "c"]
 
+# torch below 2.1 cannot run the half-precision path on CPU at all -- `torch.arange` lacks the support that
+# `_rank_data` relies on -- which is why the existing `test_spearman_corrcoef_half_cpu` carries the same guard
+_half_on_cpu = pytest.mark.skipif(
+    not _TORCH_GREATER_EQUAL_2_1, reason="torch below 2.1 does not support cpu + half precision in these metrics"
+)
+
 # float16/bfloat16 are promoted rather than preserved: ranks are integers and need more mantissa than they can hold
 PROMOTED = [
-    pytest.param(torch.float16, torch.float32, id="float16->float32"),
-    pytest.param(torch.bfloat16, torch.float32, id="bfloat16->float32"),
+    pytest.param(torch.float16, torch.float32, id="float16->float32", marks=_half_on_cpu),
+    pytest.param(torch.bfloat16, torch.float32, id="bfloat16->float32", marks=_half_on_cpu),
     pytest.param(torch.float32, torch.float32, id="float32"),
     pytest.param(torch.float64, torch.float64, id="float64"),
 ]
