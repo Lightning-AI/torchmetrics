@@ -78,6 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `TER` never shifting a block of 10 words in one step, which made it disagree with Tercom and sacrebleu ([#3594](https://github.com/Lightning-AI/torchmetrics/pull/3594))
 - Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
 
+- Fixed `davies_bouldin_score` returning an incorrect value for `float64` data far from the origin, and `calinski_harabasz_score` accumulating at `float32`, by allocating their buffers in the input dtype ([#3468](https://github.com/Lightning-AI/torchmetrics/pull/3468))
+
 
 ---
 
