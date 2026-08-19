@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
 
+- Fixed `spearman_corrcoef` and `kendall_rank_corrcoef` silently returning `float32` for `float64` inputs ([#3466](https://github.com/Lightning-AI/torchmetrics/pull/3466))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
