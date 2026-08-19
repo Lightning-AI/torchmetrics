@@ -36,6 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
 
+- Fixed functional nominal metrics raising when category labels are not contiguous zero-based integers ([#3462](https://github.com/Lightning-AI/torchmetrics/pull/3462))
+
+
+- Fixed `cramers_v` and `tschuprows_t` raising on 2x2 inputs by no longer applying the bias correction in place ([#3462](https://github.com/Lightning-AI/torchmetrics/pull/3462))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
