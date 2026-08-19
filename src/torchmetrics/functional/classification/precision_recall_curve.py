@@ -57,6 +57,16 @@ def _binary_clf_curve(
         # remove class dimension if necessary
         if preds.ndim > target.ndim:
             preds = preds[:, 0]
+
+        if target.numel() == 0:
+            # Every sample was filtered out, e.g. an entire class was `ignore_index`. There is no
+            # curve to build; returning empty lets callers report the score as undefined instead of
+            # indexing into empty tensors below.
+            # Match the dtypes the non-empty branch below produces: the counts are default float
+            # (they come from `target * weight`) while the thresholds are taken from `preds`.
+            empty_counts = torch.empty(0, dtype=torch.get_default_dtype(), device=preds.device)
+            return empty_counts, empty_counts.clone(), torch.empty(0, dtype=preds.dtype, device=preds.device)
+
         desc_score_indices = torch.argsort(preds, descending=True)
 
         preds = preds[desc_score_indices]
@@ -274,6 +284,12 @@ def _binary_precision_recall_curve_compute(
         return precision, recall, thresholds
 
     fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=pos_label)
+    if tps.numel() == 0:
+        # No samples left after filtering, so there is no curve. Report it as undefined rather than
+        # indexing `tps[-1]` below.
+        nan = torch.full((1,), float("nan"), dtype=tps.dtype, device=tps.device)
+        return nan, nan.clone(), nan.clone()
+
     precision = tps / (tps + fps)
     recall = tps / tps[-1]
     if (state[1] == 0).all():  # all labels are negative, recall is undefined

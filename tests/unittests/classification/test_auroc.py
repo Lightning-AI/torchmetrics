@@ -432,3 +432,33 @@ def test_wrapper_class(metric, kwargs, base_metric=AUROC):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+def test_corner_case_all_samples_ignored():
+    """Check that a fully ignored input is undefined rather than an error.
+
+    See issue https://github.com/Lightning-AI/torchmetrics/issues/2685.
+
+    """
+    preds = torch.tensor([0.1, 0.8, 0.4])
+    target = torch.tensor([-1, -1, -1])
+    assert torch.isnan(BinaryAUROC(ignore_index=-1)(preds, target))
+
+
+def test_corner_case_single_label_ignored():
+    """Check that ignoring every sample of one label leaves the other labels untouched.
+
+    The per-label curves are computed independently, so an empty label must not affect labels that still have samples,
+    and must not raise. See issue
+    https://github.com/Lightning-AI/torchmetrics/issues/2685.
+
+    """
+    preds = torch.tensor([[0.9, 0.5, 0.2], [0.1, 0.3, 0.8], [0.7, 0.6, 0.4]])
+    target = torch.tensor([[1, -1, 0], [0, -1, 1], [1, -1, 0]])
+
+    res = MultilabelAUROC(num_labels=3, average=None, ignore_index=-1)(preds, target)
+
+    assert torch.isnan(res[1])
+    assert not torch.isnan(res[[0, 2]]).any()
+    # macro averaging already drops undefined labels, so it stays finite
+    assert not torch.isnan(MultilabelAUROC(num_labels=3, average="macro", ignore_index=-1)(preds, target))
