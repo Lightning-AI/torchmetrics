@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
 
+- Fixed `davies_bouldin_score` returning an incorrect value for `float64` data far from the origin, and `calinski_harabasz_score` accumulating at `float32`, by allocating their buffers in the input dtype ([#3468](https://github.com/Lightning-AI/torchmetrics/pull/3468))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
