@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `Metric` ignoring an active `torch.device` context manager on torch 2.3-2.7 ([#3448](https://github.com/Lightning-AI/torchmetrics/pull/3448))
 
+- Fixed `davies_bouldin_score` returning an incorrect value for `float64` data far from the origin, and `calinski_harabasz_score` accumulating at `float32`, by allocating their buffers in the input dtype ([#3468](https://github.com/Lightning-AI/torchmetrics/pull/3468))
+
 
 ---
 
