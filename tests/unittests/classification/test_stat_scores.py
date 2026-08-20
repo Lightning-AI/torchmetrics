@@ -363,6 +363,18 @@ def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_mes
         multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, ignore_index=ignore_index)
 
 
+@pytest.mark.parametrize("top_k", [-1, 0, 4.5])
+def test_raises_error_on_invalid_top_k(top_k):
+    """Test that a ValueError is raised if `top_k` is not a positive integer."""
+    preds = torch.rand(10, NUM_CLASSES)
+    target = torch.randint(NUM_CLASSES, (10,))
+    match = "Expected argument `top_k` to be an integer larger than or equal to 1"
+    with pytest.raises(ValueError, match=match):
+        multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, top_k=top_k)
+    with pytest.raises(ValueError, match=match):
+        MulticlassStatScores(num_classes=NUM_CLASSES, top_k=top_k)
+
+
 @pytest.mark.parametrize(
     ("top_k", "expected_result"),
     [
