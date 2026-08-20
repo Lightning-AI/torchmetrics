@@ -77,7 +77,7 @@ class BinaryNegativePredictiveValue(BinaryStatScores):
         >>> from torchmetrics.classification import BinaryNegativePredictiveValue
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryNegativePredictiveValue()
+        >>> metric = BinaryNegativePredictiveValue(input_format="labels")
         >>> metric(preds, target)
         tensor(0.6667)
 

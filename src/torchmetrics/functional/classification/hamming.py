@@ -90,6 +90,7 @@ def binary_hamming_distance(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["probs", "logits", "labels"] = "probs",
 ) -> Tensor:
     r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for binary tasks.
 
@@ -122,6 +123,11 @@ def binary_hamming_distance(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: Specifies the format of the input preds tensor. Can be one of:
+
+            - ``'probs'``: preds tensor contains probabilities (float, [0,1] range).
+            - ``'logits'``: preds tensor contains logits (float).
+            - ``'labels'``: preds tensor contains integer labels ({0, 1}).
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -132,7 +138,7 @@ def binary_hamming_distance(
         >>> from torchmetrics.functional.classification import binary_hamming_distance
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> binary_hamming_distance(preds, target)
+        >>> binary_hamming_distance(preds, target, input_format="labels")
         tensor(0.3333)
 
     Example (preds is float tensor):
@@ -152,9 +158,9 @@ def binary_hamming_distance(
 
     """
     if validate_args:
-        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
-        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
-    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format=input_format)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format=input_format)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format=input_format)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _hamming_distance_reduce(tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
 
@@ -383,6 +389,7 @@ def hamming_distance(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["probs", "logits", "labels"] = "probs",
 ) -> Tensor:
     r"""Compute the average `Hamming distance`_ (also known as Hamming loss).
 
@@ -404,14 +411,16 @@ def hamming_distance(
         >>> from torch import tensor
         >>> target = tensor([[0, 1], [1, 1]])
         >>> preds = tensor([[0, 1], [0, 1]])
-        >>> hamming_distance(preds, target, task="binary")
+        >>> hamming_distance(preds, target, task="binary", input_format="labels")
         tensor(0.2500)
 
     """
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_hamming_distance(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        return binary_hamming_distance(
+            preds, target, threshold, multidim_average, ignore_index, validate_args, input_format
+        )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")

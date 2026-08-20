@@ -126,6 +126,14 @@ class BinaryStatScores(_AbstractStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -133,7 +141,7 @@ class BinaryStatScores(_AbstractStatScores):
         >>> from torchmetrics.classification import BinaryStatScores
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryStatScores()
+        >>> metric = BinaryStatScores(input_format="labels")
         >>> metric(preds, target)
         tensor([2, 1, 2, 1, 3])
 
@@ -167,16 +175,18 @@ class BinaryStatScores(_AbstractStatScores):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["probs", "logits", "labels"] = "probs",
         **kwargs: Any,
     ) -> None:
         zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, zero_division)
+            _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format=input_format)
         self.threshold = threshold
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
         self.zero_division = zero_division
 
         self._create_state(size=1, multidim_average=multidim_average)
@@ -184,8 +194,10 @@ class BinaryStatScores(_AbstractStatScores):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
-            _binary_stat_scores_tensor_validation(preds, target, self.multidim_average, self.ignore_index)
-        preds, target = _binary_stat_scores_format(preds, target, self.threshold, self.ignore_index)
+            _binary_stat_scores_tensor_validation(
+                preds, target, self.multidim_average, self.ignore_index, self.input_format
+            )
+        preds, target = _binary_stat_scores_format(preds, target, self.threshold, self.ignore_index, self.input_format)
         tp, fp, tn, fn = _binary_stat_scores_update(preds, target, self.multidim_average)
         self._update_state(tp, fp, tn, fn)
 
@@ -250,6 +262,14 @@ class MulticlassStatScores(_AbstractStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -313,13 +333,14 @@ class MulticlassStatScores(_AbstractStatScores):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["probs", "logits", "labels"] = "probs",
         **kwargs: Any,
     ) -> None:
         zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _multiclass_stat_scores_arg_validation(
-                num_classes, top_k, average, multidim_average, ignore_index, zero_division
+                num_classes, top_k, average, multidim_average, ignore_index, zero_division, input_format
             )
         self.num_classes = num_classes
         self.top_k = top_k
@@ -327,6 +348,7 @@ class MulticlassStatScores(_AbstractStatScores):
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
         self.zero_division = zero_division
 
         self._create_state(
@@ -405,6 +427,14 @@ class MultilabelStatScores(_AbstractStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -466,13 +496,14 @@ class MultilabelStatScores(_AbstractStatScores):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["probs", "logits", "labels"] = "probs",
         **kwargs: Any,
     ) -> None:
         zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
             _multilabel_stat_scores_arg_validation(
-                num_labels, threshold, average, multidim_average, ignore_index, zero_division
+                num_labels, threshold, average, multidim_average, ignore_index, zero_division, input_format
             )
         self.num_labels = num_labels
         self.threshold = threshold
@@ -480,6 +511,7 @@ class MultilabelStatScores(_AbstractStatScores):
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
         self.zero_division = zero_division
 
         self._create_state(size=num_labels, multidim_average=multidim_average)
@@ -488,10 +520,10 @@ class MultilabelStatScores(_AbstractStatScores):
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
-                preds, target, self.num_labels, self.multidim_average, self.ignore_index
+                preds, target, self.num_labels, self.multidim_average, self.ignore_index, self.input_format
             )
         preds, target = _multilabel_stat_scores_format(
-            preds, target, self.num_labels, self.threshold, self.ignore_index
+            preds, target, self.num_labels, self.threshold, self.ignore_index, self.input_format
         )
         tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, self.multidim_average)
         self._update_state(tp, fp, tn, fn)
@@ -537,6 +569,7 @@ class StatScores(_ClassificationTaskWrapper):
         top_k: Optional[int] = 1,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["probs", "logits", "labels"] = "probs",
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
@@ -546,6 +579,7 @@ class StatScores(_ClassificationTaskWrapper):
             "multidim_average": multidim_average,
             "ignore_index": ignore_index,
             "validate_args": validate_args,
+            "input_format": input_format,
         })
         if task == ClassificationTask.BINARY:
             return BinaryStatScores(threshold, **kwargs)

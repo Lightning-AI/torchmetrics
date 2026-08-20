@@ -347,7 +347,7 @@ class MetricTracker(ModuleList):
             >>> import torch
             >>> from torchmetrics.wrappers import MetricTracker
             >>> from torchmetrics.classification import BinaryAccuracy
-            >>> tracker = MetricTracker(BinaryAccuracy(), maximize=True)
+            >>> tracker = MetricTracker(BinaryAccuracy(input_format="labels"), maximize=True)
             >>> for epoch in range(5):
             ...     tracker.increment()
             ...     for batch_idx in range(5):

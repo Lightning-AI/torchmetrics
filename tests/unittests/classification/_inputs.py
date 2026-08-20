@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import re
 from typing import Any
 
 import pytest
@@ -253,6 +254,27 @@ _group_cases = (
         id="input[single_dim-logits]",
     ),
 )
+
+
+def get_input_format_from_request(request):
+    """Extract the input format from the test request."""
+    test_id = request.node.callspec.id
+    match = re.search(r"input\[[^\]]+\]", test_id)
+    return match.group(0).split("-")[1].strip("]") if match else None
+
+
+def check_input_format_matches_data(input_format, request):
+    """Check that the input format matches the data type, else we skip the test."""
+    test_id = request.node.callspec.id
+    match = re.search(r"input\[[^\]]+\]", test_id)
+    data_id = match.group(0) if match else test_id
+    if input_format == "labels" and "labels" not in data_id:
+        pytest.skip("input format labels only works with labels data")
+    if input_format == "logits" and "logits" not in data_id:
+        pytest.skip("input format logits only works with logits data")
+    if input_format == "probs" and "probs" not in data_id:
+        pytest.skip("input format probs only works with probs data")
+
 
 # Generate edge multilabel edge case, where nothing matches (scores are undefined)
 __temp_preds = torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES))

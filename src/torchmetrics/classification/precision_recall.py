@@ -83,7 +83,7 @@ class BinaryPrecision(BinaryStatScores):
         >>> from torchmetrics.classification import BinaryPrecision
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryPrecision()
+        >>> metric = BinaryPrecision(input_format="labels")
         >>> metric(preds, target)
         tensor(0.6667)
 
@@ -543,7 +543,7 @@ class BinaryRecall(BinaryStatScores):
         >>> from torchmetrics.classification import BinaryRecall
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryRecall()
+        >>> metric = BinaryRecall(input_format="labels")
         >>> metric(preds, target)
         tensor(0.6667)
 

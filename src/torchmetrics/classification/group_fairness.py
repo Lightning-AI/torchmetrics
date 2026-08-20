@@ -88,7 +88,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> metric = BinaryGroupStatRates(num_groups=2)
+        >>> metric = BinaryGroupStatRates(num_groups=2, input_format="labels")
         >>> metric(preds, target, groups)
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
 
@@ -115,6 +115,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         threshold: float = 0.5,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["probs", "logits", "labels"] = "probs",
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -128,6 +129,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         self.threshold = threshold
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
 
         self._create_states(self.num_groups)
 
@@ -141,7 +143,14 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
 
         """
         group_stats = _binary_groups_stat_scores(
-            preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args
+            preds,
+            target,
+            groups,
+            self.num_groups,
+            self.threshold,
+            self.ignore_index,
+            self.validate_args,
+            self.input_format,
         )
 
         self._update_states(group_stats)
@@ -183,6 +192,13 @@ class BinaryFairness(_AbstractGroupStatScores):
         ignore_index: Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Returns:
@@ -195,7 +211,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> preds = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> metric = BinaryFairness(2)
+        >>> metric = BinaryFairness(2, input_format="labels")
         >>> metric(preds, target, groups)
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
 
@@ -223,6 +239,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         threshold: float = 0.5,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["probs", "logits", "labels"] = "probs",
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -234,7 +251,7 @@ class BinaryFairness(_AbstractGroupStatScores):
             )
 
         if validate_args:
-            _binary_stat_scores_arg_validation(threshold, "global", ignore_index)
+            _binary_stat_scores_arg_validation(threshold, "global", ignore_index, input_format=input_format)
 
         if not isinstance(num_groups, int) and num_groups < 2:
             raise ValueError(f"Expected argument `num_groups` to be an int larger than 1, but got {num_groups}")
@@ -243,6 +260,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         self.threshold = threshold
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
 
         self._create_states(self.num_groups)
 
@@ -261,7 +279,14 @@ class BinaryFairness(_AbstractGroupStatScores):
             target = torch.zeros(preds.shape)
 
         group_stats = _binary_groups_stat_scores(
-            preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args
+            preds,
+            target,
+            groups,
+            self.num_groups,
+            self.threshold,
+            self.ignore_index,
+            self.validate_args,
+            self.input_format,
         )
 
         self._update_states(group_stats)
