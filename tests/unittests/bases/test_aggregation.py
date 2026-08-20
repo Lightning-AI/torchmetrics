@@ -163,6 +163,14 @@ def test_error_on_wrong_nan_strategy(metric_class):
         metric_class(nan_strategy=[])
 
 
+def test_disable_preserves_weight():
+    """`nan_strategy="disable"` should only skip nan checks, not also discarding `weight`."""
+    metric = MeanMetric(nan_strategy="disable")
+    metric.update(torch.tensor(1.0), weight=torch.tensor(3.0))
+    metric.update(torch.tensor(0.0), weight=torch.tensor(1.0))
+    assert torch.allclose(metric.compute(), torch.tensor(0.75))
+
+
 @pytest.mark.skipif(not hasattr(torch, "broadcast_to"), reason="PyTorch <1.8 does not have broadcast_to")
 @pytest.mark.parametrize(
     ("weights", "expected"), [(1, 11.5), (torch.ones(2, 1, 1), 11.5), (torch.tensor([1, 2]).reshape(2, 1, 1), 13.5)]
