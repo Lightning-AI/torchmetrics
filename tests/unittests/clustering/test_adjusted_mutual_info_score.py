@@ -78,6 +78,19 @@ def test_adjusted_mutual_info_score_functional_single_cluster(average_method):
 
 
 @pytest.mark.parametrize("average_method", ["min", "geometric", "arithmetic", "max"])
+def test_adjusted_mutual_info_score_functional_both_single_cluster(average_method):
+    """Check that two identical single-cluster labelings give a perfect score of 1, matching sklearn."""
+    tensor_a = torch.zeros((BATCH_SIZE,), dtype=torch.int)
+    tensor_b = torch.zeros((BATCH_SIZE,), dtype=torch.int)
+    expected = sklearn_ami(tensor_a.numpy(), tensor_b.numpy(), average_method=average_method)
+    assert torch.allclose(
+        adjusted_mutual_info_score(tensor_a, tensor_b, average_method),
+        torch.tensor(expected, dtype=torch.float32),
+        atol=ATOL,
+    )
+
+
+@pytest.mark.parametrize("average_method", ["min", "geometric", "arithmetic", "max"])
 def test_adjusted_mutual_info_score_functional_raises_invalid_task(average_method):
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic
