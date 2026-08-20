@@ -211,6 +211,13 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
     Returns:
         normalized tensor if needed
 
+    Note:
+        When applying sigmoid normalization to logits, the logits are first shifted by their mean value.
+        This prevents numerical overflow (saturation to 1.0) for large logit magnitudes (e.g. > ~16.64
+        for float32), which would otherwise cause all predictions to appear identical and produce
+        incorrect results for ranking-based metrics such as AUROC and Average Precision.
+        Shifting by the mean preserves the relative ordering of all predictions.
+
     Example:
         >>> import torch
         >>> tensor = torch.tensor([-1.0, 0.0, 1.0])
@@ -223,6 +230,10 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
         >>> tensor = torch.tensor([0.0, 0.5, 1.0])
         >>> normalize_logits_if_needed(tensor, normalization="sigmoid")
         tensor([0.0000, 0.5000, 1.0000])
+        >>> # Large logits that would previously saturate to 1.0 are now handled correctly
+        >>> tensor = torch.tensor([97.0, 98.0, 99.0, 100.0])
+        >>> normalize_logits_if_needed(tensor, normalization="sigmoid")
+        tensor([0.2689, 0.5000, 0.7311, 0.8808])
 
     """
     # if not specified, do nothing.
@@ -231,13 +242,26 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
     # decrease sigmoid on cpu .
     if tensor.device == torch.device("cpu"):
         if not torch.all((tensor >= 0) * (tensor <= 1)):
-            tensor = tensor.sigmoid() if normalization == "sigmoid" else torch.softmax(tensor, dim=1)
+            if normalization == "sigmoid":
+                # Shift logits by their mean before applying sigmoid to prevent saturation for large logits.
+                # sigmoid(x - mean(x)) preserves the relative ordering of predictions while avoiding
+                # overflow when all logits are large (e.g. > ~16.64 for float32), which would otherwise
+                # cause all predictions to saturate to 1.0 and produce incorrect ranking-based metrics
+                # (e.g. AUROC, Average Precision). See: https://github.com/Lightning-AI/torchmetrics/issues/2819
+                tensor = (tensor - tensor.mean()).sigmoid()
+            else:
+                tensor = torch.softmax(tensor, dim=1)
         return tensor
 
     # decrease device-host sync on device .
     condition = ((tensor < 0) | (tensor > 1)).any()
+    if normalization == "sigmoid":
+        # Same mean-shift trick for device tensors to prevent sigmoid saturation.
+        normalized = (tensor - tensor.mean()).sigmoid()
+    else:
+        normalized = torch.softmax(tensor, dim=1)
     return torch.where(
         condition,
-        torch.sigmoid(tensor) if normalization == "sigmoid" else torch.softmax(tensor, dim=1),
+        normalized,
         tensor,
     )
