@@ -9,8 +9,8 @@ timeout: "35" # minutes
 parametrize:
   matrix:
     image: # the lowest torch here must match the floor in requirements/base.txt, as it also drives the oldest requirements
-      - "pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime"
-      - "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
+      - "pytorch/pytorch:2.6.0-cuda12.6-cudnn9-runtime"
+      - "pytorch/pytorch:2.10.0-cuda13.0-cudnn9-runtime"
 
 run: |
   whereis nvidia
@@ -31,7 +31,8 @@ run: |
 
   # Source the supported floor from the requirements rather than hardcoding it here, so that raising
   # the floor on the CPU side cannot silently leave these GPU lanes testing the wrong "oldest" config.
-  TORCH_MIN=$(grep -oE '^torch >=[0-9]+\.[0-9]+' requirements/base.txt | grep -oE '[0-9]+\.[0-9]+$')
+  TORCH_MIN=$(grep -oE '^torch >=[0-9]+\.[0-9]+' requirements/base.txt | grep -oE '[0-9]+\.[0-9]+$' || true)
+  [ -n "${TORCH_MIN}" ] || { echo "ERROR: could not read the torch floor from requirements/base.txt"; exit 1; }
   echo "Torch floor from requirements/base.txt: ${TORCH_MIN}"
   python -c "import sys; from packaging.version import Version; sys.exit(Version('${TORCH_VER_M_M}') < Version('${TORCH_MIN}'))" || {
     echo "ERROR: image provides torch ${TORCH_VER_M_M}, below the ${TORCH_MIN} floor in requirements/base.txt."
