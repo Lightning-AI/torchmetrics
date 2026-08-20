@@ -30,6 +30,7 @@ from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.clustering import AdjustedRandScore
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 from torchmetrics.regression import PearsonCorrCoef, R2Score
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_8
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 
@@ -333,16 +334,31 @@ def test_device_and_dtype_transfer(tmpdir):
     torch.set_default_dtype(default_dtype)
 
 
-def test_device_from_device_context_manager():
+@pytest.mark.parametrize(
+    "torch_greater_equal_2_8",
+    [
+        pytest.param(
+            True,
+            marks=pytest.mark.skipif(
+                not _TORCH_GREATER_EQUAL_2_8, reason="`torch.get_default_device` ignores the context manager < 2.8"
+            ),
+        ),
+        False,
+    ],
+)
+def test_device_from_device_context_manager(monkeypatch, torch_greater_equal_2_8):
     """Test that a metric picks up the device from an active ``torch.device`` context manager.
 
-    Uses the ``meta`` device so this is runnable without a GPU. ``torch.get_default_device`` only started reflecting
-    the context manager in torch 2.8, so on older versions this guards the ``torch.empty(0).device`` fallback.
+    Uses the ``meta`` device so this is runnable without a GPU. Both branches of the version gate are exercised:
+    ``torch.get_default_device`` only started reflecting the context manager in torch 2.8, so below that we probe
+    ``torch.empty(0).device`` instead - forcing that branch keeps it covered on newer torch as well.
 
     """
+    monkeypatch.setattr("torchmetrics.metric._TORCH_GREATER_EQUAL_2_8", torch_greater_equal_2_8)
     with torch.device("meta"):
         metric = DummyMetricSum()
     assert metric.device == torch.device("meta")
+    assert metric.x.device == torch.device("meta")
 
 
 def test_disable_of_normal_dtype_methods():
