@@ -76,7 +76,7 @@ class BinaryPrecision(BinaryStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -228,7 +228,7 @@ class MulticlassPrecision(MulticlassStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -393,7 +393,7 @@ class MultilabelPrecision(MultilabelStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -536,7 +536,7 @@ class BinaryRecall(BinaryStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -687,7 +687,7 @@ class MulticlassRecall(MulticlassStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -851,7 +851,7 @@ class MultilabelRecall(MultilabelStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
