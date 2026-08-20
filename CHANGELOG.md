@@ -75,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed `TER` never shifting a block of 10 words in one step, which made it disagree with Tercom and sacrebleu ([#3594](https://github.com/Lightning-AI/torchmetrics/pull/3594))
+- Fixed `normalized_mutual_info_score` and `adjusted_mutual_info_score` returning `0.0` instead of `1.0` for two single-cluster labelings ([#3470](https://github.com/Lightning-AI/torchmetrics/pull/3470))
 
 
 ---
