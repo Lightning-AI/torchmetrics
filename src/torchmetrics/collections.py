@@ -326,14 +326,38 @@ class MetricCollection(ModuleDict):
             ):
                 return False
 
+            # Handle sequence types (list, tuple) but not Tensor, str, bytes
             if (
-                isinstance(state1, list)
-                and isinstance(state2, list)
-                and not (all(s1.shape == s2.shape and allclose(s1, s2) for s1, s2 in zip(state1, state2)))
+                isinstance(state1, Sequence)
+                and not isinstance(state1, (Tensor, str, bytes))
+                and isinstance(state2, Sequence)
+                and not isinstance(state2, (Tensor, str, bytes))
             ):
-                return False
+                if len(state1) != len(state2):
+                    return False
+                for s1, s2 in zip(state1, state2):
+                    if not MetricCollection._equal_state_elements(s1, s2):
+                        return False
 
         return True
+
+    @staticmethod
+    def _equal_state_elements(s1: Any, s2: Any) -> bool:
+        """Recursively compare two metric state elements for equality.
+
+        Handles Tensor, tuple, list, and scalar types that may appear in metric states (e.g. MeanAveragePrecision stores
+        tuples in list states).
+
+        """
+        if type(s1) != type(s2):  # noqa: E721
+            return False
+        if isinstance(s1, Tensor) and isinstance(s2, Tensor):
+            return s1.shape == s2.shape and allclose(s1, s2)
+        if isinstance(s1, (list, tuple)):
+            if len(s1) != len(s2):
+                return False
+            return all(MetricCollection._equal_state_elements(e1, e2) for e1, e2 in zip(s1, s2))
+        return s1 == s2
 
     def _compute_groups_create_state_ref(self, copy: bool = False) -> None:
         """Create reference between metrics in the same compute group.

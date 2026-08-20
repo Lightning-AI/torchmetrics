@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
 from torchmetrics.clustering.adjusted_mutual_info_score import AdjustedMutualInfoScore
 from torchmetrics.clustering.adjusted_rand_score import AdjustedRandScore
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
-from torchmetrics.clustering.cluster_accuracy import ClusterAccuracy
 from torchmetrics.clustering.davies_bouldin_score import DaviesBouldinScore
 from torchmetrics.clustering.dunn_index import DunnIndex
 from torchmetrics.clustering.fowlkes_mallows_index import FowlkesMallowsIndex
@@ -27,11 +28,13 @@ from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
 from torchmetrics.clustering.rand_score import RandScore
 
+if not sys.platform.startswith("win32"):
+    from torchmetrics.clustering.cluster_accuracy import ClusterAccuracy
+
 __all__ = [
     "AdjustedMutualInfoScore",
     "AdjustedRandScore",
     "CalinskiHarabaszScore",
-    "ClusterAccuracy",
     "CompletenessScore",
     "DaviesBouldinScore",
     "DunnIndex",
@@ -42,3 +45,6 @@ __all__ = [
     "RandScore",
     "VMeasureScore",
 ]
+
+if not sys.platform.startswith("win32"):
+    __all__ += ["ClusterAccuracy"]
