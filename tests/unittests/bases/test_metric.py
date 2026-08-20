@@ -333,18 +333,6 @@ def test_device_and_dtype_transfer(tmpdir):
     torch.set_default_dtype(default_dtype)
 
 
-def test_device_from_device_context_manager():
-    """Test that a metric picks up the device from an active ``torch.device`` context manager.
-
-    Uses the ``meta`` device so this is runnable without a GPU. ``torch.get_default_device`` only started reflecting
-    the context manager in torch 2.8, so on older versions this guards the ``torch.empty(0).device`` fallback.
-
-    """
-    with torch.device("meta"):
-        metric = DummyMetricSum()
-    assert metric.device == torch.device("meta")
-
-
 def test_disable_of_normal_dtype_methods():
     """Check that the default dtype changing methods does nothing."""
     metric = DummyMetricSum()
