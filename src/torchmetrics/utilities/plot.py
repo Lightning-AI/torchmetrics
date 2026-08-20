@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Generator, Sequence
+from contextlib import contextmanager
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, List, Optional, Union, no_type_check
+from typing import TYPE_CHECKING, Any, List, Optional, Union, no_type_check
 
 import numpy as np
 import torch
@@ -22,7 +23,7 @@ from torch import Tensor
 
 from torchmetrics.utilities.imports import _LATEX_AVAILABLE, _MATPLOTLIB_AVAILABLE, _SCIENCEPLOT_AVAILABLE
 
-if _MATPLOTLIB_AVAILABLE:
+if TYPE_CHECKING:
     import matplotlib
     import matplotlib.axes
     import matplotlib.pyplot as plt
@@ -30,27 +31,46 @@ if _MATPLOTLIB_AVAILABLE:
     _PLOT_OUT_TYPE = tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
     _CMAP_TYPE = Union[matplotlib.colors.Colormap, str]
-
-    style_change = plt.style.context
 else:
-    _PLOT_OUT_TYPE = tuple[object, object]  # type: ignore[misc]
+    # `matplotlib` is resolved on first use instead of at import: pulling it in eagerly costs roughly a second of
+    # `import torchmetrics` for everyone, including those who never plot. The ~140 modules that annotate with these
+    # aliases never introspect the annotations at runtime, so plain `object` is enough outside of type checking.
+    _PLOT_OUT_TYPE = tuple[object, object]
     _AX_TYPE = object
-    _CMAP_TYPE = object  # type: ignore[misc]
+    _CMAP_TYPE = object
 
-    from contextlib import contextmanager
+_style = ["science"] if _SCIENCEPLOT_AVAILABLE and _LATEX_AVAILABLE else ["default"]
 
-    @contextmanager
-    def style_change(*args: Any, **kwargs: Any) -> Generator:
-        """No-ops decorator if matplotlib is not installed."""
+
+@contextmanager
+def style_change(*args: Any, **kwargs: Any) -> Generator:
+    """Apply a ``matplotlib`` style, no-op if ``matplotlib`` is not installed."""
+    if not _MATPLOTLIB_AVAILABLE:
+        yield
+        return
+
+    import matplotlib.pyplot as plt
+
+    if _SCIENCEPLOT_AVAILABLE:
+        import scienceplots  # noqa: F401  # registers the "science" style on import
+
+    with plt.style.context(*args, **kwargs):
         yield
 
 
-if _SCIENCEPLOT_AVAILABLE:
-    import scienceplots  # noqa: F401
+def _is_axes(obj: Any) -> bool:
+    """Check whether ``obj`` is a ``matplotlib`` ``Axes``.
 
-    _style = ["science", "no-latex"]
+    The ``_AX_TYPE`` alias is only a real class while type checking, so it cannot be used with ``isinstance``. This
+    resolves the actual class instead, importing ``matplotlib`` only when there is something plausible to check.
 
-_style = ["science"] if _SCIENCEPLOT_AVAILABLE and _LATEX_AVAILABLE else ["default"]
+    """
+    if not _MATPLOTLIB_AVAILABLE:
+        return False
+
+    import matplotlib.axes
+
+    return isinstance(obj, matplotlib.axes.Axes)
 
 
 def _error_on_missing_matplotlib() -> None:
@@ -93,6 +113,8 @@ def plot_single_or_multi_val(
 
     """
     _error_on_missing_matplotlib()
+    import matplotlib.pyplot as plt
+
     fig, ax = plt.subplots() if ax is None else (None, ax)
     ax.get_xaxis().set_visible(False)
 
@@ -201,13 +223,13 @@ def _get_text_color(patch_color: tuple[float, float, float, float]) -> str:
     return ".1" if y > 0.4 else "white"
 
 
-def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX_TYPE]:  # type: ignore[valid-type]
+def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX_TYPE]:
     """Reduce `axs` to `nb` Axes.
 
     All further Axes are removed from the figure.
 
     """
-    if isinstance(axs, _AX_TYPE):
+    if _is_axes(axs):
         return axs
 
     axs = axs.flat  # type: ignore[union-attr]
@@ -248,6 +270,7 @@ def plot_confusion_matrix(
 
     """
     _error_on_missing_matplotlib()
+    import matplotlib.pyplot as plt
 
     if confmat.ndim == 3:  # multilabel
         nb, n_classes = confmat.shape[0], 2
@@ -297,7 +320,7 @@ def plot_confusion_matrix(
 def plot_curve(
     curve: Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]],
     score: Optional[Tensor] = None,
-    ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
+    ax: Optional[_AX_TYPE] = None,
     label_names: Optional[tuple[str, str]] = None,
     legend_name: Optional[str] = None,
     name: Optional[str] = None,
@@ -331,6 +354,8 @@ def plot_curve(
     x, y = curve[:2]
 
     _error_on_missing_matplotlib()
+    import matplotlib.pyplot as plt
+
     fig, ax = plt.subplots() if ax is None else (None, ax)
 
     if isinstance(x, Tensor) and isinstance(y, Tensor) and x.ndim == 1 and y.ndim == 1:

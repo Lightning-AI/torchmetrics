@@ -15,9 +15,16 @@ from functools import partial
 from typing import Any
 
 import pytest
+import scipy.signal
 import torch
-from srmrpy import srmr as srmrpy_srmr
 from torch import Tensor
+
+# back compatibility patch due to SRMRpy using `scipy.signal.hamming`, which was removed in scipy 1.13. Applied here
+# rather than in `torchmetrics/__init__.py` so that importing torchmetrics does not pull in scipy, see #3457.
+if not hasattr(scipy.signal, "hamming"):
+    scipy.signal.hamming = scipy.signal.windows.hamming
+
+from srmrpy import srmr as srmrpy_srmr
 
 from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
