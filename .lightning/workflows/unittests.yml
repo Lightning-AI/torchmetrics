@@ -10,7 +10,7 @@ parametrize:
   matrix:
     image: # the lowest torch here must match the floor in requirements/base.txt, as it also drives the oldest requirements
       - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.4.1-py3.11-torch2.6"
-      - "pytorchlightning/torchmetrics:ubuntu24.04-cuda12.6.3-py3.12-torch2.8"
+      - "pytorchlightning/torchmetrics:ubuntu24.04-cuda12.8.1-py3.12-torch2.10"
     # testing: ["doctest", "common", "distributed"] # todo
   include: []
   exclude: []
