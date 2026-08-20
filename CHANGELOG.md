@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed `MetricCollection` compute-group detection for metrics with sequence (list/tuple) states, such as `MeanAveragePrecision` ([#3415](https://github.com/Lightning-AI/torchmetrics/pull/3415))
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
 
