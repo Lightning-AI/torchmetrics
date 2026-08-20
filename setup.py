@@ -56,16 +56,22 @@ class _RequirementWithComment(_Requirement):
         'arrow<=1.2.2,>=1.2.0  # strict'
         >>> _RequirementWithComment("arrow").adjust(True)
         'arrow'
+        >>> _RequirementWithComment("tqdm<=4.70.0").adjust(True)
+        'tqdm'
 
         """
         out = str(self)
         if self.strict:
             return f"{out}  {self.strict_string}"
         if unfreeze:
-            for operator, version in self.specs:
-                if operator in ("<", "<="):
-                    # drop upper bound
-                    return out.replace(f"{operator}{version},", "")
+            specs = ",".join(str(spec) for spec in self.specifier if spec.operator not in ("<", "<="))
+            if specs != str(self.specifier):
+                out = self.name
+                if self.extras:
+                    out += f"[{','.join(sorted(self.extras))}]"
+                out += specs
+                if self.marker:
+                    out += f"; {self.marker}"
         return out
 
 
