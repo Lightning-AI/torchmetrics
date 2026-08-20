@@ -113,8 +113,7 @@ class Metric(Module, ABC):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
         # magic patch for `RuntimeError: DataLoader worker (pid(s) 104) exited unexpectedly`
         self._TORCH_GREATER_EQUAL_2_1 = bool(_TORCH_GREATER_EQUAL_2_1)
-        # `get_default_device` only reflects an active `with torch.device(...)` context manager from 2.8 onwards;
-        # before that it only tracked `set_default_device`, so fall back to probing an actual tensor.
+        # before 2.8, `get_default_device` only tracked `set_default_device`, not an active `torch.device` context
         self._device = torch.get_default_device() if _TORCH_GREATER_EQUAL_2_8 else torch.empty(0).device
         self._dtype = torch.get_default_dtype()
 

@@ -335,26 +335,15 @@ def test_device_and_dtype_transfer(tmpdir):
 
 
 @pytest.mark.parametrize(
-    "torch_greater_equal_2_8",
+    "use_get_default_device",
     [
-        pytest.param(
-            True,
-            marks=pytest.mark.skipif(
-                not _TORCH_GREATER_EQUAL_2_8, reason="`torch.get_default_device` ignores the context manager < 2.8"
-            ),
-        ),
+        pytest.param(True, marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_8, reason="requires torch>=2.8")),
         False,
     ],
 )
-def test_device_from_device_context_manager(monkeypatch, torch_greater_equal_2_8):
-    """Test that a metric picks up the device from an active ``torch.device`` context manager.
-
-    Uses the ``meta`` device so this is runnable without a GPU. Both branches of the version gate are exercised:
-    ``torch.get_default_device`` only started reflecting the context manager in torch 2.8, so below that we probe
-    ``torch.empty(0).device`` instead - forcing that branch keeps it covered on newer torch as well.
-
-    """
-    monkeypatch.setattr("torchmetrics.metric._TORCH_GREATER_EQUAL_2_8", torch_greater_equal_2_8)
+def test_device_from_device_context_manager(monkeypatch, use_get_default_device):
+    """Test that a metric picks up the device from an active `torch.device` context manager, on both version paths."""
+    monkeypatch.setattr("torchmetrics.metric._TORCH_GREATER_EQUAL_2_8", use_get_default_device)
     with torch.device("meta"):
         metric = DummyMetricSum()
     assert metric.device == torch.device("meta")
