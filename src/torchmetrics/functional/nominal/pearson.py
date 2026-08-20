@@ -24,6 +24,7 @@ from torchmetrics.functional.nominal.utils import (
     _drop_empty_rows_and_cols,
     _handle_nan_in_data,
     _nominal_input_validation,
+    _normalize_categorical_labels,
 )
 
 
@@ -50,6 +51,7 @@ def _pearsons_contingency_coefficient_update(
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
     preds, target = _handle_nan_in_data(preds, target, nan_strategy, nan_replace_value)
+    preds, target = _normalize_categorical_labels(preds, target)
     return _multiclass_confusion_matrix_update(preds, target, num_classes)
 
 
