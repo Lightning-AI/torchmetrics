@@ -47,19 +47,17 @@ run: |
   #  TEST_DIRS=$(python .github/assistant.py changed-domains $PR_NUMBER)
   #  echo "focus: $TEST_DIRS"
 
-  # Source the supported floor from the requirements rather than hardcoding it here, so that raising
-  # the floor on the CPU side cannot silently leave these GPU lanes testing the wrong "oldest" config.
-  # Must run before `adjust-torch-versions.py` below, which rewrites the pin to an exact version.
+  # read the torch floor from the requirements, so raising it on CPU cannot leave these GPU lanes behind
+  # note: must run before `adjust-torch-versions.py` below, which rewrites the pin to an exact version
   TORCH_MIN=$(grep -oE '^torch >=[0-9]+\.[0-9]+' requirements/base.txt | grep -oE '[0-9]+\.[0-9]+$' || true)
   [ -n "${TORCH_MIN}" ] || { echo "ERROR: could not read the torch floor from requirements/base.txt"; exit 1; }
   echo "Torch floor from requirements/base.txt: ${TORCH_MIN}"
-  python -c "import sys; from packaging.version import Version; sys.exit(Version('${TORCH_VER}') < Version('${TORCH_MIN}'))" || {
+  python -c "import sys; from packaging.version import Version; sys.exit(0 if Version('${TORCH_VER}') >= Version('${TORCH_MIN}') else 1)" || {
     echo "ERROR: image provides torch ${TORCH_VER}, below the ${TORCH_MIN} floor in requirements/base.txt."
     echo "       Bump the images in .lightning/workflows/ together with the floor."
     exit 1
   }
 
-  pip install -q packaging
   wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
   for fpath in `ls requirements/*.txt`; do
       # torch version shall be sourced based on the used docker

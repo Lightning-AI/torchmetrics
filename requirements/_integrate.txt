@@ -1,4 +1,4 @@
 # contentiously validated integration with these expected ranges
 
-# 2.5.1 is the first release tested against torch 2.6, which is our minimum
+# lower bound aligned with our torch floor (2.6)
 pytorch-lightning >=2.5.1, <2.7.0
