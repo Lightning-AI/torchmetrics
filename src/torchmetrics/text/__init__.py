@@ -46,6 +46,7 @@ __all__ = [
 
 if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from torchmetrics.text.bert import BERTScore
+    from torchmetrics.text.depth_score import DepthScore
     from torchmetrics.text.infolm import InfoLM
 
-    __all__ += ["BERTScore", "InfoLM"]
+    __all__ += ["BERTScore", "DepthScore", "InfoLM"]
