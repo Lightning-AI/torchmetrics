@@ -15,11 +15,23 @@ def test_raises_error_on_wrong_input():
     with pytest.raises(ValueError, match="Expected argument `labels` to either be `None` or a list of strings.*"):
         ClasswiseWrapper(MulticlassAccuracy(num_classes=3), "hest")
 
+    with pytest.raises(ValueError, match="Expected argument `labels` to contain unique values"):
+        ClasswiseWrapper(MulticlassAccuracy(num_classes=3), ["horse", "horse", "cat"])
+
     with pytest.raises(ValueError, match="Expected argument `prefix` to either be `None` or a string.*"):
         ClasswiseWrapper(MulticlassAccuracy(num_classes=3), prefix=1)
 
     with pytest.raises(ValueError, match="Expected argument `postfix` to either be `None` or a string.*"):
         ClasswiseWrapper(MulticlassAccuracy(num_classes=3), postfix=1)
+
+
+@pytest.mark.parametrize("labels", [["horse", "fish"], ["horse", "fish", "cat", "dog"]])
+def test_raises_error_on_wrong_number_of_labels(labels):
+    """Test that metric values are not silently dropped by mismatched labels."""
+    metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), labels=labels)
+
+    with pytest.raises(ValueError, match="Expected argument `labels` to contain 3 labels, but got"):
+        metric(torch.tensor([0, 1, 2]), torch.tensor([0, 1, 2]))
 
 
 def test_output_no_labels():
