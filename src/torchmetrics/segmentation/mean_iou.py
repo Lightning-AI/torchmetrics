@@ -61,6 +61,8 @@ class MeanIoU(Metric):
         input_format: What kind of input the function receives.
             Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
             or ``"mixed"`` for one one-hot encoded and one index tensor
+        ignore_index: Class index to ignore in the target. This class will be ignored
+            in both the intersection and union computation. Only used when ``input_format="index"``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -110,6 +112,7 @@ class MeanIoU(Metric):
         include_background: bool = True,
         per_class: bool = False,
         input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
+        ignore_index: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -119,6 +122,7 @@ class MeanIoU(Metric):
         self.per_class = per_class
         self.input_format = input_format
         self._is_initialized = False
+        self.ignore_index = ignore_index
         if num_classes is not None:
             num_classes = num_classes - 1 if not include_background else num_classes
             self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
@@ -168,7 +172,7 @@ class MeanIoU(Metric):
             self._is_initialized = True
 
         intersection, union = _mean_iou_update(
-            preds, target, self.num_classes, self.include_background, self.input_format
+            preds, target, self.num_classes, self.include_background, self.input_format, self.ignore_index
         )
         score = _mean_iou_compute(intersection, union, zero_division=0.0)
         # only update for classes that are present (i.e. union > 0)
