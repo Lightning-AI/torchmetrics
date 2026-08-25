@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `METEORScore` metric to the text package ([#3477](https://github.com/Lightning-AI/torchmetrics/pull/3477))
+
+
 -
 
 
