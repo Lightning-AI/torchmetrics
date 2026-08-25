@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `Metric` ignoring an active `torch.device` context manager on torch 2.3-2.7 ([#3448](https://github.com/Lightning-AI/torchmetrics/pull/3448))
 
 
+
+- Fixed `GeneralizedDiceScore` to yield `NaN` if there are missing classes ([#2846](https://github.com/Lightning-AI/torchmetrics/issues/2846))
+
 ---
 
 ## [1.9.0] - 2026-03-05
