@@ -172,6 +172,7 @@ class PerceptualPathLength(Metric):
             generator=self.generator,
             num_samples=self.num_samples,
             conditional=self.conditional,
+            batch_size=self.batch_size,
             interpolation_method=self.interpolation_method,
             epsilon=self.epsilon,
             resize=self.resize,
