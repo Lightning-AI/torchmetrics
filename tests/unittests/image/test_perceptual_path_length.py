@@ -174,6 +174,35 @@ def test_raises_error_on_wrong_generator(generator, errortype, match):
         ppl.update(generator=generator)
 
 
+def test_batch_size_is_forwarded():
+    """The class metric must use the ``batch_size`` it was given, not the functional default."""
+
+    class _CountingSimNet(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.batch_sizes = []
+
+        def forward(self, img1, img2):
+            self.batch_sizes.append(img1.shape[0])
+            return torch.rand(img1.shape[0])
+
+    class _TinyGenerator(nn.Module):
+        num_classes = 0
+
+        def sample(self, num_samples):
+            return torch.randn(num_samples, 8)
+
+        def forward(self, z):
+            return torch.rand(z.shape[0], 3, 8, 8)
+
+    sim_net = _CountingSimNet()
+    metric = PerceptualPathLength(num_samples=64, batch_size=32, sim_net=sim_net)
+    metric.update(_TinyGenerator())
+    metric.compute()
+
+    assert max(sim_net.batch_sizes) == 32
+
+
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU machine")
 @skip_on_running_out_of_memory()
