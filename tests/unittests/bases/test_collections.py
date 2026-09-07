@@ -855,3 +855,28 @@ def test_collection_state_being_re_established_after_copy():
     assert not m12._state_is_copy
     assert m12.m1.mean_x.data_ptr() == m12.m2.mean_x.data_ptr(), "States should point to the same location"
     assert m12._equal_metric_states(m12.m1, m12.m2)
+
+
+def test_collection_compute_groups_with_nested_sequence_states():
+    """Check that compute group merging handles nested sequence state values."""
+
+    class DummyNestedListMetric(Metric):
+        full_state_update = True
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.add_state("x", [], dist_reduce_fx=None)
+
+        def update(self, x: torch.Tensor) -> None:
+            self.x.append((x, x + 1))
+
+        def compute(self) -> list[tuple[torch.Tensor, torch.Tensor]]:
+            return self.x
+
+    m1, m2 = DummyNestedListMetric(), DummyNestedListMetric()
+    metrics = MetricCollection({"m1": m1, "m2": m2}, compute_groups=True)
+
+    metrics.update(torch.tensor([1.0]))
+
+    assert metrics.compute_groups == {0: ["m1", "m2"]}
+    assert metrics._equal_metric_states(metrics.m1, metrics.m2)
