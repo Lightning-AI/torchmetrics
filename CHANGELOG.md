@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `Upper Face Dynamics Deviation (FDD)` metric to multimodal domain. ([#3097](https://github.com/Lightning-AI/torchmetrics/issues/3097))
 
 
 ### Changed
