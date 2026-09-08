@@ -58,7 +58,7 @@ def perceptual_evaluation_speech_quality(
     .. note::
         Samples that the ``pesq`` backend cannot score, e.g. a silent reference for which no utterance can be
         detected, are returned as ``nan`` instead of raising an error, so that a single degenerate sample does not
-        abort the calculation for the rest of the batch. The class based metric
+        abort the calculation for the rest of the batch. The class-based metric
         :class:`~torchmetrics.audio.pesq.PerceptualEvaluationSpeechQuality` excludes such samples from its average.
 
     Returns:
@@ -127,10 +127,10 @@ def perceptual_evaluation_speech_quality(
 
     if preds.ndim == 1:
         pesq_val_np = pesq_backend.pesq(
-            fs,
-            target.detach().cpu().numpy(),
-            preds.detach().cpu().numpy(),
-            mode,
+            fs=fs,
+            ref=target.detach().cpu().numpy(),
+            deg=preds.detach().cpu().numpy(),
+            mode=mode,
             on_error=pesq_backend.PesqError.RETURN_VALUES,
         )
         pesq_val = torch.tensor(_errors_to_nan(pesq_val_np)[0])
@@ -140,20 +140,20 @@ def perceptual_evaluation_speech_quality(
 
         if _MULTIPROCESSING_AVAILABLE and n_processes != 1:
             pesq_val_np = pesq_backend.pesq_batch(
-                fs,
-                target_np,
-                preds_np,
-                mode,
+                fs=fs,
+                ref=target_np,
+                deg=preds_np,
+                mode=mode,
                 n_processor=n_processes,
                 on_error=pesq_backend.PesqError.RETURN_VALUES,
             )
         else:
             pesq_val_np = [
                 pesq_backend.pesq(
-                    fs,
-                    target_np[b, :],
-                    preds_np[b, :],
-                    mode,
+                    fs=fs,
+                    ref=target_np[b, :],
+                    deg=preds_np[b, :],
+                    mode=mode,
                     on_error=pesq_backend.PesqError.RETURN_VALUES,
                 )
                 for b in range(preds_np.shape[0])
