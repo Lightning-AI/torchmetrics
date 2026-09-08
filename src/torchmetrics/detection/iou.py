@@ -192,12 +192,14 @@ class IntersectionOverUnion(Metric):
             self.pred_labels.append(p_i["labels"])
 
             iou_matrix = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)  # N x M
-            if self.respect_labels:
-                if det_boxes.numel() > 0 and gt_boxes.numel() > 0:
-                    label_eq = p_i["labels"].unsqueeze(1) == t_i["labels"].unsqueeze(0)  # N x M
-                else:
-                    label_eq = torch.eye(iou_matrix.shape[0], dtype=bool, device=iou_matrix.device)  # type: ignore[call-overload]
-                iou_matrix[~label_eq] = self._invalid_val
+            if det_boxes.numel() == 0 or gt_boxes.numel() == 0:
+                valid_pairs = torch.eye(iou_matrix.shape[0], dtype=bool, device=iou_matrix.device)  # type: ignore[call-overload]
+            elif self.respect_labels:
+                valid_pairs = p_i["labels"].unsqueeze(1) == t_i["labels"].unsqueeze(0)  # N x M
+            else:
+                valid_pairs = None
+            if valid_pairs is not None:
+                iou_matrix[~valid_pairs] = self._invalid_val
             self.iou_matrix.append(iou_matrix)
 
     def _get_safe_item_values(self, boxes: Tensor) -> Tensor:
@@ -232,8 +234,9 @@ class IntersectionOverUnion(Metric):
                 masked_iou = torch.zeros_like(score)
                 observed = torch.zeros_like(score)
 
-                for mat, gt_lab in zip(self.iou_matrix, self.groundtruth_labels):
-                    scores = mat[:, gt_lab == cl]
+                for mat, gt_lab, pred_lab in zip(self.iou_matrix, self.groundtruth_labels, self.pred_labels):
+                    column_labels = gt_lab if gt_lab.numel() > 0 else pred_lab
+                    scores = mat[:, column_labels == cl]
                     valid_scores = scores[scores != self._invalid_val]
                     masked_iou += valid_scores.sum()
                     observed += valid_scores.numel()
