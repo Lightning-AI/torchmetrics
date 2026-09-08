@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from functools import partial
+from importlib import import_module
 from unittest import mock
 
 import numpy as np
@@ -514,9 +515,13 @@ def test_multiclass_update_memory_does_not_scale_with_thresholds(num_thresholds)
     intermediate = preds.numel() * num_thresholds
     expected_vectorized = intermediate <= _MAX_VECTORIZED_ELEMENTS
 
-    with mock.patch(
-        "torchmetrics.functional.classification.precision_recall_curve"
-        "._multiclass_precision_recall_curve_update_vectorized",
+    # `torchmetrics.functional.classification` re-exports a *function* named
+    # `precision_recall_curve`, which shadows the submodule, so mock's dotted-name lookup
+    # resolves to the function. Fetch the module itself to patch the name it defines.
+    prc_module = import_module("torchmetrics.functional.classification.precision_recall_curve")
+    with mock.patch.object(
+        prc_module,
+        "_multiclass_precision_recall_curve_update_vectorized",
         wraps=_multiclass_precision_recall_curve_update_vectorized,
     ) as vectorized:
         _multiclass_precision_recall_curve_update(preds, target, 3, thresholds, average=None)
