@@ -43,6 +43,8 @@ def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> t
     """
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
+    if preds.is_complex() or target.is_complex():
+        raise ValueError("Expected `preds` and `target` to be real tensors.")
 
     preds, target = _unsqueeze_tensors(preds, target)
     if preds.dtype == torch.float16 or preds.dtype == torch.bfloat16:

@@ -86,6 +86,29 @@ def test_log_cosh_error_half_residual_exceeds_dtype_range(metric_class):
     torch.testing.assert_close(result, expected)
 
 
+@pytest.mark.parametrize("metric_class", [None, LogCoshError], ids=["functional", "class"])
+def test_log_cosh_error_integer_inputs(metric_class):
+    """Test that integer inputs retain the behavior of the previous implementation."""
+    preds = torch.tensor([0, 2, -2])
+    target = torch.tensor([0, 0, 0])
+    diff = (preds - target).float()
+    expected = (torch.logaddexp(diff, -diff) - math.log(2.0)).mean()
+
+    result = log_cosh_error(preds, target) if metric_class is None else metric_class()(preds, target)
+
+    torch.testing.assert_close(result, expected)
+
+
+@pytest.mark.parametrize("metric_class", [None, LogCoshError], ids=["functional", "class"])
+def test_log_cosh_error_rejects_complex_inputs(metric_class):
+    """Test that complex inputs are rejected instead of silently losing their imaginary component."""
+    preds = torch.tensor([0.25 + 0.5j, -0.7 + 1.2j], dtype=torch.complex64)
+    target = torch.tensor([0.1 - 0.25j, 0.2 + 0.1j], dtype=torch.complex64)
+
+    with pytest.raises(ValueError, match=r"Expected `preds` and `target` to be real tensors\."):
+        log_cosh_error(preds, target) if metric_class is None else metric_class()(preds, target)
+
+
 @pytest.mark.parametrize(
     ("preds", "target"),
     [
