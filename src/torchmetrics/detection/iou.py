@@ -191,7 +191,8 @@ class IntersectionOverUnion(Metric):
             self.groundtruth_labels.append(t_i["labels"])
             self.pred_labels.append(p_i["labels"])
 
-            iou_matrix = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)  # N x M
+            # N x M, or K x K for one-sided empty inputs where K is the nonempty side's box count
+            iou_matrix = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
             if det_boxes.numel() == 0 or gt_boxes.numel() == 0:
                 valid_pairs = torch.eye(iou_matrix.shape[0], dtype=bool, device=iou_matrix.device)  # type: ignore[call-overload]
             elif self.respect_labels:
