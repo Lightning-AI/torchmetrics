@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
+
 import torch
 from torch import Tensor
 
@@ -43,8 +45,14 @@ def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> t
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
 
     preds, target = _unsqueeze_tensors(preds, target)
+    if preds.dtype == torch.float16 or preds.dtype == torch.bfloat16:
+        preds = preds.float()
+    if target.dtype == torch.float16 or target.dtype == torch.bfloat16:
+        target = target.float()
     diff = preds - target
-    sum_log_cosh_error = torch.log((torch.exp(diff) + torch.exp(-diff)) / 2).sum(0).squeeze()
+    if not diff.is_floating_point():
+        diff = diff.float()
+    sum_log_cosh_error = (torch.logaddexp(diff, -diff) - math.log(2.0)).sum(0).squeeze()
     num_obs = torch.tensor(target.shape[0], device=preds.device)
     return sum_log_cosh_error, num_obs
 
