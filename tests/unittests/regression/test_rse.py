@@ -19,7 +19,6 @@ import torch
 
 from torchmetrics.functional import relative_squared_error
 from torchmetrics.regression import RelativeSquaredError
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -107,10 +106,6 @@ class TestRelativeSquaredError(MetricTester):
             metric_args={"squared": squared},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_2_1,
-        reason="Pytoch below 2.1 does not support cpu + half precision used in `clamp_min_cpu`",
-    )
     def test_rse_half_cpu(self, squared, preds, target, ref_metric, num_outputs):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
