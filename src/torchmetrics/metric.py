@@ -39,7 +39,7 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1, _TORCH_GREATER_EQUAL_2_8
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_8
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -111,8 +111,6 @@ class Metric(Module, ABC):
         # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
-        # magic patch for `RuntimeError: DataLoader worker (pid(s) 104) exited unexpectedly`
-        self._TORCH_GREATER_EQUAL_2_1 = bool(_TORCH_GREATER_EQUAL_2_1)
         # before 2.8, `get_default_device` only tracked `set_default_device`, not an active `torch.device` context
         self._device = torch.get_default_device() if _TORCH_GREATER_EQUAL_2_8 else torch.empty(0).device
         self._dtype = torch.get_default_dtype()
@@ -507,13 +505,8 @@ class Metric(Module, ABC):
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
                 input_dict[attr] = [dim_zero_cat(input_dict[attr])]
 
-            # cornor case in distributed settings where a rank have not received any data, create empty to concatenate
-            if (
-                self._TORCH_GREATER_EQUAL_2_1
-                and reduction_fn == dim_zero_cat
-                and isinstance(input_dict[attr], list)
-                and len(input_dict[attr]) == 0
-            ):
+            # corner case in distributed settings where a rank has not received any data, create empty to concatenate
+            if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) == 0:
                 input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
 
         output_dict = apply_to_collection(
