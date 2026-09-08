@@ -73,7 +73,7 @@ class BinarySpecificity(BinaryStatScores):
         >>> from torchmetrics.classification import BinarySpecificity
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinarySpecificity()
+        >>> metric = BinarySpecificity(input_format="labels")
         >>> metric(preds, target)
         tensor(0.6667)
 

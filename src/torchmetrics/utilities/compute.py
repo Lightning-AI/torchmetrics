@@ -198,6 +198,7 @@ def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
     return m[indices] * x + b[indices]
 
 
+# TODO SHOULD NOT BE USED ANYWHERE, ALL NORMALIZATIONS SHOULD BE EXPLICIT jpf
 def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["sigmoid", "softmax"]]) -> Tensor:
     """Normalize logits if needed.
 
@@ -241,3 +242,31 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Optional[Literal["
         torch.sigmoid(tensor) if normalization == "sigmoid" else torch.softmax(tensor, dim=1),
         tensor,
     )
+
+
+def normalize_logits(tensor: Tensor, normalization: Literal["sigmoid", "softmax"]) -> Tensor:
+    """Normalize logits.
+
+    Use torch.where to prevent device-host sync.
+
+    Args:
+        tensor: input tensor that may be logits or probabilities
+        normalization: normalization method, either 'sigmoid' or 'softmax'
+
+    Returns:
+        normalized tensor
+
+    Example:
+        >>> import torch
+        >>> tensor = torch.tensor([-1.0, 0.0, 1.0])
+        >>> normalize_logits(tensor, normalization="sigmoid")
+        tensor([0.2689, 0.5000, 0.7311])
+        >>> tensor = torch.tensor([[-1.0, 0.0, 1.0], [1.0, 0.0, -1.0]])
+        >>> normalize_logits(tensor, normalization="softmax")
+        tensor([[0.0900, 0.2447, 0.6652],
+                [0.6652, 0.2447, 0.0900]])
+
+    """
+    if not normalization:
+        raise ValueError("Normalization method must be specified.")
+    return torch.sigmoid(tensor) if normalization == "sigmoid" else torch.softmax(tensor, dim=1)

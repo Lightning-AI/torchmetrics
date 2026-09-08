@@ -81,7 +81,7 @@ class BinaryHammingDistance(BinaryStatScores):
         >>> from torchmetrics.classification import BinaryHammingDistance
         >>> target = tensor([0, 1, 0, 1, 0, 1])
         >>> preds = tensor([0, 0, 1, 1, 0, 1])
-        >>> metric = BinaryHammingDistance()
+        >>> metric = BinaryHammingDistance(input_format="labels")
         >>> metric(preds, target)
         tensor(0.3333)
 
