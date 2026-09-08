@@ -43,7 +43,7 @@ def _volume_3d(boxes: Tensor) -> Tensor:
 def _pairwise_iou_3d(preds: Tensor, target: Tensor) -> Tensor:
     """Compute the pairwise 3D IoU between two sets of axis-aligned boxes given in corner format."""
     if preds.numel() == 0 or target.numel() == 0:
-        return torch.zeros((preds.shape[0], target.shape[0]), dtype=torch.float32)
+        return preds.new_zeros((preds.shape[0], target.shape[0]))
 
     lt = torch.max(preds[:, None, :3], target[None, :, :3])
     rb = torch.min(preds[:, None, 3:], target[None, :, 3:])
@@ -58,9 +58,9 @@ def _pairwise_iou_3d(preds: Tensor, target: Tensor) -> Tensor:
 
 def _compute_average_precision(recall: Tensor, precision: Tensor) -> Tensor:
     """Compute the 101-point interpolated average precision, following the COCO evaluation protocol."""
-    recall_thresholds = torch.linspace(0, 1, 101)
+    recall_thresholds = torch.linspace(0, 1, 101, device=recall.device, dtype=recall.dtype)
     if recall.numel() == 0:
-        return torch.tensor(0.0)
+        return recall.new_zeros(())
 
     # precision envelope: precision[i] = max(precision[i:])
     envelope = precision.flip(0).cummax(0).values.flip(0)
@@ -81,6 +81,12 @@ def _evaluate_class(
     """Evaluate a single class across all images, returning AP per IoU threshold and AR per max-detection threshold."""
     num_gt = sum(t.shape[0] for t in target_per_image)
 
+    ref_tensor = next(
+        (t for tensors in (preds_per_image, target_per_image) for t in tensors if t.numel() > 0),
+        None,
+    )
+    device = ref_tensor.device if ref_tensor is not None else torch.device("cpu")
+
     max_det = max(max_detection_thresholds)
     flat_preds, flat_scores, flat_image_idx = [], [], []
     for image_idx, (boxes, scores) in enumerate(zip(preds_per_image, scores_per_image)):
@@ -91,15 +97,15 @@ def _evaluate_class(
         flat_scores.append(scores[order])
         flat_image_idx.extend([image_idx] * order.numel())
 
-    average_precisions = torch.zeros(len(iou_thresholds))
-    average_recalls = {mdt: torch.tensor(0.0) for mdt in max_detection_thresholds}
+    average_precisions = torch.zeros(len(iou_thresholds), device=device)
+    average_recalls = {mdt: torch.zeros((), device=device) for mdt in max_detection_thresholds}
 
     if num_gt == 0 or len(flat_preds) == 0:
         return {"ap": average_precisions, "ar": average_recalls}
 
     all_preds = torch.cat(flat_preds, dim=0)
     all_scores = torch.cat(flat_scores, dim=0)
-    all_image_idx = torch.tensor(flat_image_idx)
+    all_image_idx = torch.tensor(flat_image_idx, device=device)
 
     sort_order = torch.argsort(all_scores, descending=True, stable=True)
     all_preds = all_preds[sort_order]
@@ -113,34 +119,36 @@ def _evaluate_class(
     ]
 
     for mdt in max_detection_thresholds:
-        matched = [torch.zeros(t.shape[0], dtype=torch.bool) for t in target_per_image]
-        per_image_count = dict.fromkeys(range(len(target_per_image)), 0)
-        per_image_cursor = dict.fromkeys(range(len(target_per_image)), 0)
-        for i in range(all_preds.shape[0]):
-            image_idx = int(all_image_idx[i])
-            iou_row = ious[image_idx]
-            if iou_row is None:
-                continue
-            pred_cursor = per_image_cursor[image_idx]
-            per_image_cursor[image_idx] += 1
-            if per_image_count[image_idx] >= mdt:
-                continue
-            per_image_count[image_idx] += 1
-            row = iou_row[pred_cursor].clone()
-            row[matched[image_idx]] = -1
-            if row.numel() == 0:
-                continue
-            best_gt = int(row.argmax())
-            if row[best_gt] >= min(iou_thresholds):
-                matched[image_idx][best_gt] = True
-        recall_value = float(sum(m.sum().item() for m in matched)) / num_gt
-        average_recalls[mdt] = torch.tensor(recall_value)
+        recall_per_iou = []
+        for iou_thr in iou_thresholds:
+            matched = [torch.zeros(t.shape[0], dtype=torch.bool) for t in target_per_image]
+            per_image_count = dict.fromkeys(range(len(target_per_image)), 0)
+            per_image_cursor = dict.fromkeys(range(len(target_per_image)), 0)
+            for i in range(all_preds.shape[0]):
+                image_idx = int(all_image_idx[i])
+                iou_row = ious[image_idx]
+                if iou_row is None:
+                    continue
+                pred_cursor = per_image_cursor[image_idx]
+                per_image_cursor[image_idx] += 1
+                if per_image_count[image_idx] >= mdt:
+                    continue
+                per_image_count[image_idx] += 1
+                row = iou_row[pred_cursor].clone()
+                row[matched[image_idx]] = -1
+                if row.numel() == 0:
+                    continue
+                best_gt = int(row.argmax())
+                if row[best_gt] >= iou_thr:
+                    matched[image_idx][best_gt] = True
+            recall_per_iou.append(float(sum(m.sum().item() for m in matched)) / num_gt)
+        average_recalls[mdt] = torch.tensor(sum(recall_per_iou) / len(recall_per_iou), device=device)
 
     for t_idx, iou_threshold in enumerate(iou_thresholds):
         matched = [torch.zeros(t.shape[0], dtype=torch.bool) for t in target_per_image]
         per_image_cursor = dict.fromkeys(range(len(target_per_image)), 0)
-        tp = torch.zeros(all_preds.shape[0])
-        fp = torch.zeros(all_preds.shape[0])
+        tp = torch.zeros(all_preds.shape[0], device=device)
+        fp = torch.zeros(all_preds.shape[0], device=device)
         for i in range(all_preds.shape[0]):
             image_idx = int(all_image_idx[i])
             iou_row = ious[image_idx]
@@ -243,7 +251,8 @@ def mean_average_precision_3d(
     target_boxes = [_convert_3d_boxes_to_corners(item["boxes"], box_format) for item in target]
     target_labels = [item["labels"] for item in target]
 
-    classes = torch.cat(target_labels + pred_labels).unique() if (target_labels or pred_labels) else torch.tensor([])
+    non_empty_targets = [t for t in target_labels if t.numel() > 0]
+    classes = torch.cat(non_empty_targets).unique() if non_empty_targets else torch.tensor([])
 
     per_class_ap: Dict[float, Tensor] = {}
     per_class_ar: Dict[int, Dict[float, Tensor]] = {mdt: {} for mdt in max_detection_thresholds}
