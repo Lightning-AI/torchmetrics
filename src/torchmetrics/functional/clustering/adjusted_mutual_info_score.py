@@ -21,6 +21,7 @@ from torchmetrics.functional.clustering.utils import (
     _validate_average_method_arg,
     calculate_entropy,
     calculate_generalized_mean,
+    check_cluster_labels,
 )
 
 
@@ -46,6 +47,14 @@ def adjusted_mutual_info_score(
 
     """
     _validate_average_method_arg(average_method)
+    check_cluster_labels(preds, target)
+
+    # Special limit case: both labelings have a single cluster (zero entropy). Since the two
+    # labelings then trivially agree, this is a perfect match and the score is 1.0. Matches the
+    # convention used by :func:`sklearn.metrics.adjusted_mutual_info_score`.
+    if preds.unique().numel() == target.unique().numel() == 1:
+        return torch.tensor(1.0, dtype=torch.float32, device=preds.device)
+
     contingency = _mutual_info_score_update(preds, target)
     mutual_info = _mutual_info_score_compute(contingency)
     expected_mutual_info = expected_mutual_info_score(contingency, target.numel())
