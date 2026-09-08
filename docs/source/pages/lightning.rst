@@ -197,6 +197,40 @@ Common Pitfalls
 
 The following contains a list of pitfalls to be aware of:
 
+* `self.log` only supports logging of scalar tensors, and therefore also only support logging metrics that return scalar
+  tensors. The vast majority of metrics in TorchMetrics return a scalar tensor, some metrics however return non-scalar
+  tensors (often dictionaries or lists of tensors) and should therefore be logged manually. One recommended pattern is
+  to utilize that metrics support *Metric Arithmetic* which includes indexing and slicing. This combined with Metric
+  Collection can be used to unpack and repack the metric outputs into a format that is compatible with ``self.log`` and
+  ``self.log_dict``. Example:
+
+.. testcode:: python
+
+    class MyModule(LightningModule):
+
+        def __init__(self, num_classes):
+            # initialize a nons-scalar returning metric, in this case we use MeanAveragePrecision
+            # this metric returns a dict, each being a scalar tensor, assume we are only interested in a few of them
+            map = torchmetrics.detection.MeanAveragePrecision()
+
+            # index into the metric the values we want to log and repack into a MetricCollection
+            # MetricCollection compute group feature will make sure that calculations are only done once
+            self.metrics = torchmetrics.MetricCollection(
+                {
+                    "map_50": map["map_50"],
+                    "map_75": map["map_75"],
+                    "map_small": map["map_small"],
+                },
+                prefix="val_",
+            )
+
+        def validation_step(self, batch, batch_idx):
+            x, y = batch
+            preds = self(x)
+            ...
+            self.metrics.update(preds, y)
+            self.log_dict(self.metrics, on_step=False, on_epoch=True)
+
 * Logging a `MetricCollection` object directly using ``self.log_dict`` is only supported if all metrics in the
   collection return a scalar tensor. If any of the metrics in the collection return a non-scalar tensor,
   the logging will fail. This can especially happen when either nesting multiple ``MetricCollection`` objects or when
