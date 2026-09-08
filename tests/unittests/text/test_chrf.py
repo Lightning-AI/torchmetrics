@@ -179,8 +179,6 @@ def test_chrf_keeps_reference_n_grams_of_a_zero_scoring_sentence():
 def test_chrf_does_not_reward_a_degraded_hypothesis():
     """Test that replacing one hypothesis with a worse one cannot raise the corpus-level score."""
     targets = [["the cat sat on a mat"], ["hello there my friend"]]
-    scores = [
-        chrf_score(["the cat sat on the mat", pred], targets)
-        for pred in ["hello there my friend", "hello there", "hello", "zzzz"]
-    ]
-    assert scores == sorted(scores, reverse=True), scores
+    preds = ["hello there my friend", "hello there", "hello", "zzzz"]
+    scores = torch.stack([chrf_score(["the cat sat on the mat", pred], targets) for pred in preds])
+    assert torch.all(scores[:-1] >= scores[1:]).item(), scores
