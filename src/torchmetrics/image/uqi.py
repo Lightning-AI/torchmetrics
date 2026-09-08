@@ -81,7 +81,7 @@ class UniversalImageQualityIndex(Metric):
         self,
         kernel_size: Sequence[int] = (11, 11),
         sigma: Sequence[float] = (1.5, 1.5),
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

@@ -50,7 +50,7 @@ def pairwise_minkowski_distance(
     x: Tensor,
     y: Optional[Tensor] = None,
     exponent: float = 2,
-    reduction: Literal["mean", "sum", "none", None] = None,
+    reduction: Optional[Literal["mean", "sum", "none"]] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
     r"""Calculate pairwise minkowski distances.

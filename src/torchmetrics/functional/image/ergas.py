@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+
 import torch
 from torch import Tensor
 from typing_extensions import Literal
@@ -45,7 +47,7 @@ def _ergas_compute(
     preds: Tensor,
     target: Tensor,
     ratio: float = 4,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Erreur Relative Globale Adimensionnelle de Synthèse.
 
@@ -85,7 +87,7 @@ def error_relative_global_dimensionless_synthesis(
     preds: Tensor,
     target: Tensor,
     ratio: float = 4,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Calculates `Error relative global dimensionless synthesis`_ (ERGAS) metric.
 

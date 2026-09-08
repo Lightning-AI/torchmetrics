@@ -398,8 +398,7 @@ class TestMulticlassAccuracy(MetricTester):
         """Negative test for `test_multiclass_accuracy_gpu_sync_points`, to confirm completeness.
 
         Tests that `test_multiclass_accuracy_gpu_sync_points` is kept up to date, explicitly validating that known
-        failures still fail, so that if they're fixed they must be added to
-        `test_multiclass_accuracy_gpu_sync_points`.
+        failures still fail, so that if they're fixed they must be added to `test_multiclass_accuracy_gpu_sync_points`.
 
         """
         with pytest.raises(RuntimeError, match="called a synchronizing CUDA operation"):

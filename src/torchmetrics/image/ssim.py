@@ -92,7 +92,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         gaussian_kernel: bool = True,
         sigma: Union[float, Sequence[float]] = 1.5,
         kernel_size: Union[int, Sequence[int]] = 11,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
@@ -314,12 +314,12 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         gaussian_kernel: bool = True,
         kernel_size: Union[int, Sequence[int]] = 11,
         sigma: Union[float, Sequence[float]] = 1.5,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
-        normalize: Literal["relu", "simple", None] = "relu",
+        normalize: Optional[Literal["relu", "simple"]] = "relu",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
