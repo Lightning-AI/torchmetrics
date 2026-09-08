@@ -175,7 +175,7 @@ def test_module_matches_functional():
 
 
 @pytest.mark.parametrize("box_format", ["xyzwhd", "xyzxyz"])
-def test_invalid_box_format_raises(box_format):
+def test_valid_box_format_does_not_raise(box_format):
     """Sanity check that the module accepts both supported box formats without error."""
     MeanAveragePrecision3D(box_format=box_format)
 
