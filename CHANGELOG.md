@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed support for PyTorch 2.0-2.5, the minimum required version is now 2.6 ([#3449](https://github.com/Lightning-AI/torchmetrics/pull/3449))
 
 
+- Removed the dead `torch<2.6` compatibility branches left behind by the 2.6 floor, including the internal `_cumsum` workaround ([#3483](https://github.com/Lightning-AI/torchmetrics/pull/3483))
+
+
 ### Fixed
 
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
