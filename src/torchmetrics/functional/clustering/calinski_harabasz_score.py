@@ -41,6 +41,11 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
     """
     _validate_intrinsic_cluster_data(data, labels)
 
+    # the squared accumulations below overflow/lose precision in half, so promote those to float32;
+    # float32/float64 are kept as-is
+    if data.dtype not in (torch.float32, torch.float64):
+        data = data.to(torch.float32)
+
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
     num_labels = len(unique_labels)
