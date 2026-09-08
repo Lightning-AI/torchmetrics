@@ -133,6 +133,21 @@ def test_class_matches_functional_on_float64(metric_class, functional):
     assert torch.allclose(metric.compute().double(), functional(data, labels).double(), rtol=1e-6)
 
 
+@pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16])
+def test_half_precision_is_computed_in_float32(dtype):
+    """Half inputs are promoted, not preserved.
+
+    ``torch.cdist`` has no half kernel at all, so allocating Davies-Bouldin's buffers in the input dtype would turn a
+    working ``float16`` call into ``NotImplementedError``, and the squared accumulations in both metrics lose too much
+    precision in half to be worth preserving. Promoting to ``float32`` keeps the behaviour these two metrics had
+    before the dtype fix. ``dunn_index`` is unaffected and still returns the input dtype.
+
+    """
+    data, labels = _data(dtype)
+    assert davies_bouldin_score(data, labels).dtype == torch.float32
+    assert calinski_harabasz_score(data, labels).dtype == torch.float32
+
+
 def test_float32_result_is_unchanged():
     """Float32 inputs already allocated float32 buffers, so their values must not move."""
     data, labels = _data(torch.float32)
