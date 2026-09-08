@@ -32,6 +32,7 @@ from torchmetrics.functional.regression.rse import relative_squared_error
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
+from torchmetrics.functional.regression.weighted_pearson import weighted_pearson_corrcoef
 from torchmetrics.functional.regression.wmape import weighted_mean_absolute_percentage_error
 
 __all__ = [
@@ -58,4 +59,5 @@ __all__ = [
     "symmetric_mean_absolute_percentage_error",
     "tweedie_deviance_score",
     "weighted_mean_absolute_percentage_error",
+    "weighted_pearson_corrcoef",
 ]
