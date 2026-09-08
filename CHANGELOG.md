@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed `top_k` validation in multiclass classification metrics to reject negative integers and non-integer values ([#3406](https://github.com/Lightning-AI/torchmetrics/pull/3406))
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
 
@@ -43,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed swapped hypothesis and reference arguments in `TER`, which made an empty hypothesis score a perfect 0.0 ([#3479](https://github.com/Lightning-AI/torchmetrics/pull/3479))
+
+
+- Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
 ---
