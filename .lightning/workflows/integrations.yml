@@ -8,9 +8,13 @@ machine: "L4"
 timeout: "35" # minutes
 parametrize:
   matrix:
-    image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
-      - "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime"
-      - "pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime"
+    image: # the lowest torch here must match the floor in requirements/base.txt, as it also drives the oldest requirements
+      - "pytorch/pytorch:2.6.0-cuda12.6-cudnn9-runtime"
+      - "pytorch/pytorch:2.10.0-cuda13.0-cudnn9-runtime"
+
+env:
+  # the newer `pytorch/pytorch` images ship a PEP 668 "externally managed" system python
+  PIP_BREAK_SYSTEM_PACKAGES: "1"
 
 run: |
   whereis nvidia
@@ -29,7 +33,18 @@ run: |
   TORCH_URL="https://download.pytorch.org/whl/cu${CUDA_VERSION_MM}/torch_stable.html"
   echo ${TORCH_URL}
 
-  if [ "${TORCH_VER_M_M}" == "2.0" ]; then
+  # read the torch floor from the requirements, so raising it on CPU cannot leave these GPU lanes behind
+  # note: must run before `adjust-torch-versions.py` below, which rewrites the pin to an exact version
+  TORCH_MIN=$(grep -oE '^torch >=[0-9]+\.[0-9]+' requirements/base.txt | grep -oE '[0-9]+\.[0-9]+$' || true)
+  [ -n "${TORCH_MIN}" ] || { echo "ERROR: could not read the torch floor from requirements/base.txt"; exit 1; }
+  echo "Torch floor from requirements/base.txt: ${TORCH_MIN}"
+  python -c "import sys; from packaging.version import Version; sys.exit(0 if Version('${TORCH_VER_M_M}') >= Version('${TORCH_MIN}') else 1)" || {
+    echo "ERROR: image provides torch ${TORCH_VER_M_M}, below the ${TORCH_MIN} floor in requirements/base.txt."
+    echo "       Bump the images in .lightning/workflows/ together with the floor."
+    exit 1
+  }
+
+  if [ "${TORCH_VER_M_M}" == "${TORCH_MIN}" ]; then
     pip install -q 'lightning-utilities[cli]'
     python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
     cat requirements/_integrate.txt
