@@ -176,3 +176,22 @@ def test_ter_return_sentence_level_class():
     targets = _inputs_single_sentence_multiple_references.target
     _, sentence_ter = ter_metric(preds, targets)
     isinstance(sentence_ter, Tensor)
+
+
+def test_ter_empty_hypothesis_is_not_a_perfect_score():
+    """Test that a hypothesis producing nothing is charged one deletion per reference word."""
+    assert translation_edit_rate([""], [["hello world foo"]]) == tensor(1.0)
+
+
+def test_ter_matches_reference_when_shifts_are_asymmetric():
+    """Test that edits are counted from hypothesis to reference, not the other way around.
+
+    The shift search is not symmetric, so swapping the two sides changes the number of edits found.
+
+    """
+    preds = ["hello hello the a dog"]
+    targets = [["jumps dog lazy the"]]
+    expected = _reference_sacrebleu_ter(
+        preds, targets, normalized=False, no_punct=False, asian_support=False, case_sensitive=True
+    )
+    assert translation_edit_rate(preds, targets, lowercase=False) == expected
