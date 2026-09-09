@@ -25,6 +25,7 @@ from torchmetrics.functional.nominal.utils import (
     _drop_empty_rows_and_cols,
     _handle_nan_in_data,
     _nominal_input_validation,
+    _remap_categorical_inputs,
     _unable_to_use_bias_correction_warning,
 )
 
@@ -133,8 +134,8 @@ def cramers_v(
 
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
-    num_classes = len(torch.cat([preds, target]).unique())
-    confmat = _cramers_v_update(preds, target, num_classes, nan_strategy, nan_replace_value)
+    preds, target, num_classes = _remap_categorical_inputs(preds, target, nan_strategy, nan_replace_value)
+    confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
     return _cramers_v_compute(confmat, bias_correction)
 
 
@@ -176,8 +177,7 @@ def cramers_v_matrix(
     num_variables = matrix.shape[1]
     cramers_v_matrix_value = torch.ones(num_variables, num_variables, device=matrix.device)
     for i, j in itertools.combinations(range(num_variables), 2):
-        x, y = matrix[:, i], matrix[:, j]
-        num_classes = len(torch.cat([x, y]).unique())
-        confmat = _cramers_v_update(x, y, num_classes, nan_strategy, nan_replace_value)
+        x, y, num_classes = _remap_categorical_inputs(matrix[:, i], matrix[:, j], nan_strategy, nan_replace_value)
+        confmat = _multiclass_confusion_matrix_update(x, y, num_classes)
         cramers_v_matrix_value[i, j] = cramers_v_matrix_value[j, i] = _cramers_v_compute(confmat, bias_correction)
     return cramers_v_matrix_value
