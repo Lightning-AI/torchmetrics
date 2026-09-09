@@ -710,3 +710,44 @@ def test_merge_state_feature_for_different_metrics(metric_class, preds, target):
     # should not be the same because it has only seen half the data
     res3 = metric1_2.compute()
     assert not torch.allclose(res3, res2)
+
+
+class _RejectingBatchMetric(DummyMetricSum):
+    """Sum metric whose ``compute`` rejects a sentinel batch, like a metric validating its input at compute time."""
+
+    full_state_update = True
+
+    def compute(self):
+        if self.x == -1:
+            raise ValueError("invalid batch")
+        return self.x
+
+
+class _RejectingBatchMetricReduce(_RejectingBatchMetric):
+    full_state_update = False
+
+
+@pytest.mark.parametrize("full_state_update", [True, False])
+def test_forward_keeps_accumulated_state_when_batch_computation_raises(full_state_update):
+    """State accumulated before a failing ``forward`` call must survive the failure (#3487)."""
+    metric = (_RejectingBatchMetric if full_state_update else _RejectingBatchMetricReduce)()
+    metric.update(5)
+
+    with pytest.raises(ValueError, match="invalid batch"):
+        metric(-1)
+
+    if full_state_update:
+        # the batch was accumulated by the global update before its computation failed
+        assert metric.x == 4
+        assert metric._update_count == 2
+    else:
+        # the batch state was dropped, the accumulated state is back
+        assert metric.x == 5
+        assert metric._update_count == 1
+    assert metric._enable_grad is False
+    assert metric._should_unsync is True
+    assert metric._computed is None
+
+    metric.update(3)
+    assert metric.compute() == (7 if full_state_update else 8)
+    assert metric(1) == 1
