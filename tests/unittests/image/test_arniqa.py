@@ -20,7 +20,7 @@ from torch import Tensor
 
 from torchmetrics.functional.image.arniqa import arniqa
 from torchmetrics.image.arniqa import ARNIQA
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2, _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 from unittests._helpers import seed_all, skip_on_connection_issues
 from unittests._helpers.testers import MetricTester
 
@@ -68,7 +68,6 @@ def _reference_arniqa(img: Tensor, target: Tensor, regressor_dataset: str, reduc
 
 
 @skip_on_connection_issues()
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_2, reason="`slow_conv2d_cpu` does not support cpu + half precision")
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 class TestARNIQA(MetricTester):
     """Test class for `ARNIQA` metric."""
@@ -115,7 +114,6 @@ class TestARNIQA(MetricTester):
         self.run_precision_test_gpu(preds=_input_img, target=_input_img, metric_module=ARNIQATesterClass)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_2, reason="`slow_conv2d_cpu` does not support cpu + half precision")
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_normalize_arg():
     """Test that normalize argument works as expected."""
@@ -127,7 +125,6 @@ def test_normalize_arg():
     assert torch.allclose(res, res2, atol=1e-6), f"Results differ: max difference {torch.max((res - res2).abs())}"
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_2, reason="`slow_conv2d_cpu` does not support cpu + half precision")
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
@@ -138,7 +135,6 @@ def test_error_on_wrong_init():
         ARNIQA(regressor_dataset="koniq10k", reduction=None)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_2, reason="`slow_conv2d_cpu` does not support cpu + half precision")
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_error_on_wrong_input_shape():
     """Test error is raised on wrong input shape to update method."""
@@ -148,7 +144,6 @@ def test_error_on_wrong_input_shape():
         metric(inp)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_2, reason="`slow_conv2d_cpu` does not support cpu + half precision")
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_error_on_wrong_normalize_value():
     """Test error is raised on wrong normalize parameter value to update method."""
@@ -158,7 +153,6 @@ def test_error_on_wrong_normalize_value():
         metric(inp)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_2, reason="`slow_conv2d_cpu` does not support cpu + half precision")
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_check_for_backprop():
     """Check that by default the metric supports propagation of gradients, but does not update its parameters."""
