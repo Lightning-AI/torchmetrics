@@ -79,8 +79,8 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not isinstance(block_size, int) and block_size < 1:
-            raise ValueError("Argument ``block_size`` should be a positive integer")
+        if not isinstance(block_size, int) or block_size < 1:
+            raise ValueError(f"Argument `block_size` should be a positive integer, got {block_size!r}")
         self.block_size = block_size
 
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
