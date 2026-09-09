@@ -663,9 +663,12 @@ class Metric(Module, ABC):
             distributed_available=distributed_available,
         )
 
-        yield
-
-        self.unsync(should_unsync=self._is_synced and should_unsync)
+        try:
+            yield
+        finally:
+            # restore the local states also when the body raised (e.g. ``compute`` rejecting the input), otherwise the
+            # metric stays synchronized and the next ``compute`` fails with "The Metric has already been synced."
+            self.unsync(should_unsync=self._is_synced and should_unsync)
 
     def _wrap_compute(self, compute: Callable) -> Callable:
         @functools.wraps(compute)

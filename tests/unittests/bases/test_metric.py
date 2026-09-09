@@ -710,3 +710,55 @@ def test_merge_state_feature_for_different_metrics(metric_class, preds, target):
     # should not be the same because it has only seen half the data
     res3 = metric1_2.compute()
     assert not torch.allclose(res3, res2)
+
+
+def _fake_gather(tensor, group=None):
+    """Stand-in for ``gather_all_tensors`` that pretends there are two identical ranks."""
+    return [tensor, tensor]
+
+
+def test_sync_context_unsyncs_when_body_raises():
+    """A raise inside ``sync_context`` must not leave the metric synchronized (#3486)."""
+    metric = DummyMetricSum()
+    metric.update(1)
+    seen_synced_state = []
+
+    def body_that_raises():
+        with metric.sync_context(dist_sync_fn=_fake_gather, distributed_available=lambda: True):
+            seen_synced_state.append((metric._is_synced, metric.x.item()))
+            raise RuntimeError("boom")
+
+    with pytest.raises(RuntimeError, match="boom"):
+        body_that_raises()
+
+    assert seen_synced_state == [(True, 2.0)]
+    assert not metric._is_synced
+    assert metric._cache is None
+    assert metric.x == 1
+    metric.update(2)
+    assert metric.x == 3
+
+
+def test_compute_error_does_not_leave_metric_synced():
+    """``compute`` raising during the synchronized section must not break the next ``compute`` (#3486)."""
+
+    class _RejectingCompute(DummyMetricSum):
+        reject = True
+
+        def compute(self):
+            if self.reject:
+                raise ValueError("no positive target")
+            return self.x
+
+    metric = _RejectingCompute(dist_sync_fn=_fake_gather, distributed_available_fn=lambda: True)
+    metric.update(1)
+    with pytest.raises(ValueError, match="no positive target"):
+        metric.compute()
+    assert not metric._is_synced
+    assert metric.x == 1
+
+    metric.reject = False
+    metric.update(2)
+    # (1 + 2) gathered from the two fake ranks
+    assert metric.compute() == 6
+    assert not metric._is_synced
