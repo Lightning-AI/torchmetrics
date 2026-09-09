@@ -350,3 +350,66 @@ def test_bertscore_invalid_references():
     metric = BERTScore()
     with pytest.raises(ValueError, match="Invalid input provided."):
         metric(preds, target)
+
+
+# Regression tests for https://github.com/Lightning-AI/torchmetrics/issues/2728
+# BERTScore should satisfy: (1) self-similarity is maximum, (2) F1 symmetry, (3) batch-size invariance
+
+
+@skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>=4.4")
+@pytest.mark.parametrize("idf", [False])
+@pytest.mark.parametrize("batch_size", [1, 3, 9])
+def test_bertscore_self_similarity_is_maximum(idf: bool, batch_size: int) -> None:
+    """BERTScore of a sentence with itself must be >= score against any other sentence (issue #2728, property 1)."""
+    sentences = ["hello there", "master kenobi", "general kenobi"]
+    for sent in sentences:
+        self_score = bert_score([sent], [sent], idf=idf, lang="en", batch_size=batch_size, rescale_with_baseline=False)
+        for other in sentences:
+            if other == sent:
+                continue
+            cross_score = bert_score(
+                [sent], [other], idf=idf, lang="en", batch_size=batch_size, rescale_with_baseline=False
+            )
+            assert self_score["f1"].item() >= cross_score["f1"].item() - 1e-5, (
+                f"Self-similarity violated for '{sent}' vs '{other}': "
+                f"self={self_score['f1'].item():.6f}, cross={cross_score['f1'].item():.6f}"
+            )
+
+
+@skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>=4.4")
+@pytest.mark.parametrize("idf", [False])
+@pytest.mark.parametrize("batch_size", [1, 3, 9])
+def test_bertscore_f1_symmetry(idf: bool, batch_size: int) -> None:
+    """BERTScore F1 must be symmetric: score(pred, target) == score(target, pred) (issue #2728, property 2)."""
+    pairs = [
+        ("hello there", "master kenobi"),
+        ("hello there", "general kenobi"),
+        ("master kenobi", "general kenobi"),
+    ]
+    for pred, target in pairs:
+        forward = bert_score([pred], [target], idf=idf, lang="en", batch_size=batch_size, rescale_with_baseline=False)
+        reverse = bert_score([target], [pred], idf=idf, lang="en", batch_size=batch_size, rescale_with_baseline=False)
+        assert torch.isclose(forward["f1"], reverse["f1"], atol=1e-5).all(), (
+            f"F1 symmetry violated for ('{pred}', '{target}'): "
+            f"forward={forward['f1'].item():.6f}, reverse={reverse['f1'].item():.6f}"
+        )
+
+
+@skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>=4.4")
+@pytest.mark.parametrize("batch_size", [1, 3, 9])
+def test_bertscore_batch_size_invariance(batch_size: int) -> None:
+    """BERTScore (idf=False) must not change when batch_size changes (issue #2728, property 3)."""
+    preds = ["hello there", "master kenobi", "general kenobi"]
+    targets = ["master kenobi", "hello there", "hello there"]
+
+    reference = bert_score(preds, targets, idf=False, lang="en", batch_size=1, rescale_with_baseline=False)
+    result = bert_score(preds, targets, idf=False, lang="en", batch_size=batch_size, rescale_with_baseline=False)
+
+    for metric in ("precision", "recall", "f1"):
+        assert torch.allclose(reference[metric], result[metric], atol=1e-5), (
+            f"Batch-size invariance violated for '{metric}' at batch_size={batch_size}: "
+            f"batch_size=1 gives {reference[metric]}, batch_size={batch_size} gives {result[metric]}"
+        )
