@@ -122,7 +122,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         if validate_args:
             _binary_stat_scores_arg_validation(threshold, "global", ignore_index)
 
-        if not isinstance(num_groups, int) and num_groups < 2:
+        if not isinstance(num_groups, int) or num_groups < 2:
             raise ValueError(f"Expected argument `num_groups` to be an int larger than 1, but got {num_groups}")
         self.num_groups = num_groups
         self.threshold = threshold
@@ -236,7 +236,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         if validate_args:
             _binary_stat_scores_arg_validation(threshold, "global", ignore_index)
 
-        if not isinstance(num_groups, int) and num_groups < 2:
+        if not isinstance(num_groups, int) or num_groups < 2:
             raise ValueError(f"Expected argument `num_groups` to be an int larger than 1, but got {num_groups}")
         self.num_groups = num_groups
         self.task = task

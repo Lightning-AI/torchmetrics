@@ -131,7 +131,7 @@ class VideoMultiMethodAssessmentFusion(Metric):
             raise RuntimeError("vmaf-torch is not installed. Please install with `pip install torchmetrics[video]`.")
 
         if not isinstance(features, bool):
-            raise ValueError("Argument `elementary_features` should be a boolean, but got {features}.")
+            raise ValueError(f"Argument `features` should be a boolean, but got {features}.")
         self.features = features
 
         self.add_state("vmaf_score", default=[], dist_reduce_fx="cat")
