@@ -33,7 +33,6 @@ from torchmetrics.functional.classification.stat_scores import (
     multilabel_stat_scores,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -137,8 +136,6 @@ class TestBinaryStatScores(MetricTester):
     def test_binary_stat_scores_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -302,8 +299,6 @@ class TestMulticlassStatScores(MetricTester):
     def test_multiclass_stat_scores_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -361,6 +356,18 @@ def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_mes
     """Test that an error is raised if the number of classes in preds or target is larger than expected."""
     with pytest.raises(RuntimeError, match=error_message):
         multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, ignore_index=ignore_index)
+
+
+@pytest.mark.parametrize("top_k", [-1, 0, 4.5])
+def test_raises_error_on_invalid_top_k(top_k):
+    """Test that a ValueError is raised if `top_k` is not a positive integer."""
+    preds = torch.rand(10, NUM_CLASSES)
+    target = torch.randint(NUM_CLASSES, (10,))
+    match = "Expected argument `top_k` to be an integer larger than or equal to 1"
+    with pytest.raises(ValueError, match=match):
+        multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, top_k=top_k)
+    with pytest.raises(ValueError, match=match):
+        MulticlassStatScores(num_classes=NUM_CLASSES, top_k=top_k)
 
 
 @pytest.mark.parametrize(
@@ -610,8 +617,6 @@ class TestMultilabelStatScores(MetricTester):
     def test_multilabel_stat_scores_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
