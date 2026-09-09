@@ -22,7 +22,6 @@ from torch import tensor
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL
 from unittests._helpers import _IS_WINDOWS, seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
@@ -319,7 +318,6 @@ def _test_sync_with_empty_lists(rank):
 
 
 @pytest.mark.DDP
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
 @pytest.mark.skipif(_IS_WINDOWS, reason="DDP not available on windows")
 @pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 def test_sync_with_empty_lists():
@@ -336,7 +334,6 @@ def _test_sync_with_unequal_size_lists(rank):
 
 
 @pytest.mark.DDP
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
 @pytest.mark.skipif(_IS_WINDOWS, reason="DDP not available on windows")
 @pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 def test_sync_with_unequal_size_lists():
