@@ -38,7 +38,8 @@ class ClasswiseWrapper(WrapperMetric):
     Args:
         metric: base metric that should be wrapped. It is assumed that the metric outputs a single
             tensor that is split along the first dimension.
-        labels: list of strings indicating the different classes.
+        labels: list of unique strings indicating the different classes. The number of labels must match the number of
+            values returned by the wrapped metric.
         prefix: string that is prepended to the metric names.
         postfix: string that is appended to the metric names.
 
@@ -130,6 +131,8 @@ class ClasswiseWrapper(WrapperMetric):
 
         if labels is not None and not (isinstance(labels, list) and all(isinstance(lab, str) for lab in labels)):
             raise ValueError(f"Expected argument `labels` to either be `None` or a list of strings but got {labels}")
+        if labels is not None and len(set(labels)) != len(labels):
+            raise ValueError(f"Expected argument `labels` to contain unique values, but got {labels}")
         self.labels = labels
 
         if prefix is not None and not isinstance(prefix, str):
@@ -162,6 +165,10 @@ class ClasswiseWrapper(WrapperMetric):
             postfix = self._postfix or ""
         if self.labels is None:
             return {f"{prefix}{i}{postfix}": val for i, val in enumerate(x)}
+        if len(self.labels) != len(x):
+            raise ValueError(
+                f"Expected argument `labels` to contain {len(x)} labels, but got {len(self.labels)}: {self.labels}"
+            )
         return {f"{prefix}{lab}{postfix}": val for lab, val in zip(self.labels, x)}
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
