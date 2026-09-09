@@ -43,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `Metric` ignoring an active `torch.device` context manager on torch 2.3-2.7 ([#3448](https://github.com/Lightning-AI/torchmetrics/pull/3448))
 
 
+- Fixed `PESQ` metric aborting on a batch containing a sample the backend cannot score, which now returns `nan` for that sample instead of raising ([#3304](https://github.com/Lightning-AI/torchmetrics/issues/3304))
+
+
 - Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
