@@ -339,24 +339,26 @@ class Metric(Module, ABC):
 
         # call reset, update, compute, on single batch
         self._enable_grad = True  # allow grads for batch computation
-        self.reset()
-        self.update(*args, **kwargs)
-        batch_val = self.compute()
+        try:
+            self.reset()
+            self.update(*args, **kwargs)
+            batch_val = self.compute()
+        finally:
+            # restore the accumulated state also when the batch computation raised; the failed batch itself was
+            # already accumulated by the global ``update`` above and stays part of the state
+            for attr, val in cache.items():
+                setattr(self, attr, val)
+            self._update_count = _update_count
 
-        # restore context
-        for attr, val in cache.items():
-            setattr(self, attr, val)
-        self._update_count = _update_count
-
-        # restore context
-        self._is_synced = False
-        self._should_unsync = True
-        self._to_sync = self.sync_on_compute
-        self._computed = None
-        self._enable_grad = False
-        self.compute_on_cpu = _temp_compute_on_cpu
-        if self.compute_on_cpu:
-            self._move_list_states_to_cpu()
+            # restore context
+            self._is_synced = False
+            self._should_unsync = True
+            self._to_sync = self.sync_on_compute
+            self._computed = None
+            self._enable_grad = False
+            self.compute_on_cpu = _temp_compute_on_cpu
+            if self.compute_on_cpu:
+                self._move_list_states_to_cpu()
 
         return batch_val
 
@@ -379,24 +381,31 @@ class Metric(Module, ABC):
         self.compute_on_cpu = False
         self._enable_grad = True  # allow grads for batch computation
 
-        # calculate batch state and compute batch value
-        self.update(*args, **kwargs)
-        batch_val = self.compute()
-
-        # reduce batch and global state
-        self._update_count = _update_count + 1
-        with torch.no_grad():
-            self._reduce_states(global_state)
-
-        # restore context
-        self._is_synced = False
-        self._should_unsync = True
-        self._to_sync = self.sync_on_compute
-        self._computed = None
-        self._enable_grad = False
-        self.compute_on_cpu = _temp_compute_on_cpu
-        if self.compute_on_cpu:
-            self._move_list_states_to_cpu()
+        try:
+            # calculate batch state and compute batch value
+            self.update(*args, **kwargs)
+            batch_val = self.compute()
+        except Exception:
+            # the batch state may be incomplete, so drop it and put the accumulated state back instead of losing it
+            for attr, val in global_state.items():
+                setattr(self, attr, val)
+            self._update_count = _update_count
+            raise
+        else:
+            # reduce batch and global state
+            self._update_count = _update_count + 1
+            with torch.no_grad():
+                self._reduce_states(global_state)
+        finally:
+            # restore context
+            self._is_synced = False
+            self._should_unsync = True
+            self._to_sync = self.sync_on_compute
+            self._computed = None
+            self._enable_grad = False
+            self.compute_on_cpu = _temp_compute_on_cpu
+            if self.compute_on_cpu:
+                self._move_list_states_to_cpu()
 
         return batch_val
 
