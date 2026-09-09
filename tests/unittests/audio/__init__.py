@@ -5,6 +5,17 @@ from torch import Tensor
 
 from unittests import _PATH_ALL_TESTS
 
+# SRMRpy calls `scipy.signal.hamming`, which SciPy moved to `scipy.signal.windows.hamming`.
+# Only `test_srmr.py` imports SRMRpy, and this package is imported before it, so the shim
+# lives here rather than in `torchmetrics`, which never imports SRMRpy at all.
+try:
+    import scipy.signal
+
+    if not hasattr(scipy.signal, "hamming"):
+        scipy.signal.hamming = scipy.signal.windows.hamming
+except ImportError:
+    pass
+
 _SAMPLE_AUDIO_SPEECH = os.path.join(_PATH_ALL_TESTS, "_data", "audio", "audio_speech.wav")
 _SAMPLE_AUDIO_SPEECH_BAB_DB = os.path.join(_PATH_ALL_TESTS, "_data", "audio", "audio_speech_bab_0dB.wav")
 _SAMPLE_NUMPY_ISSUE_895 = os.path.join(_PATH_ALL_TESTS, "_data", "audio", "issue_895.npz")
