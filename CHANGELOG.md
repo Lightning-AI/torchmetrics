@@ -28,15 +28,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
--
+- Removed support for PyTorch 2.0-2.5, the minimum required version is now 2.6 ([#3449](https://github.com/Lightning-AI/torchmetrics/pull/3449))
+
+
+- Removed the dead `torch<2.6` compatibility branches left behind by the 2.6 floor, including the internal `_cumsum` workaround ([#3483](https://github.com/Lightning-AI/torchmetrics/pull/3483))
 
 
 ### Fixed
 
+- Fixed `top_k` validation in multiclass classification metrics to reject negative integers and non-integer values ([#3406](https://github.com/Lightning-AI/torchmetrics/pull/3406))
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
 
 - Fixed `Metric` ignoring an active `torch.device` context manager on torch 2.3-2.7 ([#3448](https://github.com/Lightning-AI/torchmetrics/pull/3448))
+
+
+- Fixed `PESQ` metric aborting on a batch containing a sample the backend cannot score, which now returns `nan` for that sample instead of raising ([#3304](https://github.com/Lightning-AI/torchmetrics/issues/3304))
+
+
+- Fixed swapped hypothesis and reference arguments in `TER`, which made an empty hypothesis score a perfect 0.0 ([#3479](https://github.com/Lightning-AI/torchmetrics/pull/3479))
+
+
+- Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
 ---
