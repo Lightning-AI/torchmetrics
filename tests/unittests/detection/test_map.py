@@ -32,9 +32,15 @@ from torchmetrics.functional.detection.map import mean_average_precision
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
+    _ULTRAFAST_COCO_AVAILABLE,
 )
 from unittests._helpers.testers import MetricTester
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
+
+_ULTRAFAST_BACKEND = pytest.param(
+    "ultrafast",
+    marks=pytest.mark.skipif(not _ULTRAFAST_COCO_AVAILABLE, reason="test requires ultrafast-pycocotools>=0.1.11"),
+)
 
 
 def _skip_if_faster_coco_eval_missing(backend):
@@ -68,7 +74,7 @@ _coco_segm_input = _generate_coco_inputs("segm")
     not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
 )
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 def test_tm_to_coco(tmpdir, iou_type, backend):
     """Test that the conversion from TM to COCO format works."""
     preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
@@ -181,7 +187,7 @@ def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_t
 )
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 class TestMAPUsingCOCOReference(MetricTester):
     """Test map metric on the reference coco data."""
 
@@ -236,7 +242,7 @@ class TestMAPUsingCOCOReference(MetricTester):
         )
 
 
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 def test_compare_both_same_time(tmpdir, backend):
     """Test that the class support evaluating both bbox and segm at the same time."""
     _skip_if_faster_coco_eval_missing(backend)
@@ -460,6 +466,7 @@ def _generate_random_segm_input(device, batch_size=2, num_preds_size=10, num_gt_
     "backend",
     [
         pytest.param("pycocotools"),
+        _ULTRAFAST_BACKEND,
         pytest.param(
             "faster_coco_eval",
             marks=pytest.mark.skipif(
@@ -928,7 +935,8 @@ class TestMapProperties:
         metric = MeanAveragePrecision(max_detection_thresholds=[1, 10, 1000], backend=backend)
         res = metric(preds, target)
 
-        if backend == "pycocotools":
+        # ultrafast preserves pycocotools' fixed maxDets=100 AP summary semantics.
+        if backend in ("pycocotools", "ultrafast"):
             assert round(res["map"].item(), 5) != 0.6
         else:
             assert round(res["map"].item(), 5) == 0.6
@@ -964,7 +972,7 @@ def compare_with_class(functional_result, preds, target, **kwargs: Any):
         torch.testing.assert_close(functional_result[key], class_result[key], atol=5e-5, rtol=1e-5)
 
 
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 def test_mean_average_precision_iou_type_functional(backend, iou_type):
     """Test that the functional API returns a valid dictionary with the expected keys."""
@@ -981,7 +989,7 @@ def test_mean_average_precision_iou_type_functional(backend, iou_type):
     )
 
 
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 def test_mean_average_precision_basic_functional(backend):
     """Test basic functionality with nonempty inputs by comparing function and class outputs."""
     preds = _inputs["preds"]
@@ -1008,7 +1016,7 @@ def test_mean_average_precision_basic_functional(backend):
     )
 
 
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 def test_mean_average_precision_empty_preds_functional(backend):
     """When there are no predictions at all but targets are available."""
     preds = [{"boxes": Tensor([]), "scores": Tensor([]), "labels": torch.tensor([], dtype=torch.int64)}]
@@ -1018,7 +1026,7 @@ def test_mean_average_precision_empty_preds_functional(backend):
     compare_with_class(functional_result, preds, target, backend=backend, iou_type="bbox", box_format="xywh")
 
 
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 def test_mean_average_precision_empty_targets_functional(backend):
     """When there are no ground truths."""
     preds = [
@@ -1042,7 +1050,7 @@ def test_mean_average_precision_empty_targets_functional(backend):
         ("cxcywh"),
     ],
 )
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 def test_mean_average_precision_box_format_functional(box_format, backend):
     """Test that providing different box formats leads to the expected results."""
     predictions = [
@@ -1068,7 +1076,7 @@ def test_mean_average_precision_box_format_functional(box_format, backend):
     )
 
 
-@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval", _ULTRAFAST_BACKEND])
 def test_mean_average_precision_custom_thresholds_functional(backend):
     """Test that custom recall thresholds and a custom iou_thresholds."""
     preds = _inputs["preds"]

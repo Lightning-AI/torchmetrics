@@ -184,3 +184,5 @@
 .. _Deep Image Structure and Texture Similarity: https://arxiv.org/abs/2004.07728
 .. _KonIQ-10k: https://database.mmsp-kn.de/koniq-10k-database.html
 .. _KADID-10k: https://database.mmsp-kn.de/kadid-10k-database.html
+
+.. _ultrafast-pycocotools: https://github.com/developer0hye/ultrafast-pycocotools

@@ -2,3 +2,4 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 faster-coco-eval >=1.6.3, <1.8.0
+ultrafast-pycocotools >=0.1.11, <0.2  # strict

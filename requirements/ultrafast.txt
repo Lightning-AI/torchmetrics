@@ -1,0 +1,3 @@
+# An optional COCO backend; no reference evaluator is required.
+torchvision >=0.21.0, <0.26.0
+ultrafast-pycocotools >=0.1.11, <0.2  # strict
