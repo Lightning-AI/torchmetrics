@@ -47,7 +47,7 @@ def mean_average_precision(
     class_metrics: bool = False,
     extended_summary: bool = False,
     average: Literal["macro", "micro"] = "macro",
-    backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
+    backend: Literal["pycocotools", "faster_coco_eval", "ultrafast"] = "pycocotools",
     warn_on_many_detections: bool = True,
 ) -> Union[Tensor, Dict[str, Tensor]]:
     r"""Compute the mean average precision (mAP) and mean average recall (mAR) for object detection predictions.
@@ -72,7 +72,7 @@ def mean_average_precision(
     Optionally, per-class metrics may be computed by enabling ``class_metrics``, and an extended summary
     (including IoU, precision, recall, and scores) is available via ``extended_summary``.
     The averaging method over labels can be set with ``average`` ("macro" or "micro") and the evaluation
-    is performed using either the ``pycocotools`` or ``faster_coco_eval`` backend.
+    is performed using the ``pycocotools``, ``faster_coco_eval`` or ``ultrafast`` backend.
 
     Args:
         preds: List of dictionaries, each representing detection predictions for a single image.
@@ -85,7 +85,7 @@ def mean_average_precision(
         class_metrics: Whether to compute per-class mAP and mAR metrics.
         extended_summary: Whether to include additional outputs (IoU, precision, recall, scores) in the result.
         average: Averaging method over labels, either "macro" or "micro".
-        backend: Backend to use for evaluation ("pycocotools" or "faster_coco_eval").
+        backend: Backend to use for evaluation ("pycocotools", "faster_coco_eval" or "ultrafast").
         warn_on_many_detections: If True, warn when there are an unusually large number of detections.
 
     Returns:
