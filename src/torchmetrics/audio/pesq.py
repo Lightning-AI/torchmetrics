@@ -67,7 +67,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
         n_processes: integer specifying the number of processes to run in parallel for the metric calculation.
-            Only applies to batches of data and if ``multiprocessing`` package is installed.
+            Only applies to batches of data.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:

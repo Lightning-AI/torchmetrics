@@ -20,12 +20,12 @@ import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
 if TYPE_CHECKING:
     if _TQDM_AVAILABLE:
         import tqdm
-    if _TRANSFORMERS_GREATER_EQUAL_4_4:
+    if _TRANSFORMERS_AVAILABLE:
         from transformers import PreTrainedModel, PreTrainedTokenizerBase
 
 

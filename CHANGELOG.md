@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the dead `torch<2.6` compatibility branches left behind by the 2.6 floor, including the internal `_cumsum` workaround ([#3483](https://github.com/Lightning-AI/torchmetrics/pull/3483))
 
 
+- Removed the stale optional-dependency version flags `_TRANSFORMERS_GREATER_EQUAL_4_4`, `_TRANSFORMERS_GREATER_EQUAL_4_10`, `_SCIPY_GREATER_EQUAL_1_8` and `_MULTIPROCESSING_AVAILABLE`, which were always true for any supported install ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
+
+
 ### Fixed
 
 - Fixed `top_k` validation in multiclass classification metrics to reject negative integers and non-integer values ([#3406](https://github.com/Lightning-AI/torchmetrics/pull/3406))
