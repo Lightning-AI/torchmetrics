@@ -497,6 +497,35 @@ class Metric(Module, ABC):
                 raise TypeError(f"Unsupported reduce_fn: {reduce_fn}")
             setattr(self, attr, reduced)
 
+    def _check_none_reduction_list_length(self, attr: str, state: list, process_group: Optional[Any] = None) -> None:
+        """Fail fast if a ``dist_reduce_fx=None`` list state has a different length across ranks.
+
+        Entries in these states can't be pre-concatenated like ``dim_zero_cat`` ones (their identity
+        matters to ``compute()``, e.g. one entry per image for detection metrics), so a length mismatch
+        here means ``apply_to_collection`` below would issue a different number of ``all_gather`` calls
+        per rank and deadlock. There's no generally safe way to pad away the mismatch: an empty
+        placeholder is a true no-op for a per-sample box/score tensor, but not for a per-sample scalar
+        (e.g. a `ROUGEScore` sentence score, where a padded zero would silently skew the mean), and not
+        every such state even has a fixed shape to pad with (e.g. an IoU matrix whose non-batch
+        dimension also varies per sample). So instead of guessing, raise with an actionable message.
+
+        """
+        if not jit_distributed_available():
+            return
+        group = process_group or self.process_group
+        local_len = torch.tensor(len(state), device=self.device)
+        all_lens = [torch.zeros_like(local_len) for _ in range(torch.distributed.get_world_size(group))]
+        torch.distributed.all_gather(all_lens, local_len, group=group)
+        lens = [int(t.item()) for t in all_lens]
+        if len(set(lens)) > 1:
+            raise TorchMetricsUserError(
+                f"Metric state `{attr}` has `dist_reduce_fx=None` and a different number of entries across "
+                f"ranks: {lens}. Syncing it would deadlock, since a different number of collective calls "
+                "would be issued per rank. Make sure every rank calls `update()` the same number of times "
+                "(e.g. pass zero-sized tensors instead of skipping `update()` on a rank with no data for a "
+                "step), or set `sync_on_compute=False` and sync manually once state lengths are equalized."
+            )
+
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
 
@@ -508,6 +537,12 @@ class Metric(Module, ABC):
             # corner case in distributed settings where a rank has not received any data, create empty to concatenate
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) == 0:
                 input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
+
+            # corner case: dist_reduce_fx=None list states can have different lengths across ranks (e.g. some
+            # ranks skipped update()), which makes apply_to_collection below issue a different number of
+            # all_gather calls per rank and deadlock. Fail fast instead of silently deadlocking.
+            if reduction_fn is None and isinstance(input_dict[attr], list):
+                self._check_none_reduction_list_length(attr, input_dict[attr], process_group)
 
         output_dict = apply_to_collection(
             input_dict,
