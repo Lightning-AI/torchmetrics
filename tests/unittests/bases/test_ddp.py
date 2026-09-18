@@ -14,6 +14,7 @@
 import os
 from copy import deepcopy
 from functools import partial
+from typing import Any, Optional
 
 import pytest
 import torch
@@ -339,3 +340,60 @@ def _test_sync_with_unequal_size_lists(rank):
 def test_sync_with_unequal_size_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_unequal_size_lists, range(NUM_PROCESSES))
+
+
+class DummyNoneReductionListMetric(Metric):
+    """A metric with a ``dist_reduce_fx=None`` list state, mirroring states like MeanAveragePrecision's."""
+
+    full_state_update: Optional[bool] = True
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.add_state("x", [], dist_reduce_fx=None)
+
+    def update(self, x) -> None:
+        """Update state."""
+        self.x.append(x)
+
+    def compute(self):
+        """Sum all elements across all accumulated entries."""
+        return torch.stack([v.float().sum() for v in self.x]).sum() if self.x else tensor(0.0)
+
+
+def _test_sync_none_reduction_with_equal_size_lists(rank):
+    """Every rank calling update() the same number of times must sync normally, without raising."""
+    dummy = DummyNoneReductionListMetric(sync_on_compute=True)
+    dummy.update(torch.ones(2, 3))
+    assert dummy.compute() == tensor(12.0)
+
+
+def _test_sync_none_reduction_with_all_empty_lists(rank):
+    """No rank has any data: lengths already match (all zero), so this must not raise."""
+    dummy = DummyNoneReductionListMetric(sync_on_compute=True)
+    assert dummy.compute() == tensor(0.0)
+
+
+def _test_sync_none_reduction_with_unequal_size_lists(rank):
+    """Regression test for #3336: uneven update() counts across ranks must raise, not deadlock."""
+    dummy = DummyNoneReductionListMetric(sync_on_compute=True)
+    if rank == 0:
+        dummy.update(torch.ones(2, 3))
+        dummy.update(torch.ones(2, 3))
+    with pytest.raises(TorchMetricsUserError, match="different number of entries across"):
+        dummy.compute()
+
+
+@pytest.mark.DDP
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
+@pytest.mark.parametrize(
+    "test_func",
+    [
+        _test_sync_none_reduction_with_equal_size_lists,
+        _test_sync_none_reduction_with_all_empty_lists,
+        _test_sync_none_reduction_with_unequal_size_lists,
+    ],
+)
+def test_sync_none_reduction_list_length_mismatch(test_func):
+    """Test that dist_reduce_fx=None list states sync when balanced, and raise instead of deadlocking when not."""
+    pytest.pool.map(test_func, range(NUM_PROCESSES))
