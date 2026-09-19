@@ -110,5 +110,8 @@ def v_measure_score(preds: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
     """
     completeness, homogeneity = _completeness_score_compute(preds, target)
     if homogeneity + completeness == 0.0:
-        return torch.ones_like(homogeneity)
+        # When both homogeneity and completeness vanish (e.g. two independent, nontrivial
+        # clusterings), the weighted harmonic mean is 0. sklearn's v_measure_score also
+        # returns 0.0 here. torchmetrics used to return 1.0, disagreeing with sklearn.
+        return torch.zeros_like(homogeneity)
     return (1 + beta) * homogeneity * completeness / (beta * homogeneity + completeness)
