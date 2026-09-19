@@ -126,6 +126,32 @@ def test_no_and_uniform_weights_class():
     assert no_weights_score == uniform_weights_score
 
 
+@pytest.mark.parametrize("targets", [[["a b c d e", "a b c"]], [["a b c", "a b c d e"]]])
+def test_closest_ref_length_tie(targets):
+    """Test that a tie between reference lengths resolves to the shorter reference like the original SacreBLEU."""
+    preds = ["a b c d"]
+    expected = _reference_sacre_bleu(preds, targets, tokenize="13a", lowercase=False)
+    assert expected == tensor(1.0)
+    assert sacre_bleu_score(preds, targets) == expected
+    assert SacreBLEUScore()(preds, targets) == expected
+
+
+def test_smoothing_with_no_higher_order_matches():
+    """Test that ``smooth=True`` matches the original SacreBLEU ``add-k`` smoothing when only unigrams match."""
+    try:
+        from sacrebleu.metrics import BLEU
+    except ImportError:
+        pytest.skip("test requires sacrebleu package to be installed")
+
+    preds = ["the cat"]
+    targets = [["the dog"]]
+    sacrebleu_fn = BLEU(tokenize="13a", smooth_method="add-k", max_ngram_order=2)
+    expected = sacrebleu_fn.corpus_score(preds, [["the dog"]]).score / 100
+    assert expected == pytest.approx(0.5)
+    assert sacre_bleu_score(preds, targets, n_gram=2, smooth=True).item() == pytest.approx(expected)
+    assert SacreBLEUScore(n_gram=2, smooth=True)(preds, targets).item() == pytest.approx(expected)
+
+
 def test_tokenize_ja_mecab():
     """Test that `ja-mecab` tokenizer works on a Japanese text in alignment with the SacreBleu implementation."""
     sacrebleu = SacreBLEUScore(tokenize="ja-mecab")
