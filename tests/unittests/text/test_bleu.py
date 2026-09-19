@@ -141,3 +141,39 @@ def test_no_and_uniform_weights_class():
     no_weights_score = no_weights_bleu(preds, targets)
     uniform_weights_score = uniform_weights_bleu(preds, targets)
     assert no_weights_score == uniform_weights_score
+
+
+def _reference_bleu_nltk(preds, targets, n_gram, smooth):
+    weights = [1.0 / n_gram] * n_gram
+    smoothing_function = smooth_func if smooth else None
+    return _reference_bleu_metric_nltk(preds, targets, weights=weights, smoothing_function=smoothing_function)
+
+
+@pytest.mark.parametrize("smooth", [False, True])
+@pytest.mark.parametrize("targets", [[["a b c d e", "a b c"]], [["a b c", "a b c d e"]]])
+def test_bleu_closest_ref_length_tie(smooth, targets):
+    """Test that a tie between reference lengths resolves to the shorter reference, as in NLTK and SacreBLEU."""
+    preds = ["a b c d"]
+    expected = _reference_bleu_nltk(preds, targets, n_gram=4, smooth=smooth)
+    assert expected == pytest.approx(1.0)
+    assert bleu_score(preds, targets, smooth=smooth).item() == pytest.approx(expected)
+    assert BLEUScore(smooth=smooth)(preds, targets).item() == pytest.approx(expected)
+
+
+def test_bleu_smoothing_with_no_higher_order_matches():
+    """Test that add-one smoothing gives a positive score when only lower order n-grams match, as in NLTK method2."""
+    preds = ["the cat"]
+    targets = [["the dog"]]
+    expected = _reference_bleu_nltk(preds, targets, n_gram=2, smooth=True)
+    assert expected == pytest.approx(0.5)
+    assert bleu_score(preds, targets, n_gram=2, smooth=True).item() == pytest.approx(expected)
+    assert BLEUScore(n_gram=2, smooth=True)(preds, targets).item() == pytest.approx(expected)
+    assert bleu_score(preds, targets, n_gram=2, smooth=False) == tensor(0.0)
+
+
+def test_bleu_smoothing_with_no_matches_at_all():
+    """Test that the score stays zero with smoothing when not even a unigram matches."""
+    preds = ["the cat"]
+    targets = [["a dog"]]
+    assert bleu_score(preds, targets, n_gram=2, smooth=True) == tensor(0.0)
+    assert BLEUScore(n_gram=2, smooth=True)(preds, targets) == tensor(0.0)
