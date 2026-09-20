@@ -25,7 +25,7 @@ from torch import Tensor, nn
 from torch.nn.functional import normalize as normalize_fn
 from typing_extensions import Literal
 
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2, _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 if _TORCHVISION_AVAILABLE:
     from torchvision import transforms
@@ -41,7 +41,7 @@ _TYPE_REGRESSOR_DATASET = Literal["kadid10k", "koniq10k"]
 _base_url = "https://github.com/miccunifi/ARNIQA/releases/download/weights"
 
 
-if not (_TORCH_GREATER_EQUAL_2_2 and _TORCHVISION_AVAILABLE):
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["arniqa"]
 
 
@@ -55,9 +55,6 @@ class _ARNIQA(nn.Module):
 
     def __init__(self, regressor_dataset: _TYPE_REGRESSOR_DATASET = "koniq10k") -> None:
         super().__init__()
-
-        if not _TORCH_GREATER_EQUAL_2_2:  # ToDo: RuntimeError: "slow_conv2d_cpu" not implemented for 'Half'
-            raise RuntimeError("ARNIQA metric requires PyTorch >= 2.2.0")
 
         if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
