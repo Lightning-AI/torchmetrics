@@ -21,7 +21,6 @@ from torch import Tensor
 
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
-from torchmetrics.utilities.imports import _TORCH_LESS_THAN_2_6
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -109,8 +108,6 @@ class TestUQI(MetricTester):
             metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 
-    # UQI half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(condition=_TORCH_LESS_THAN_2_6, reason="UQI metric does not support cpu + half precision")
     def test_uqi_half_cpu(self, preds, target, multichannel, kernel_size):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(

@@ -15,7 +15,7 @@ ipython >8.0, <10.0
 
 lightning >=1.8.0, <2.6.0
 lightning-utilities ==0.15.3
-pydantic > 1.0.0, < 3.0.0
+pydantic >= 2.13.4, < 3.0.0
 
 # integrations
 -r _integrate.txt
