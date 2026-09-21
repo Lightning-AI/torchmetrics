@@ -18,7 +18,7 @@ import torch
 
 from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 from unittests._helpers import (
     _IS_WINDOWS,
     _TORCH_LESS_THAN_2_1,
@@ -102,7 +102,7 @@ def _reference_infolm_score(preds, target, model_name, information_measure, idf,
     ("preds", "targets"),
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>=4.4")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.xfail(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,

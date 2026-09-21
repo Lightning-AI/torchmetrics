@@ -19,13 +19,13 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
-if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_10:
+if TYPE_CHECKING and _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
-if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
+if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
@@ -220,7 +220,7 @@ def _get_clip_model_and_processor(
     if callable(model_name_or_path):
         return model_name_or_path()
 
-    if _TRANSFORMERS_GREATER_EQUAL_4_10:
+    if _TRANSFORMERS_AVAILABLE:
         from transformers import AutoModel, AutoProcessor
         from transformers import CLIPConfig as _CLIPConfig
         from transformers import CLIPModel as _CLIPModel
@@ -245,7 +245,7 @@ def _get_clip_model_and_processor(
 
     raise ModuleNotFoundError(
         "`clip_score` metric requires `transformers` package be installed."
-        " Either install with `pip install transformers>=4.10.0` or `pip install torchmetrics[multimodal]`."
+        " Either install with `pip install transformers>=4.43.0` or `pip install torchmetrics[multimodal]`."
     )
 
 
