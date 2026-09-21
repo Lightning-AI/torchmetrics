@@ -245,7 +245,7 @@ def _get_clip_model_and_processor(
 
     raise ModuleNotFoundError(
         "`clip_score` metric requires `transformers` package be installed."
-        " Either install with `pip install transformers` or `pip install torchmetrics[multimodal]`."
+        " Either install with `pip install transformers>=4.43.0` or `pip install torchmetrics[multimodal]`."
     )
 
 

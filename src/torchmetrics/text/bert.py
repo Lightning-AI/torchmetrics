@@ -204,7 +204,7 @@ class BERTScore(Metric):
             if not _TRANSFORMERS_AVAILABLE:
                 raise ModuleNotFoundError(
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
-                    " Either install with `pip install transformers` or `pip install torchmetrics[text]`."
+                    " Either install with `pip install transformers>=4.43.0` or `pip install torchmetrics[text]`."
                 )
             from transformers import AutoTokenizer
 

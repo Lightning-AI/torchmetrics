@@ -481,7 +481,7 @@ def bert_score(
         if not _TRANSFORMERS_AVAILABLE:
             raise ModuleNotFoundError(
                 "`bert_score` metric with default models requires `transformers` package be installed."
-                " Either install with `pip install transformers` or `pip install torchmetrics[text]`."
+                " Either install with `pip install transformers>=4.43.0` or `pip install torchmetrics[text]`."
             )
         if model_name_or_path is None:
             rank_zero_warn(
