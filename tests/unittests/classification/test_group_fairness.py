@@ -25,8 +25,8 @@ from scipy.special import expit as sigmoid
 from torch import Tensor
 
 from torchmetrics import Metric
-from torchmetrics.classification.group_fairness import BinaryFairness
-from torchmetrics.functional.classification.group_fairness import binary_fairness
+from torchmetrics.classification.group_fairness import BinaryFairness, BinaryGroupStatRates
+from torchmetrics.functional.classification.group_fairness import binary_fairness, binary_groups_stat_rates
 from unittests import THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import (
@@ -41,6 +41,59 @@ from unittests._helpers.testers import _assert_tensor as _core_assert_tensor
 from unittests.classification._inputs import _group_cases
 
 seed_all(42)
+
+
+def test_binary_group_stat_rates_preserves_group_ids() -> None:
+    """Test that batches with missing groups update the matching group states."""
+    preds = torch.tensor([1, 0])
+    target = torch.tensor([1, 0])
+    groups = torch.tensor([2, 2])
+    expected_group_2 = torch.tensor([0.5, 0.0, 0.5, 0.0])
+
+    functional_result = binary_groups_stat_rates(preds, target, groups, num_groups=3)
+    assert functional_result.keys() == {"group_0", "group_1", "group_2"}
+    assert torch.isnan(functional_result["group_0"]).all()
+    assert torch.isnan(functional_result["group_1"]).all()
+    assert torch.equal(functional_result["group_2"], expected_group_2)
+
+    metric = BinaryGroupStatRates(num_groups=3)
+    metric.update(preds, target, groups)
+    metric_result = metric.compute()
+    assert torch.isnan(metric_result["group_0"]).all()
+    assert torch.isnan(metric_result["group_1"]).all()
+    assert torch.equal(metric_result["group_2"], expected_group_2)
+
+
+def test_binary_group_stat_rates_multidimensional_input() -> None:
+    """Test that additional dimensions are flattened consistently for every input."""
+    preds = torch.tensor([[1, 0], [1, 0]])
+    target = torch.tensor([[1, 0], [1, 0]])
+    groups = torch.tensor([[0, 1], [1, 0]])
+    expected = torch.tensor([0.5, 0.0, 0.5, 0.0])
+
+    functional_result = binary_groups_stat_rates(preds, target, groups, num_groups=2)
+    assert torch.equal(functional_result["group_0"], expected)
+    assert torch.equal(functional_result["group_1"], expected)
+
+    metric = BinaryGroupStatRates(num_groups=2)
+    metric.update(preds, target, groups)
+    metric_result = metric.compute()
+    assert torch.equal(metric_result["group_0"], expected)
+    assert torch.equal(metric_result["group_1"], expected)
+
+
+@pytest.mark.parametrize("groups", [torch.tensor([-1, 0]), torch.tensor([0, 2])])
+def test_binary_group_stat_rates_rejects_invalid_group_ids(groups: Tensor) -> None:
+    """Test that group identifiers must be in the configured range."""
+    preds = torch.tensor([1, 0])
+    target = torch.tensor([1, 0])
+
+    with pytest.raises(ValueError, match="group identifiers"):
+        binary_groups_stat_rates(preds, target, groups, num_groups=2)
+
+    metric = BinaryGroupStatRates(num_groups=2)
+    with pytest.raises(ValueError, match="group identifiers"):
+        metric.update(preds, target, groups)
 
 
 def _reference_fairlearn_binary(preds, target, groups, ignore_index):
