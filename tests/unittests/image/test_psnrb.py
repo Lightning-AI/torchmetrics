@@ -137,3 +137,10 @@ def test_error_on_color_images():
     """Test that appropriate error is raised when color images are passed to PSNRB metric."""
     with pytest.raises(ValueError, match="`psnrb` metric expects grayscale images.*"):
         peak_signal_noise_ratio_with_blocked_effect(torch.rand(1, 3, 16, 16), torch.rand(1, 3, 16, 16), data_range=1.0)
+
+
+@pytest.mark.parametrize("block_size", [0, -1, -5, 1.5, "foo"])
+def test_error_on_invalid_block_size(block_size):
+    """Test that non-positive or non-integer block_size raises ValueError."""
+    with pytest.raises(ValueError, match="block_size"):
+        PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0, block_size=block_size)
