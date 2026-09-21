@@ -309,8 +309,8 @@ def distance_transform(
     """
     if not isinstance(x, Tensor):
         raise ValueError(f"Expected argument `x` to be of type `torch.Tensor` but got `{type(x)}`.")
-    if x.ndim != 2:
-        raise ValueError(f"Expected argument `x` to be of rank 2 but got rank `{x.ndim}`.")
+    if x.ndim < 2:
+        raise ValueError(f"Expected argument `x` to be of rank 2 or higher but got rank `{x.ndim}`.")
     if sampling is not None and not isinstance(sampling, list):
         raise ValueError(
             f"Expected argument `sampling` to either be `None` or of type `list` but got `{type(sampling)}`."
@@ -322,13 +322,14 @@ def distance_transform(
     if engine not in ["pytorch", "scipy"]:
         raise ValueError(f"Expected argument `engine` to be one of `['pytorch', 'scipy']` but got `{engine}`.")
 
-    if sampling is None:
-        sampling = [1, 1]
-    else:
-        if len(sampling) != 2:
+    if engine == "pytorch":
+        if x.ndim != 2:
+            raise ValueError("The `pytorch` engine currently only supports 2D inputs.")
+        if sampling is None:
+            sampling = [1, 1]
+        elif len(sampling) != 2:
             raise ValueError(f"Expected argument `sampling` to have length 2 but got length `{len(sampling)}`.")
 
-    if engine == "pytorch":
         x = x.float()
         # calculate distance from every foreground pixel to every background pixel
         i0, j0 = torch.where(x == 0)
@@ -355,18 +356,22 @@ def distance_transform(
         raise ValueError(
             "The `scipy` engine requires `scipy` to be installed. Either install `scipy` or use the `pytorch` engine."
         )
+    if sampling is None:
+        sampling = [1 for _ in range(x.ndim)]
+    elif len(sampling) != x.ndim:
+        raise ValueError(f"Expected argument `sampling` to have length {x.ndim} but got length `{len(sampling)}`.")
     from scipy import ndimage
 
     if metric == "euclidean":
-        return ndimage.distance_transform_edt(x.cpu().numpy(), sampling)
-    return ndimage.distance_transform_cdt(x.cpu().numpy(), sampling, metric=metric)
+        return torch.as_tensor(ndimage.distance_transform_edt(x.cpu().numpy(), sampling), device=x.device)
+    return torch.as_tensor(ndimage.distance_transform_cdt(x.cpu().numpy(), sampling, metric=metric), device=x.device)
 
 
 def mask_edges(
     preds: Tensor,
     target: Tensor,
     crop: bool = True,
-    spacing: Optional[Union[tuple[int, int], tuple[int, int, int]]] = None,
+    spacing: Optional[Union[tuple[float, float], tuple[float, float, float]]] = None,
 ) -> Union[tuple[Tensor, Tensor], tuple[Tensor, Tensor, Tensor, Tensor]]:
     """Get the edges of binary segmentation masks.
 
@@ -464,9 +469,9 @@ def surface_distance(
         dis = torch.inf * torch.ones_like(target)
     else:
         if not torch.any(preds):
-            dis = torch.inf * torch.ones_like(preds)
-            return dis[target]
-        dis = distance_transform(~target, sampling=spacing, metric=distance_metric)
+            return torch.empty(0, device=preds.device, dtype=torch.float32)
+        engine: Literal["pytorch", "scipy"] = "pytorch" if preds.ndim == 2 else "scipy"
+        dis = distance_transform(~target, sampling=spacing, metric=distance_metric, engine=engine)
     return dis[preds]
 
 
@@ -504,7 +509,7 @@ def edge_surface_distance(
 
 @functools.lru_cache
 def get_neighbour_tables(
-    spacing: Union[tuple[int, int], tuple[int, int, int]], device: Optional[torch.device] = None
+    spacing: Union[tuple[float, float], tuple[float, float, float]], device: Optional[torch.device] = None
 ) -> tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the contour length or surface area of the corresponding contour.
 
@@ -524,7 +529,7 @@ def get_neighbour_tables(
     raise ValueError("The spacing must be a tuple of length 2 or 3.")
 
 
-def table_contour_length(spacing: tuple[int, int], device: Optional[torch.device] = None) -> tuple[Tensor, Tensor]:
+def table_contour_length(spacing: tuple[float, float], device: Optional[torch.device] = None) -> tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the contour length of the corresponding contour.
 
     Adopted from:
@@ -568,7 +573,9 @@ def table_contour_length(spacing: tuple[int, int], device: Optional[torch.device
 
 
 @functools.lru_cache
-def table_surface_area(spacing: tuple[int, int, int], device: Optional[torch.device] = None) -> tuple[Tensor, Tensor]:
+def table_surface_area(
+    spacing: tuple[float, float, float], device: Optional[torch.device] = None
+) -> tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the surface area of the corresponding surface.
 
     Adopted from:
