@@ -57,6 +57,13 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
       therefore only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the
       positive class.
 
+    .. note::
+       The probabilities-or-logits check above is applied independently on every ``update()`` call, i.e. per batch
+       rather than across the full accumulated dataset. If you call ``update()`` with small batches, a batch whose
+       predictions happen to all fall inside ``[0, 1]`` will **not** have sigmoid applied, even if other batches in
+       the same run were treated as logits. To avoid inconsistent results, either pass probabilities (post-sigmoid)
+       consistently across all batches, or apply ``torch.sigmoid`` yourself before calling ``update()``.
+
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``b_auroc`` (:class:`~torch.Tensor`): A single scalar with the auroc score.
