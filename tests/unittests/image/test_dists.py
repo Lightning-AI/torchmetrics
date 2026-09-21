@@ -13,6 +13,7 @@
 # limitations under the License.
 import os
 import shutil
+import subprocess
 import sys
 from functools import partial
 from typing import NamedTuple
@@ -23,6 +24,7 @@ from torch import Tensor
 
 from torchmetrics.functional.image.dists import _PATH_WEIGHT_DISTS, deep_image_structure_and_texture_similarity
 from torchmetrics.image.dists import DeepImageStructureAndTextureSimilarity
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
@@ -104,3 +106,23 @@ class TestDISTS(MetricTester):
         self.run_precision_test_gpu(
             preds=inputs.img1, target=inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity
         )
+
+
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
+def test_import_does_not_eagerly_load_torchvision():
+    """Importing the DISTS modules must not eagerly import ``torchvision`` (regression for #3314).
+
+    A module-level ``torchvision`` import triggers a ``partially initialized module 'torchvision'`` circular
+    import in some ``torchvision`` versions. ``torchvision`` must therefore be imported lazily, only when the
+    metric is actually instantiated. Run in a fresh interpreter so previously imported modules do not hide a
+    regression.
+
+    """
+    script = (
+        "import sys\n"
+        "import torchmetrics.functional.image.dists\n"
+        "import torchmetrics.image.dists\n"
+        "assert 'torchvision' not in sys.modules, "
+        "'torchvision imported at module load: %s' % sorted(m for m in sys.modules if 'torchvision' in m)\n"
+    )
+    subprocess.run([sys.executable, "-c", script], check=True)  # noqa: S603
