@@ -29,6 +29,23 @@ seed_all(42)
 ATOL = 1e-5
 
 
+@pytest.mark.parametrize("average_method", ["min", "arithmetic", "geometric", "max"])
+@pytest.mark.parametrize(("preds", "target"), [([], []), ([0], [7]), ([0, 1, 2], [7, -3, 5])])
+@pytest.mark.parametrize("functional", [True, False])
+def test_adjusted_mutual_info_score_singleton_partitions(preds, target, average_method, functional):
+    """Empty and relabeled singleton partitions agree perfectly, matching sklearn."""
+    expected = sklearn_ami(preds, target, average_method=average_method)
+    preds, target = torch.tensor(preds, dtype=torch.long), torch.tensor(target, dtype=torch.long)
+    if functional:
+        result = adjusted_mutual_info_score(preds, target, average_method)
+    else:
+        metric = AdjustedMutualInfoScore(average_method=average_method)
+        metric.update(preds, target)
+        result = metric.compute()
+    assert expected == 1.0
+    torch.testing.assert_close(result, torch.tensor(expected, dtype=result.dtype, device=preds.device))
+
+
 @pytest.mark.parametrize(
     ("preds", "target"),
     [

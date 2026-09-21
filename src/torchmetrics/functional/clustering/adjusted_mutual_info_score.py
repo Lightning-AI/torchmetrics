@@ -47,6 +47,9 @@ def adjusted_mutual_info_score(
     """
     _validate_average_method_arg(average_method)
     contingency = _mutual_info_score_update(preds, target)
+    # Empty partitions and partitions with one cluster per sample agree up to relabeling.
+    if contingency.shape[0] == contingency.shape[1] == target.numel():
+        return tensor(1.0, device=preds.device)
     mutual_info = _mutual_info_score_compute(contingency)
     expected_mutual_info = expected_mutual_info_score(contingency, target.numel())
     normalizer = calculate_generalized_mean(
