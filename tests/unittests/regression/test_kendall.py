@@ -22,6 +22,7 @@ from scipy.stats import kendalltau
 
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.regression.kendall import KendallRankCorrCoef
+from torchmetrics.utilities.imports import _SCIPY_GREATER_EQUAL_1_8
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -47,7 +48,9 @@ _multi_inputs3 = _Input(
 
 
 def _reference_scipy_kendall(preds, target, alternative, variant):
-    metric_args = {"alternative": alternative or "two-sided"}  # scipy cannot accept `None`
+    metric_args = {}
+    if _SCIPY_GREATER_EQUAL_1_8:
+        metric_args = {"alternative": alternative or "two-sided"}  # scipy cannot accept `None`
     if preds.ndim == 2:
         out = [
             kendalltau(p.numpy(), t.numpy(), method="asymptotic", variant=variant, **metric_args)
