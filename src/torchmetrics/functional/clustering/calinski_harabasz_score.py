@@ -41,6 +41,11 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
     """
     _validate_intrinsic_cluster_data(data, labels)
 
+    # the squared accumulations below overflow/lose precision in half, so promote those to float32;
+    # float32/float64 are kept as-is
+    if data.dtype not in (torch.float32, torch.float64):
+        data = data.to(torch.float32)
+
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
     num_labels = len(unique_labels)
@@ -48,8 +53,9 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
     _validate_intrinsic_labels_to_samples(num_labels, num_samples)
 
     mean = data.mean(dim=0)
-    between_cluster_dispersion = torch.tensor(0.0, device=data.device)
-    within_cluster_dispersion = torch.tensor(0.0, device=data.device)
+    # allocated in the input dtype so a float64 input is not silently accumulated at float32 precision
+    between_cluster_dispersion = torch.tensor(0.0, device=data.device, dtype=data.dtype)
+    within_cluster_dispersion = torch.tensor(0.0, device=data.device, dtype=data.dtype)
     for k in range(num_labels):
         cluster_k = data[labels == k, :]
         mean_k = cluster_k.mean(dim=0)
@@ -57,5 +63,5 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
         within_cluster_dispersion += ((cluster_k - mean_k) ** 2).sum()
 
     if within_cluster_dispersion == 0:
-        return torch.tensor(1.0, device=data.device, dtype=torch.float32)
+        return torch.tensor(1.0, device=data.device, dtype=data.dtype)
     return between_cluster_dispersion * (num_samples - num_labels) / (within_cluster_dispersion * (num_labels - 1.0))
