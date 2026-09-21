@@ -32,6 +32,7 @@ from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
     _TORCHVISION_AVAILABLE,
+    _ULTRAFAST_COCO_AVAILABLE,
 )
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -135,14 +136,18 @@ class MeanAveragePrecision(Metric):
         **Caution:** If the initialization parameters are changed, dictionary keys for mAR can change as well.
 
     .. important::
-        This metric supports, at the moment, two different backends for the evaluation. The default backend is
+        This metric supports, at the moment, three different backends for the evaluation. The default backend is
         ``"pycocotools"``, which either require the official `pycocotools`_ implementation or this
         `fork of pycocotools`_ to be installed. We recommend using the fork as it is better maintained and easily
         available to install via pip: `pip install pycocotools`. It is also this fork that will be installed if you
         install ``torchmetrics[detection]``. The second backend is the `faster-coco-eval`_ implementation, which can be
         installed with ``pip install faster-coco-eval``. This implementation is a maintained open-source implementation
         that is faster and corrects certain corner cases that the official implementation has. Our own testing has shown
-        that the results are identical to the official implementation. Regardless of the backend we also require you to
+        that the results are identical to the official implementation. The third backend, ``"ultrafast"``, uses
+        `ultrafast-pycocotools`_ (version 0.1.11 or newer), a Rust implementation of COCO evaluation. Install it with
+        ``pip install torchmetrics[ultrafast]`` and select ``backend="ultrafast"``. Each metric loads its selected
+        backend without changing process-wide imports. It preserves the pycocotools summary semantics for custom
+        maximum detection thresholds. Regardless of the backend we also require you to
         have `torchvision` version 0.8.0 or newer installed. Please install with ``pip install torchvision>=0.8`` or
         ``pip install torchmetrics[detection]``.
 
@@ -168,7 +173,7 @@ class MeanAveragePrecision(Metric):
             with step ``0.01``. Else provide a list of floats.
         max_detection_thresholds:
             Thresholds on max detections per image. If set to `None` will use thresholds ``[1, 10, 100]``.
-            Else, please provide a list of ints of length 3, which is the only supported length by both backends.
+            Else, please provide a list of ints of length 3, which is the supported length for this metric.
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact that scales linearly with
             the number of classes in the dataset.
@@ -193,13 +198,14 @@ class MeanAveragePrecision(Metric):
         average:
             Method for averaging scores over labels. Choose between "``"macro"`` and ``"micro"``.
         backend:
-            Backend to use for the evaluation. Choose between ``"pycocotools"`` and ``"faster_coco_eval"``.
+            Backend to use for the evaluation. Choose between ``"pycocotools"``, ``"faster_coco_eval"``
+            and ``"ultrafast"``.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
-            If ``pycocotools`` is not installed
+            If none of the supported COCO backends is installed
         ModuleNotFoundError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0
         ValueError:
@@ -351,16 +357,15 @@ class MeanAveragePrecision(Metric):
         class_metrics: bool = False,
         extended_summary: bool = False,
         average: Literal["macro", "micro"] = "macro",
-        backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
+        backend: Literal["pycocotools", "faster_coco_eval", "ultrafast"] = "pycocotools",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        if not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE):
+        if not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE or _ULTRAFAST_COCO_AVAILABLE):
             raise ModuleNotFoundError(
-                "`MAP` metric requires that `pycocotools` or `faster-coco-eval` installed."
-                " Please install with `pip install pycocotools` or `pip install faster-coco-eval` or"
-                " `pip install torchmetrics[detection]`."
+                "`MAP` metric requires `pycocotools`, `faster-coco-eval` or `ultrafast-pycocotools>=0.1.11`."
+                " Please install with `pip install torchmetrics[detection]` or `pip install torchmetrics[ultrafast]`."
             )
         if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
@@ -474,7 +479,7 @@ class MeanAveragePrecision(Metric):
         coco_preds: str,
         coco_target: str,
         iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = ("bbox",),
-        backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
+        backend: Literal["pycocotools", "faster_coco_eval", "ultrafast"] = "pycocotools",
     ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of this metric.
 
@@ -485,7 +490,7 @@ class MeanAveragePrecision(Metric):
             coco_preds: Path to the json file containing the predictions in coco format
             coco_target: Path to the json file containing the targets in coco format
             iou_type: Type of input, either `bbox` for bounding boxes or `segm` for segmentation masks
-            backend: Backend to use for the conversion. Either `pycocotools` or `faster_coco_eval`.
+            backend: Backend to use for the conversion. One of `pycocotools`, `faster_coco_eval` or `ultrafast`.
 
         Returns:
             A tuple containing the predictions and targets in the input format of this metric. Each element of the
