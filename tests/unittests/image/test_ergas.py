@@ -20,7 +20,6 @@ from torch import Tensor
 
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -104,11 +103,6 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
             metric_args={"ratio": ratio, "reduction": reduction},
         )
 
-    # ERGAS half + cpu does not work due to missing support in torch.log
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_2_1,
-        reason="Pytoch below 2.1 does not support cpu + half precision used in ERGAS metric",
-    )
     def test_ergas_half_cpu(self, reduction, preds, target, ratio):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(

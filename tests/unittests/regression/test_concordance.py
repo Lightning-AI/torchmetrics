@@ -20,7 +20,6 @@ from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.regression.concordance import ConcordanceCorrCoef
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -107,11 +106,6 @@ class TestConcordanceCorrCoef(MetricTester):
             metric_functional=concordance_corrcoef,
         )
 
-    # Spearman half + cpu does not work due to missing support in torch.arange
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_2_1,
-        reason="Pytoch below 2.1 does not support cpu + half precision used in Concordance metric",
-    )
     def test_concordance_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
