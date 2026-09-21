@@ -390,3 +390,52 @@ def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
     """Test that error is raised on wrong extra arguments."""
     with pytest.raises(ValueError, match=error_msg):
         metric_class(**arguments)
+
+
+@pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16, torch.float32, torch.float64])
+@pytest.mark.parametrize(
+    "device",
+    ["cpu", pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA"))],
+)
+def test_smape_extreme_finite_values(dtype, device):
+    """Finite inputs must retain the bounded SMAPE even when their magnitudes overflow on addition."""
+    largest = torch.finfo(dtype).max
+    preds = torch.tensor([largest, -largest, largest], dtype=dtype, device=device)
+    target = torch.tensor([-largest, largest, largest / 2], dtype=dtype, device=device)
+    # The three exact errors are 2, 2, and 2/3, independent of the input scale.
+    expected = torch.tensor(14 / 9, dtype=dtype, device=device)
+    torch.testing.assert_close(symmetric_mean_absolute_percentage_error(preds, target), expected)
+
+    metric = SymmetricMeanAbsolutePercentageError().to(device).set_dtype(dtype)
+    metric.update(preds[:1], target[:1])
+    metric.update(preds[1:], target[1:])
+    torch.testing.assert_close(metric.compute(), expected)
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_smape_smallest_difference(dtype):
+    """Avoid losing a subnormal difference while guarding large inputs against overflow."""
+    zero = torch.zeros(1, dtype=dtype)
+    smallest = torch.nextafter(zero, torch.ones_like(zero))
+    expected = (2 * (smallest / 1.17e-6)).squeeze()
+    actual = symmetric_mean_absolute_percentage_error(smallest, zero)
+    torch.testing.assert_close(actual, expected, atol=0, rtol=0)
+    assert actual > 0
+
+
+@pytest.mark.parametrize(
+    "device",
+    ["cpu", pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA"))],
+)
+def test_smape_extreme_finite_gradients(device):
+    """Overflow protection must also preserve the small, finite derivatives."""
+    largest = torch.finfo(torch.float64).max
+    preds = torch.tensor([largest], dtype=torch.float64, device=device, requires_grad=True)
+    target = torch.tensor([largest / 2], dtype=torch.float64, device=device, requires_grad=True)
+    result = symmetric_mean_absolute_percentage_error(preds, target)
+    preds_grad, target_grad = torch.autograd.grad(result, (preds, target))
+    # For positive p > t, the derivatives are 4t/(p+t)^2 and -4p/(p+t)^2.
+    expected_preds_grad = torch.full_like(preds, (8 / 9) / largest)
+    expected_target_grad = torch.full_like(target, (-16 / 9) / largest)
+    torch.testing.assert_close(preds_grad, expected_preds_grad, atol=0, rtol=1e-12)
+    torch.testing.assert_close(target_grad, expected_target_grad, atol=0, rtol=1e-12)
