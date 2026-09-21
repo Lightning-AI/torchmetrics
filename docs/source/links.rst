@@ -80,6 +80,7 @@
 .. _chrF score: https://aclanthology.org/W15-3049
 .. _chrF++ score: https://aclanthology.org/W17-4770
 .. _TER: https://aclanthology.org/2006.amta-papers.25
+.. _METEOR: https://aclanthology.org/W07-0734
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359
 .. _MultiScaleSSIM: https://ieeexplore.ieee.org/abstract/document/1292216
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/abstract/document/995823
