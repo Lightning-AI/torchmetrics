@@ -23,7 +23,7 @@ from torch_fidelity.utils import batch_interp
 from torchmetrics.functional.image.lpips import _LPIPS
 from torchmetrics.functional.image.perceptual_path_length import _interpolate, perceptual_path_length
 from torchmetrics.image.perceptual_path_length import PerceptualPathLength
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCHVISION_AVAILABLE
 from unittests._helpers import seed_all, skip_on_running_out_of_memory
 
 seed_all(42)
@@ -172,6 +172,38 @@ def test_raises_error_on_wrong_generator(generator, errortype, match):
     ppl = PerceptualPathLength(conditional=True)
     with pytest.raises(errortype, match=match):
         ppl.update(generator=generator)
+
+
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="metric requires torchvision")
+def test_batch_size_is_forwarded():
+    """The class metric must use the ``batch_size`` it was given, not the functional default."""
+
+    class _CountingSimNet(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.batch_sizes = []
+
+        def forward(self, img1, img2):
+            self.batch_sizes.append(img1.shape[0])
+            # mirror LPIPS: (N, 1, 1, 1) on the same device/dtype as the input
+            return torch.rand(img1.shape[0], 1, 1, 1, device=img1.device, dtype=img1.dtype)
+
+    class _TinyGenerator(nn.Module):
+        num_classes = 0
+
+        def sample(self, num_samples):
+            return torch.randn(num_samples, 8)
+
+        def forward(self, z):
+            # the functional documents generator output as scaled to [0, 255]
+            return 255 * torch.rand(z.shape[0], 3, 8, 8)
+
+    sim_net = _CountingSimNet()
+    metric = PerceptualPathLength(num_samples=64, batch_size=32, sim_net=sim_net)
+    metric.update(_TinyGenerator())
+    metric.compute()
+
+    assert max(sim_net.batch_sizes) == 32
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
