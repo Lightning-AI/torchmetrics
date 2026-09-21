@@ -141,3 +141,14 @@ class TestHausdorffDistance(MetricTester):
 def test_hausdorff_distance_raises_error():
     """Check that metric raises appropriate errors."""
     preds, target = _inputs1
+
+
+def test_hausdorff_distance_non_square_input():
+    """Check that functional Hausdorff distance works for height > width inputs."""
+    preds = torch.randint(0, 2, (1, 1, 11, 10))
+    target = torch.randint(0, 2, (1, 1, 11, 10))
+
+    result = hausdorff_distance(preds, target, num_classes=1)
+    reference = monai_hausdorff_distance(preds, target)
+
+    assert torch.allclose(result, reference.to(result))
