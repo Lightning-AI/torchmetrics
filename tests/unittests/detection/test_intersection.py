@@ -376,6 +376,39 @@ class TestIntersectionMetrics(MetricTester):
         for val in res.values():
             assert val == torch.tensor(0.0)
 
+    @pytest.mark.parametrize("respect_labels", [True, False])
+    @pytest.mark.parametrize("empty_side", ["preds", "target"])
+    @pytest.mark.parametrize("class_metrics", [True, False])
+    def test_empty_inputs_are_weighted_once(
+        self, class_metric, functional_metric, reference_metric, respect_labels, empty_side, class_metrics
+    ):
+        """Check that each unmatched box contributes one zero score."""
+        perfect = {
+            "boxes": torch.tensor([[0.0, 0.0, 1.0, 1.0]]),
+            "labels": torch.tensor([0]),
+        }
+        empty = {
+            "boxes": torch.empty((0, 4)),
+            "labels": torch.empty((0,), dtype=torch.long),
+        }
+        two_boxes = {
+            "boxes": torch.tensor([[0.0, 0.0, 1.0, 1.0], [2.0, 2.0, 3.0, 3.0]]),
+            "labels": torch.tensor([0, 1]),
+        }
+
+        if empty_side == "preds":
+            preds, target = [perfect, empty], [perfect, two_boxes]
+        else:
+            preds, target = [perfect, two_boxes], [perfect, empty]
+
+        metric = class_metric(respect_labels=respect_labels, class_metrics=class_metrics)
+        result = metric(preds, target)
+        torch.testing.assert_close(result[metric._iou_type], torch.tensor(1 / 3))
+        if class_metrics:
+            assert set(result) == {metric._iou_type, f"{metric._iou_type}/cl_0", f"{metric._iou_type}/cl_1"}
+            torch.testing.assert_close(result[f"{metric._iou_type}/cl_0"], torch.tensor(0.5))
+            torch.testing.assert_close(result[f"{metric._iou_type}/cl_1"], torch.tensor(0.0))
+
     def test_empty_preds_and_target(self, class_metric, functional_metric, reference_metric):
         """Check that for either empty preds and targets that the metric returns 0 in these cases before averaging."""
         x = [
