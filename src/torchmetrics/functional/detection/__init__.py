@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from torchmetrics.functional.detection.map_3d import mean_average_precision_3d
 from torchmetrics.functional.detection.panoptic_qualities import modified_panoptic_quality, panoptic_quality
 from torchmetrics.utilities.imports import (
     _TORCHVISION_AVAILABLE,
 )
 
-__all__ = ["modified_panoptic_quality", "panoptic_quality"]
+__all__ = ["mean_average_precision_3d", "modified_panoptic_quality", "panoptic_quality"]
 
 if _TORCHVISION_AVAILABLE:
     from torchmetrics.functional.detection.ciou import complete_intersection_over_union

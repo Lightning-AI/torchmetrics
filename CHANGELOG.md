@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `MeanAveragePrecision3D` and `mean_average_precision_3d` for computing mAP/mAR on axis-aligned 3D bounding boxes ([#3398](https://github.com/Lightning-AI/torchmetrics/issues/3398))
 
 
 ### Changed
