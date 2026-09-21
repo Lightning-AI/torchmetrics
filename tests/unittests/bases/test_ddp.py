@@ -343,7 +343,7 @@ def test_sync_with_unequal_size_lists():
 
 
 class DummyNoneReductionListMetric(Metric):
-    """A metric with a ``dist_reduce_fx=None`` list state, mirroring states like MeanAveragePrecision's."""
+    """DummyNoneReductionListMetric with a list state that is not reduced, as used by e.g. detection metrics."""
 
     full_state_update: Optional[bool] = True
 
@@ -356,25 +356,25 @@ class DummyNoneReductionListMetric(Metric):
         self.x.append(x)
 
     def compute(self):
-        """Sum all elements across all accumulated entries."""
+        """Compute value."""
         return torch.stack([v.float().sum() for v in self.x]).sum() if self.x else tensor(0.0)
 
 
 def _test_sync_none_reduction_with_equal_size_lists(rank):
-    """Every rank calling update() the same number of times must sync normally, without raising."""
+    """Equal update() counts across ranks must sync as usual."""
     dummy = DummyNoneReductionListMetric(sync_on_compute=True)
     dummy.update(torch.ones(2, 3))
     assert dummy.compute() == tensor(12.0)
 
 
 def _test_sync_none_reduction_with_all_empty_lists(rank):
-    """No rank has any data: lengths already match (all zero), so this must not raise."""
+    """No rank holding any data is still an equal count, so it must not raise."""
     dummy = DummyNoneReductionListMetric(sync_on_compute=True)
     assert dummy.compute() == tensor(0.0)
 
 
 def _test_sync_none_reduction_with_unequal_size_lists(rank):
-    """Regression test for #3336: uneven update() counts across ranks must raise, not deadlock."""
+    """Uneven update() counts across ranks must raise instead of deadlocking."""
     dummy = DummyNoneReductionListMetric(sync_on_compute=True)
     if rank == 0:
         dummy.update(torch.ones(2, 3))
@@ -395,5 +395,5 @@ def _test_sync_none_reduction_with_unequal_size_lists(rank):
     ],
 )
 def test_sync_none_reduction_list_length_mismatch(test_func):
-    """Test that dist_reduce_fx=None list states sync when balanced, and raise instead of deadlocking when not."""
+    """Test that syncing states with dist_reduce_fx=None raises on unequal list lengths instead of hanging."""
     pytest.pool.map(test_func, range(NUM_PROCESSES))

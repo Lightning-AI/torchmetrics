@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed a deadlock in `Metric._sync_dist` for `dist_reduce_fx=None` list states when ranks call `update()` a different number of times; this now raises an informative error instead ([#3503](https://github.com/Lightning-AI/torchmetrics/pull/3503))
+- Fixed `Metric` syncing deadlocking for `dist_reduce_fx=None` list states when ranks hold a different number of entries, which now raises an error instead ([#3503](https://github.com/Lightning-AI/torchmetrics/pull/3503))
 
 
 - Fixed `top_k` validation in multiclass classification metrics to reject negative integers and non-integer values ([#3406](https://github.com/Lightning-AI/torchmetrics/pull/3406))
