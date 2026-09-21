@@ -123,3 +123,12 @@ def test_pearsons_contingency_coefficient_matrix(pearson_matrix_input):
     tm_score = pearsons_contingency_coefficient_matrix(pearson_matrix_input)
     reference_score = _reference_pd_pearsons_t_matrix(pearson_matrix_input)
     assert torch.allclose(tm_score, reference_score)
+
+
+def test_pearsons_nonzero_labels():
+    """Test that pearsons_contingency_coefficient works with non-zero-based category labels."""
+    preds = torch.tensor([5, 6, 5, 6, 5, 6, 5, 6])
+    target = torch.tensor([5, 6, 5, 5, 6, 6, 5, 6])
+    res = pearsons_contingency_coefficient(preds, target)
+    ref = _reference_pd_pearsons_t(preds, target)
+    assert torch.allclose(res, ref)
