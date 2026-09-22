@@ -162,7 +162,7 @@ class BinaryConfusionMatrix(Metric):
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
             cmap: matplotlib colormap to use for the confusion matrix
-                https://matplotlib.org/stable/users/explain/colors/colormaps.html
+                https://matplotlib.org/3.10.3/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object
@@ -306,7 +306,7 @@ class MulticlassConfusionMatrix(Metric):
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
             cmap: matplotlib colormap to use for the confusion matrix
-                https://matplotlib.org/stable/users/explain/colors/colormaps.html
+                https://matplotlib.org/3.10.3/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object
@@ -453,7 +453,7 @@ class MultilabelConfusionMatrix(Metric):
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
             cmap: matplotlib colormap to use for the confusion matrix
-                https://matplotlib.org/stable/users/explain/colors/colormaps.html
+                https://matplotlib.org/3.10.3/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object

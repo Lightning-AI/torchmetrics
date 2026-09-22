@@ -237,7 +237,7 @@ def plot_confusion_matrix(
         add_text: if text should be added to each cell with the given value
         labels: labels to add the x- and y-axis
         cmap: matplotlib colormap to use for the confusion matrix
-            https://matplotlib.org/stable/users/explain/colors/colormaps.html
+            https://matplotlib.org/3.10.3/users/explain/colors/colormaps.html
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
