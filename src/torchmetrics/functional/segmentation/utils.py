@@ -126,14 +126,15 @@ def check_if_binarized(x: Tensor) -> None:
 
 
 def _unfold(x: Tensor, kernel_size: tuple[int, ...]) -> Tensor:
-    """Unfold the input tensor to a matrix. Function supports 3d images e.g. (B, C, D, H, W).
+    """Unfold the input tensor to a matrix.
 
-    Inspired by:
-    https://github.com/f-dangel/unfoldNd/blob/main/unfoldNd/unfold.py
+    Function supports 3d images e.g. (B, C, D, H, W).
+        Inspired by:
+        https://github.com/f-dangel/unfoldNd/blob/main/unfoldNd/unfold.py
 
     Args:
-        x: Input tensor to be unfolded.
-        kernel_size: The size of the sliding blocks in each dimension.
+            x: Input tensor to be unfolded.
+            kernel_size: The size of the sliding blocks in each dimension.
 
     """
     batch_size, channels = x.shape[:2]

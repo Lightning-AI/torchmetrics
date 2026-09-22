@@ -30,7 +30,7 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
     def __init__(
         self,
         ratio: float = 4,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ErrorRelativeGlobalDimensionlessSynthesis", "image")
@@ -54,12 +54,12 @@ class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarity
         gaussian_kernel: bool = True,
         kernel_size: Union[int, Sequence[int]] = 11,
         sigma: Union[float, Sequence[float]] = 1.5,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
-        normalize: Literal["relu", "simple", None] = "relu",
+        normalize: Optional[Literal["relu", "simple"]] = "relu",
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("MultiScaleStructuralSimilarityIndexMeasure", "image")
@@ -93,7 +93,7 @@ class _PeakSignalNoiseRatio(PeakSignalNoiseRatio):
         self,
         data_range: Union[float, tuple[float, float]] = 3.0,
         base: float = 10.0,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         dim: Optional[Union[int, tuple[int, ...]]] = None,
         **kwargs: Any,
     ) -> None:
@@ -200,7 +200,7 @@ class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
         gaussian_kernel: bool = True,
         sigma: Union[float, Sequence[float]] = 1.5,
         kernel_size: Union[int, Sequence[int]] = 11,
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
@@ -234,7 +234,7 @@ class _TotalVariation(TotalVariation):
 
     """
 
-    def __init__(self, reduction: Literal["mean", "sum", "none", None] = "sum", **kwargs: Any) -> None:
+    def __init__(self, reduction: Optional[Literal["mean", "sum", "none"]] = "sum", **kwargs: Any) -> None:
         _deprecated_root_import_class("TotalVariation", "image")
         super().__init__(reduction=reduction, **kwargs)
 
@@ -255,7 +255,7 @@ class _UniversalImageQualityIndex(UniversalImageQualityIndex):
         self,
         kernel_size: Sequence[int] = (11, 11),
         sigma: Sequence[float] = (1.5, 1.5),
-        reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("UniversalImageQualityIndex", "image")

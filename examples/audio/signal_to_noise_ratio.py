@@ -1,9 +1,12 @@
-"""Signal-to-Noise Ratio
-===============================
+"""Signal-to-Noise Ratio ===============================
 
-Imagine developing a song recognition application. The software's goal is to recognize a song even when it's played in a noisy environment, similar to Shazam. To achieve this, you want to enhance the audio quality by reducing the noise and evaluating the improvement using the Signal-to-Noise Ratio (SNR).
+Imagine developing a song recognition application. The software's goal is to recognize a song even when it's played in a
+noisy environment, similar to Shazam. To achieve this, you want to enhance the audio quality by reducing the noise and
+evaluating the improvement using the Signal-to-Noise Ratio (SNR).
 
-In this example, we will demonstrate how to generate a clean signal, add varying levels of noise to simulate the noisy recording, use FFT for noise reduction, and then evaluate the quality of the reconstructed audio using SNR.
+In this example, we will demonstrate how to generate a clean signal, add varying levels of noise to simulate the noisy
+recording, use FFT for noise reduction, and then evaluate the quality of the reconstructed audio using SNR.
+
 """
 
 # %%

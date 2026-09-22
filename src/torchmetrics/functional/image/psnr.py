@@ -25,7 +25,7 @@ def _psnr_compute(
     num_obs: Tensor,
     data_range: Tensor,
     base: float = 10.0,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Compute peak signal-to-noise ratio.
 
@@ -97,7 +97,7 @@ def peak_signal_noise_ratio(
     target: Tensor,
     data_range: Union[float, tuple[float, float]],
     base: float = 10.0,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     dim: Optional[Union[int, tuple[int, ...]]] = None,
 ) -> Tensor:
     """Compute the peak signal-to-noise ratio.

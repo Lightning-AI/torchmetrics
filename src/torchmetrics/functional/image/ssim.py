@@ -188,7 +188,7 @@ def _ssim_update(
 
 def _ssim_compute(
     similarities: Tensor,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Apply the specified reduction to pre-computed structural similarity.
 
@@ -213,7 +213,7 @@ def structural_similarity_index_measure(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
@@ -427,7 +427,7 @@ def _multiscale_ssim_update(
 
 def _multiscale_ssim_compute(
     mcs_per_image: Tensor,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Apply the specified reduction to pre-computed multi-scale structural similarity.
 
@@ -452,7 +452,7 @@ def multiscale_structural_similarity_index_measure(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
     data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
