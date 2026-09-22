@@ -20,14 +20,14 @@ import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
 
-from torchmetrics.image.fid import FrechetInceptionDistance, NoTrainInceptionV3
+from torchmetrics.image.fid import FrechetInceptionDistance, NoTrainDinoV2, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 from unittests._helpers import seed_all
 
 seed_all(42)
 
 
-def test_no_train_network_missing_torch_fidelity(monkeypatch):
+def test_no_train_inception_network_missing_torch_fidelity(monkeypatch):
     """Assert that NoTrainInceptionV3 raises an error if torch-fidelity is not installed."""
     # mock/fake the import of torch-fidelity
     monkeypatch.setattr("torchmetrics.image.fid._TORCH_FIDELITY_AVAILABLE", False)
@@ -35,6 +35,14 @@ def test_no_train_network_missing_torch_fidelity(monkeypatch):
         ModuleNotFoundError, match="NoTrainInceptionV3 module requires that `Torch-fidelity` is installed.*"
     ):
         NoTrainInceptionV3(name="inception-v3-compat", features_list=["2048"])
+
+
+def test_no_train_dinov2_network_missing_torch_fidelity(monkeypatch):
+    """Assert that NoTrainDinoV2 raises an error if torch-fidelity is not installed."""
+    # mock/fake the import of torch-fidelity
+    monkeypatch.setattr("torchmetrics.image.fid._TORCH_FIDELITY_AVAILABLE", False)
+    with pytest.raises(ModuleNotFoundError, match="NoTrainDinoV2 module requires that `Torch-fidelity` is installed.*"):
+        NoTrainDinoV2(name="dinov2-vit-g-14", features_list=["1536"])
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
@@ -52,7 +60,9 @@ def test_no_train():
     model = MyModel()
     model.train()
     assert model.training
-    assert not model.metric.inception.training, "FID metric was changed to training mode which should not happen"
+    assert not model.metric.feature_extractor.training, (
+        "FID metric was changed to training mode which should not happen"
+    )
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
@@ -71,11 +81,14 @@ def test_fid_raises_errors_and_warnings():
     if _TORCH_FIDELITY_AVAILABLE:
         with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
             _ = FrechetInceptionDistance(feature=2)
+
+        with pytest.raises(ValueError, match="String input to argument `feature` must be one of .*"):
+            _ = FrechetInceptionDistance(feature="invalid-feature")
     else:
         with pytest.raises(
             ModuleNotFoundError,
-            match="FID metric requires that `Torch-fidelity` is installed."
-            " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
+            match="FrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
+            " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`.",
         ):
             _ = FrechetInceptionDistance()
 
@@ -95,14 +108,17 @@ class _DummyFeatureExtractor(Module):
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
-@pytest.mark.parametrize("feature", [64, 192, 768, 2048, _DummyFeatureExtractor()])
+@pytest.mark.parametrize("feature", [64, 192, "inception-64", "dino-384", _DummyFeatureExtractor()])
 def test_fid_same_input(feature):
     """If real and fake are update on the same data the fid score should be 0."""
     metric = FrechetInceptionDistance(feature=feature)
 
+    # Determine correct input size based on feature
+    img_size = (10, 3, 224, 224) if isinstance(feature, str) and feature.startswith("dino") else (10, 3, 299, 299)
+
     seed_all(42)
     for _ in range(2):
-        img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
+        img = torch.randint(0, 255, img_size, dtype=torch.uint8)
         metric.update(img, real=True)
         metric.update(img, real=False)
 
@@ -128,18 +144,26 @@ class _ImgDataset(Dataset):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
-def test_compare_fid(tmpdir, equal_size, feature=768):
-    """Check that the hole pipeline give the same result as torch-fidelity."""
+@pytest.mark.parametrize(
+    "feature_config",
+    [
+        pytest.param(("inception-64", (3, 299, 299), "inception-v3-compat", 64), id="inception-64"),
+        pytest.param(("dino-384", (3, 224, 224), "dinov2-vit-s-14", "dinov2"), id="dino-384"),
+    ],
+)
+def test_compare_fid(tmpdir, equal_size, feature_config):
+    """Check that the whole pipeline gives the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
+    feature, img_size, fidelity_name, fidelity_feature_list = feature_config
     metric = FrechetInceptionDistance(feature=feature).cuda()
 
     n, m = 100, 100 if equal_size else 90
 
     # Generate some synthetic data
     seed_all(42)
-    img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8)
-    img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8)
+    img1 = torch.randint(0, 180, (n, *img_size), dtype=torch.uint8)
+    img2 = torch.randint(100, 255, (m, *img_size), dtype=torch.uint8)
 
     batch_size = 10
     for i in range(n // batch_size):
@@ -152,7 +176,8 @@ def test_compare_fid(tmpdir, equal_size, feature=768):
         input1=_ImgDataset(img1),
         input2=_ImgDataset(img2),
         fid=True,
-        feature_layer_fid=str(feature),
+        feature_extractor=fidelity_name,
+        feature_layer_fid=str(fidelity_feature_list),
         batch_size=batch_size,
         save_cpu_ram=True,
     )
@@ -163,20 +188,23 @@ def test_compare_fid(tmpdir, equal_size, feature=768):
 
 
 @pytest.mark.parametrize("reset_real_features", [True, False])
-def test_reset_real_features_arg(reset_real_features):
+@pytest.mark.parametrize("feature_config", [("inception-64", (3, 299, 299)), ("dino-384", (3, 224, 224))])
+def test_reset_real_features_arg(reset_real_features, feature_config):
     """Test that `reset_real_features` argument works as expected."""
-    metric = FrechetInceptionDistance(feature=64, reset_real_features=reset_real_features)
+    feature, img_size = feature_config
+    metric = FrechetInceptionDistance(feature=feature, reset_real_features=reset_real_features)
+    feature_dim = int(feature.split("-")[-1])
 
-    metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=True)
-    metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=False)
+    metric.update(torch.randint(0, 180, (2, *img_size), dtype=torch.uint8), real=True)
+    metric.update(torch.randint(0, 180, (2, *img_size), dtype=torch.uint8), real=False)
 
     assert metric.real_features_num_samples == 2
-    assert metric.real_features_sum.shape == torch.Size([64])
-    assert metric.real_features_cov_sum.shape == torch.Size([64, 64])
+    assert metric.real_features_sum.shape == torch.Size([feature_dim])
+    assert metric.real_features_cov_sum.shape == torch.Size([feature_dim, feature_dim])
 
     assert metric.fake_features_num_samples == 2
-    assert metric.fake_features_sum.shape == torch.Size([64])
-    assert metric.fake_features_cov_sum.shape == torch.Size([64, 64])
+    assert metric.fake_features_sum.shape == torch.Size([feature_dim])
+    assert metric.fake_features_cov_sum.shape == torch.Size([feature_dim, feature_dim])
 
     metric.reset()
 
@@ -187,15 +215,17 @@ def test_reset_real_features_arg(reset_real_features):
         assert metric.real_features_num_samples == 0
     else:
         assert metric.real_features_num_samples == 2
-        assert metric.real_features_sum.shape == torch.Size([64])
-        assert metric.real_features_cov_sum.shape == torch.Size([64, 64])
+        assert metric.real_features_sum.shape == torch.Size([feature_dim])
+        assert metric.real_features_cov_sum.shape == torch.Size([feature_dim, feature_dim])
 
 
 @pytest.mark.parametrize("normalize", [True, False])
-def test_normalize_arg(normalize):
+@pytest.mark.parametrize("feature_config", [("inception-64", (3, 299, 299)), ("dino-384", (3, 224, 224))])
+def test_normalize_arg(normalize, feature_config):
     """Test that normalize argument works as expected."""
-    img = torch.rand(2, 3, 299, 299)
-    metric = FrechetInceptionDistance(normalize=normalize)
+    feature, img_size = feature_config
+    img = torch.rand(2, *img_size)
+    metric = FrechetInceptionDistance(feature=feature, normalize=normalize)
 
     context = (
         partial(
@@ -222,23 +252,25 @@ def test_not_enough_samples():
 
 
 def test_dtype_transfer_to_submodule():
-    """Test that change in dtype also changes the default inception net."""
+    """Test that change in dtype also changes the default feature extractor net."""
     imgs = torch.randn(1, 3, 256, 256)
     imgs = ((imgs.clamp(-1, 1) / 2 + 0.5) * 255).to(torch.uint8)
 
-    metric = FrechetInceptionDistance(feature=64)
+    metric = FrechetInceptionDistance(feature="inception-64")
     metric.set_dtype(torch.float64)
 
-    out = metric.inception(imgs)
+    out = metric.feature_extractor(imgs)
     assert out.dtype == torch.float64
 
 
-def test_antialias():
+@pytest.mark.parametrize("feature_config", [("inception-64", (3, 299, 299)), ("dino-384", (3, 224, 224))])
+def test_antialias(feature_config):
     """Test that on random input the antialiasing should produce similar results."""
-    imgs = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
+    feature, img_size = feature_config
+    imgs = torch.randint(0, 255, (10, *img_size), dtype=torch.uint8)
 
-    metric_no_aa = FrechetInceptionDistance(feature=64, antialias=False)
-    metric_aa = FrechetInceptionDistance(feature=64, antialias=True)
+    metric_no_aa = FrechetInceptionDistance(feature=feature, antialias=False)
+    metric_aa = FrechetInceptionDistance(feature=feature, antialias=True)
 
     metric_no_aa.update(imgs, real=True)
     metric_no_aa.update(imgs, real=False)
