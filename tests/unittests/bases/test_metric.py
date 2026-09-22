@@ -30,6 +30,7 @@ from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.clustering import AdjustedRandScore
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 from torchmetrics.regression import PearsonCorrCoef, R2Score
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_8
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 
@@ -331,6 +332,22 @@ def test_device_and_dtype_transfer(tmpdir):
         assert metric.device == torch.device("cuda", index=0)
         assert metric.x.dtype == torch.float16
     torch.set_default_dtype(default_dtype)
+
+
+@pytest.mark.parametrize(
+    "use_get_default_device",
+    [
+        pytest.param(True, marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_8, reason="requires torch>=2.8")),
+        False,
+    ],
+)
+def test_device_from_device_context_manager(monkeypatch, use_get_default_device):
+    """Test that a metric picks up the device from an active `torch.device` context manager, on both version paths."""
+    monkeypatch.setattr("torchmetrics.metric._TORCH_GREATER_EQUAL_2_8", use_get_default_device)
+    with torch.device("meta"):
+        metric = DummyMetricSum()
+    assert metric.device == torch.device("meta")
+    assert metric.x.device == torch.device("meta")
 
 
 def test_disable_of_normal_dtype_methods():

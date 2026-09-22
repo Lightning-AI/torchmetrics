@@ -25,7 +25,6 @@ from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAURO
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -103,8 +102,6 @@ class TestBinaryAUROC(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

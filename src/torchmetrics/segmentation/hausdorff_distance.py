@@ -32,9 +32,9 @@ class HausdorffDistance(Metric):
     r"""Compute the `Hausdorff Distance`_ between two subsets of a metric space for semantic segmentation.
 
     .. math::
-        d_{\Pi}(X,Y) = \max{/sup_{x\in X} {d(x,Y)}, /sup_{y\in Y} {d(X,y)}}
+        d_{\Pi}(X,Y) = \max\{\sup_{x\in X} d(x,Y), \sup_{y\in Y} d(X,y)\}
 
-    where :math:`\X, \Y` are two subsets of a metric space with distance metric :math:`d`. The Hausdorff distance is
+    where :math:`X, Y` are two subsets of a metric space with distance metric :math:`d`. The Hausdorff distance is
     the maximum distance from a point in one set to the closest point in the other set. The Hausdorff distance is a
     measure of the degree of mismatch between two sets.
 
