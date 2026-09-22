@@ -497,7 +497,9 @@ class Metric(Module, ABC):
                 raise TypeError(f"Unsupported reduce_fn: {reduce_fn}")
             setattr(self, attr, reduced)
 
-    def _check_none_reduction_list_length(self, attr: str, state: list, process_group: Optional[Any] = None) -> None:
+    def _check_none_reduction_list_length(
+        self, attr: str, state: list, dist_sync_fn: Callable, process_group: Optional[Any] = None
+    ) -> None:
         """Check that a ``dist_reduce_fx=None`` list state holds the same number of entries on every rank.
 
         Unlike ``dim_zero_cat`` states, these cannot be pre-concatenated before syncing, since ``compute``
@@ -508,6 +510,7 @@ class Metric(Module, ABC):
         Args:
             attr: Name of the metric state being checked
             state: The local list state
+            dist_sync_fn: Function used to gather the lengths, the same one used to sync the states themselves
             process_group: Specify the process group to check over. default: `None` (the metric's own)
 
         Raises:
@@ -515,12 +518,8 @@ class Metric(Module, ABC):
                 If the state holds a different number of entries across ranks.
 
         """
-        if not jit_distributed_available():
-            return
-        group = process_group or self.process_group
         local_len = torch.tensor(len(state), device=self.device)
-        all_lens = [torch.zeros_like(local_len) for _ in range(torch.distributed.get_world_size(group))]
-        torch.distributed.all_gather(all_lens, local_len, group=group)
+        all_lens = dist_sync_fn(local_len, group=process_group or self.process_group)
         lens = [int(t.item()) for t in all_lens]
         if len(set(lens)) > 1:
             raise TorchMetricsUserError(
@@ -546,7 +545,7 @@ class Metric(Module, ABC):
             # ranks holding differently sized lists cannot be gathered as-is, since the number of all_gather
             # operations would differ per rank and deadlock
             if reduction_fn is None and isinstance(input_dict[attr], list):
-                self._check_none_reduction_list_length(attr, input_dict[attr], process_group)
+                self._check_none_reduction_list_length(attr, input_dict[attr], dist_sync_fn, process_group)
 
         output_dict = apply_to_collection(
             input_dict,
