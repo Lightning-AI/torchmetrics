@@ -212,3 +212,103 @@ def test_corner_case_with_tied_scores():
             retrieval_normalized_dcg(preds, target, top_k=k),
             torch.tensor([ndcg_score(target, preds, k=k)], dtype=torch.float32),
         )
+
+
+# ---- Tests for vectorized GPU-efficient implementation (issue #2287) ----
+
+
+@pytest.mark.parametrize(
+    ("batch_size", "list_length", "top_k"),
+    [
+        (1, 50, None),
+        (1, 100, 10),
+        (8, 50, None),
+        (8, 100, 50),
+        (32, 100, None),
+        (32, 500, 200),
+        (128, 100, 10),
+        (128, 500, None),
+    ],
+)
+def test_accuracy_vs_sklearn(batch_size: int, list_length: int, top_k: Optional[int]):
+    """Batched nDCG must stay within 1e-4 of sklearn across configs.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2287.
+
+    """
+    torch.manual_seed(42)
+    scores = torch.randn(batch_size, list_length)
+    labels = (torch.randint(0, 2, (batch_size, list_length)) * 2 - 1).float() + 1.0
+
+    fast_result = retrieval_normalized_dcg(scores, labels, top_k=top_k).item()
+    sklearn_result = float(np.mean([ndcg_score([t], [p], k=top_k) for t, p in zip(labels.numpy(), scores.numpy())]))
+
+    assert abs(fast_result - sklearn_result) <= 1e-4, (
+        f"nDCG differs from sklearn by {abs(fast_result - sklearn_result):.2e} "
+        f"(B={batch_size}, L={list_length}, k={top_k})"
+    )
+
+
+def test_batched_input_matches_per_query():
+    """Batched 2-D input must give the same mean nDCG as averaging per-query 1-D results.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2287.
+
+    """
+    torch.manual_seed(42)
+    preds = torch.randn(16, 50)
+    target = (torch.randint(0, 2, (16, 50)) * 2 - 1).float() + 1.0
+
+    per_query = torch.stack([retrieval_normalized_dcg(preds[i], target[i]) for i in range(preds.shape[0])])
+    batched = retrieval_normalized_dcg(preds, target)
+
+    assert torch.allclose(batched, per_query.mean(), atol=1e-5)
+
+
+def test_tie_handling_explicit():
+    """Tie-averaged DCG must match sklearn on inputs with explicit score ties.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2287.
+
+    """
+    scores = torch.tensor([
+        [1.0, 1.0, 0.5, 0.5, 0.1],  # two pairs of ties
+        [0.8, 0.8, 0.8, 0.2, 0.1],  # three-way tie
+    ])
+    labels = torch.tensor([
+        [1.0, 0.0, 1.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0, 1.0, 0.0],
+    ])
+
+    result = retrieval_normalized_dcg(scores, labels)
+    sklearn_result = float(np.mean([ndcg_score([t], [p]) for t, p in zip(labels.numpy(), scores.numpy())]))
+
+    assert isinstance(result, torch.Tensor)
+    assert 0.0 <= result.item() <= 1.0
+    assert abs(result.item() - sklearn_result) <= 1e-4
+
+
+def test_all_zeros_target():
+    """All-irrelevant queries (target all zero) must return 0, not NaN."""
+    scores = torch.randn(4, 20)
+    labels = torch.zeros(4, 20)
+    result = retrieval_normalized_dcg(scores, labels)
+    assert result.item() == 0.0
+
+
+def test_perfect_ranking():
+    """A perfectly-ranked list must return nDCG == 1.0."""
+    labels = torch.tensor([[3.0, 2.0, 1.0, 0.0, 0.0]] * 4)
+    scores = labels.clone()  # predictions match ideal order
+    result = retrieval_normalized_dcg(scores, labels)
+    assert torch.allclose(result, torch.tensor(1.0), atol=1e-5)
+
+
+@pytest.mark.parametrize("top_k", [1, 10, 50, None])
+def test_top_k_valid_range(top_k: Optional[int]):
+    """Results must be in [0, 1] for all top_k values."""
+    torch.manual_seed(0)
+    scores = torch.randn(8, 100)
+    labels = torch.randint(0, 3, (8, 100)).float()
+    result = retrieval_normalized_dcg(scores, labels, top_k=top_k)
+    assert 0.0 <= result.item() <= 1.0
