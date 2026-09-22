@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from typing import Optional, Union
 
 import torch
@@ -25,7 +26,7 @@ def _psnr_compute(
     num_obs: Tensor,
     data_range: Tensor,
     base: float = 10.0,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
 ) -> Tensor:
     """Compute peak signal-to-noise ratio.
 
@@ -58,7 +59,7 @@ def _psnr_compute(
 def _psnr_update(
     preds: Tensor,
     target: Tensor,
-    dim: Optional[Union[int, tuple[int, ...]]] = None,
+    dim: Optional[Union[int, Sequence[int]]] = None,
 ) -> tuple[Tensor, Tensor]:
     """Update and return variables required to compute peak signal-to-noise ratio.
 
@@ -95,10 +96,10 @@ def _psnr_update(
 def peak_signal_noise_ratio(
     preds: Tensor,
     target: Tensor,
-    data_range: Union[float, tuple[float, float]],
+    data_range: Union[float, Sequence[float]],
     base: float = 10.0,
-    reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    dim: Optional[Union[int, tuple[int, ...]]] = None,
+    reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
+    dim: Optional[Union[int, Sequence[int]]] = None,
 ) -> Tensor:
     """Compute the peak signal-to-noise ratio.
 
@@ -106,7 +107,7 @@ def peak_signal_noise_ratio(
         preds: estimated signal
         target: groun truth signal
         data_range:
-            the range of the data. If a tuple is provided then the range is calculated as the difference and
+            the range of the data. If a Sequence is provided then the range is calculated as the difference and
             input is clamped between the values.
         base: a base of a logarithm to use
         reduction: a method to reduce metric score over labels.
@@ -136,7 +137,7 @@ def peak_signal_noise_ratio(
     if dim is None and reduction != "elementwise_mean":
         rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")
 
-    if isinstance(data_range, tuple):
+    if isinstance(data_range, Sequence):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
         data_range_val = tensor(data_range[1] - data_range[0])
