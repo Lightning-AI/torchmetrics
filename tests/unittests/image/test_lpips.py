@@ -154,3 +154,24 @@ def test_check_for_backprop():
     assert loss.requires_grad
     loss.backward()
     assert metric.net.lin0.model[1].weight.grad is None
+
+
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
+@pytest.mark.parametrize("reduction", ["mean", "sum"])
+def test_state_does_not_grow(reduction):
+    """Test that the metric state keeps a constant size for ``mean`` and ``sum`` reduction."""
+    metric = LearnedPerceptualImagePatchSimilarity(net_type="squeeze", reduction=reduction)
+    for img1, img2 in zip(_inputs.img1, _inputs.img2):
+        metric(img1, img2)
+        metric.update(img1, img2)
+
+    for state in metric.metric_state.values():
+        assert isinstance(state, Tensor)
+        assert state.numel() == 1
+
+    # each batch was passed twice, once through forward and once through update
+    scores = learned_perceptual_image_patch_similarity(
+        _inputs.img1.flatten(0, 1), _inputs.img2.flatten(0, 1), net_type="squeeze", reduction="none"
+    ).repeat(2)
+    expected = scores.mean() if reduction == "mean" else scores.sum()
+    assert torch.allclose(metric.compute(), expected, atol=1e-4)
