@@ -14,6 +14,7 @@
 from typing import Union
 
 import pytest
+import torch
 
 from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.text.wer import WordErrorRate
@@ -68,3 +69,28 @@ class TestWER(TextTester):
             metric_module=WordErrorRate,
             metric_functional=word_error_rate,
         )
+
+
+@pytest.mark.parametrize(
+    ("preds", "target", "expected"),
+    [
+        ("hello world", "", 2.0),
+        ("hello", "   ", 1.0),
+        ("", "", 0.0),
+    ],
+)
+def test_wer_empty_reference(preds, target, expected):
+    """Empty references count each predicted word as an insertion."""
+    assert word_error_rate(preds, target) == torch.tensor(expected)
+
+    metric = WordErrorRate()
+    assert metric(preds, target) == torch.tensor(expected)
+    assert metric.compute() == torch.tensor(expected)
+
+
+def test_wer_empty_then_nonempty_reference():
+    """Once references contain words, use their total length as the denominator."""
+    metric = WordErrorRate()
+    metric.update("extra", "")
+    metric.update("one two", "one two")
+    assert metric.compute() == torch.tensor(0.5)

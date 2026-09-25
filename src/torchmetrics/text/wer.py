@@ -43,6 +43,8 @@ class WordErrorRate(Metric):
     - :math:`C` is the number of correct words,
     - :math:`N` is the number of words in the reference (:math:`N=S+D+C`).
 
+    If the references contain no words, the score is the number of inserted words (or 0 if predictions are empty).
+
     Compute WER score of transcribed segments against references.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:

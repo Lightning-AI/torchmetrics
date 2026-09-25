@@ -60,7 +60,7 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
         Character error rate score
 
     """
-    return errors / total
+    return errors / total.clamp_min(1)
 
 
 def char_error_rate(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
@@ -68,6 +68,9 @@ def char_error_rate(preds: Union[str, list[str]], target: Union[str, list[str]])
 
     This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
     the performance of the ASR system with a CER of 0 being a perfect score.
+
+    If the references contain no characters, the score is the number of inserted characters (or 0 if predictions are
+    empty).
 
     Args:
         preds: Transcription(s) to score as a string or list of strings
