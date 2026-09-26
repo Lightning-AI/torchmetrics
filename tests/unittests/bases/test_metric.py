@@ -710,3 +710,33 @@ def test_merge_state_feature_for_different_metrics(metric_class, preds, target):
     # should not be the same because it has only seen half the data
     res3 = metric1_2.compute()
     assert not torch.allclose(res3, res2)
+
+
+def test_forward_preserves_state_on_compute_exception():
+    """Regression test for `Metric.forward()` dropping previously accumulated state when the batch computation raises.
+
+    See issue #3487.
+
+    """
+    from torchmetrics.retrieval import RetrievalMRR
+
+    metric = RetrievalMRR(empty_target_action="error", compute_with_cache=False)
+    # Accumulate a valid query via .update()
+    metric.update(torch.tensor([0.9]), torch.tensor([1]), indexes=torch.tensor([0]))
+
+    # The following .forward() for a query with no positive targets should raise,
+    # but must NOT erase the state accumulated before the call.
+    try:
+        metric(torch.tensor([0.8]), torch.tensor([0]), indexes=torch.tensor([1]))
+    except ValueError:
+        pass  # expected: the second query has no positive target
+
+    # After the exception, query 0 must still be present in the state
+    remaining = torch.cat(metric.indexes).tolist()
+    assert 0 in remaining, f"Query 0 was dropped after a failed forward() call. Remaining: {remaining}"
+
+    # After feeding a valid second query, the result should still incorporate query 0.
+    metric.update(torch.tensor([0.7]), torch.tensor([1]), indexes=torch.tensor([1]))
+    result = metric.compute().item()
+    # expected MRR for two valid queries (both relevant): (1/1 + 1/1) / 2 = 1.0
+    assert abs(result - 1.0) < 1e-5
