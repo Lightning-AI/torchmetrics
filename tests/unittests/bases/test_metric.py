@@ -724,12 +724,10 @@ def test_forward_preserves_state_on_compute_exception():
     # Accumulate a valid query via .update()
     metric.update(torch.tensor([0.9]), torch.tensor([1]), indexes=torch.tensor([0]))
 
-    # The following .forward() for a query with no positive targets should raise,
+    # The following .forward() for a query with no positive targets must raise,
     # but must NOT erase the state accumulated before the call.
-    try:
+    with pytest.raises(ValueError):
         metric(torch.tensor([0.8]), torch.tensor([0]), indexes=torch.tensor([1]))
-    except ValueError:
-        pass  # expected: the second query has no positive target
 
     # After the exception, query 0 must still be present in the state
     remaining = torch.cat(metric.indexes).tolist()
