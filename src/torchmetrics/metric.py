@@ -340,23 +340,24 @@ class Metric(Module, ABC):
         # call reset, update, compute, on single batch
         self._enable_grad = True  # allow grads for batch computation
         self.reset()
-        self.update(*args, **kwargs)
-        batch_val = self.compute()
+        try:
+            self.update(*args, **kwargs)
+            batch_val = self.compute()
+        finally:
+            # restore context — always, even when compute() raises
+            for attr, val in cache.items():
+                setattr(self, attr, val)
+            self._update_count = _update_count
 
-        # restore context
-        for attr, val in cache.items():
-            setattr(self, attr, val)
-        self._update_count = _update_count
-
-        # restore context
-        self._is_synced = False
-        self._should_unsync = True
-        self._to_sync = self.sync_on_compute
-        self._computed = None
-        self._enable_grad = False
-        self.compute_on_cpu = _temp_compute_on_cpu
-        if self.compute_on_cpu:
-            self._move_list_states_to_cpu()
+            # restore context
+            self._is_synced = False
+            self._should_unsync = True
+            self._to_sync = self.sync_on_compute
+            self._computed = None
+            self._enable_grad = False
+            self.compute_on_cpu = _temp_compute_on_cpu
+            if self.compute_on_cpu:
+                self._move_list_states_to_cpu()
 
         return batch_val
 
@@ -380,23 +381,31 @@ class Metric(Module, ABC):
         self._enable_grad = True  # allow grads for batch computation
 
         # calculate batch state and compute batch value
-        self.update(*args, **kwargs)
-        batch_val = self.compute()
+        try:
+            self.update(*args, **kwargs)
+            batch_val = self.compute()
+        except Exception:
+            # compute() raised — restore the global state accumulated before this batch
+            # so a failed batch does not wipe previously stored samples.
+            for attr, val in global_state.items():
+                setattr(self, attr, val)
+            self._update_count = _update_count
+            raise
+        finally:
+            # restore context — always, even when compute() raises
+            self._is_synced = False
+            self._should_unsync = True
+            self._to_sync = self.sync_on_compute
+            self._computed = None
+            self._enable_grad = False
+            self.compute_on_cpu = _temp_compute_on_cpu
+            if self.compute_on_cpu:
+                self._move_list_states_to_cpu()
 
         # reduce batch and global state
         self._update_count = _update_count + 1
         with torch.no_grad():
             self._reduce_states(global_state)
-
-        # restore context
-        self._is_synced = False
-        self._should_unsync = True
-        self._to_sync = self.sync_on_compute
-        self._computed = None
-        self._enable_grad = False
-        self.compute_on_cpu = _temp_compute_on_cpu
-        if self.compute_on_cpu:
-            self._move_list_states_to_cpu()
 
         return batch_val
 
