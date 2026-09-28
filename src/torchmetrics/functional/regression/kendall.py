@@ -161,21 +161,24 @@ def _calculate_tau(
     variant: _MetricVariant,
 ) -> Tensor:
     """Calculate Kendall's tau from metric metadata."""
+    # the pair and tie counts are integer tensors, so dividing them would fall back to the global default dtype and
+    # silently downcast a float64 input; float16/bfloat16 are promoted to float32 for the accumulation
+    dtype = torch.promote_types(preds.dtype, torch.float32)
+    con_min_dis_pairs = con_min_dis_pairs.to(dtype)
+
     if variant == _MetricVariant.A:
-        return con_min_dis_pairs / (concordant_pairs + discordant_pairs)
+        return con_min_dis_pairs / (concordant_pairs + discordant_pairs).to(dtype)
     if variant == _MetricVariant.B:
-        total_combinations: Tensor = n_total * (n_total - 1) // 2
-        if preds_ties is None:
-            preds_ties = torch.tensor(0.0, dtype=total_combinations.dtype, device=total_combinations.device)
-        if target_ties is None:
-            target_ties = torch.tensor(0.0, dtype=total_combinations.dtype, device=total_combinations.device)
+        total_combinations: Tensor = (n_total * (n_total - 1) // 2).to(dtype)
+        preds_ties = total_combinations.new_zeros(()) if preds_ties is None else preds_ties.to(dtype)
+        target_ties = total_combinations.new_zeros(()) if target_ties is None else target_ties.to(dtype)
         denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)
         return con_min_dis_pairs / torch.sqrt(denominator)
 
-    preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=preds.dtype, device=preds.device)
-    target_unique = torch.tensor([len(t.unique()) for t in target.T], dtype=target.dtype, device=target.device)
+    preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=dtype, device=preds.device)
+    target_unique = torch.tensor([len(t.unique()) for t in target.T], dtype=dtype, device=target.device)
     min_classes = torch.minimum(preds_unique, target_unique)
-    return 2 * con_min_dis_pairs / ((min_classes - 1) / min_classes * n_total**2)
+    return 2 * con_min_dis_pairs / ((min_classes - 1) / min_classes * n_total.to(dtype) ** 2)
 
 
 def _get_p_value_for_t_value_from_dist(t_value: Tensor) -> Tensor:
