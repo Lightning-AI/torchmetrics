@@ -143,3 +143,16 @@ class TestMultilabelRanking(MetricTester):
             metric_args={"num_labels": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+def test_multilabel_ranking_loss_ties():
+    """Check that a relevant label tied with an irrelevant one counts as incorrectly ordered, as in sklearn."""
+    preds = torch.tensor([[0.5, 0.5, 0.2], [0.1, 0.8, 0.8], [0.3, 0.3, 0.3]])
+    target = torch.tensor([[1, 0, 0], [0, 1, 0], [1, 0, 1]])
+    expected = sk_label_ranking_loss(target.numpy(), preds.numpy())
+    assert np.isclose(expected, 2 / 3)
+    assert torch.allclose(multilabel_ranking_loss(preds, target, num_labels=3), torch.tensor(expected).float())
+    metric = MultilabelRankingLoss(num_labels=3)
+    metric.update(preds[:2], target[:2])
+    metric.update(preds[2:], target[2:])
+    assert torch.allclose(metric.compute(), torch.tensor(expected).float())

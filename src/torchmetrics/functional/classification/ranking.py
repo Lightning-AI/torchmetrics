@@ -204,11 +204,13 @@ def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> tuple[Tens
     if len(preds) == 0:
         return torch.tensor(0.0, device=preds.device), 1
 
-    inverse = preds.argsort(dim=1).argsort(dim=1)
-    per_label_loss = ((num_labels - inverse) * relevant).to(torch.float32)
-    correction = 0.5 * num_relevant * (num_relevant + 1)
-    denom = num_relevant * (num_labels - num_relevant)
-    loss = (per_label_loss.sum(dim=1) - correction) / denom
+    # For every relevant label, count the irrelevant labels scored at least as high. Ties count as incorrectly
+    # ordered pairs, so they cannot be resolved by position as a rank from argsort would do.
+    num_irrelevant = num_labels - num_relevant
+    irrelevant_scores = preds.masked_fill(relevant, float("-inf")).sort(dim=1).values
+    num_irrelevant_below = torch.searchsorted(irrelevant_scores, preds.contiguous()) - num_relevant.unsqueeze(1)
+    wrong_pairs = ((num_irrelevant.unsqueeze(1) - num_irrelevant_below) * relevant).sum(dim=1)
+    loss = wrong_pairs.to(torch.float32) / (num_relevant * num_irrelevant)
     return loss.sum(), num_preds
 
 
