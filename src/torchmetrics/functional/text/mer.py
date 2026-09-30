@@ -17,7 +17,7 @@ from typing import Union
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.text.helper import _edit_distance
+from torchmetrics.functional.text.helper import _edit_distance_operations
 
 
 def _mer_update(
@@ -32,7 +32,7 @@ def _mer_update(
 
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
-        Number of words overall references
+        Number of hits and edit operations of the alignment, summed over all samples
 
     """
     if isinstance(preds, str):
@@ -44,8 +44,9 @@ def _mer_update(
     for pred, tgt in zip(preds, target):
         pred_tokens = pred.split()
         tgt_tokens = tgt.split()
-        errors += _edit_distance(pred_tokens, tgt_tokens)
-        total += max(len(tgt_tokens), len(pred_tokens))
+        hits, substitutions, deletions, insertions = _edit_distance_operations(pred_tokens, tgt_tokens)
+        errors += substitutions + deletions + insertions
+        total += hits + substitutions + deletions + insertions
 
     return errors, total
 
