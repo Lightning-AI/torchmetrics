@@ -115,3 +115,14 @@ class TestFleissKappa(MetricTester):
             metric_functional=wrapped_fleiss_kappa,
             metric_args={"mode": mode},
         )
+
+
+@pytest.mark.parametrize("num_raters", [2, 3])
+def test_fleiss_kappa_probs_fewer_raters_than_categories(num_raters):
+    """Test that ``mode='probs'`` works when there are fewer raters than categories."""
+    torch.manual_seed(42)
+    ratings = torch.randn(10, NUM_CATEGORIES, num_raters)
+    ratings[0, -1] = 10.0  # make sure the last category is picked by every rater of the first sample
+    result = fleiss_kappa(ratings, mode="probs")
+    expected = _reference_fleiss_kappa(ratings, None, mode="probs")
+    assert torch.allclose(result, torch.tensor(expected, dtype=result.dtype), atol=1e-5)
