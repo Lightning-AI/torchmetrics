@@ -53,6 +53,41 @@ seed_all(42)
 NUM_TARGETS = 5
 
 
+@pytest.mark.parametrize("squared", [True, False], ids=["mse", "rmse"])
+@pytest.mark.parametrize("num_outputs", [1, 2])
+@pytest.mark.parametrize("layout", ["preds", "target", "both"])
+@pytest.mark.parametrize("metric_class", [None, MeanSquaredError], ids=["functional", "class"])
+def test_mse_noncontiguous_inputs(squared, num_outputs, layout, metric_class):
+    """MSE accepts strided inputs and retains values and gradients."""
+    values = torch.arange(6, dtype=torch.float64).reshape(2, 3)
+    preds = values.t()
+    target = (values / 3).t()
+    if layout == "preds":
+        target = target.contiguous()
+    elif layout == "target":
+        preds = preds.contiguous()
+    preds = preds.detach().requires_grad_()
+    ref_preds = preds.detach().clone().requires_grad_()
+    errors = torch.nn.functional.mse_loss(ref_preds, target, reduction="none")
+    expected = errors.mean() if num_outputs == 1 else errors.mean(dim=0)
+    if not squared:
+        expected = expected.sqrt()
+
+    if metric_class is None:
+        result = mean_squared_error(preds, target, squared=squared, num_outputs=num_outputs)
+    else:
+        metric = metric_class(squared=squared, num_outputs=num_outputs).set_dtype(torch.float64)
+        result = metric(preds, target)
+        metric.reset()
+        metric.update(preds[:1], target[:1])
+        metric.update(preds[1:], target[1:])
+        torch.testing.assert_close(metric.compute(), expected)
+    torch.testing.assert_close(result, expected)
+    actual_grad = torch.autograd.grad(result.sum(), preds)[0]
+    expected_grad = torch.autograd.grad(expected.sum(), ref_preds)[0]
+    torch.testing.assert_close(actual_grad, expected_grad)
+
+
 _single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
