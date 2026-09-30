@@ -53,6 +53,38 @@ seed_all(42)
 NUM_TARGETS = 5
 
 
+@pytest.mark.parametrize("dtype", [torch.uint8, torch.int8, torch.int16, torch.int32])
+@pytest.mark.parametrize("num_outputs", [1, 2])
+@pytest.mark.parametrize("metric_class", [None, MeanAbsoluteError], ids=["functional", "class"])
+def test_mae_integer_residual_exceeds_dtype_range(dtype, num_outputs, metric_class):
+    """Integer subtraction must not wrap before the absolute error is computed."""
+    bounds = torch.iinfo(dtype)
+    preds = torch.tensor([bounds.min, bounds.max], dtype=dtype)
+    target = preds.flip(0)
+    if num_outputs > 1:
+        preds = preds.unsqueeze(1).repeat(1, num_outputs)
+        target = target.unsqueeze(1).repeat(1, num_outputs)
+
+    expected = (preds.double() - target.double()).abs().mean(0)
+    result = (
+        mean_absolute_error(preds, target, num_outputs=num_outputs)
+        if metric_class is None
+        else metric_class(num_outputs=num_outputs)(preds, target)
+    )
+    torch.testing.assert_close(result, expected.to(result.dtype))
+
+
+@pytest.mark.parametrize("metric_class", [None, MeanAbsoluteError], ids=["functional", "class"])
+@pytest.mark.parametrize("residuals", [(1, 3), (2**40 + 1, 2**40 + 3)])
+def test_mae_large_int64_inputs_preserve_residuals(metric_class, residuals):
+    """Keep integer subtraction and accumulation exact before the final division."""
+    target = torch.tensor([2**60, 2**60])
+    preds = target + torch.tensor(residuals)
+    result = mean_absolute_error(preds, target) if metric_class is None else metric_class().double()(preds, target)
+    expected = torch.tensor(sum(residuals) / 2, dtype=result.dtype)
+    torch.testing.assert_close(result, expected, rtol=0, atol=0)
+
+
 _single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
