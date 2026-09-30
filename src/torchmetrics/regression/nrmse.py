@@ -40,16 +40,6 @@ def _final_aggregation(
     normalization: Literal["mean", "range", "std", "l2"] = "mean",
 ) -> Tensor:
     """In the case of multiple devices we need to aggregate the statistics from the different devices."""
-    if len(min_val) == 1:
-        if normalization == "mean":
-            return mean_val[0]
-        if normalization == "range":
-            return max_val[0] - min_val[0]
-        if normalization == "std":
-            return var_val[0]
-        if normalization == "l2":
-            return target_squared[0]
-
     min_val_1, max_val_1, mean_val_1, var_val_1, target_squared_1, total_1 = (
         min_val[0],
         max_val[0],
@@ -67,29 +57,28 @@ def _final_aggregation(
             target_squared[i],
             total[i],
         )
-        # update total and mean
-        total = total_1 + total_2
-        mean = (total_1 * mean_val_1 + total_2 * mean_val_2) / total
+        # update total and mean, guarding against devices that have not seen any data
+        total_12 = total_1 + total_2
+        safe_total = torch.where(total_12 > 0, total_12, torch.ones_like(total_12))
+        mean_12 = (total_1 * mean_val_1 + total_2 * mean_val_2) / safe_total
 
-        # update variance
-        _temp = (total_1 + 1) * mean - total_1 * mean_val_1
-        var_val_1 += (_temp - mean_val_1) * (_temp - mean) - (_temp - mean) ** 2
-        _temp = (total_2 + 1) * mean - total_2 * mean_val_2
-        var_val_2 += (_temp - mean_val_2) * (_temp - mean) - (_temp - mean) ** 2
-        var = var_val_1 + var_val_2
+        # update the sum of squared deviations (parallel algorithm for calculating variance)
+        var_val_1 = var_val_1 + var_val_2 + (mean_val_2 - mean_val_1) ** 2 * total_1 * total_2 / safe_total
 
         # update min and max and target squared
-        min_val = torch.min(min_val_1, min_val_2)
-        max_val = torch.max(max_val_1, max_val_2)
-        target_squared = target_squared_1 + target_squared_2
+        min_val_1 = torch.min(min_val_1, min_val_2)
+        max_val_1 = torch.max(max_val_1, max_val_2)
+        target_squared_1 = target_squared_1 + target_squared_2
+        mean_val_1 = mean_12
+        total_1 = total_12
 
     if normalization == "mean":
-        return mean
+        return mean_val_1
     if normalization == "range":
-        return max_val - min_val
+        return max_val_1 - min_val_1
     if normalization == "std":
-        return (var / total).sqrt()
-    return target_squared.sqrt()
+        return (var_val_1 / total_1).sqrt()
+    return target_squared_1.sqrt()
 
 
 class NormalizedRootMeanSquaredError(Metric):
@@ -224,7 +213,7 @@ class NormalizedRootMeanSquaredError(Metric):
                 total=self.total,
                 normalization=self.normalization,
             )
-            total = self.total.squeeze().sum(dim=0)
+            total = self.total.sum(dim=0)
         else:
             if self.normalization == "mean":
                 denom = self.mean_val

@@ -390,3 +390,30 @@ def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
     """Test that error is raised on wrong extra arguments."""
     with pytest.raises(ValueError, match=error_msg):
         metric_class(**arguments)
+
+
+@pytest.mark.parametrize("normalization", ["mean", "range", "std", "l2"])
+@pytest.mark.parametrize("num_outputs", [1, 3])
+@pytest.mark.parametrize("num_devices", [1, 2, 3, 4])
+def test_nrmse_final_aggregation_over_devices(normalization, num_outputs, num_devices):
+    """Check that the states of any number of devices are merged into the same value as a single device would give."""
+    shape = (num_outputs,) if num_outputs > 1 else ()
+    preds = [torch.randn(5 + i, *shape) for i in range(num_devices)]
+    target = [torch.randn(5 + i, *shape) + i for i in range(num_devices)]
+
+    device_metrics = []
+    for p, t in zip(preds, target):
+        metric = NormalizedRootMeanSquaredError(normalization=normalization, num_outputs=num_outputs)
+        metric.update(p, t)
+        device_metrics.append(metric)
+
+    # mimic the state of a metric after `_sync_dist`
+    synced = NormalizedRootMeanSquaredError(normalization=normalization, num_outputs=num_outputs)
+    for attr, reduction in synced._reductions.items():
+        states = torch.stack([getattr(m, attr) for m in device_metrics])
+        setattr(synced, attr, states if reduction is None else reduction(states))
+
+    single = NormalizedRootMeanSquaredError(normalization=normalization, num_outputs=num_outputs)
+    single.update(torch.cat(preds), torch.cat(target))
+
+    assert torch.allclose(synced.compute(), single.compute())
