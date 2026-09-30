@@ -109,6 +109,40 @@ def test_log_cosh_error_rejects_complex_inputs(metric_class):
         log_cosh_error(preds, target) if metric_class is None else metric_class()(preds, target)
 
 
+@pytest.mark.parametrize("dtype", [torch.uint8, torch.int8, torch.int16, torch.int32])
+@pytest.mark.parametrize("num_outputs", [1, 2])
+@pytest.mark.parametrize("metric_class", [None, LogCoshError], ids=["functional", "class"])
+def test_log_cosh_error_integer_residual_exceeds_dtype_range(metric_class, dtype, num_outputs):
+    """Integer residuals must not wrap before conversion to floating point."""
+    bounds = torch.iinfo(dtype)
+    preds = torch.tensor([bounds.min, bounds.max], dtype=dtype)
+    target = preds.flip(0)
+    if num_outputs > 1:
+        preds = preds.unsqueeze(1).repeat(1, num_outputs)
+        target = target.unsqueeze(1).repeat(1, num_outputs)
+
+    diff = preds.to(torch.float64) - target.to(torch.float64)
+    expected = (torch.logaddexp(diff, -diff) - math.log(2.0)).mean(0)
+    result = (
+        log_cosh_error(preds, target) if metric_class is None else metric_class(num_outputs=num_outputs)(preds, target)
+    )
+
+    torch.testing.assert_close(result, expected.to(result.dtype))
+
+
+@pytest.mark.parametrize("metric_class", [None, LogCoshError], ids=["functional", "class"])
+def test_log_cosh_error_retains_small_residuals_between_large_integers(metric_class):
+    """Widening smaller integer dtypes must retain exact subtraction for int64 inputs."""
+    preds = torch.tensor([2**60 + 3, 2**60 + 5])
+    target = torch.tensor([2**60 + 2, 2**60 + 1])
+    diff = torch.tensor([1.0, 4.0])
+    expected = (torch.logaddexp(diff, -diff) - math.log(2.0)).mean()
+
+    result = log_cosh_error(preds, target) if metric_class is None else metric_class()(preds, target)
+
+    torch.testing.assert_close(result, expected)
+
+
 @pytest.mark.parametrize(
     ("preds", "target"),
     [

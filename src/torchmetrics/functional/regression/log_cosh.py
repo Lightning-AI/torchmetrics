@@ -51,6 +51,10 @@ def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> t
         preds = preds.float()
     if target.dtype == torch.float16 or target.dtype == torch.bfloat16:
         target = target.float()
+    if preds.dtype in (torch.uint8, torch.int8, torch.int16, torch.int32):
+        preds = preds.long()
+    if target.dtype in (torch.uint8, torch.int8, torch.int16, torch.int32):
+        target = target.long()
     diff = preds - target
     if not diff.is_floating_point():
         diff = diff.float()
