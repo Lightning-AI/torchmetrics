@@ -157,6 +157,36 @@ def test_nan_expected(metric_class, nan_strategy, value, expected):
 
 
 @pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
+def test_nan_imputation_does_not_modify_input(metric_class):
+    """Test that imputing nan values with a float leaves the tensor passed by the user untouched."""
+    value = _CASE_2.clone()
+    metric: Metric = metric_class(nan_strategy=2.0)
+    metric.update(value)
+    torch.testing.assert_close(value, _CASE_2, equal_nan=True)
+
+
+def test_mean_metric_nan_imputation_keeps_weights():
+    """Test that imputing nan values does not overwrite the weights passed by the user.
+
+    The weights are broadcast to the shape of the values, so writing into the broadcast view would also change the
+    weight of every other value that shares the same memory.
+
+    """
+    values = torch.tensor([[1.0, float("nan")], [3.0, 4.0]])
+    weights = torch.tensor([[3.0], [1.0]])
+    metric = MeanMetric(nan_strategy=0.0)
+    metric.update(values, weights)
+    # the imputed value gets weight 1, the other values keep their weight
+    assert torch.allclose(metric.compute(), torch.tensor((3 * 1.0 + 1 * 0.0 + 1 * 3.0 + 1 * 4.0) / (3 + 1 + 1 + 1)))
+    torch.testing.assert_close(weights, torch.tensor([[3.0], [1.0]]))
+
+    # the same weight tensor reused for the next batch must still hold the original weights
+    metric = MeanMetric()
+    metric.update(torch.tensor([[1.0, 1.0], [3.0, 3.0]]), weights)
+    assert torch.allclose(metric.compute(), torch.tensor(1.5))
+
+
+@pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
 def test_error_on_wrong_nan_strategy(metric_class):
     """Test error raised on wrong nan_strategy argument."""
     with pytest.raises(ValueError, match="Arg `nan_strategy` should either .*"):
