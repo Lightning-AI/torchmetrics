@@ -17,13 +17,12 @@ import torch
 from torch import Tensor, linalg
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def procrustes_disparity(
     point_cloud1: Tensor, point_cloud2: Tensor, return_all: bool = False
 ) -> Union[Tensor, tuple[Tensor, Tensor, Tensor]]:
-    """Runs procrustrus analysis on a batch of data points.
+    """Run Procrustes analysis on a batch of data points.
 
     Works similar ``scipy.spatial.procrustes`` but for batches of data points.
 
@@ -31,6 +30,9 @@ def procrustes_disparity(
         point_cloud1: The first set of data points
         point_cloud2: The second set of data points
         return_all: If True, returns the scale and rotation matrices along with the disparity
+
+    Raises:
+        ValueError: If a point cloud has empty spatial dimensions, non-finite values, or no distinct points.
 
     """
     _check_same_shape(point_cloud1, point_cloud2)
@@ -40,22 +42,23 @@ def procrustes_disparity(
             f" data points and D is the dimensionality of the data points, but got {point_cloud1.ndim} dimensions."
         )
 
+    if point_cloud1.shape[1] == 0 or point_cloud1.shape[2] == 0:
+        raise ValueError("Expected point clouds with non-empty point and coordinate dimensions.")
+    if not torch.isfinite(point_cloud1).all() or not torch.isfinite(point_cloud2).all():
+        raise ValueError("Expected point clouds containing only finite values.")
+
     point_cloud1 = point_cloud1 - point_cloud1.mean(dim=1, keepdim=True)
     point_cloud2 = point_cloud2 - point_cloud2.mean(dim=1, keepdim=True)
-    point_cloud1 /= linalg.norm(point_cloud1, dim=[1, 2], keepdim=True)
-    point_cloud2 /= linalg.norm(point_cloud2, dim=[1, 2], keepdim=True)
+    norm1 = linalg.norm(point_cloud1, dim=[1, 2], keepdim=True)
+    norm2 = linalg.norm(point_cloud2, dim=[1, 2], keepdim=True)
+    if (norm1 == 0).any() or (norm2 == 0).any():
+        raise ValueError("Expected each point cloud to contain more than one unique point.")
+    if not torch.isfinite(norm1).all() or not torch.isfinite(norm2).all():
+        raise ValueError("Expected point clouds with finite centered norms.")
+    point_cloud1 = point_cloud1 / norm1
+    point_cloud2 = point_cloud2 / norm2
 
-    try:
-        u, w, v = linalg.svd(
-            torch.matmul(point_cloud2.transpose(1, 2), point_cloud1).transpose(1, 2), full_matrices=False
-        )
-    except Exception as ex:
-        rank_zero_warn(
-            f"SVD calculation in procrustes_disparity failed with exception {ex}. Returning 0 disparity and identity"
-            " scale/rotation.",
-            UserWarning,
-        )
-        return torch.tensor(0.0), torch.ones(point_cloud1.shape[0]), torch.eye(point_cloud1.shape[2])
+    u, w, v = linalg.svd(torch.matmul(point_cloud2.transpose(1, 2), point_cloud1).transpose(1, 2), full_matrices=False)
 
     rotation = torch.matmul(u, v)
     scale = w.sum(1, keepdim=True)
