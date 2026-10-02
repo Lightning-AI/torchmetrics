@@ -47,6 +47,11 @@ def procrustes_disparity(
     if not torch.isfinite(point_cloud1).all() or not torch.isfinite(point_cloud2).all():
         raise ValueError("Expected point clouds containing only finite values.")
 
+    if (point_cloud1 == point_cloud1[:, :1]).all(dim=2).all(dim=1).any() or (point_cloud2 == point_cloud2[:, :1]).all(
+        dim=2
+    ).all(dim=1).any():
+        raise ValueError("Expected each point cloud to contain more than one unique point.")
+
     point_cloud1 = point_cloud1 - point_cloud1.mean(dim=1, keepdim=True)
     point_cloud2 = point_cloud2 - point_cloud2.mean(dim=1, keepdim=True)
     norm1 = linalg.norm(point_cloud1, dim=[1, 2], keepdim=True)

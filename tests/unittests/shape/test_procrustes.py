@@ -103,6 +103,8 @@ def test_invalid_point_clouds(return_all, invalid_cloud, invalid_value):
     """Reject an invalid batch member instead of reporting a perfect match for the batch."""
     clouds = [torch.randn(2, 5, 3, dtype=torch.float64) for _ in range(2)]
     clouds[invalid_cloud][1] = invalid_value
+    if invalid_value == 1e308:
+        clouds[invalid_cloud][1, 0, 0] = -invalid_value
     with pytest.raises(ValueError, match="finite|unique"):
         procrustes_disparity(*clouds, return_all=return_all)
 
@@ -147,3 +149,14 @@ def test_svd_failure_is_not_a_perfect_match(return_all):
         pytest.raises(torch.linalg.LinAlgError, match="SVD did not converge"),
     ):
         procrustes_disparity(cloud, cloud, return_all=return_all)
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("invalid_cloud", [0, 1])
+@pytest.mark.parametrize("return_all", [False, True])
+def test_nonzero_constant_cloud_with_rounding(dtype, invalid_cloud, return_all):
+    """Mean rounding must not turn identical points into an apparently nonzero-spread cloud."""
+    clouds = [torch.arange(21, dtype=dtype).reshape(1, 7, 3) for _ in range(2)]
+    clouds[invalid_cloud] = torch.full_like(clouds[invalid_cloud], 0.1)
+    with pytest.raises(ValueError, match="unique"):
+        procrustes_disparity(*clouds, return_all=return_all)
