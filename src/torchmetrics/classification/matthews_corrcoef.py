@@ -23,7 +23,10 @@ from torchmetrics.classification.confusion_matrix import (
     MulticlassConfusionMatrix,
     MultilabelConfusionMatrix,
 )
-from torchmetrics.functional.classification.matthews_corrcoef import _matthews_corrcoef_reduce
+from torchmetrics.functional.classification.matthews_corrcoef import (
+    _matthews_corrcoef_arg_validation,
+    _matthews_corrcoef_reduce,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -62,6 +65,13 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value returned when the score is undefined, i.e. when all targets or all predictions belong to a single
+            class. Should be ``None`` or a float in the [-1, 1] range. If ``None`` (default), the existing behaviour
+            is kept: for binary and multilabel input the score is ``1`` when all samples are predicted correctly,
+            ``-1`` when all are predicted wrongly and the remaining undefined cases are approximated with a small
+            epsilon; for multiclass input undefined cases give ``0``. Set to ``0`` to match
+            ``sklearn.metrics.matthews_corrcoef``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -94,13 +104,17 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         threshold: float = 0.5,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(threshold, ignore_index, normalize=None, validate_args=validate_args, **kwargs)
+        if validate_args:
+            _matthews_corrcoef_arg_validation(zero_division)
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _matthews_corrcoef_reduce(self.confmat)
+        return _matthews_corrcoef_reduce(self.confmat, self.zero_division)
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -170,6 +184,13 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value returned when the score is undefined, i.e. when all targets or all predictions belong to a single
+            class. Should be ``None`` or a float in the [-1, 1] range. If ``None`` (default), the existing behaviour
+            is kept: for binary and multilabel input the score is ``1`` when all samples are predicted correctly,
+            ``-1`` when all are predicted wrongly and the remaining undefined cases are approximated with a small
+            epsilon; for multiclass input undefined cases give ``0``. Set to ``0`` to match
+            ``sklearn.metrics.matthews_corrcoef``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
@@ -206,13 +227,17 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         num_classes: int,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(num_classes, ignore_index, normalize=None, validate_args=validate_args, **kwargs)
+        if validate_args:
+            _matthews_corrcoef_arg_validation(zero_division)
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _matthews_corrcoef_reduce(self.confmat)
+        return _matthews_corrcoef_reduce(self.confmat, self.zero_division)
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -283,6 +308,13 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value returned when the score is undefined, i.e. when all targets or all predictions belong to a single
+            class. Should be ``None`` or a float in the [-1, 1] range. If ``None`` (default), the existing behaviour
+            is kept: for binary and multilabel input the score is ``1`` when all samples are predicted correctly,
+            ``-1`` when all are predicted wrongly and the remaining undefined cases are approximated with a small
+            epsilon; for multiclass input undefined cases give ``0``. Set to ``0`` to match
+            ``sklearn.metrics.matthews_corrcoef``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -317,13 +349,17 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         threshold: float = 0.5,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(num_labels, threshold, ignore_index, normalize=None, validate_args=validate_args, **kwargs)
+        if validate_args:
+            _matthews_corrcoef_arg_validation(zero_division)
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _matthews_corrcoef_reduce(self.confmat)
+        return _matthews_corrcoef_reduce(self.confmat, self.zero_division)
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -398,11 +434,12 @@ class MatthewsCorrCoef(_ClassificationTaskWrapper):
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: Optional[float] = None,
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args})
+        kwargs.update({"ignore_index": ignore_index, "validate_args": validate_args, "zero_division": zero_division})
         if task == ClassificationTask.BINARY:
             return BinaryMatthewsCorrCoef(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
