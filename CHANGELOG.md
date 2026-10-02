@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
-- Fixed stat-scores based classification metrics such as `Accuracy` raising on an empty batch, which is now a no-op update ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
+- Fixed stat-scores based classification metrics such as `Accuracy` raising on an empty batch, which is now a no-op update ([#3541](https://github.com/Lightning-AI/torchmetrics/pull/3541))
 
 
 ---
