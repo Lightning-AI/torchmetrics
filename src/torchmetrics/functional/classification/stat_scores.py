@@ -109,8 +109,9 @@ def _binary_stat_scores_format(
         preds = normalize_logits_if_needed(preds, "sigmoid")
         preds = preds > threshold
 
-    preds = preds.reshape(preds.shape[0], -1)
-    target = target.reshape(target.shape[0], -1)
+    # Explicit trailing sizes keep the reshape valid for an empty batch
+    preds = preds.reshape(preds.shape[0], preds.shape[1:].numel())
+    target = target.reshape(target.shape[0], target.shape[1:].numel())
 
     if ignore_index is not None:
         idx = target == ignore_index
@@ -339,8 +340,12 @@ def _multiclass_stat_scores_format(
     # Apply argmax if we have one more dimension
     if preds.ndim == target.ndim + 1 and top_k == 1:
         preds = preds.argmax(dim=1)
-    preds = preds.reshape(*preds.shape[:2], -1) if top_k != 1 else preds.reshape(preds.shape[0], -1)
-    target = target.reshape(target.shape[0], -1)
+    # Explicit trailing sizes keep the reshape valid for an empty batch
+    if top_k != 1:
+        preds = preds.reshape(*preds.shape[:2], preds.shape[2:].numel())
+    else:
+        preds = preds.reshape(preds.shape[0], preds.shape[1:].numel())
+    target = target.reshape(target.shape[0], target.shape[1:].numel())
     return preds, target
 
 
@@ -693,8 +698,9 @@ def _multilabel_stat_scores_format(
     if preds.is_floating_point():
         preds = normalize_logits_if_needed(preds, "sigmoid")
         preds = preds > threshold
-    preds = preds.reshape(*preds.shape[:2], -1)
-    target = target.reshape(*target.shape[:2], -1)
+    # Explicit trailing sizes keep the reshape valid for an empty batch
+    preds = preds.reshape(*preds.shape[:2], preds.shape[2:].numel())
+    target = target.reshape(*target.shape[:2], target.shape[2:].numel())
 
     if ignore_index is not None:
         idx = target == ignore_index
