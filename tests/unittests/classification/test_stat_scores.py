@@ -652,6 +652,42 @@ def test_support_for_int():
 
 
 @pytest.mark.parametrize(
+    ("metric_class", "kwargs", "preds", "target"),
+    [
+        (BinaryStatScores, {}, torch.rand(8), torch.randint(2, (8,))),
+        (BinaryStatScores, {"multidim_average": "samplewise"}, torch.rand(8, 4), torch.randint(2, (8, 4))),
+        (MulticlassStatScores, {"num_classes": 3}, torch.randint(3, (8,)), torch.randint(3, (8,))),
+        (MulticlassStatScores, {"num_classes": 3, "top_k": 2}, torch.rand(8, 3), torch.randint(3, (8,))),
+        (
+            MulticlassStatScores,
+            {"num_classes": 3, "multidim_average": "samplewise"},
+            torch.rand(8, 3, 4),
+            torch.randint(3, (8, 4)),
+        ),
+        (MultilabelStatScores, {"num_labels": 3}, torch.rand(8, 3), torch.randint(2, (8, 3))),
+        (
+            MultilabelStatScores,
+            {"num_labels": 3, "multidim_average": "samplewise"},
+            torch.rand(8, 3, 4),
+            torch.randint(2, (8, 3, 4)),
+        ),
+    ],
+)
+@pytest.mark.parametrize("ignore_index", [None, -1])
+def test_empty_batch_is_noop(metric_class, kwargs, preds, target, ignore_index):
+    """See issue: https://github.com/Lightning-AI/torchmetrics/issues/2279."""
+    metric = metric_class(**kwargs, ignore_index=ignore_index)
+    reference = metric_class(**kwargs, ignore_index=ignore_index)
+
+    empty = torch.zeros(preds.shape[0], dtype=torch.bool)
+    metric.update(preds[empty], target[empty])
+    metric.update(preds, target)
+    reference.update(preds, target)
+
+    assert torch.equal(metric.compute(), reference.compute())
+
+
+@pytest.mark.parametrize(
     ("metric", "kwargs"),
     [
         (BinaryStatScores, {"task": "binary"}),
