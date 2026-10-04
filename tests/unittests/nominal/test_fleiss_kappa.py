@@ -51,6 +51,33 @@ class WrappedFleissKappa(FleissKappa):
         super().update(preds)
 
 
+@pytest.mark.parametrize("num_raters", [2, 5, 20])
+@pytest.mark.parametrize("majority_samples", [50, 99])
+def test_fleiss_kappa_perfect_agreement(num_raters, majority_samples):
+    """Perfect agreement must score exactly one even when chance agreement is high."""
+    counts = torch.zeros(100, 2, dtype=torch.long)
+    counts[:majority_samples, 0] = num_raters
+    counts[majority_samples:, 1] = num_raters
+    expected = torch.tensor(1.0)
+    torch.testing.assert_close(fleiss_kappa(counts), expected, atol=0, rtol=0)
+    metric = FleissKappa()
+    for batch in counts.split(30):
+        metric.update(batch)
+    torch.testing.assert_close(metric.compute(), expected, atol=0, rtol=0)
+
+
+def test_fleiss_kappa_complete_disagreement():
+    """Complete disagreement must retain its exact negative score."""
+    counts = torch.ones(20, 2, dtype=torch.long)
+    torch.testing.assert_close(fleiss_kappa(counts), torch.tensor(-1.0), atol=0, rtol=0)
+
+
+def test_fleiss_kappa_zero_denominator():
+    """Removing bias must preserve the existing zero-denominator result."""
+    counts = torch.full((10, 1), 3, dtype=torch.long)
+    torch.testing.assert_close(fleiss_kappa(counts), torch.tensor(0.0))
+
+
 def _random_counts(high, size):
     """Generate random counts matrix that is fully ranked.
 

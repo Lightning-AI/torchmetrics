@@ -15,6 +15,8 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.utilities.compute import _safe_divide
+
 
 def _fleiss_kappa_update(ratings: Tensor, mode: Literal["counts", "probs"] = "counts") -> Tensor:
     """Updates the counts for fleiss kappa metric.
@@ -55,7 +57,7 @@ def _fleiss_kappa_compute(counts: Tensor) -> Tensor:
     p_j = ((counts**2).sum(dim=1) - num_raters) / (num_raters * (num_raters - 1))
     p_bar = p_j.mean()
     pe_bar = (p_i**2).sum()
-    return (p_bar - pe_bar) / (1 - pe_bar + 1e-5)
+    return _safe_divide(p_bar - pe_bar, 1 - pe_bar)
 
 
 def fleiss_kappa(ratings: Tensor, mode: Literal["counts", "probs"] = "counts") -> Tensor:
