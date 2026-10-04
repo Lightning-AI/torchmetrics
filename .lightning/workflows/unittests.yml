@@ -8,9 +8,9 @@ timeout: "300" # minutes
 machine: "L4_X_2"
 parametrize:
   matrix:
-    image: # note that this is setting also all oldest requirements which is linked to Torch == 2.0
-      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.1.1-py3.10-torch2.0"
-      - "pytorchlightning/torchmetrics:ubuntu24.04-cuda12.6.3-py3.12-torch2.8"
+    image: # the lowest torch here must match the floor in requirements/base.txt, as it also drives the oldest requirements
+      - "pytorchlightning/torchmetrics:ubuntu22.04-cuda12.4.1-py3.11-torch2.6"
+      - "pytorchlightning/torchmetrics:ubuntu24.04-cuda12.8.1-py3.12-torch2.10"
     # testing: ["doctest", "common", "distributed"] # todo
   include: []
   exclude: []
@@ -34,7 +34,7 @@ run: |
   image_tmp="${image##*cuda}" # Remove everything up to and including "cuda"
   CUDA_VERSION="${image_tmp%%-*}" # Extract the CUDA version up to the first hyphen
   echo "Using CUDA version: ${CUDA_VERSION}"
-  CUDA_VERSION_M_M="${cuda_version%.*}" # Get major.minor by removing the last dot and everything after
+  CUDA_VERSION_M_M="${CUDA_VERSION%.*}" # Get major.minor by removing the last dot and everything after
   CUDA_VERSION_MM="${CUDA_VERSION_M_M//'.'/''}"
   TORCH_VER="${image##*torch}" # Extract the torch version from the image name
   echo "Using Torch version: ${TORCH_VER}"
@@ -47,14 +47,24 @@ run: |
   #  TEST_DIRS=$(python .github/assistant.py changed-domains $PR_NUMBER)
   #  echo "focus: $TEST_DIRS"
 
-  pip install -q packaging
+  # read the torch floor from the requirements, so raising it on CPU cannot leave these GPU lanes behind
+  # note: must run before `adjust-torch-versions.py` below, which rewrites the pin to an exact version
+  TORCH_MIN=$(grep -oE '^torch >=[0-9]+\.[0-9]+' requirements/base.txt | grep -oE '[0-9]+\.[0-9]+$' || true)
+  [ -n "${TORCH_MIN}" ] || { echo "ERROR: could not read the torch floor from requirements/base.txt"; exit 1; }
+  echo "Torch floor from requirements/base.txt: ${TORCH_MIN}"
+  python -c "import sys; from packaging.version import Version; sys.exit(0 if Version('${TORCH_VER}') >= Version('${TORCH_MIN}') else 1)" || {
+    echo "ERROR: image provides torch ${TORCH_VER}, below the ${TORCH_MIN} floor in requirements/base.txt."
+    echo "       Bump the images in .lightning/workflows/ together with the floor."
+    exit 1
+  }
+
   wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
   for fpath in `ls requirements/*.txt`; do
       # torch version shall be sourced based on the used docker
       python adjust-torch-versions.py $fpath
   done
 
-  if [ "${TORCH_VER}" == "2.0" ]; then
+  if [ "${TORCH_VER}" == "${TORCH_MIN}" ]; then
     # Set oldest versions
     python .github/assistant.py set-oldest-versions
   fi

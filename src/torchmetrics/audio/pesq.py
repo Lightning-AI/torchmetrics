@@ -57,6 +57,11 @@ class PerceptualEvaluationSpeechQuality(Metric):
         for a batch. To obtain a PESQ value for each sample, you may use the functional counterpart in
         :func:`~torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality`.
 
+    .. note::
+        Samples that the ``pesq`` backend cannot score, e.g. a silent reference for which no utterance can be
+        detected, are excluded from the average instead of aborting the calculation for the whole batch. If no
+        sample in any of the updates could be scored, ``compute`` returns ``nan``.
+
     Args:
         fs: sampling frequency, should be 16000 or 8000 (Hz)
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
@@ -127,8 +132,10 @@ class PerceptualEvaluationSpeechQuality(Metric):
             preds, target, self.fs, self.mode, False, self.n_processes
         ).to(self.sum_pesq.device)
 
-        self.sum_pesq += pesq_batch.sum()
-        self.total += pesq_batch.numel()
+        # samples the backend could not score are returned as `nan` and are left out of the average
+        scored = ~pesq_batch.isnan()
+        self.sum_pesq += pesq_batch[scored].sum()
+        self.total += scored.sum()
 
     def compute(self) -> Tensor:
         """Compute metric."""

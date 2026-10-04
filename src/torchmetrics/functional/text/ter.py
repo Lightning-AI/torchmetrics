@@ -444,7 +444,7 @@ def _compute_sentence_statistics(pred_words: list[str], target_words: list[list[
     best_num_edits = tensor(2e16)
 
     for tgt_words in target_words:
-        num_edits = _translation_edit_rate(tgt_words, pred_words)
+        num_edits = _translation_edit_rate(pred_words, tgt_words)
         tgt_lengths += len(tgt_words)
         if num_edits < best_num_edits:
             best_num_edits = num_edits

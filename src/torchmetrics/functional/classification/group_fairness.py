@@ -24,24 +24,20 @@ from torchmetrics.functional.classification.stat_scores import (
 )
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.data import _flexible_bincount
+from torchmetrics.utilities.data import _bincount
 
 
 def _groups_validation(groups: torch.Tensor, num_groups: int) -> None:
     """Validate groups tensor.
 
-    - The largest number in the tensor should not be larger than the number of groups. The group identifiers should
-    be ``0, 1, ..., (num_groups - 1)``.
+    - The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
     - The group tensor should be dtype long.
 
     """
-    if torch.max(groups) > num_groups:
-        raise ValueError(
-            f"The largest number in the groups tensor is {torch.max(groups)}, which is larger than the specified",
-            f"number of groups {num_groups}. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.",
-        )
     if groups.dtype != torch.long:
         raise ValueError(f"Expected dtype of argument groups to be long, not {groups.dtype}.")
+    if torch.any((groups < 0) | (groups >= num_groups)):
+        raise ValueError(f"Expected all group identifiers to be in the [0, {num_groups - 1}] range.")
 
 
 def _groups_format(groups: torch.Tensor) -> torch.Tensor:
@@ -71,11 +67,19 @@ def _binary_groups_stat_scores(
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     groups = _groups_format(groups)
 
-    indexes, indices = torch.sort(groups.squeeze(1))
-    preds = preds[indices]
-    target = target[indices]
-
-    split_sizes = _flexible_bincount(indexes).detach().cpu().tolist()
+    if groups.shape[0] != preds.shape[0] or groups.shape[1] not in (1, preds.shape[1]):
+        raise ValueError(
+            "Expected argument `groups` to have the same shape as `preds` and `target`, or one group per sample."
+        )
+    if groups.shape[1] == 1:
+        indexes, indices = torch.sort(groups.squeeze(1))
+        preds = preds[indices]
+        target = target[indices]
+    else:
+        indexes, indices = torch.sort(groups.reshape(-1))
+        preds = preds.reshape(-1)[indices].unsqueeze(1)
+        target = target.reshape(-1)[indices].unsqueeze(1)
+    split_sizes = _bincount(indexes, minlength=num_groups).detach().cpu().tolist()
 
     group_preds = list(torch.split(preds, split_sizes, dim=0))
     group_target = list(torch.split(target, split_sizes, dim=0))

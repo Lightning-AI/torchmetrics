@@ -110,5 +110,5 @@ def v_measure_score(preds: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
     """
     completeness, homogeneity = _completeness_score_compute(preds, target)
     if homogeneity + completeness == 0.0:
-        return torch.ones_like(homogeneity)
+        return torch.zeros_like(homogeneity)
     return (1 + beta) * homogeneity * completeness / (beta * homogeneity + completeness)

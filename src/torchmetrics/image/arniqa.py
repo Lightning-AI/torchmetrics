@@ -27,13 +27,13 @@ from torchmetrics.functional.image.arniqa import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_GREATER_EQUAL_2_2, _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["ARNIQA.plot"]
 
-if _TORCH_GREATER_EQUAL_2_2 and _TORCHVISION_AVAILABLE:
+if _TORCHVISION_AVAILABLE:
 
     def _download_arniqa() -> None:
         _ARNIQA(regressor_dataset="koniq10k")
@@ -138,9 +138,6 @@ class ARNIQA(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-
-        if not _TORCH_GREATER_EQUAL_2_2:  # ToDo: RuntimeError: "slow_conv2d_cpu" not implemented for 'Half'
-            raise RuntimeError("ARNIQA metric requires PyTorch >= 2.2.0")
 
         if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
