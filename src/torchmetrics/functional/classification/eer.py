@@ -27,8 +27,12 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 def _binary_eer_compute(fpr: Tensor, tpr: Tensor) -> Tensor:
     """Compute Equal Error Rate (EER) for binary classification task."""
-    diff = fpr - (1 - tpr)
-    idx = torch.argmin(torch.abs(diff))
+    diff = torch.abs(fpr - (1 - tpr))
+    min_diff, min_idx = diff.min(dim=0)
+    eps = torch.finfo(diff.dtype).eps if diff.is_floating_point() else 0
+    # Keep the first threshold when differences are tied within floating-point precision.
+    idx = (diff <= min_diff + eps).to(torch.int8).argmax()
+    idx = torch.where(torch.isnan(min_diff), min_idx, idx)
     return (fpr[idx] + (1 - tpr[idx])) / 2
 
 
@@ -54,8 +58,9 @@ def binary_eer(
     .. math::
         \text{EER} = \frac{\text{FAR} + \text{FRR}}{2}, \text{where} \min_t abs(FAR_t-FRR_t)
 
-    The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and True Positive Rate (TPR) are
+    The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and False Negative Rate (FNR) are
     equal, or in practise minimized. A lower EER value signifies higher system accuracy.
+    Ties within floating-point precision select the first point on the ROC curve.
 
     Args:
         preds: Tensor with predictions
@@ -107,8 +112,9 @@ def multiclass_eer(
     .. math::
         \text{EER} = \frac{\text{FAR} + (1 - \text{FRR})}{2}, \text{where} \min_t abs(FAR_t-FRR_t)
 
-    The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and True Positive Rate (TPR) are
+    The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and False Negative Rate (FNR) are
     equal, or in practise minimized. A lower EER value signifies higher system accuracy.
+    Ties within floating-point precision select the first point on the ROC curve.
 
     Args:
         preds: Tensor with predictions
@@ -176,8 +182,9 @@ def multilabel_eer(
     .. math::
         \text{EER} = \frac{\text{FAR} + (1 - \text{FRR})}{2}, \text{where} \min_t abs(FAR_t-FRR_t)
 
-    The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and True Positive Rate (TPR) are
+    The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and False Negative Rate (FNR) are
     equal, or in practise minimized. A lower EER value signifies higher system accuracy.
+    Ties within floating-point precision select the first point on the ROC curve.
 
     Args:
         preds: Tensor with predictions
