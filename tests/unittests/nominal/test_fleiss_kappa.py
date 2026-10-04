@@ -18,7 +18,7 @@ import pytest
 import torch
 from statsmodels.stats.inter_rater import fleiss_kappa as sk_fleiss_kappa
 
-from torchmetrics.functional.nominal.fleiss_kappa import fleiss_kappa
+from torchmetrics.functional.nominal.fleiss_kappa import _fleiss_kappa_update, fleiss_kappa
 from torchmetrics.nominal.fleiss_kappa import FleissKappa
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
 from unittests._helpers.testers import MetricTester
@@ -49,6 +49,25 @@ class WrappedFleissKappa(FleissKappa):
     def update(self, preds, target):
         """Update function."""
         super().update(preds)
+
+
+@pytest.mark.parametrize("num_categories", [2, 4, 8])
+@pytest.mark.parametrize("num_raters", [2, 5, 9])
+@pytest.mark.parametrize("unused_categories", [False, True])
+def test_probability_category_axis(num_categories, num_raters, unused_categories):
+    """Probability ratings must keep the category count independently of the number of raters."""
+    labels = torch.arange(12 * num_raters).reshape(12, num_raters)
+    labels %= min(num_categories, 2) if unused_categories else num_categories
+    ratings = torch.nn.functional.one_hot(labels, num_classes=num_categories).permute(0, 2, 1).float()
+    counts = torch.stack([(labels == category).sum(dim=1) for category in range(num_categories)], dim=1)
+    torch.testing.assert_close(_fleiss_kappa_update(ratings, mode="probs"), counts)
+    expected = fleiss_kappa(counts)
+    torch.testing.assert_close(fleiss_kappa(ratings, mode="probs"), expected)
+
+    metric = FleissKappa(mode="probs")
+    for batch in ratings.split(5):
+        metric.update(batch)
+    torch.testing.assert_close(metric.compute(), expected)
 
 
 def _random_counts(high, size):
