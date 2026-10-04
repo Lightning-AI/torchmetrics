@@ -55,7 +55,14 @@ def procrustes_disparity(
             " scale/rotation.",
             UserWarning,
         )
-        return torch.tensor(0.0), torch.ones(point_cloud1.shape[0]), torch.eye(point_cloud1.shape[2])
+        disparity = point_cloud1.new_zeros(point_cloud1.shape[0])
+        if return_all:
+            scale = point_cloud1.new_ones(point_cloud1.shape[0], 1)
+            rotation = torch.eye(point_cloud1.shape[2], device=point_cloud1.device, dtype=point_cloud1.dtype).repeat(
+                point_cloud1.shape[0], 1, 1
+            )
+            return disparity, scale, rotation
+        return disparity
 
     rotation = torch.matmul(u, v)
     scale = w.sum(1, keepdim=True)
