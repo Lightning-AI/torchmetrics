@@ -432,3 +432,15 @@ def test_mean_absolute_error_complex_inputs(dtype):
     expected = torch.tensor(3.0, dtype=preds.real.dtype)
     torch.testing.assert_close(mean_absolute_error(preds, target), expected)
     torch.testing.assert_close(MeanAbsoluteError().to(expected.dtype)(preds, target), expected)
+
+
+@pytest.mark.parametrize("swap_inputs", [False, True])
+def test_mean_absolute_error_mixed_float64_integer_inputs(swap_inputs):
+    """Integer conversion must use the floating operand's precision in either argument order."""
+    preds = torch.tensor([2**24 + 1, 2**24 + 3], dtype=torch.float64)
+    target = preds.long()
+    if swap_inputs:
+        preds, target = target, preds
+    expected = torch.tensor(0.0, dtype=torch.float64)
+    torch.testing.assert_close(mean_absolute_error(preds, target), expected)
+    torch.testing.assert_close(MeanAbsoluteError().to(torch.float64)(preds, target), expected)
