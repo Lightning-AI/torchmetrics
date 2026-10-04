@@ -32,8 +32,8 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor, num_outputs: int)
     """
     _check_same_shape(preds, target)
     if num_outputs == 1:
-        preds = preds.view(-1)
-        target = target.view(-1)
+        preds = preds.reshape(-1)
+        target = target.reshape(-1)
     preds = preds if preds.is_floating_point else preds.float()  # type: ignore[truthy-function] # todo
     target = target if target.is_floating_point else target.float()  # type: ignore[truthy-function] # todo
     sum_abs_error = torch.sum(torch.abs(preds - target), dim=0)
