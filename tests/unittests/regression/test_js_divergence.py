@@ -27,6 +27,25 @@ from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
+
+@pytest.mark.parametrize("reduction", ["mean", "sum", "none", None])
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_log_probabilities_with_zero_mass(reduction, dtype):
+    """Disjoint and shared zero support must agree across representations without NaN gradients."""
+    p = torch.tensor([[1.0, 0.0, 0.0], [0.5, 0.5, 0.0], [0.0, 0.0, 1.0]], dtype=dtype)
+    q = torch.tensor([[0.0, 1.0, 0.0], [0.5, 0.5, 0.0], [0.1, 0.4, 0.5]], dtype=dtype)
+    expected = jensen_shannon_divergence(p, q, reduction=reduction)
+    log_p, log_q = p.log().requires_grad_(), q.log().requires_grad_()
+    result = jensen_shannon_divergence(log_p, log_q, log_prob=True, reduction=reduction)
+    torch.testing.assert_close(result, expected)
+    grads = torch.autograd.grad(result.sum(), (log_p, log_q))
+    assert all(torch.isfinite(grad).all() for grad in grads)
+    metric = JensenShannonDivergence(log_prob=True, reduction=reduction).to(dtype)
+    for p_batch, q_batch in zip(log_p.split(1), log_q.split(1)):
+        metric.update(p_batch, q_batch)
+    torch.testing.assert_close(metric.compute(), expected)
+
+
 seed_all(42)
 
 

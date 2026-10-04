@@ -138,3 +138,34 @@ def test_inf_case():
     metric = KLDivergence()
     metric.update(torch.tensor([[0.3, 0.3, 0.4]]), torch.tensor([[0.5, 0.5, 0]]))
     assert not torch.isfinite(metric.compute())
+
+
+@pytest.mark.parametrize("reduction", ["mean", "sum", "none", None])
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_log_probabilities_with_zero_mass(reduction, dtype):
+    """Zero probability must contribute zero in logarithmic and probability representations."""
+    p = torch.tensor([[1.0, 0.0, 0.0], [0.5, 0.5, 0.0], [0.0, 0.0, 1.0]], dtype=dtype)
+    q = torch.tensor([[0.5, 0.5, 0.0], [0.5, 0.5, 0.0], [0.1, 0.4, 0.5]], dtype=dtype)
+    expected = kl_divergence(p, q, reduction=reduction)
+    log_p, log_q = p.log().requires_grad_(), q.log().requires_grad_()
+    result = kl_divergence(log_p, log_q, log_prob=True, reduction=reduction)
+    torch.testing.assert_close(result, expected)
+    grads = torch.autograd.grad(result.sum(), (log_p, log_q))
+    assert all(torch.isfinite(grad).all() for grad in grads)
+    metric = KLDivergence(log_prob=True, reduction=reduction).to(dtype)
+    for p_batch, q_batch in zip(log_p.split(1), log_q.split(1)):
+        metric.update(p_batch, q_batch)
+    torch.testing.assert_close(metric.compute(), expected)
+
+
+def test_log_probabilities_with_disjoint_support():
+    """Positive probability over zero probability must remain infinite."""
+    p, q = torch.tensor([[1.0, 0.0]]), torch.tensor([[0.0, 1.0]])
+    result = kl_divergence(p.log(), q.log(), log_prob=True)
+    assert torch.isposinf(result)
+
+
+def test_log_probabilities_without_exponentiating_reference():
+    """Small reference probabilities must not underflow when computing their logarithm."""
+    p, q = torch.tensor([[0.0, -1000.0]]), torch.tensor([[-1000.0, 0.0]])
+    torch.testing.assert_close(kl_divergence(p, q, log_prob=True), torch.tensor(1000.0))
