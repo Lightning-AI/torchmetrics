@@ -40,6 +40,8 @@ def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
 
     """
     _validate_intrinsic_cluster_data(data, labels)
+    if data.dtype in (torch.float16, torch.bfloat16):
+        data = data.float()
 
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
@@ -47,18 +49,20 @@ def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
     num_samples, dim = data.shape
     _validate_intrinsic_labels_to_samples(num_labels, num_samples)
 
-    intra_dists = torch.zeros(num_labels, device=data.device)
-    centroids = torch.zeros((num_labels, dim), device=data.device)
+    intra_dists = data.new_zeros(num_labels)
+    centroids = data.new_zeros((num_labels, dim))
     for k in range(num_labels):
         cluster_k = data[labels == k, :]
         centroids[k] = cluster_k.mean(dim=0)
         intra_dists[k] = (cluster_k - centroids[k]).pow(2.0).sum(dim=1).sqrt().mean()
+    # Centering preserves distances while avoiding cancellation in cdist's matrix multiplication path.
+    centroids = centroids - centroids.mean(dim=0, keepdim=True)
     centroid_distances = torch.cdist(centroids, centroids)
 
     cond1 = torch.allclose(intra_dists, torch.zeros_like(intra_dists))
     cond2 = torch.allclose(centroid_distances, torch.zeros_like(centroid_distances))
     if cond1 or cond2:
-        return torch.tensor(0.0, device=data.device, dtype=torch.float32)
+        return data.new_tensor(0.0)
 
     centroid_distances[centroid_distances == 0] = float("inf")
     combined_intra_dists = intra_dists.unsqueeze(0) + intra_dists.unsqueeze(1)
