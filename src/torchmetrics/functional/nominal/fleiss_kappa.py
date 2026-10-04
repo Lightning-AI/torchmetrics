@@ -48,6 +48,7 @@ def _fleiss_kappa_compute(counts: Tensor) -> Tensor:
         counts: counts matrix of shape [n_samples, n_categories]
 
     """
+    counts = counts.to(torch.float32 if counts.device.type == "mps" else torch.float64)
     total = counts.shape[0]
     num_raters = counts.sum(1).max()
 
@@ -55,7 +56,7 @@ def _fleiss_kappa_compute(counts: Tensor) -> Tensor:
     p_j = ((counts**2).sum(dim=1) - num_raters) / (num_raters * (num_raters - 1))
     p_bar = p_j.mean()
     pe_bar = (p_i**2).sum()
-    return (p_bar - pe_bar) / (1 - pe_bar + 1e-5)
+    return ((p_bar - pe_bar) / (1 - pe_bar + 1e-5)).to(torch.get_default_dtype())
 
 
 def fleiss_kappa(ratings: Tensor, mode: Literal["counts", "probs"] = "counts") -> Tensor:
