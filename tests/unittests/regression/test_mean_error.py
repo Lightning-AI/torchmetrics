@@ -390,3 +390,36 @@ def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
     """Test that error is raised on wrong extra arguments."""
     with pytest.raises(ValueError, match=error_msg):
         metric_class(**arguments)
+
+
+@pytest.mark.parametrize("normalization", ["mean", "range", "std", "l2"])
+@pytest.mark.parametrize("num_outputs", [1, 3])
+@pytest.mark.parametrize(("num_processes", "empty_rank"), [(1, False), (2, False), (3, False), (4, False), (3, True)])
+def test_nrmse_distributed_statistics(normalization, num_outputs, num_processes, empty_rank):
+    """Gathered statistics must match concatenated data for any rank count without changing the states."""
+    target = torch.arange(1.0, 40.0).reshape(13, 3).square()
+    preds = target + torch.arange(1.0, 40.0).reshape(13, 3)
+    kwargs = {"normalization": normalization, "num_outputs": num_outputs}
+    shards = []
+    for pred_batch, target_batch in zip(
+        torch.tensor_split(preds, num_processes), torch.tensor_split(target, num_processes)
+    ):
+        shard = NormalizedRootMeanSquaredError(**kwargs)
+        shard.update(pred_batch, target_batch)
+        shards.append(shard)
+    if empty_rank:
+        shards.insert(1, NormalizedRootMeanSquaredError(**kwargs))
+
+    metric = NormalizedRootMeanSquaredError(**kwargs)
+    metric.update(preds, target)
+    metric.sum_squared_error = torch.stack([shard.sum_squared_error for shard in shards]).sum(dim=0)
+    states = {}
+    for name in ("total", "min_val", "max_val", "mean_val", "var_val", "target_squared"):
+        state = torch.stack([getattr(shard, name) for shard in shards])
+        setattr(metric, name, state)
+        states[name] = state.clone()
+
+    expected = normalized_root_mean_squared_error(preds, target, **kwargs)
+    torch.testing.assert_close(metric.compute(), expected)
+    for name, state in states.items():
+        torch.testing.assert_close(getattr(metric, name), state)
