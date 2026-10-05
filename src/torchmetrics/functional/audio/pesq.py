@@ -110,8 +110,8 @@ def perceptual_evaluation_speech_quality(
         """Convert raw backend outputs into float scores, mapping every failure onto ``nan``.
 
         A failure is reported either as an error code (``pesq``/``pesq_batch`` with
-        ``on_error=PesqError.RETURN_VALUES``) or as an exception object (``pesq_batch`` collects exceptions
-        raised inside its worker processes). Both are replaced by ``nan``, keeping one entry per input sample.
+        ``on_error=PesqError.RETURN_VALUES``) or as an exception object (``pesq_batch`` collects exceptions raised
+        inside its worker processes). Both are replaced by ``nan``, keeping one entry per input sample.
 
         """
         values = np.asarray(values, dtype=object).reshape(-1)

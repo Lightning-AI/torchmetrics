@@ -287,9 +287,7 @@ import torchmetrics
 preds = torch.randn(10, 5).softmax(dim=-1)
 target = torch.randint(5, (10,))
 
-acc = torchmetrics.functional.classification.multiclass_accuracy(
-    preds, target, num_classes=5
-)
+acc = torchmetrics.functional.classification.multiclass_accuracy(preds, target, num_classes=5)
 ```
 
 ### Covered domains and example metrics

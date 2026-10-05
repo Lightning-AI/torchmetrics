@@ -83,13 +83,15 @@ class _LevenshteinEditDistance:
         self.op_undefined = _INT_INFINITY
 
     def __call__(self, prediction_tokens: list[str]) -> tuple[int, tuple[_EditOperations, ...]]:
-        """Calculate edit distance between self._words_ref and the hypothesis. Uses cache to skip some computations.
+        """Calculate edit distance between self._words_ref and the hypothesis.
+
+        Uses cache to skip some computations.
 
         Args:
-            prediction_tokens: A tokenized predicted sentence.
+                    prediction_tokens: A tokenized predicted sentence.
 
         Return:
-            A tuple of a calculated edit distance and a trace of executed operations.
+                    A tuple of a calculated edit distance and a trace of executed operations.
 
         """
         # Use cached edit distance for already computed words

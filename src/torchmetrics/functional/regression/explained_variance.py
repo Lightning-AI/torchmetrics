@@ -24,11 +24,13 @@ ALLOWED_MULTIOUTPUT = ("raw_values", "uniform_average", "variance_weighted")
 
 
 def _explained_variance_update(preds: Tensor, target: Tensor) -> tuple[int, Tensor, Tensor, Tensor, Tensor]:
-    """Update and returns variables required to compute Explained Variance. Checks for same shape of input tensors.
+    """Update and returns variables required to compute Explained Variance.
+
+    Checks for same shape of input tensors.
 
     Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
+            preds: Predicted tensor
+            target: Ground truth tensor
 
     """
     _check_same_shape(preds, target)

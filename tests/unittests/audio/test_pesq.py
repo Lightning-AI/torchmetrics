@@ -130,9 +130,8 @@ def test_error_on_different_shape(metric_class=PerceptualEvaluationSpeechQuality
 def test_degenerate_sample_does_not_abort_batch(num_processes):
     """Test that a single sample the backend cannot score does not abort the rest of the batch.
 
-    A silent reference makes the ``pesq`` backend fail with ``NoUtterancesError``. The batch should still be
-    scored, with ``nan`` in place of the offending sample so that the returned tensor keeps one value per input
-    sample.
+    A silent reference makes the ``pesq`` backend fail with ``NoUtterancesError``. The batch should still be scored,
+    with ``nan`` in place of the offending sample so that the returned tensor keeps one value per input sample.
 
     """
     preds = torch.rand(3, 2100)
