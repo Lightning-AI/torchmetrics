@@ -29,6 +29,45 @@ from unittests.text._inputs import (
 )
 
 
+@pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16, torch.float32, torch.float64])
+@pytest.mark.parametrize("ignore_index", [None, -100])
+def test_perplexity_extreme_logits(dtype, ignore_index):
+    """A rare target token must not turn a finite mean cross entropy into infinite perplexity."""
+    magnitude = 20.0 if dtype == torch.float16 else 500.0
+    preds = torch.empty(2, 10, 2, dtype=dtype)
+    preds[..., 0], preds[..., 1] = magnitude, -magnitude
+    target = torch.zeros(2, 10, dtype=torch.long)
+    target[-1, -1] = 1
+    if ignore_index is not None:
+        target[0, :2] = ignore_index
+    preds.requires_grad_()
+    expected = F.cross_entropy(preds.reshape(-1, 2), target.reshape(-1), ignore_index=-100).exp()
+    assert torch.isfinite(expected)
+    result = perplexity(preds, target, ignore_index)
+    torch.testing.assert_close(result, expected)
+    assert torch.isfinite(torch.autograd.grad(result, preds)[0]).all()
+    metric = Perplexity(ignore_index=ignore_index).to(dtype)
+    for pred_batch, target_batch in zip(preds.split(1), target.split(1)):
+        metric.update(pred_batch, target_batch)
+    torch.testing.assert_close(metric.compute(), expected.detach())
+
+
+@pytest.mark.parametrize("invalid_index", [-1, 2])
+def test_perplexity_invalid_class_indices(invalid_index):
+    """Class indices outside the vocabulary must raise instead of indexing from the end."""
+    with pytest.raises((IndexError, RuntimeError), match="out of bounds"):
+        perplexity(torch.zeros(1, 1, 2), torch.tensor([[invalid_index]]))
+
+
+def test_perplexity_ignored_nonfinite_logits():
+    """Ignored logits must contribute neither loss nor undefined gradients."""
+    preds = torch.tensor([[[float("nan"), float("nan")], [0.0, 0.0]]], requires_grad=True)
+    target = torch.tensor([[-100, 0]])
+    result = perplexity(preds, target, ignore_index=-100)
+    torch.testing.assert_close(result, torch.tensor(2.0))
+    assert torch.isfinite(torch.autograd.grad(result, preds)[0]).all()
+
+
 def _reference_local_perplexity(preds, target, ignore_index):
     """Baseline implementation of perplexity metric based upon PyTorch Cross Entropy."""
     preds = preds.reshape(-1, preds.shape[-1])
