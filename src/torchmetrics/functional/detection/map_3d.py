@@ -121,7 +121,7 @@ def _evaluate_class(
     for mdt in max_detection_thresholds:
         recall_per_iou = []
         for iou_thr in iou_thresholds:
-            matched = [torch.zeros(t.shape[0], dtype=torch.bool) for t in target_per_image]
+            matched = [torch.zeros(t.shape[0], dtype=torch.bool, device=device) for t in target_per_image]
             per_image_count = dict.fromkeys(range(len(target_per_image)), 0)
             per_image_cursor = dict.fromkeys(range(len(target_per_image)), 0)
             for i in range(all_preds.shape[0]):
@@ -145,7 +145,7 @@ def _evaluate_class(
         average_recalls[mdt] = torch.tensor(sum(recall_per_iou) / len(recall_per_iou), device=device)
 
     for t_idx, iou_threshold in enumerate(iou_thresholds):
-        matched = [torch.zeros(t.shape[0], dtype=torch.bool) for t in target_per_image]
+        matched = [torch.zeros(t.shape[0], dtype=torch.bool, device=device) for t in target_per_image]
         per_image_cursor = dict.fromkeys(range(len(target_per_image)), 0)
         tp = torch.zeros(all_preds.shape[0], device=device)
         fp = torch.zeros(all_preds.shape[0], device=device)
