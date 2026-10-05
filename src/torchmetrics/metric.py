@@ -507,7 +507,8 @@ class Metric(Module, ABC):
                 torch.distributed.barrier(group=group)
                 gathered = [None] * world_size
                 torch.distributed.all_gather_object(gathered, input_dict.pop(attr), group=group)
-                setattr(self, attr, [item for rank_list in gathered for item in (rank_list or [])])
+                flattened = [item for rank_list in gathered for item in (rank_list or [])]
+                setattr(self, attr, apply_to_collection(flattened, Tensor, lambda x: x.to(self.device)))
 
         for attr, reduction_fn in self._reductions.items():
             if attr not in input_dict:
