@@ -33,15 +33,19 @@ def _pairwise_euclidean_distance_update(
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
     # upcast to float64 to prevent precision issues
-    _orig_dtype = x.dtype
+    _orig_dtype = x.dtype if x.is_floating_point() else torch.get_default_dtype()
     x = x.to(torch.float64)
     y = y.to(torch.float64)
+    # A shared translation reduces cancellation without changing pairwise distances.
+    offset = x.mean(dim=0, keepdim=True)
+    x = x - offset
+    y = y - offset
     x_norm = (x * x).sum(dim=1, keepdim=True)
     y_norm = (y * y).sum(dim=1)
-    distance = (x_norm + y_norm - 2 * x.mm(y.T)).to(_orig_dtype)
+    distance = (x_norm + y_norm - 2 * x.mm(y.T)).clamp_min(0)
     if zero_diagonal:
         distance.fill_diagonal_(0)
-    return distance.sqrt()
+    return distance.sqrt().to(_orig_dtype)
 
 
 def pairwise_euclidean_distance(

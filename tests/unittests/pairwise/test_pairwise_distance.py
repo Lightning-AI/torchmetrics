@@ -160,3 +160,39 @@ def test_precision_case(metric_functional, sk_fn):
     res1 = metric_functional(x, zero_diagonal=False)
     res2 = sk_fn(x)
     assert torch.allclose(res1, torch.tensor(res2, dtype=torch.float32))
+
+
+def test_euclidean_float16_representable_distance():
+    """Squared distances may overflow float16 even when the final distance is representable."""
+    x = torch.tensor([[300.0, 0.0]], dtype=torch.float16)
+    y = torch.zeros_like(x)
+    torch.testing.assert_close(pairwise_euclidean_distance(x, y), torch.tensor([[300.0]], dtype=torch.float16))
+
+
+@pytest.mark.parametrize("seed", range(5))
+def test_euclidean_roundoff_nonnegative(seed):
+    """Roundoff in squared distances must not produce NaNs for identical vectors."""
+    x = torch.randn(6, 5, generator=torch.Generator().manual_seed(seed), dtype=torch.float64)
+    result = pairwise_euclidean_distance(x, zero_diagonal=False)
+    assert torch.isfinite(result).all()
+    assert (result >= 0).all()
+    expected = torch.cdist(x, x, compute_mode="donot_use_mm_for_euclid_dist")
+    torch.testing.assert_close(result, expected, atol=1e-7, rtol=1e-7)
+
+
+@pytest.mark.parametrize("dtype", [torch.int8, torch.int32, torch.int64])
+def test_euclidean_integer_inputs(dtype):
+    """Integer inputs and mixed floating targets must return floating distances without truncation."""
+    x = torch.tensor([[1, 1], [100, 100]], dtype=dtype)
+    y = torch.tensor([[0.5, 0.5]])
+    expected = torch.linalg.vector_norm(x.double() - y.double(), dim=1).float().unsqueeze(1)
+    torch.testing.assert_close(pairwise_euclidean_distance(x, y), expected)
+
+
+@pytest.mark.parametrize("offset", [1e5, 1e10, 1e12])
+def test_euclidean_translation_invariance(offset):
+    """A common large coordinate offset must not erase distances between nearby points."""
+    x = torch.tensor([[0.0, 1.0], [3.0, 4.0]], dtype=torch.float64)
+    y = torch.tensor([[1.0, 2.0], [4.0, 5.0]], dtype=torch.float64)
+    expected = torch.cdist(x, y, compute_mode="donot_use_mm_for_euclid_dist")
+    torch.testing.assert_close(pairwise_euclidean_distance(x + offset, y + offset), expected)
