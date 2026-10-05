@@ -390,3 +390,57 @@ def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
     """Test that error is raised on wrong extra arguments."""
     with pytest.raises(ValueError, match=error_msg):
         metric_class(**arguments)
+
+
+@pytest.mark.parametrize("dtype", [torch.bool, torch.uint8, torch.int8, torch.int16, torch.int32, torch.int64])
+@pytest.mark.parametrize("num_outputs", [1, 2])
+def test_mean_absolute_error_integer_inputs(dtype, num_outputs):
+    """Integer errors must be computed before subtraction can overflow or reject booleans."""
+    if dtype == torch.bool:
+        preds = torch.tensor([[False, True], [True, False]])
+        target = ~preds
+    else:
+        limits = torch.iinfo(dtype)
+        preds = torch.tensor([[limits.min, limits.max], [limits.max, limits.min]], dtype=dtype)
+        target = preds.flip(0)
+    expected = (
+        (preds.float() - target.float()).abs().mean(dim=0)
+        if num_outputs == 2
+        else (preds.float() - target.float()).abs().mean()
+    )
+
+    torch.testing.assert_close(mean_absolute_error(preds, target, num_outputs=num_outputs), expected)
+    metric = MeanAbsoluteError(num_outputs=num_outputs)
+    for pred_batch, target_batch in zip(preds.split(1), target.split(1)):
+        metric.update(pred_batch, target_batch)
+    torch.testing.assert_close(metric.compute(), expected)
+
+
+def test_mean_absolute_error_preserves_float64():
+    """Floating inputs must retain their precision when converting integer inputs."""
+    preds = torch.tensor([1.0 + 1e-10], dtype=torch.float64)
+    target = torch.ones_like(preds)
+    expected = (preds - target).abs().mean()
+    torch.testing.assert_close(mean_absolute_error(preds, target), expected, rtol=0, atol=0)
+
+
+@pytest.mark.parametrize("dtype", [torch.complex64, torch.complex128])
+def test_mean_absolute_error_complex_inputs(dtype):
+    """Converting integer inputs must preserve complex absolute errors."""
+    preds = torch.tensor([3 + 4j, 0 + 1j], dtype=dtype)
+    target = torch.zeros_like(preds)
+    expected = torch.tensor(3.0, dtype=preds.real.dtype)
+    torch.testing.assert_close(mean_absolute_error(preds, target), expected)
+    torch.testing.assert_close(MeanAbsoluteError().to(expected.dtype)(preds, target), expected)
+
+
+@pytest.mark.parametrize("swap_inputs", [False, True])
+def test_mean_absolute_error_mixed_float64_integer_inputs(swap_inputs):
+    """Integer conversion must use the floating operand's precision in either argument order."""
+    preds = torch.tensor([2**24 + 1, 2**24 + 3], dtype=torch.float64)
+    target = preds.long()
+    if swap_inputs:
+        preds, target = target, preds
+    expected = torch.tensor(0.0, dtype=torch.float64)
+    torch.testing.assert_close(mean_absolute_error(preds, target), expected)
+    torch.testing.assert_close(MeanAbsoluteError().to(torch.float64)(preds, target), expected)
