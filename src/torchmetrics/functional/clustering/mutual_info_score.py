@@ -48,7 +48,7 @@ def _mutual_info_score_compute(contingency: Tensor) -> Tensor:
 
     # Check if preds or target labels only have one cluster
     if u.size() == 1 or v.size() == 1:
-        return tensor(0.0)
+        return tensor(0.0, device=contingency.device)
 
     # Find indices of nonzero values in U and V
     nzu, nzv = torch.nonzero(contingency, as_tuple=True)
