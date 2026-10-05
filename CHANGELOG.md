@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed ``Metric._sync_dist`` deadlock for ``dist_reduce_fx=None`` list states when ranks have different list lengths (e.g. empty ``MeanAveragePrecision`` / ``IntersectionOverUnion`` ranks). List states are now gathered with ``all_gather_object`` so every rank issues the same collectives ([#3336](https://github.com/Lightning-AI/torchmetrics/issues/3336))
+
 - Fixed `top_k` validation in multiclass classification metrics to reject negative integers and non-integer values ([#3406](https://github.com/Lightning-AI/torchmetrics/pull/3406))
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 

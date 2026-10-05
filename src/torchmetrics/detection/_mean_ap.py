@@ -17,7 +17,6 @@ from typing import Any, Callable, List, Literal, Optional, Union
 
 import numpy as np
 import torch
-import torch.distributed as dist
 from torch import IntTensor, Tensor
 
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
@@ -900,32 +899,6 @@ class MeanAveragePrecision(Metric):
         else:
             this = super()._apply(fn)
         return this
-
-    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
-        """Custom sync function.
-
-        For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need
-        to gather the list of tuples and then convert it back to a list of tuples.
-
-        """
-        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)  # type: ignore[arg-type]
-
-        if self.iou_type == "segm":
-            self.detections = self._gather_tuple_list(self.detections, process_group)  # type: ignore[arg-type]
-            self.groundtruths = self._gather_tuple_list(self.groundtruths, process_group)  # type: ignore[arg-type]
-
-    @staticmethod
-    def _gather_tuple_list(
-        list_to_gather: list[Union[tuple, Tensor]], process_group: Optional[Any] = None
-    ) -> list[Any]:
-        """Gather a list of tuples over multiple devices."""
-        world_size = dist.get_world_size(group=process_group)
-        dist.barrier(group=process_group)
-
-        list_gathered = [None for _ in range(world_size)]
-        dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
-
-        return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]  # type: ignore[arg-type,index]
 
     def plot(
         self, val: Optional[Union[dict[str, Tensor], Sequence[dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None

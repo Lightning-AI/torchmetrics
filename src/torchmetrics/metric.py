@@ -501,6 +501,18 @@ class Metric(Module, ABC):
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
 
         for attr, reduction_fn in self._reductions.items():
+            if reduction_fn is None and isinstance(input_dict.get(attr), list):
+                group = process_group or self.process_group
+                world_size = torch.distributed.get_world_size(group=group)
+                torch.distributed.barrier(group=group)
+                gathered = [None] * world_size
+                torch.distributed.all_gather_object(gathered, input_dict.pop(attr), group=group)
+                flattened = [item for rank_list in gathered for item in (rank_list or [])]
+                setattr(self, attr, apply_to_collection(flattened, Tensor, lambda x: x.to(self.device)))
+
+        for attr, reduction_fn in self._reductions.items():
+            if attr not in input_dict:
+                continue
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
                 input_dict[attr] = [dim_zero_cat(input_dict[attr])]
@@ -517,6 +529,8 @@ class Metric(Module, ABC):
         )
 
         for attr, reduction_fn in self._reductions.items():
+            if attr not in output_dict:
+                continue
             # pre-processing ops (stack or flatten for inputs)
 
             if isinstance(output_dict[attr], list) and len(output_dict[attr]) == 0:
