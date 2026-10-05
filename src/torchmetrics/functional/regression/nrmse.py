@@ -34,7 +34,7 @@ def _normalized_root_mean_squared_error_update(
     """
     sum_squared_error, num_obs = _mean_squared_error_update(preds, target, num_outputs)
 
-    target = target.view(-1) if num_outputs == 1 else target
+    target = target.reshape(-1) if num_outputs == 1 else target
     if normalization == "mean":
         denom = torch.mean(target, dim=0)
     elif normalization == "range":
