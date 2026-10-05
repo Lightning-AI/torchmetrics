@@ -160,3 +160,38 @@ def test_precision_case(metric_functional, sk_fn):
     res1 = metric_functional(x, zero_diagonal=False)
     res2 = sk_fn(x)
     assert torch.allclose(res1, torch.tensor(res2, dtype=torch.float32))
+
+
+@pytest.mark.parametrize("dtype", [torch.float16, torch.float32, torch.float64])
+@pytest.mark.parametrize("reduction", [None, "none", "mean", "sum"])
+@pytest.mark.parametrize("with_y", [False, True])
+@pytest.mark.parametrize("zero_diagonal", [False, True])
+def test_cosine_similarity_zero_vectors(dtype, reduction, with_y, zero_diagonal):
+    """Zero vectors must produce zero similarity and finite gradients for every reduction."""
+    x = torch.tensor([[0.0, 0.0], [3.0, 4.0], [-3.0, -4.0]], dtype=dtype, requires_grad=True)
+    y = torch.tensor([[0.0, 0.0], [4.0, 3.0]], dtype=dtype, requires_grad=True) if with_y else None
+    expected = torch.tensor(
+        [[0.0, 0.0], [0.0, 0.96], [0.0, -0.96]] if with_y else [[0.0, 0.0, 0.0], [0.0, 1.0, -1.0], [0.0, -1.0, 1.0]],
+        dtype=dtype,
+    )
+    if zero_diagonal:
+        expected.fill_diagonal_(0)
+    if reduction == "mean":
+        expected = expected.mean(dim=-1)
+    elif reduction == "sum":
+        expected = expected.sum(dim=-1)
+    result = pairwise_cosine_similarity(x, y, reduction=reduction, zero_diagonal=zero_diagonal)
+    torch.testing.assert_close(result, expected)
+    grads = torch.autograd.grad(result.sum(), (x, y) if with_y else (x,))
+    assert all(torch.isfinite(grad).all() for grad in grads)
+
+
+@pytest.mark.parametrize(
+    ("dtype", "scale"), [(torch.float32, 1e-30), (torch.float32, 1e20), (torch.float64, 1e-200), (torch.float64, 1e200)]
+)
+def test_cosine_similarity_scale_invariance(dtype, scale):
+    """Finite vector scaling must not overflow or underflow the normalization."""
+    x = torch.tensor([[3.0, 4.0]], dtype=dtype) * scale
+    y = torch.tensor([[4.0, 3.0]], dtype=dtype) * scale
+    expected = torch.tensor([[0.96]], dtype=dtype)
+    torch.testing.assert_close(pairwise_cosine_similarity(x, y), expected)

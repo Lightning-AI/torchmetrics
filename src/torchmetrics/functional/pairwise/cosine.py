@@ -21,6 +21,16 @@ from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_dista
 from torchmetrics.utilities.compute import _safe_matmul
 
 
+def _normalize_row_vectors(x: Tensor) -> Tensor:
+    """Normalize rows without overflowing or underflowing their norms."""
+    if x.shape[1] == 0:
+        return x
+    scale = x.abs().amax(dim=1, keepdim=True)
+    x = x / scale.masked_fill(scale == 0, 1.0)
+    norm = torch.norm(x, p=2, dim=1, keepdim=True)
+    return x / norm.masked_fill(norm == 0, 1.0)
+
+
 def _pairwise_cosine_similarity_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
@@ -34,10 +44,8 @@ def _pairwise_cosine_similarity_update(
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 
-    norm = torch.norm(x, p=2, dim=1)
-    x = x / norm.unsqueeze(1)
-    norm = torch.norm(y, p=2, dim=1)
-    y = y / norm.unsqueeze(1)
+    x = _normalize_row_vectors(x)
+    y = _normalize_row_vectors(y)
 
     distance = _safe_matmul(x, y)
     if zero_diagonal:
