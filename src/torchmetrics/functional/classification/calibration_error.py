@@ -30,15 +30,17 @@ from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 def _binning_bucketize(
     confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
 ) -> tuple[Tensor, Tensor, Tensor]:
-    """Compute calibration bins using ``torch.bucketize``. Use for ``pytorch >=1.6``.
+    """Compute calibration bins using ``torch.bucketize``.
+
+    Use for ``pytorch >=1.6``.
 
     Args:
-        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
-        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries: Bin boundaries separating the ``linspace`` from 0 to 1.
+            confidences: The confidence (i.e. predicted prob) of the top1 prediction.
+            accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
+            bin_boundaries: Bin boundaries separating the ``linspace`` from 0 to 1.
 
     Returns:
-        tuple with binned accuracy, binned confidence and binned probabilities
+            tuple with binned accuracy, binned confidence and binned probabilities
 
     """
     accuracies = accuracies.to(dtype=confidences.dtype)

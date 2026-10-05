@@ -99,7 +99,8 @@ def _tv_wrapper_class(preds, target, base_fn, respect_labels, iou_threshold, cla
 
 
 _preds_fn = (
-    torch.tensor([
+    torch
+    .tensor([
         [296.55, 93.96, 314.97, 152.79],
         [328.94, 97.05, 342.49, 122.98],
         [356.62, 95.47, 372.33, 147.55],
@@ -108,7 +109,8 @@ _preds_fn = (
     .repeat(4, 1, 1)
 )
 _target_fn = (
-    torch.tensor([
+    torch
+    .tensor([
         [300.00, 100.00, 315.00, 150.00],
         [330.00, 100.00, 350.00, 125.00],
         [350.00, 100.00, 375.00, 150.00],

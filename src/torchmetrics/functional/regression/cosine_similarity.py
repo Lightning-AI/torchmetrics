@@ -23,11 +23,13 @@ def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,
 ) -> tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Cosine Similarity. Checks for same shape of input tensors.
+    """Update and returns variables required to compute Cosine Similarity.
+
+    Checks for same shape of input tensors.
 
     Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
+            preds: Predicted tensor
+            target: Ground truth tensor
 
     """
     _check_same_shape(preds, target)

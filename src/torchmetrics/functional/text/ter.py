@@ -204,22 +204,24 @@ def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
 
 
 def _find_shifted_pairs(pred_words: list[str], target_words: list[str]) -> Iterator[tuple[int, int, int]]:
-    """Find matching word sub-sequences in two lists of words. Ignores sub- sequences starting at the same position.
+    """Find matching word sub-sequences in two lists of words.
+
+    Ignores sub- sequences starting at the same position.
 
     Args:
-        pred_words: A list of a tokenized hypothesis sentence.
-        target_words: A list of a tokenized reference sentence.
+            pred_words: A list of a tokenized hypothesis sentence.
+            target_words: A list of a tokenized reference sentence.
 
     Return:
-        Yields tuples of ``target_start, pred_start, length`` such that:
-        ``target_words[target_start : target_start + length] == pred_words[pred_start : pred_start + length]``
+            Yields tuples of ``target_start, pred_start, length`` such that:
+            ``target_words[target_start : target_start + length] == pred_words[pred_start : pred_start + length]``
 
-        pred_start:
-            A list of hypothesis start indices.
-        target_start:
-            A list of reference start indices.
-        length:
-            A length of a word span to be considered.
+            pred_start:
+                A list of hypothesis start indices.
+            target_start:
+                A list of reference start indices.
+            length:
+                A length of a word span to be considered.
 
     """
     for pred_start in range(len(pred_words)):
@@ -250,18 +252,20 @@ def _handle_corner_cases_during_shifting(
     target_start: int,
     length: int,
 ) -> bool:
-    """Return ``True`` if any of corner cases has been met. Otherwise, ``False`` is returned.
+    """Return ``True`` if any of corner cases has been met.
+
+    Otherwise, ``False`` is returned.
 
     Args:
-        alignments: A dictionary mapping aligned positions between a reference and a hypothesis.
-        pred_errors: A list of error positions in a hypothesis.
-        target_errors: A list of error positions in a reference.
-        pred_start: A hypothesis start index.
-        target_start: A reference start index.
-        length: A length of a word span to be considered.
+            alignments: A dictionary mapping aligned positions between a reference and a hypothesis.
+            pred_errors: A list of error positions in a hypothesis.
+            target_errors: A list of error positions in a reference.
+            pred_start: A hypothesis start index.
+            target_start: A reference start index.
+            length: A length of a word span to be considered.
 
     Return:
-        An indication whether any of conrner cases has been met.
+            An indication whether any of conrner cases has been met.
 
     """
     # don't do the shift unless both the hypothesis was wrong and the
