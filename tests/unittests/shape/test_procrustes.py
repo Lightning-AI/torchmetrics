@@ -93,3 +93,31 @@ def test_error_on_non_3d_input():
         metric(torch.randn(100), torch.randn(100))
     with pytest.raises(ValueError, match="Expected both datasets to be 3D tensors of shape"):
         procrustes_disparity(torch.randn(100), torch.randn(100))
+
+
+@pytest.mark.parametrize("return_all", [False, True])
+@pytest.mark.parametrize("batch_size", [1, 3])
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_svd_failure_preserves_output_contract(monkeypatch, return_all, batch_size, dtype):
+    """SVD fallback must preserve the requested result type, batch dimensions, dtype, and device."""
+
+    def _raise_svd_error(*args: object, **kwargs: object) -> None:
+        raise RuntimeError("simulated SVD failure")
+
+    monkeypatch.setattr(torch.linalg, "svd", _raise_svd_error)
+    data = torch.randn(batch_size, 5, 2, dtype=dtype)
+    with pytest.warns(UserWarning, match="SVD calculation.*failed"):
+        result = procrustes_disparity(data, data, return_all=return_all)
+    expected = torch.zeros(batch_size, dtype=dtype)
+    if return_all:
+        disparity, scale, rotation = result
+        torch.testing.assert_close(disparity, expected)
+        torch.testing.assert_close(scale, torch.ones(batch_size, 1, dtype=dtype))
+        torch.testing.assert_close(rotation, torch.eye(2, dtype=dtype).repeat(batch_size, 1, 1))
+    else:
+        torch.testing.assert_close(result, expected)
+    metric = ProcrustesDisparity().to(dtype)
+    with pytest.warns(UserWarning, match="SVD calculation.*failed"):
+        metric.update(data, data)
+    torch.testing.assert_close(metric.compute(), torch.tensor(0.0, dtype=dtype))
+    assert metric.total == batch_size
