@@ -83,3 +83,64 @@ def test_error_on_single_ensemble_member():
     metric = ContinuousRankedProbabilityScore()
     with pytest.raises(ValueError, match="CRPS requires at least 2 ensemble members, but.*"):
         metric(torch.randn(100, 1), torch.randn(100))
+
+
+@pytest.mark.parametrize("ensemble_size", [0, 1])
+def test_error_on_insufficient_ensemble_members(ensemble_size):
+    """Empty ensembles must raise the same informative error as single-member ensembles."""
+    with pytest.raises(ValueError, match="CRPS requires at least 2 ensemble members"):
+        continuous_ranked_probability_score(torch.empty(3, ensemble_size), torch.ones(3))
+
+
+@pytest.mark.parametrize("shape", [(), (3,), (3, 2, 2)])
+def test_error_on_invalid_prediction_dimensions(shape):
+    """Invalid ensemble dimensions must raise before indexing the ensemble axis."""
+    with pytest.raises(ValueError, match="2D"):
+        continuous_ranked_probability_score(torch.zeros(shape), torch.zeros(3))
+
+
+@pytest.mark.parametrize("dtype", [torch.uint8, torch.int8, torch.float32, torch.float64])
+def test_crps_integer_and_tied_ensembles(dtype):
+    """Sorted and tied ensemble members must agree with an independent pairwise definition."""
+    preds = torch.tensor([[0, 100, 100, 0], [1, 1, 1, 1]], dtype=dtype)
+    target = torch.tensor([50, 2], dtype=dtype)
+    reference_preds, reference_target = preds.double(), target.double()
+    expected = (
+        (reference_preds - reference_target.unsqueeze(1)).abs().mean(dim=1)
+        - (reference_preds.unsqueeze(2) - reference_preds.unsqueeze(1)).abs().mean(dim=(1, 2)) / 2
+    ).mean()
+    result = continuous_ranked_probability_score(preds, target)
+    torch.testing.assert_close(result.double(), expected)
+    metric = ContinuousRankedProbabilityScore().to(torch.float64)
+    for pred_batch, target_batch in zip(preds.split(1), target.split(1)):
+        metric.update(pred_batch, target_batch)
+    torch.testing.assert_close(metric.compute(), expected)
+
+
+def test_crps_large_ensemble():
+    """A large uniformly spaced ensemble has a closed-form score without requiring pairwise distances."""
+    ensemble_size = 4096
+    preds = torch.arange(ensemble_size, dtype=torch.float64).unsqueeze(0)
+    expected = torch.tensor((ensemble_size - 1) * (2 * ensemble_size - 1) / (6 * ensemble_size), dtype=torch.float64)
+    torch.testing.assert_close(
+        continuous_ranked_probability_score(preds, torch.zeros(1, dtype=torch.float64)), expected
+    )
+
+
+@pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16])
+def test_crps_low_precision_large_values(dtype):
+    """Ensemble differences must not overflow before averaging a representable score."""
+    preds = torch.tensor([[-60000.0, 60000.0]], dtype=dtype)
+    target = torch.zeros(1, dtype=dtype)
+    expected = preds.double().abs().mean() / 2
+    torch.testing.assert_close(continuous_ranked_probability_score(preds, target).double(), expected)
+
+
+@pytest.mark.parametrize(("pred_dtype", "target_dtype"), [(torch.int64, torch.float64), (torch.float64, torch.int64)])
+def test_crps_mixed_float64_integer_inputs(pred_dtype, target_dtype):
+    """Mixed integer and double precision data must not be rounded to float32."""
+    preds = torch.full((1, 2), 2**24 + 1, dtype=pred_dtype)
+    target = torch.full((1,), 2**24 + 1, dtype=target_dtype)
+    torch.testing.assert_close(
+        continuous_ranked_probability_score(preds, target), torch.tensor(0.0, dtype=torch.float64)
+    )
