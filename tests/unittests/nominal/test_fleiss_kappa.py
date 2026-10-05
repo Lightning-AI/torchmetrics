@@ -51,6 +51,23 @@ class WrappedFleissKappa(FleissKappa):
         super().update(preds)
 
 
+@pytest.mark.parametrize("dtype", [torch.uint8, torch.int8, torch.int16, torch.int32, torch.int64])
+def test_fleiss_kappa_integer_count_overflow(dtype):
+    """Squaring narrow integer counts must not corrupt agreement probabilities."""
+    counts = torch.tensor([[100, 0], [0, 100]], dtype=dtype)
+    expected = fleiss_kappa(counts.long())
+    torch.testing.assert_close(fleiss_kappa(counts), expected)
+    torch.testing.assert_close(FleissKappa()(counts), expected)
+
+
+def test_fleiss_kappa_large_rater_count():
+    """The pair-count denominator must not overflow int64 before division."""
+    num_raters = 4_000_000_000
+    counts = torch.full((2, 2), num_raters // 2, dtype=torch.long)
+    expected = torch.tensor(-1 / (num_raters - 1))
+    torch.testing.assert_close(fleiss_kappa(counts), expected, atol=1e-16, rtol=3e-5)
+
+
 def _random_counts(high, size):
     """Generate random counts matrix that is fully ranked.
 
