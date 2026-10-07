@@ -34,6 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Runner images: https://github.com/actions/runner-images
         os: ["ubuntu-24.04"]
         python-version: ["3.10"]
         pytorch-version:
