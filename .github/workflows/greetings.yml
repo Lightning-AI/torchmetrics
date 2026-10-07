@@ -5,7 +5,7 @@ on: [issues] # pull_request
 
 jobs:
   greeting:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1.0
         with:
