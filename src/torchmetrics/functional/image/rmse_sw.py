@@ -72,12 +72,13 @@ def _rmse_sw_update(
     error = _uniform_filter(error, window_size)
     _rmse_map = torch.sqrt(error)
     crop_slide = round(window_size / 2)
+    crop_slice = slice(crop_slide, -crop_slide or None)
 
     if rmse_val_sum is not None:
-        rmse_val = _rmse_map[:, :, crop_slide:-crop_slide, crop_slide:-crop_slide]
+        rmse_val = _rmse_map[:, :, crop_slice, crop_slice]
         rmse_val_sum += rmse_val.sum(0).mean()
     else:
-        rmse_val_sum = _rmse_map[:, :, crop_slide:-crop_slide, crop_slide:-crop_slide].sum(0).mean()
+        rmse_val_sum = _rmse_map[:, :, crop_slice, crop_slice].sum(0).mean()
 
     if rmse_map is not None:
         rmse_map += _rmse_map.sum(0)
