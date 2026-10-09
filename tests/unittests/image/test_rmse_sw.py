@@ -83,3 +83,31 @@ class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
             reference_metric=partial(_reference_sewar_rmse_sw, window_size=window_size),
             metric_args={"window_size": window_size},
         )
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("shape", [(1, 1, 1, 1), (2, 3, 3, 5), (3, 2, 5, 4)])
+@pytest.mark.parametrize("api", ["functional", "forward", "updates"])
+def test_rmse_sw_unit_window(dtype, shape, api):
+    """A one-pixel window retains the full image and reduces absolute errors."""
+    values = torch.arange(torch.Size(shape).numel(), dtype=dtype).reshape(shape)
+    target = 1 + values.remainder(7) / 4
+    preds = target - (values.remainder(5) - 2) / 4
+    expected_map = (target - preds).abs().mean(0)
+    expected = expected_map.mean()
+
+    if api == "functional":
+        result, rmse_map = root_mean_squared_error_using_sliding_window(
+            preds, target, window_size=1, return_rmse_map=True
+        )
+        torch.testing.assert_close(rmse_map, expected_map)
+    else:
+        metric = RootMeanSquaredErrorUsingSlidingWindow(window_size=1).set_dtype(dtype)
+        if api == "forward":
+            result = metric(preds, target)
+        else:
+            for pred, tgt in zip(preds, target):
+                metric.update(pred.unsqueeze(0), tgt.unsqueeze(0))
+            result = metric.compute()
+
+    torch.testing.assert_close(result, expected)
