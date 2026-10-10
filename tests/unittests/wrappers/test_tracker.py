@@ -18,6 +18,8 @@ import torch
 
 from torchmetrics import Metric, MetricCollection
 from torchmetrics.classification import (
+    BinaryAccuracy,
+    BinaryRecall,
     MulticlassAccuracy,
     MulticlassConfusionMatrix,
     MulticlassPrecision,
@@ -310,6 +312,49 @@ def test_compute_all_edge_cases():
     assert len(results) == 2
     for v in results.values():
         assert v.numel() == 3
+
+
+@pytest.mark.parametrize("collection", [False, True])
+@pytest.mark.parametrize("use_forward", [False, True])
+@pytest.mark.parametrize("sample_counts", [(2, 2), (2, 3)])
+def test_compute_all_samplewise_metrics(collection, use_forward, sample_counts):
+    """Return the computed results when samplewise metrics cannot be stacked across validation steps."""
+    metric = BinaryAccuracy(multidim_average="samplewise")
+    if collection:
+        metric = MetricCollection([metric, BinaryRecall(multidim_average="samplewise")])
+    tracker = MetricTracker(metric)
+    target = torch.tensor([[1, 0, 0, 0], [1, 1, 0, 0], [1, 0, 1, 1]])
+    predictions = [
+        torch.tensor([[1, 0, 1, 0], [0, 1, 1, 0], [1, 1, 0, 0]]),
+        torch.tensor([[0, 0, 0, 1], [1, 1, 0, 0], [1, 0, 1, 1]]),
+    ]
+    accuracies = [torch.tensor([0.75, 0.5, 0.25]), torch.tensor([0.5, 1.0, 1.0])]
+    recalls = [torch.tensor([1.0, 0.5, 1 / 3]), torch.tensor([0.0, 1.0, 1.0])]
+    expected = []
+    for index, count in enumerate(sample_counts):
+        tracker.increment()
+        update = tracker if use_forward else tracker.update
+        update(predictions[index][:count], target[:count])
+        values = {"BinaryAccuracy": accuracies[index][:count], "BinaryRecall": recalls[index][:count]}
+        expected.append(values if collection else values["BinaryAccuracy"])
+        torch.testing.assert_close(tracker.compute(), expected[-1])
+
+    result = tracker.compute_all()
+    if sample_counts[0] != sample_counts[1]:
+        assert isinstance(result, list)
+        torch.testing.assert_close(result, expected)
+        with pytest.warns(UserWarning, match="Returning `None` instead"):
+            assert tracker.best_metric() is None
+        with pytest.warns(UserWarning, match="Returning `None` instead"):
+            assert tracker.best_metric(return_step=True) == (None, None)
+    elif collection:
+        assert isinstance(result, dict)
+        torch.testing.assert_close(
+            result, {key: torch.stack([value[key] for value in expected]) for key in expected[0]}
+        )
+    else:
+        assert isinstance(result, torch.Tensor)
+        torch.testing.assert_close(result, torch.stack(expected))
 
 
 def test_best_metric_edge_cases():

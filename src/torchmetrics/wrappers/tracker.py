@@ -218,7 +218,7 @@ class MetricTracker(ModuleList):
 
             return torch.stack(cast(list[Tensor], res), dim=0)
 
-        except TypeError:  # fallback solution to just return as it is if we cannot successfully stack
+        except (TypeError, RuntimeError):  # fallback solution to just return as it is if we cannot successfully stack
             return res
         return res
 
