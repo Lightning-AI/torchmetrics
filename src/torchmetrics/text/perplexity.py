@@ -29,7 +29,8 @@ if not _MATPLOTLIB_AVAILABLE:
 class Perplexity(Metric):
     r"""Perplexity measures how well a language model predicts a text sample.
 
-    It's calculated as the average number of bits per word a model needs to represent the sample.
+    It is calculated as the exponential of the average negative log-likelihood over non-ignored target tokens.
+    The score is dimensionless.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
