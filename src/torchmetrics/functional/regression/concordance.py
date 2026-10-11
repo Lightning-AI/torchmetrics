@@ -29,8 +29,10 @@ def _concordance_corrcoef_compute(
 ) -> Tensor:
     """Compute the final concordance correlation coefficient based on accumulated statistics."""
     pearson = _pearson_corrcoef_compute(max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, nb)
-    var_x = var_x / (nb - 1)
-    var_y = var_y / (nb - 1)
+    # Lin's estimator uses population (1/n) moments throughout, so that the variances, the covariance
+    # (``pearson * sd_x * sd_y``) and the squared mean difference are all on the same scale.
+    var_x = var_x / nb
+    var_y = var_y / nb
     return 2.0 * pearson * var_x.sqrt() * var_y.sqrt() / (var_x + var_y + (mean_x - mean_y) ** 2)
 
 
@@ -52,14 +54,14 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> concordance_corrcoef(preds, target)
-        tensor([0.9777])
+        tensor([0.9768])
 
     Example (multi output regression):
         >>> from torchmetrics.functional.regression import concordance_corrcoef
         >>> target = torch.tensor([[3, -0.5], [2, 7]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> concordance_corrcoef(preds, target)
-        tensor([0.7273, 0.9887])
+        tensor([0.6667, 0.9796])
 
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
