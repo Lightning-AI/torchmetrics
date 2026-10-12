@@ -108,8 +108,8 @@ class Running(WrapperMetric):
         """Update the underlying metric and save state afterwards."""
         val = self._num_vals_seen % self.window
         self.base_metric.update(*args, **kwargs)
-        for key in self.base_metric._defaults:
-            setattr(self, key + f"_{val}", getattr(self.base_metric, key))
+        for key, state in self.base_metric._copy_state_dict().items():
+            setattr(self, key + f"_{val}", state)
         self.base_metric.reset()
         self._num_vals_seen += 1
 
@@ -117,8 +117,8 @@ class Running(WrapperMetric):
         """Forward input to the underlying metric and save state afterwards."""
         val = self._num_vals_seen % self.window
         res = self.base_metric.forward(*args, **kwargs)
-        for key in self.base_metric._defaults:
-            setattr(self, key + f"_{val}", getattr(self.base_metric, key))
+        for key, state in self.base_metric._copy_state_dict().items():
+            setattr(self, key + f"_{val}", state)
         self.base_metric.reset()
         self._num_vals_seen += 1
         self._computed = None
