@@ -131,7 +131,7 @@ def test_error_on_multidim_tensors(metric_class=R2Score):
 def test_error_on_too_few_samples(metric_class=R2Score):
     """Test that error is raised if too few samples are provided."""
     metric = metric_class()
-    with pytest.raises(ValueError, match="Needs at least two samples to calculate r2 score."):
+    with pytest.raises(ValueError, match=r"Needs at least two samples to calculate r2 score\."):
         metric(torch.randn(1), torch.randn(1))
     metric.reset()
 
@@ -161,3 +161,68 @@ def test_constant_target():
     y_pred = torch.tensor([-3.9865, -5.4648, -5.0238, -4.3899, -5.6672, -4.7336])
     score = r2_score(preds=y_pred, target=y_true)
     assert score == 0
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize(
+    ("target_values", "preds_values", "expected"),
+    [
+        ([[1.0, 3.0]] * 3, [[1.0, 3.0]] * 3, 1.0),
+        ([[1.0, 3.0]] * 3, [[1.0, 4.0]] * 3, 0.5),
+        ([[1.0, 3.0]] * 3, [[2.0, 4.0]] * 3, 0.0),
+        ([1.0] * 3, [2.0] * 3, 0.0),
+    ],
+    ids=["perfect_multioutput", "mixed_multioutput", "imperfect_multioutput", "imperfect_single_output"],
+)
+def test_r2_variance_weighted_constant_targets(dtype, target_values, preds_values, expected):
+    """Use a uniform average when every target variance is zero."""
+    target = torch.tensor(target_values, dtype=dtype)
+    preds = torch.tensor(preds_values, dtype=dtype)
+
+    functional = r2_score(preds, target, multioutput="variance_weighted")
+    assert functional.dtype == dtype
+    torch.testing.assert_close(functional, torch.tensor(expected, dtype=dtype))
+
+    metric = R2Score(multioutput="variance_weighted").set_dtype(dtype)
+    metric.update(preds[:1], target[:1])
+    metric.update(preds[1:], target[1:])
+    stateful = metric.compute()
+    assert stateful.dtype == dtype
+    torch.testing.assert_close(stateful, torch.tensor(expected, dtype=dtype))
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_r2_variance_weighted_partial_constant_target(dtype):
+    """Keep weighting by the nonconstant output when only some targets are constant."""
+    target = torch.tensor([[1.0, 0.0], [1.0, 1.0], [1.0, 2.0]], dtype=dtype)
+    preds = torch.tensor([[2.0, 0.0], [2.0, 1.0], [2.0, 3.0]], dtype=dtype)
+    expected = torch.tensor(0.5, dtype=dtype)
+
+    functional = r2_score(preds, target, multioutput="variance_weighted")
+    torch.testing.assert_close(functional, expected)
+
+    metric = R2Score(multioutput="variance_weighted").set_dtype(dtype)
+    metric.update(preds[:1], target[:1])
+    metric.update(preds[1:], target[1:])
+    torch.testing.assert_close(metric.compute(), expected)
+
+
+@pytest.mark.parametrize("preds_values", [[[1.0, 3.0]] * 3, [[2.0, 4.0]] * 3])
+def test_r2_variance_weighted_constant_target_has_finite_gradients(preds_values):
+    """The all-zero-weight fallback must not create NaN gradients."""
+    target = torch.tensor([[1.0, 3.0], [1.0, 3.0], [1.0, 3.0]])
+    preds = torch.tensor(preds_values, requires_grad=True)
+    score = r2_score(preds, target, multioutput="variance_weighted")
+
+    score.backward()
+    assert preds.grad is not None
+    assert torch.isfinite(preds.grad).all()
+
+
+@pytest.mark.parametrize("target_values", [[0.0, float("nan")], [-1e20, 1e20]])
+def test_r2_variance_weighted_nonfinite_target_variance_is_preserved(target_values):
+    """The constant-target fallback must not hide non-finite statistics."""
+    target = torch.tensor(target_values)
+    preds = torch.zeros_like(target)
+
+    assert torch.isnan(r2_score(preds, target, multioutput="variance_weighted"))
