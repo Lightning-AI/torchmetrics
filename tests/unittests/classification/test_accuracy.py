@@ -403,6 +403,13 @@ class TestMulticlassAccuracy(MetricTester):
             )
 
 
+def test_multiclass_accuracy_macro_large_num_classes():
+    """Test the reproduction from #3343: macro accuracy with 1M classes used to run out of memory."""
+    metric = MulticlassAccuracy(num_classes=1_000_000, average="macro")
+    metric.update(torch.tensor([1]), torch.tensor([1]))
+    assert metric.compute() == 1.0
+
+
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 

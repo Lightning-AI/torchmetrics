@@ -483,6 +483,30 @@ def test_multiclass_overflow():
     assert torch.allclose(res, torch.tensor(compare))
 
 
+@pytest.mark.parametrize("average", [None, "macro"])
+def test_multiclass_stat_scores_large_num_classes(average):
+    """Test that multiclass stat scores do not need ``num_classes**2``"""
+    num_classes = 1_000_000
+    last = num_classes - 1
+    target = torch.tensor([0, 0, 1, 2, last, 5])
+    preds = torch.tensor([0, 1, 1, 2, last, 7])
+
+    # one row per class: [tp, fp, tn, fn, support]; a class absent from both is a true negative for all 6 samples
+    expected = torch.zeros(num_classes, 5, dtype=torch.long)
+    expected[:, 2] = 6
+    expected[0] = torch.tensor([1, 0, 4, 1, 2])  # one hit, one sample predicted as class 1
+    expected[1] = torch.tensor([1, 1, 4, 0, 1])  # one hit, one false positive from a class-0 sample
+    expected[2] = torch.tensor([1, 0, 5, 0, 1])
+    expected[5] = torch.tensor([0, 0, 5, 1, 1])  # its only sample was predicted as class 7
+    expected[7] = torch.tensor([0, 1, 5, 0, 0])  # never the target, predicted once
+    expected[last] = torch.tensor([1, 0, 5, 0, 1])  # highest class index is counted too
+    if average == "macro":
+        expected = expected.float().mean(0)
+
+    result = multiclass_stat_scores(preds, target, num_classes=num_classes, average=average)
+    assert torch.allclose(result, expected)
+
+
 def _reference_sklearn_stat_scores_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
