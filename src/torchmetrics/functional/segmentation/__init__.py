@@ -15,5 +15,6 @@ from torchmetrics.functional.segmentation.dice import dice_score
 from torchmetrics.functional.segmentation.generalized_dice import generalized_dice_score
 from torchmetrics.functional.segmentation.hausdorff_distance import hausdorff_distance
 from torchmetrics.functional.segmentation.mean_iou import mean_iou
+from torchmetrics.functional.segmentation.sorted_ap import sorted_ap
 
-__all__ = ["dice_score", "generalized_dice_score", "hausdorff_distance", "mean_iou"]
+__all__ = ["dice_score", "generalized_dice_score", "hausdorff_distance", "mean_iou", "sorted_ap"]
