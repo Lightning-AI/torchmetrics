@@ -17,7 +17,7 @@ from typing import Literal, Optional, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.text.helper import _LevenshteinEditDistance as _LE_distance
+from torchmetrics.functional.text.helper import _edit_distance
 
 
 def _edit_distance_update(
@@ -38,10 +38,7 @@ def _edit_distance_update(
             f"Expected argument `preds` and `target` to have same length, but got {len(preds)} and {len(target)}"
         )
 
-    distance = [
-        _LE_distance(t, op_substitute=substitution_cost)(p)[0]  # type: ignore[arg-type]
-        for p, t in zip(preds, target)
-    ]
+    distance = [_edit_distance(p, t, substitution_cost) for p, t in zip(preds, target)]
     return torch.tensor(distance, dtype=torch.int)
 
 
