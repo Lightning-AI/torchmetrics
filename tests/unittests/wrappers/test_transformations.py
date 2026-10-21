@@ -171,6 +171,27 @@ class TestLambdaInputTransformer:
         assert mse_metric.update_count == 1
         assert lambda_metric.wrapped_metric.update_count == 1
 
+    @pytest.mark.parametrize("call", ["update", "forward"])
+    @pytest.mark.parametrize("keywords", [("target",), ("preds", "target")])
+    def test_keyword_arguments(self, call, keywords) -> None:
+        """Tests that `preds` and `target` are transformed when passed as keyword arguments."""
+        preds = torch.tensor([0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4])
+        targets = torch.tensor([1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0])
+        metric = BinaryAccuracy()
+        wrapped_metric = LambdaInputTransformer(
+            BinaryAccuracy(), transform_pred=lambda p: 1 - p, transform_target=lambda t: 1 - t
+        )
+
+        inputs = {"preds": preds, "target": targets}
+        args = [v for k, v in inputs.items() if k not in keywords]
+        kwargs = {k: inputs[k] for k in keywords}
+        if call == "update":
+            metric.update(1 - preds, 1 - targets)
+            wrapped_metric.update(*args, **kwargs)
+            assert metric.compute() == wrapped_metric.compute()
+        else:
+            assert metric(1 - preds, 1 - targets) == wrapped_metric(*args, **kwargs)
+
 
 class TestBinaryTargetTransformer:
     """Test class for BinaryTargetTransformer."""
@@ -266,3 +287,25 @@ class TestBinaryTargetTransformer:
         """Tests that TypeError is raised when invalid threshold is passed."""
         with pytest.raises(TypeError, match=r"Expected `threshold` to be of type .*"):
             BinaryTargetTransformer(RetrievalMAP(), "a")
+
+    @pytest.mark.parametrize("call", ["update", "forward"])
+    @pytest.mark.parametrize("keywords", [("target",), ("preds", "target")])
+    def test_keyword_arguments(self, call, keywords) -> None:
+        """Tests that `target` is binarized when passed as a keyword argument."""
+        preds = torch.tensor([0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4])
+        targets = torch.tensor([1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0])
+        indexes = torch.tensor([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+        metric = RetrievalMAP()
+        wrapped_metric = BinaryTargetTransformer(RetrievalMAP())
+
+        inputs = {"preds": preds, "target": targets}
+        args = [v for k, v in inputs.items() if k not in keywords]
+        kwargs = {k: inputs[k] for k in keywords}
+        if call == "update":
+            metric.update(preds, targets.gt(0).float(), indexes=indexes)
+            wrapped_metric.update(*args, **kwargs, indexes=indexes)
+            assert metric.compute() == wrapped_metric.compute()
+        else:
+            assert metric(preds, targets.gt(0).float(), indexes=indexes) == wrapped_metric(
+                *args, **kwargs, indexes=indexes
+            )

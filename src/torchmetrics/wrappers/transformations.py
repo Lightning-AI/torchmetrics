@@ -53,26 +53,34 @@ class MetricInputTransformer(WrapperMetric):
         """
         return target
 
-    def _wrap_transform(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
-        """Wrap transformation functions to dispatch args to their individual transform functions."""
-        if len(args) == 1:
-            return (self.transform_pred(args[0]),)
-        if len(args) == 2:
-            return self.transform_pred(args[0]), self.transform_target(args[1])
-        return self.transform_pred(args[0]), self.transform_target(args[1]), *args[2:]
+    def _wrap_transform(self, *args: torch.Tensor, **kwargs: Any) -> tuple[tuple[torch.Tensor, ...], dict[str, Any]]:
+        """Wrap transformation functions to dispatch args to their individual transform functions.
 
-    def update(self, *args: torch.Tensor, **kwargs: dict[str, Any]) -> None:
+        ``preds`` and ``target`` are transformed whether they are passed positionally or as keyword arguments.
+
+        """
+        if "preds" in kwargs:
+            kwargs["preds"] = self.transform_pred(kwargs["preds"])
+        if "target" in kwargs:
+            kwargs["target"] = self.transform_target(kwargs["target"])
+        if len(args) == 0:
+            return args, kwargs
+        if len(args) == 1:
+            return (self.transform_pred(args[0]),), kwargs
+        return (self.transform_pred(args[0]), self.transform_target(args[1]), *args[2:]), kwargs
+
+    def update(self, *args: torch.Tensor, **kwargs: Any) -> None:
         """Wrap the update call of the underlying metric."""
-        args = self._wrap_transform(*args)
+        args, kwargs = self._wrap_transform(*args, **kwargs)
         self.wrapped_metric.update(*args, **kwargs)
 
     def compute(self) -> Any:
         """Wrap the compute call of the underlying metric."""
         return self.wrapped_metric.compute()
 
-    def forward(self, *args: torch.Tensor, **kwargs: dict[str, Any]) -> Any:
+    def forward(self, *args: torch.Tensor, **kwargs: Any) -> Any:
         """Wrap the forward call of the underlying metric."""
-        args = self._wrap_transform(*args)
+        args, kwargs = self._wrap_transform(*args, **kwargs)
         return self.wrapped_metric.forward(*args, **kwargs)
 
     def reset(self) -> None:
