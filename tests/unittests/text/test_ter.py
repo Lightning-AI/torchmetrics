@@ -195,3 +195,15 @@ def test_ter_matches_reference_when_shifts_are_asymmetric():
         preds, targets, normalized=False, no_punct=False, asian_support=False, case_sensitive=True
     )
     assert translation_edit_rate(preds, targets, lowercase=False) == expected
+
+
+def test_ter_shifts_a_block_of_ten_words_at_once():
+    """Test that a block of ``_MAX_SHIFT_SIZE`` (10) words can be moved with a single shift, as in Tercom."""
+    first = "one two three four five six seven eight nine ten"
+    second = "eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty"
+    preds = [f"{second} {first}"]
+    targets = [[f"{first} {second}"]]
+    expected = _reference_sacrebleu_ter(
+        preds, targets, normalized=False, no_punct=False, asian_support=False, case_sensitive=False
+    )
+    assert translation_edit_rate(preds, targets) == expected
