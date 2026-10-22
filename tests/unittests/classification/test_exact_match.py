@@ -35,13 +35,16 @@ def _reference_exact_match_multiclass(preds, target, ignore_index, multidim_aver
     preds = preds.numpy()
     target = target.numpy()
 
+    valid = np.ones(len(target), dtype=bool)
     if ignore_index is not None:
         preds = np.copy(preds)
         preds[target == ignore_index] = ignore_index
+        # samples whose targets are all ignored do not contribute
+        valid = (target != ignore_index).any(-1)
 
-    correct = (preds == target).sum(-1) == preds.shape[1]
+    correct = ((preds == target).sum(-1) == preds.shape[1]) & valid
     correct = correct.sum() if multidim_average == "global" else correct
-    total = len(preds) if multidim_average == "global" else 1
+    total = valid.sum() if multidim_average == "global" else 1
     return correct / total
 
 
@@ -155,19 +158,24 @@ def _reference_exact_match_multilabel(preds, target, ignore_index, multidim_aver
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
 
+    valid = np.ones((target.shape[0], target.shape[2]), dtype=bool)
     if ignore_index is not None:
         target = np.copy(target)
         mask = target == ignore_index
         target = np.where(mask, preds, target)
+        # label sets whose labels are all ignored do not contribute
+        valid = ~mask.all(1)
 
     if multidim_average == "global":
         preds = np.moveaxis(preds, 1, -1).reshape(-1, NUM_CLASSES)
         target = np.moveaxis(target, 1, -1).reshape(-1, NUM_CLASSES)
-        correct = ((preds == target).sum(1) == NUM_CLASSES).sum()
-        total = preds.shape[0]
+        valid = valid.reshape(-1)
+        correct = (((preds == target).sum(1) == NUM_CLASSES) & valid).sum()
+        total = valid.sum()
     else:
-        correct = ((preds == target).sum(1) == NUM_CLASSES).sum(1)
-        total = preds.shape[2]
+        correct = (((preds == target).sum(1) == NUM_CLASSES) & valid).sum(1)
+        # a sample without any valid label set scores 0, as in `_safe_divide`
+        total = np.maximum(valid.sum(1), 1)
     return correct / total
 
 
@@ -291,3 +299,55 @@ def test_wrapper_class(metric, kwargs, base_metric=ExactMatch):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "kwargs"),
+    [(MulticlassExactMatch, {"num_classes": 2}), (MultilabelExactMatch, {"num_labels": 2})],
+)
+def test_fully_ignored_batch_does_not_change_score(metric_class, kwargs):
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/3585."""
+    metric = metric_class(ignore_index=-1, **kwargs)
+    metric.update(torch.tensor([[1, 1]]), torch.tensor([[0, 1]]))
+    before = metric.compute()
+    metric.update(torch.zeros(3, 2, dtype=torch.long), torch.full((3, 2), -1))
+    assert metric.compute() == before
+
+
+@pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+@pytest.mark.parametrize(
+    ("metric_class", "metric_fn", "kwargs", "preds", "target", "expected"),
+    [
+        pytest.param(
+            MulticlassExactMatch,
+            multiclass_exact_match,
+            {"num_classes": 2},
+            # an exact match, a miss, a fully ignored sample and a partially ignored exact match
+            torch.tensor([[0, 1], [1, 1], [0, 0], [1, 0]]),
+            torch.tensor([[0, 1], [0, 1], [-1, -1], [1, -1]]),
+            {"global": 2 / 3, "samplewise": [1.0, 0.0, 0.0, 1.0]},
+            id="multiclass",
+        ),
+        pytest.param(
+            MultilabelExactMatch,
+            multilabel_exact_match,
+            {"num_labels": 2},
+            # written as (N, M, C) so that each innermost list is one label set; the first label set of each sample
+            # is an exact match, a miss and fully ignored respectively, the second one is always fully ignored
+            torch.tensor([[[1, 0], [1, 1]], [[1, 0], [0, 0]], [[0, 1], [1, 0]]]).movedim(-1, 1),
+            torch.tensor([[[1, 0], [-1, -1]], [[0, 0], [-1, -1]], [[-1, -1], [-1, -1]]]).movedim(-1, 1),
+            {"global": 0.5, "samplewise": [1.0, 0.0, 0.0]},
+            id="multilabel",
+        ),
+    ],
+)
+def test_fully_ignored_samples_are_excluded(metric_class, metric_fn, kwargs, preds, target, expected, multidim_average):
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/3585."""
+    kwargs = {"multidim_average": multidim_average, "ignore_index": -1, **kwargs}
+    expected = torch.tensor(expected[multidim_average])
+    assert torch.allclose(metric_fn(preds, target, **kwargs), expected)
+
+    metric = metric_class(**kwargs)
+    for p, t in zip(preds, target):  # one sample per update to also check the accumulated states
+        metric.update(p.unsqueeze(0), t.unsqueeze(0))
+    assert torch.allclose(metric.compute(), expected)

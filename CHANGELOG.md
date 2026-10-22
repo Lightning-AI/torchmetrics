@@ -52,6 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
+- Fixed `MulticlassExactMatch` and `MultilabelExactMatch` counting samples whose targets are all `ignore_index` as exact matches, which are now excluded from the score (in `samplewise` mode such a sample scores 0) ([#3585](https://github.com/Lightning-AI/torchmetrics/issues/3585))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
