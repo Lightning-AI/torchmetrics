@@ -536,9 +536,9 @@ def _infolm_compute(
     target_distribution = _get_data_distribution(
         model, target_dataloader, temperature, idf, special_tokens_map, verbose
     )
-    # Sort preds and target sentences
-    preds_distribution = preds_distribution[preds_dataloader.dataset.sorting_indices]
-    target_distribution = target_distribution[target_dataloader.dataset.sorting_indices]
+    # Invert the length sort to restore the original prediction/reference pairs.
+    preds_distribution = preds_distribution[preds_dataloader.dataset.sorting_indices.argsort()]
+    target_distribution = target_distribution[target_dataloader.dataset.sorting_indices.argsort()]
     # Calculate information measure
     return information_measure_cls(preds_distribution, target_distribution)
 
