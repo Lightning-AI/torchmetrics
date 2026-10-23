@@ -304,7 +304,11 @@ def _preprocess_multiple_references(
 
 
 def _postprocess_multiple_references(
-    precision: Tensor, recall: Tensor, f1_score: Tensor, ref_group_boundaries: List[Tuple[int, int]]
+    precision: Tensor,
+    recall: Tensor,
+    f1_score: Tensor,
+    ref_group_boundaries: List[Tuple[int, int]],
+    all_layers: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Postprocesses metrics when dealing with multiple references.
 
@@ -317,11 +321,16 @@ def _postprocess_multiple_references(
         f1_score: Tensor of F1 scores
         ref_group_boundaries: List of tuples (start, end) indicating the boundaries
                               of reference groups
+        all_layers: Whether the scores contain results from all model layers.
 
     Returns:
         tuple: (precision, recall, f1_score) with updated metrics
 
     """
+    # Scoring squeezes singleton dimensions. Restore the reference axis before grouping.
+    if precision.ndim < 2:
+        shape = (-1, 1) if all_layers else (-1,)
+        precision, recall, f1_score = (score.reshape(shape) for score in (precision, recall, f1_score))
     max_precision, max_recall, max_f1 = [], [], []
 
     for start, end in ref_group_boundaries:
@@ -577,7 +586,7 @@ def bert_score(
 
     if ref_group_boundaries is not None:
         precision, recall, f1_score = _postprocess_multiple_references(
-            precision, recall, f1_score, ref_group_boundaries
+            precision, recall, f1_score, ref_group_boundaries, all_layers
         )
 
     output_dict = {
