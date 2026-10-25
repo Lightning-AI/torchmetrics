@@ -654,6 +654,32 @@ def test_merge_state_feature_basic():
     assert metric.compute() == 3
 
 
+@pytest.mark.parametrize("incoming_as_metric", [True, False])
+def test_merge_state_after_compute(incoming_as_metric):
+    """Check that ``compute`` reflects the merged state when it was already called before ``merge_state``."""
+    metric = SumMetric()
+    metric.update(1)
+    assert metric.compute() == 1
+
+    other = SumMetric()
+    other.update(2)
+    metric.merge_state(other if incoming_as_metric else {"sum_value": torch.tensor(2.0)})
+    assert metric.compute() == 3
+
+    # aggregating shards one at a time, reading the running value after each merge
+    shards = [
+        (torch.tensor([1, 1, 1, 1]), torch.tensor([1, 1, 1, 1])),
+        (torch.tensor([1, 1, 1, 1]), torch.tensor([0, 0, 0, 0])),
+        (torch.tensor([0, 1, 0, 1]), torch.tensor([0, 1, 1, 0])),
+    ]
+    aggregate = BinaryAccuracy()
+    for (preds, target), expected in zip(shards, [1.0, 0.5, 0.5]):
+        shard_metric = BinaryAccuracy()
+        shard_metric.update(preds, target)
+        aggregate.merge_state(shard_metric if incoming_as_metric else shard_metric.metric_state)
+        assert aggregate.compute() == expected
+
+
 def test_merge_state_feature_raises_errors():
     """Check the merge_state method raises errors when expected."""
 

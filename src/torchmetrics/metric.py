@@ -459,6 +459,8 @@ class Metric(Module, ABC):
                 )
             incoming_state = incoming_state.metric_state
 
+        # merging changes the state, so a value cached by a previous ``compute`` call is no longer valid
+        self._computed = None
         self._reduce_states(incoming_state)
 
     def _reduce_states(self, incoming_state: dict[str, Any]) -> None:
