@@ -92,7 +92,11 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
         mask = torch.ones_like(target, dtype=torch.bool)
 
     probs = probs[torch.arange(target.numel()), target][mask]
-    total_log_probs = -probs.log().sum()
+    log_probs = probs.log()
+    # A float16 sum overflows to inf once the total exceeds 65504, so accumulate in at least float32
+    # (float64 inputs stay float64).
+    sum_dtype = torch.promote_types(log_probs.dtype, torch.float32)
+    total_log_probs = -log_probs.sum(dtype=sum_dtype)
     count = mask.sum()
 
     return total_log_probs, count
