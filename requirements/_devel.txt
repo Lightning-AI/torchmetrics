@@ -27,3 +27,6 @@
 # hotfix for latest safetensors breaking change to older Torch versions
 # placing this req. freeze here as it is likely used by many packages which has accelerate as dependency
 safetensors <0.7.0
+
+# Older datasets releases need PyExtensionType; keep NumPy 1.x test environments compatible.
+pyarrow <21.0.0
