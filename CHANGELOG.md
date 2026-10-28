@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed aggregation metrics with a float `nan_strategy` overwriting the `value` and `weight` tensors passed to `update`, which also gave `MeanMetric` wrong weights for broadcast weight tensors ([#3527](https://github.com/Lightning-AI/torchmetrics/pull/3527))
 
 
-- Fixed `Metric` raising `NameError` on Python 3.14 when constructing or unpickling a metric whose `update` annotations use names imported only under `TYPE_CHECKING` ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
+- Fixed `Metric` raising `NameError` on Python 3.14 when constructing or unpickling a metric whose `update` annotations use names imported only under `TYPE_CHECKING` ([#3604](https://github.com/Lightning-AI/torchmetrics/pull/3604))
 
 
 ---
