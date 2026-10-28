@@ -17,6 +17,7 @@
 import builtins
 import functools
 import inspect
+import sys
 from abc import ABC, abstractmethod
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
@@ -43,10 +44,24 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_8
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
 
+if sys.version_info >= (3, 14):
+    import annotationlib
+
 
 def jit_distributed_available() -> bool:
     """Determine if distributed mode is initialized."""
     return torch.distributed.is_available() and torch.distributed.is_initialized()
+
+
+def _get_update_signature(update: Callable) -> inspect.Signature:
+    """Inspect ``update`` while allowing unresolved annotation names on Python 3.14+.
+
+    ``Metric._filter_kwargs`` uses only the parameter names and kinds.
+
+    """
+    if sys.version_info >= (3, 14):
+        return inspect.signature(update, annotation_format=annotationlib.Format.FORWARDREF)
+    return inspect.signature(update)
 
 
 class Metric(Module, ABC):
@@ -153,7 +168,7 @@ class Metric(Module, ABC):
             raise ValueError(f"Unexpected keyword arguments: {', '.join(kwargs_)}")
 
         # initialize
-        self._update_signature = inspect.signature(self.update)
+        self._update_signature = _get_update_signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore[method-assign]
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[method-assign]
         self._computed = None
@@ -787,7 +802,7 @@ class Metric(Module, ABC):
         """
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
-        self._update_signature = inspect.signature(self.update)
+        self._update_signature = _get_update_signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore[method-assign]
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[method-assign]
 

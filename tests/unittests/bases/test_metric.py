@@ -13,8 +13,9 @@
 # limitations under the License.
 import os
 import pickle
+import sys
 from collections import OrderedDict
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock
 
 import cloudpickle
@@ -25,6 +26,7 @@ import torch
 from torch import Tensor, tensor
 from torch.nn import Module, Parameter
 
+from torchmetrics import Metric
 from torchmetrics.aggregation import MeanMetric, SumMetric
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.clustering import AdjustedRandScore
@@ -33,6 +35,9 @@ from torchmetrics.regression import PearsonCorrCoef, R2Score
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_8
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 seed_all(42)
 
@@ -248,6 +253,49 @@ def test_pickle(tmpdir):
     metric_loaded = cloudpickle.loads(metric_pickled)
 
     assert metric_loaded.compute() == 1
+
+
+if sys.version_info >= (3, 14):
+    # Python 3.14+ defers the evaluation of annotations (PEP 649/749), so the `update` annotation below is not evaluated
+    # when the class is defined. Older versions would raise `NameError` on importing this module, hence the guard.
+
+    class _TypeCheckingOnlyAnnotationMetric(Metric):
+        """Metric whose `update` annotation names a type that is only imported under `TYPE_CHECKING`."""
+
+        full_state_update = False
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
+            self.add_state("total", tensor(0.0), dist_reduce_fx="sum")
+
+        def update(self, values: Sequence[Tensor]) -> None:
+            """Update state."""
+            for value in values:
+                self.total += value
+
+        def compute(self) -> Tensor:
+            """Compute value."""
+            return self.total
+
+
+@pytest.mark.skipif(sys.version_info < (3, 14), reason="requires deferred evaluation of annotations (Python 3.14+)")
+def test_type_checking_only_update_annotation():
+    """Test construction, keyword filtering, and pickle restoration with an unresolved annotation."""
+    import annotationlib
+
+    # the annotation must really be unresolvable at runtime for this test to be meaningful
+    with pytest.raises(NameError, match="Sequence"):
+        annotationlib.get_annotations(_TypeCheckingOnlyAnnotationMetric.update, format=annotationlib.Format.VALUE)
+
+    metric = _TypeCheckingOnlyAnnotationMetric()
+    metric.update([tensor(1.0), tensor(2.0)])
+    assert metric.compute() == 3
+    assert metric._filter_kwargs(values=[tensor(1.0)], other=1).keys() == {"values"}
+
+    metric_loaded = pickle.loads(pickle.dumps(metric))
+    assert metric_loaded.compute() == 3
+    metric_loaded.update([tensor(4.0)])
+    assert metric_loaded.compute() == 7
 
 
 def test_state_dict(tmpdir):
