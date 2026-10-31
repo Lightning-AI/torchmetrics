@@ -149,3 +149,50 @@ def test_d_lambda_different_sizes():
     target = torch.rand(1, 1, 16, 16)
     out = spectral_distortion_index(preds, target, p=1)
     assert isinstance(out, torch.Tensor)
+
+
+def test_d_lambda_state_does_not_grow_with_updates():
+    """The metric state should keep a fixed size instead of buffering every image."""
+    metric = SpectralDistortionIndex()
+    state_sizes = []
+    for _ in range(3):
+        metric.update(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16))
+        state_sizes.append(sum(getattr(metric, name).numel() for name in metric._defaults))
+    assert state_sizes[0] == state_sizes[1] == state_sizes[2]
+
+
+def test_d_lambda_different_image_sizes_across_updates():
+    """Batches with different spatial sizes can be accumulated and match the per-image average definition."""
+    batches = [
+        (torch.rand(2, 3, 16, 16), torch.rand(2, 3, 16, 16)),
+        (torch.rand(3, 3, 24, 20), torch.rand(3, 3, 24, 20)),
+    ]
+    metric = SpectralDistortionIndex()
+    for preds, target in batches:
+        metric.update(preds, target)
+
+    length = 3
+    m1 = torch.zeros(length, length)
+    m2 = torch.zeros(length, length)
+    for preds, target in batches:
+        for i in range(preds.shape[0]):
+            for k in range(length):
+                for r in range(length):
+                    if k != r:
+                        m1[k, r] += universal_image_quality_index(
+                            target[i : i + 1, k : k + 1], target[i : i + 1, r : r + 1]
+                        )
+                        m2[k, r] += universal_image_quality_index(
+                            preds[i : i + 1, k : k + 1], preds[i : i + 1, r : r + 1]
+                        )
+    num_images = sum(preds.shape[0] for preds, _ in batches)
+    expected = (torch.abs(m1 - m2) / num_images).sum() / (length * (length - 1))
+    assert torch.allclose(metric.compute(), expected, atol=1e-6)
+
+
+def test_d_lambda_channel_mismatch_across_updates():
+    """Changing the number of channels between updates should raise a clear error."""
+    metric = SpectralDistortionIndex()
+    metric.update(torch.rand(2, 3, 16, 16), torch.rand(2, 3, 16, 16))
+    with pytest.raises(ValueError, match="Expected the number of channels to be the same across updates.*"):
+        metric.update(torch.rand(2, 4, 16, 16), torch.rand(2, 4, 16, 16))
