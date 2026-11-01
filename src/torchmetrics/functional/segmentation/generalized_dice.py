@@ -76,7 +76,7 @@ def _generalized_dice_update(
     weights_flatten = weights.flatten()
     infs = torch.isinf(weights_flatten)
     weights_flatten[infs] = 0
-    w_max = torch.max(weights, 0).values.repeat(w_shape[0], 1).T.flatten()
+    w_max = torch.max(weights, 0).values.repeat(w_shape[0], 1).flatten()
     weights_flatten[infs] = w_max[infs]
     weights = weights_flatten.reshape(w_shape)
 
