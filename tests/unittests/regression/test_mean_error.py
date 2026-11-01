@@ -346,10 +346,6 @@ class TestMeanError(MetricTester):
             # MeanSquaredPercentageError half + cpu does not work due to missing support in torch.log
             pytest.xfail("SymmetricMeanAbsolutePercentageError metric does not support cpu + half precision")
 
-        if metric_class == WeightedMeanAbsolutePercentageError:
-            # WeightedMeanAbsolutePercentageError half + cpu does not work due to missing support in torch.clamp
-            pytest.xfail("WeightedMeanAbsolutePercentageError metric does not support cpu + half precision")
-
         if metric_class == NormalizedRootMeanSquaredError:
             # NormalizedRootMeanSquaredError half + cpu does not work due to missing support in torch.sqrt
             pytest.xfail("NormalizedRootMeanSquaredError metric does not support cpu + half precision")
@@ -390,3 +386,59 @@ def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
     """Test that error is raised on wrong extra arguments."""
     with pytest.raises(ValueError, match=error_msg):
         metric_class(**arguments)
+
+
+@pytest.mark.parametrize(("prediction", "expected"), [(0.0, 1.0), (0.5, 0.5)])
+@pytest.mark.parametrize("api", ["functional", "stateful", "chunked"])
+def test_wmape_half_accumulation(prediction, expected, api):
+    """Normal-range half inputs must not overflow before the WMAPE ratio is computed."""
+    preds = torch.full((256, 256), prediction, dtype=torch.float16, requires_grad=api == "functional")
+    target = torch.ones_like(preds)
+    if api == "functional":
+        result = weighted_mean_absolute_percentage_error(preds, target)
+    else:
+        metric = WeightedMeanAbsolutePercentageError()
+        rows = 16 if api == "chunked" else len(preds)
+        for pred_batch, target_batch in zip(preds.split(rows), target.split(rows)):
+            metric.update(pred_batch, target_batch)
+        result = metric.compute()
+
+    # There are 65,536 unit targets, so WMAPE is exactly 1 - prediction, independent of update size.
+    torch.testing.assert_close(result, result.new_tensor(expected), rtol=0, atol=0)
+    if api == "functional":
+        result.backward()
+        torch.testing.assert_close(preds.grad, torch.full_like(preds, -1 / preds.numel()), rtol=0, atol=0)
+
+
+@pytest.mark.parametrize(
+    ("pred_dtype", "target_dtype"),
+    [
+        (torch.float16, torch.float16),
+        (torch.bfloat16, torch.bfloat16),
+        (torch.float32, torch.float32),
+        (torch.float64, torch.float64),
+        (torch.float16, torch.float64),
+        (torch.float64, torch.float16),
+    ],
+)
+def test_wmape_accumulation_precision(pred_dtype, target_dtype):
+    """Small inputs and double precision, including mixed half/double inputs, retain their values."""
+    preds = torch.full((4,), 0.5, dtype=pred_dtype)
+    target = torch.ones(4, dtype=target_dtype)
+    expected = 0.5
+    if pred_dtype == torch.float64:
+        preds.fill_(1 + 2**-40)
+        expected = 2**-40
+    elif target_dtype == torch.float64:
+        preds.fill_(1)
+        target.fill_(1 + 2**-40)
+        expected = 2**-40 / (1 + 2**-40)
+
+    metric = WeightedMeanAbsolutePercentageError()
+    if torch.float64 in (pred_dtype, target_dtype):
+        metric.set_dtype(torch.float64)
+    results = (weighted_mean_absolute_percentage_error(preds, target), metric(preds, target))
+    for result in results:
+        if torch.float64 in (pred_dtype, target_dtype):
+            assert result.dtype == torch.float64
+        torch.testing.assert_close(result, result.new_tensor(expected), rtol=0, atol=0)
