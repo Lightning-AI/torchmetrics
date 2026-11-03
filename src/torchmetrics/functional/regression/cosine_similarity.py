@@ -36,10 +36,15 @@ def _cosine_similarity_update(
             "Expected input to cosine similarity to be 2D tensors of shape `[N,D]` where `N` is the number of samples"
             f" and `D` is the number of dimensions, but got tensor of shape {preds.shape}"
         )
-    preds = preds.float()
-    target = target.float()
-
-    return preds, target
+    # Keep the input floating dtype. Casting everything to float32 silently truncated
+    # float64 inputs, and a value that is representable in float64 (1e20) does not fit in a
+    # float32 square, so the downcast on its own turned finite inputs into NaN. Half
+    # precision stays promoted to float32, matching the previous behaviour, because its
+    # norms are even less able to hold the intermediates.
+    dtype = torch.promote_types(preds.dtype, target.dtype)
+    if not dtype.is_floating_point or dtype.itemsize < 4:
+        dtype = torch.get_default_dtype()
+    return preds.to(dtype), target.to(dtype)
 
 
 def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
@@ -59,6 +64,16 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optiona
         tensor([ 1.0000, -1.0000])
 
     """
+    # Cosine similarity does not change when either vector is scaled by a positive constant,
+    # so divide out the largest magnitude first. Without that the squared norms overflow
+    # (scale 1e20) or underflow (1e-30) even in float32, and the ratio came back as inf/inf or
+    # 0/0 -- NaN for inputs that are perfectly finite. Scaling to a maximum of one keeps every
+    # squared term at or below one and guarantees a norm of at least one for a nonzero vector,
+    # while a zero vector still gives 0/0, exactly as before.
+    tiny = torch.finfo(preds.dtype).tiny
+    preds_scale = preds.abs().amax(dim=-1, keepdim=True).clamp_min(tiny)
+    target_scale = target.abs().amax(dim=-1, keepdim=True).clamp_min(tiny)
+    preds, target = preds / preds_scale, target / target_scale
     dot_product = (preds * target).sum(dim=-1)
     preds_norm = preds.norm(dim=-1)
     target_norm = target.norm(dim=-1)
