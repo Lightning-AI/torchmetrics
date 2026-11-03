@@ -99,3 +99,53 @@ def test_error_on_non_2d_input():
     metric = CosineSimilarity()
     with pytest.raises(ValueError, match="Expected input to cosine similarity to be 2D tensors of shape.*"):
         metric(torch.randn(100), torch.randn(100))
+
+
+@pytest.mark.parametrize("scale", [1.0, 1e20, 1e-30, 1e100])
+def test_cosine_similarity_is_scale_invariant(scale):
+    """A finite nonzero vector is cosine-similar to itself at any scale.
+
+    The squared norms used to overflow at large scales and underflow at small ones, so the
+    ratio came back as inf/inf or 0/0 and both APIs returned NaN for finite inputs.
+    """
+    x = torch.tensor([[scale, scale]], dtype=torch.float64)
+
+    functional = cosine_similarity(x, x, "none")
+    metric = CosineSimilarity(reduction="none")(x, x)
+
+    assert torch.isfinite(functional).all()
+    assert torch.isfinite(metric).all()
+    assert torch.allclose(functional, torch.ones_like(functional))
+    assert torch.allclose(metric, torch.ones_like(metric))
+
+
+@pytest.mark.parametrize("scale", [1.0, 1e20, 1e-30])
+@pytest.mark.parametrize(
+    ("first", "second", "expected"),
+    [
+        ([1.0, 2.0], [2.0, 1.0], 0.8),
+        ([-2.0, 1.0], [2.0, 1.0], -0.6),
+        ([1.0, 0.0], [0.0, 1.0], 0.0),
+    ],
+)
+def test_cosine_similarity_closed_form_at_extreme_scales(first, second, expected, scale):
+    """Textbook values stay exact when both vectors are scaled to an extreme magnitude."""
+    preds = torch.tensor([first], dtype=torch.float64) * scale
+    target = torch.tensor([second], dtype=torch.float64) * scale
+
+    assert torch.allclose(cosine_similarity(preds, target, "none"), torch.tensor([expected], dtype=torch.float64))
+
+
+def test_cosine_similarity_preserves_float64():
+    """The update used to cast both inputs to float32 unconditionally."""
+    preds = torch.tensor([[1.0, 2.0]], dtype=torch.float64)
+
+    assert cosine_similarity(preds, preds, "none").dtype == torch.float64
+    assert CosineSimilarity(reduction="none")(preds, preds).dtype == torch.float64
+
+
+def test_cosine_similarity_keeps_half_precision_in_float32():
+    """Half precision has no room for the norm intermediates, so it stays promoted."""
+    preds = torch.tensor([[1.0, 2.0]], dtype=torch.float16)
+
+    assert cosine_similarity(preds, preds, "none").dtype == torch.float32
