@@ -125,6 +125,28 @@ def test_error_on_different_shape():
         metric(torch.randn(100, 5), torch.randn(100, 5))
 
 
+@pytest.mark.parametrize("num_outputs", [1, 2])
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("chunk_size", [32, 4096])
+def test_sparse_signal_is_not_constant(num_outputs, dtype, chunk_size):
+    """A rare nonzero observation must not make a valid correlation undefined."""
+    preds = torch.zeros(4096, num_outputs, dtype=dtype)
+    preds[-1] = 65536
+    if num_outputs == 2:
+        preds[:, 1] = torch.arange(4096, dtype=dtype)
+    target = -2 * preds + 10
+    target[0, 0] += 65536
+    if num_outputs == 1:
+        preds, target = preds[:, 0], target[:, 0]
+    expected = torch.tensor(_reference_scipy_pearson(preds, target), dtype=dtype)
+    torch.testing.assert_close(pearson_corrcoef(preds, target), expected)
+
+    metric = PearsonCorrCoef(num_outputs=num_outputs).to(dtype=dtype)
+    for start in range(0, 4096, chunk_size):
+        metric.update(preds[start : start + chunk_size], target[start : start + chunk_size])
+    torch.testing.assert_close(metric.compute(), expected)
+
+
 def test_1d_input_allowed():
     """Check that both input of the form [N,] and [N,1] is allowed with default num_outputs argument."""
     assert isinstance(pearson_corrcoef(torch.randn(10, 1), torch.randn(10, 1)), torch.Tensor)

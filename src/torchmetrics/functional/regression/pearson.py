@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import math
-
 import torch
 from torch import Tensor
 
@@ -119,23 +117,17 @@ def _pearson_corrcoef_compute(
     var_x = var_x * torch.pow(max_abs_dev_x, -2)
     var_y = var_y * torch.pow(max_abs_dev_y, -2)
     corr_xy = corr_xy / (max_abs_dev_x * max_abs_dev_y)
-    bound = math.sqrt(torch.finfo(var_x.dtype).eps)
-    if (
-        (var_x < bound).any()
-        or (var_y < bound).any()
-        or ~torch.isfinite(var_x).any()
-        or ~torch.isfinite(var_y).any()
-        or ~torch.isfinite(corr_xy).any()
-    ):
+    # A nonconstant sparse signal can have normalized variance as small as 1 / n.
+    zero_var_mask = (
+        (var_x <= 0) | (var_y <= 0) | ~torch.isfinite(var_x) | ~torch.isfinite(var_y) | ~torch.isfinite(corr_xy)
+    )
+    if zero_var_mask.any():
         rank_zero_warn(
             "The variance of predictions or target is close to zero. This can cause instability in Pearson correlation"
             "coefficient, leading to wrong results. Consider re-scaling the input if possible or computing using a"
             f"larger dtype (currently using {var_x.dtype}). Setting the correlation coefficient to nan.",
             UserWarning,
         )
-    zero_var_mask = (
-        (var_x < bound) | (var_y < bound) | ~torch.isfinite(var_x) | ~torch.isfinite(var_y) | ~torch.isfinite(corr_xy)
-    )
     corrcoef = torch.full_like(corr_xy, float("nan"), device=corr_xy.device, dtype=corr_xy.dtype)
     valid_mask = ~zero_var_mask
     if valid_mask.any():

@@ -122,6 +122,17 @@ class TestConcordanceCorrCoef(MetricTester):
         )
 
 
+def test_sparse_identical_signal_has_perfect_concordance():
+    """Rare nonzero values still define nonzero variance and perfect agreement."""
+    values = torch.zeros(4096)
+    values[-1] = 65536
+    torch.testing.assert_close(concordance_corrcoef(values, values), torch.ones(1))
+    metric = ConcordanceCorrCoef()
+    for chunk in values.split(32):
+        metric.update(chunk, chunk)
+    torch.testing.assert_close(metric.compute(), torch.tensor(1.0))
+
+
 def test_error_on_different_shape():
     """Test that error is raised on different shapes of input."""
     metric = ConcordanceCorrCoef(num_outputs=1)
