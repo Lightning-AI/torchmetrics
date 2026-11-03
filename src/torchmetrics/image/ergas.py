@@ -15,6 +15,7 @@
 from collections.abc import Sequence
 from typing import Any, List, Optional, Union
 
+import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
@@ -103,7 +104,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         if self.reduction in ("none", None):
             self.scores.append(scores)
         else:
-            self.sum_ergas = self.sum_ergas + scores.sum()
+            self.sum_ergas = self.sum_ergas + scores.sum(dtype=torch.promote_types(scores.dtype, torch.float32))
             self.total += scores.numel()
 
     def compute(self) -> Tensor:

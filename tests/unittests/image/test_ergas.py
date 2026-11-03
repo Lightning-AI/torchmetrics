@@ -206,3 +206,13 @@ def test_ergas_merge_states(reduction):
         actual = actual.sort().values
         expected = expected.sort().values
     torch.testing.assert_close(actual, expected)
+
+
+@pytest.mark.parametrize(("reduction", "expected"), [("elementwise_mean", 75.0), ("sum", 76800.0)])
+def test_ergas_half_precision_large_batch(reduction, expected):
+    """Accumulating many half-precision scores should not overflow their sum."""
+    preds = torch.ones(1024, 1, 1, 1, dtype=torch.float16)
+    target = preds * 0.25
+    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+    metric.update(preds, target)
+    torch.testing.assert_close(metric.compute(), torch.tensor(expected))
