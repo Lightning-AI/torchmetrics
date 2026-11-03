@@ -13,6 +13,7 @@
 # limitations under the License.
 from functools import partial
 from typing import NamedTuple
+from weakref import ref
 
 import pytest
 import torch
@@ -139,3 +140,69 @@ def test_error_on_invalid_type(metric_class=ErrorRelativeGlobalDimensionlessSynt
     metric = metric_class()
     with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))
+
+
+@pytest.mark.parametrize("reduction", ["elementwise_mean", "sum", "none", None])
+def test_ergas_updates_with_different_image_sizes(reduction):
+    """Accumulate per-image scores across differently sized batches."""
+    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+    scores = []
+    for shape, scale in [((2, 3, 4, 5), 0.5), ((3, 3, 7, 2), 0.8)]:
+        preds = torch.arange(1, 1 + torch.tensor(shape).prod().item(), dtype=torch.float64).reshape(shape)
+        target = preds * scale
+        scores.append(error_relative_global_dimensionless_synthesis(preds, target, reduction="none"))
+        metric.update(preds, target)
+
+    expected = torch.cat(scores)
+    if reduction == "elementwise_mean":
+        expected = expected.mean()
+    elif reduction == "sum":
+        expected = expected.sum()
+    torch.testing.assert_close(metric.compute(), expected)
+
+
+@pytest.mark.parametrize("reduction", ["elementwise_mean", "sum", "none", None])
+def test_ergas_does_not_retain_input_images(reduction):
+    """Updates should not keep full images in metric state."""
+    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+    preds = torch.rand(2, 3, 8, 8)
+    target = torch.rand_like(preds)
+    preds_ref, target_ref = ref(preds), ref(target)
+    metric.update(preds, target)
+    del preds, target
+    assert preds_ref() is None
+    assert target_ref() is None
+
+
+@pytest.mark.parametrize("reduction", ["elementwise_mean", "sum", "none"])
+def test_ergas_forward_keeps_gradients(reduction):
+    """The streaming state must preserve gradients for a batch's forward pass."""
+    preds = torch.tensor([[[[1.0, 2.0], [3.0, 4.0]]], [[[2.0, 3.0], [4.0, 5.0]]]], requires_grad=True)
+    target = torch.tensor([[[[1.5, 2.5], [2.0, 3.0]]], [[[1.0, 2.0], [3.0, 4.0]]]])
+    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+
+    actual = metric(preds, target)
+    expected = error_relative_global_dimensionless_synthesis(preds, target, reduction=reduction)
+    actual_grad = torch.autograd.grad(actual.sum(), preds, retain_graph=True)[0]
+    expected_grad = torch.autograd.grad(expected.sum(), preds)[0]
+    torch.testing.assert_close(actual, expected)
+    torch.testing.assert_close(actual_grad, expected_grad)
+
+
+@pytest.mark.parametrize("reduction", ["elementwise_mean", "sum", "none", None])
+def test_ergas_merge_states(reduction):
+    """Combine uneven batches without weighting each batch equally."""
+    first = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+    second = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+    preds = torch.arange(1.0, 25.0).reshape(3, 1, 2, 4)
+    target = preds * torch.tensor([0.5, 0.8, 0.9]).reshape(3, 1, 1, 1)
+    first.update(preds[:1], target[:1])
+    second.update(preds[1:], target[1:])
+
+    first.merge_state(second)
+    expected = error_relative_global_dimensionless_synthesis(preds, target, reduction=reduction)
+    actual = first.compute()
+    if reduction in ("none", None):
+        actual = actual.sort().values
+        expected = expected.sort().values
+    torch.testing.assert_close(actual, expected)

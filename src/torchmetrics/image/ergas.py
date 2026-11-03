@@ -15,12 +15,11 @@
 from collections.abc import Sequence
 from typing import Any, List, Optional, Union
 
-from torch import Tensor
+from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.ergas import _ergas_compute, _ergas_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -78,8 +77,9 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    preds: List[Tensor]
-    target: List[Tensor]
+    scores: List[Tensor]
+    sum_ergas: Tensor
+    total: Tensor
 
     def __init__(
         self,
@@ -88,28 +88,33 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        rank_zero_warn(
-            "Metric `UniversalImageQualityIndex` will save all targets and"
-            " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
-        )
-
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        if reduction in ("none", None):
+            self.add_state("scores", default=[], dist_reduce_fx="cat")
+        else:
+            self.add_state("sum_ergas", default=tensor(0.0), dist_reduce_fx="sum")
+            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.ratio = ratio
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         preds, target = _ergas_update(preds, target)
-        self.preds.append(preds)
-        self.target.append(target)
+        scores = _ergas_compute(preds, target, self.ratio, reduction="none")
+        if self.reduction in ("none", None):
+            self.scores.append(scores)
+        else:
+            self.sum_ergas = self.sum_ergas + scores.sum()
+            self.total += scores.numel()
 
     def compute(self) -> Tensor:
-        """Compute explained variance over state."""
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return _ergas_compute(preds, target, self.ratio, self.reduction)
+        """Compute ERGAS over the accumulated image scores."""
+        if self.reduction in ("none", None):
+            return dim_zero_cat(self.scores)
+        if self.reduction == "sum":
+            return self.sum_ergas
+        if self.reduction == "elementwise_mean":
+            return self.sum_ergas / self.total
+        raise ValueError("Reduction parameter unknown.")
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
