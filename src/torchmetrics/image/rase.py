@@ -86,6 +86,25 @@ class RelativeAverageSpectralError(Metric):
         self.add_state("target_sum", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total_images", default=torch.tensor(0), dist_reduce_fx="sum")
 
+    @torch.jit.unused
+    def forward(self, preds: Tensor, target: Tensor) -> Tensor:
+        """Evaluate a batch and accumulate its statistics."""
+        if self.rmse_map.ndim != 0 and self.rmse_map.shape != target.shape[1:]:
+            raise ValueError("All input images must have the same shape across updates.")
+        return super().forward(preds, target)
+
+    def _reduce_states(self, incoming_state: dict[str, Any]) -> None:
+        """Reject incompatible maps before metric state reduction can broadcast them."""
+        incoming_map = incoming_state.get("rmse_map")
+        if (
+            isinstance(incoming_map, Tensor)
+            and self.rmse_map.ndim != 0
+            and incoming_map.ndim != 0
+            and self.rmse_map.shape != incoming_map.shape
+        ):
+            raise ValueError("All input images must have the same shape across updates.")
+        super()._reduce_states(incoming_state)
+
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if preds.dtype != target.dtype:

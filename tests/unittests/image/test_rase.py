@@ -180,12 +180,29 @@ def test_rase_reset_allows_new_image_shape():
     torch.testing.assert_close(metric.compute(), relative_average_spectral_error(preds, target, window_size=3))
 
 
-def test_rase_rejects_different_image_shapes():
+@pytest.mark.parametrize("use_forward", [False, True])
+def test_rase_rejects_different_image_shapes(use_forward):
     """Do not silently broadcast differently shaped images between updates."""
     metric = RelativeAverageSpectralError(window_size=3)
     metric.update(torch.rand(1, 2, 8, 8), torch.rand(1, 2, 8, 8))
+    saved = {name: value.clone() for name, value in metric.metric_state.items()}
     with pytest.raises(ValueError, match="same shape across updates"):
-        metric.update(torch.rand(1, 1, 8, 8), torch.rand(1, 1, 8, 8))
+        (metric if use_forward else metric.update)(torch.rand(1, 1, 8, 8), torch.rand(1, 1, 8, 8))
+    for name, value in metric.metric_state.items():
+        torch.testing.assert_close(value, saved[name])
+
+
+def test_rase_rejects_merging_different_image_shapes():
+    """Merging metric states must not broadcast incompatible image maps."""
+    first = RelativeAverageSpectralError(window_size=3)
+    second = RelativeAverageSpectralError(window_size=3)
+    first.update(torch.rand(1, 2, 8, 8), torch.rand(1, 2, 8, 8))
+    second.update(torch.rand(1, 1, 8, 8), torch.rand(1, 1, 8, 8))
+    saved = {name: value.clone() for name, value in first.metric_state.items()}
+    with pytest.raises(ValueError, match="same shape across updates"):
+        first.merge_state(second)
+    for name, value in first.metric_state.items():
+        torch.testing.assert_close(value, saved[name])
 
 
 def test_rase_rejects_different_input_dtypes():
