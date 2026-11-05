@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Changed `SpectralDistortionIndex` to keep running sums of band-to-band UQI instead of storing every image, so its memory no longer grows with the number of samples ([#1224](https://github.com/Lightning-AI/torchmetrics/issues/1224))
 
 
 ### Deprecated

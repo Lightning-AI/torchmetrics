@@ -45,6 +45,44 @@ def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> tuple[Te
     return preds, target
 
 
+def _spectral_distortion_index_band_uqi(img: Tensor) -> Tensor:
+    """Compute the mean UQI between every pair of bands for each image.
+
+    Args:
+        img: images of shape ``(N, L, H, W)``
+
+    Returns:
+        Tensor of shape ``(N, L, L)``, symmetric in the last two dimensions with zeros on the diagonal
+
+    """
+    num_images, length = img.shape[:2]
+    out = torch.zeros((num_images, length, length), device=img.device)
+    for k in range(length - 1):
+        num = length - (k + 1)
+        stack1 = img[:, k : k + 1, :, :].repeat(num, 1, 1, 1)
+        stack2 = torch.cat([img[:, r : r + 1, :, :] for r in range(k + 1, length)], dim=0)
+        score = universal_image_quality_index(stack1, stack2, reduction="none")
+        out[:, k, k + 1 :] = score.reshape(num, num_images, -1).mean(dim=-1).T
+    return out + out.transpose(1, 2)
+
+
+def _spectral_distortion_index_from_band_uqi(
+    m1: Tensor,
+    m2: Tensor,
+    p: int = 1,
+    reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+) -> Tensor:
+    """Compute Spectral Distortion Index from the band-to-band UQI matrices of target (``m1``) and preds (``m2``)."""
+    length = m1.shape[-1]
+    diff = torch.pow(torch.abs(m1 - m2), p)
+    # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
+    if length == 1:
+        output = torch.pow(diff, (1.0 / p))
+    else:
+        output = torch.pow(1.0 / (length * (length - 1)) * torch.sum(diff), (1.0 / p))
+    return reduce(output, reduction)
+
+
 def _spectral_distortion_index_compute(
     preds: Tensor,
     target: Tensor,
@@ -72,38 +110,9 @@ def _spectral_distortion_index_compute(
         tensor(0.0234)
 
     """
-    length = preds.shape[1]
-
-    m1 = torch.zeros((length, length), device=preds.device)
-    m2 = torch.zeros((length, length), device=preds.device)
-
-    for k in range(length):
-        num = length - (k + 1)
-        if num == 0:
-            continue
-        stack1 = target[:, k : k + 1, :, :].repeat(num, 1, 1, 1)
-        stack2 = torch.cat([target[:, r : r + 1, :, :] for r in range(k + 1, length)], dim=0)
-        score = [
-            s.mean() for s in universal_image_quality_index(stack1, stack2, reduction="none").split(preds.shape[0])
-        ]
-        m1[k, k + 1 :] = torch.stack(score, 0)
-
-        stack1 = preds[:, k : k + 1, :, :].repeat(num, 1, 1, 1)
-        stack2 = torch.cat([preds[:, r : r + 1, :, :] for r in range(k + 1, length)], dim=0)
-        score = [
-            s.mean() for s in universal_image_quality_index(stack1, stack2, reduction="none").split(preds.shape[0])
-        ]
-        m2[k, k + 1 :] = torch.stack(score, 0)
-    m1 = m1 + m1.T
-    m2 = m2 + m2.T
-
-    diff = torch.pow(torch.abs(m1 - m2), p)
-    # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
-    if length == 1:
-        output = torch.pow(diff, (1.0 / p))
-    else:
-        output = torch.pow(1.0 / (length * (length - 1)) * torch.sum(diff), (1.0 / p))
-    return reduce(output, reduction)
+    m1 = _spectral_distortion_index_band_uqi(target).mean(dim=0)
+    m2 = _spectral_distortion_index_band_uqi(preds).mean(dim=0)
+    return _spectral_distortion_index_from_band_uqi(m1, m2, p, reduction)
 
 
 def spectral_distortion_index(
