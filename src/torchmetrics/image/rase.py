@@ -13,13 +13,13 @@
 # limitations under the License.
 
 from collections.abc import Sequence
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
+import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.rase import relative_average_spectral_error
+from torchmetrics.functional.image.rase import _rase_compute, _rase_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -34,6 +34,9 @@ class RelativeAverageSpectralError(Metric):
 
     - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
     - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+
+    The dimensions ``(C,H,W)`` must be the same across updates. For ``float16`` or ``bfloat16`` inputs, calculations
+    use ``float32`` to reduce accumulation errors.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -64,8 +67,9 @@ class RelativeAverageSpectralError(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    preds: List[Tensor]
-    target: List[Tensor]
+    rmse_map: Tensor
+    target_sum: Tensor
+    total_images: Tensor
 
     def __init__(
         self,
@@ -78,19 +82,55 @@ class RelativeAverageSpectralError(Metric):
             raise ValueError(f"Argument `window_size` is expected to be a positive integer, but got {window_size}")
         self.window_size = window_size
 
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        self.add_state("rmse_map", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("target_sum", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total_images", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    @torch.jit.unused
+    def forward(self, preds: Tensor, target: Tensor) -> Tensor:
+        """Evaluate a batch and accumulate its statistics."""
+        if self.rmse_map.ndim != 0 and self.rmse_map.shape != target.shape[1:]:
+            raise ValueError("All input images must have the same shape across updates.")
+        return super().forward(preds, target)
+
+    def _reduce_states(self, incoming_state: dict[str, Any]) -> None:
+        """Reject incompatible maps before metric state reduction can broadcast them."""
+        incoming_map = incoming_state.get("rmse_map")
+        if (
+            isinstance(incoming_map, Tensor)
+            and self.rmse_map.ndim != 0
+            and incoming_map.ndim != 0
+            and self.rmse_map.shape != incoming_map.shape
+        ):
+            raise ValueError("All input images must have the same shape across updates.")
+        super()._reduce_states(incoming_state)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        self.preds.append(preds)
-        self.target.append(target)
+        if preds.dtype != target.dtype:
+            raise TypeError(
+                f"Expected `preds` and `target` to have the same data type. But got {preds.dtype} and {target.dtype}."
+            )
+        if target.dtype in (torch.float16, torch.bfloat16):
+            preds = preds.float()
+            target = target.float()
+        if self.rmse_map.ndim == 0:
+            self.rmse_map = torch.zeros(target.shape[1:], dtype=target.dtype, device=target.device)
+            self.target_sum = torch.zeros_like(self.rmse_map)
+        elif self.rmse_map.shape != target.shape[1:]:
+            raise ValueError("All input images must have the same shape across updates.")
+        else:
+            dtype = torch.promote_types(self.rmse_map.dtype, target.dtype)
+            self.rmse_map = self.rmse_map.to(dtype=dtype)
+            self.target_sum = self.target_sum.to(dtype=dtype)
+
+        self.rmse_map, self.target_sum, self.total_images = _rase_update(
+            preds, target, self.window_size, self.rmse_map, self.target_sum, self.total_images
+        )
 
     def compute(self) -> Tensor:
         """Compute Relative Average Spectral Error (RASE)."""
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return relative_average_spectral_error(preds, target, self.window_size)
+        return _rase_compute(self.rmse_map, self.target_sum, self.total_images, self.window_size)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
