@@ -284,6 +284,26 @@ def test_corner_cases():
     assert torch.allclose(result, torch.tensor([-1.0, 1.0, float("nan"), float("nan")]), equal_nan=True)
 
 
+def test_pearson_sparse_nonconstant_signal():
+    """Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3614.
+
+    A long sparse nonconstant vector has tiny *normalized* variance but large absolute
+    variance and must not be treated as zero variance.
+    """
+    preds = torch.zeros(4096)
+    preds[-1] = 65536
+    assert pearson_corrcoef(preds, preds) == 1.0
+
+    sparse_a = torch.zeros(4096)
+    sparse_a[0] = 1.0
+    sparse_a[-1] = -2.0
+    sparse_b = torch.zeros(4096)
+    sparse_b[0] = -2.0
+    sparse_b[-1] = 1.0
+    assert torch.allclose(
+        pearson_corrcoef(sparse_a, sparse_b),
+        torch.tensor([-0.8]), atol=1e-3,
+    )
 @pytest.mark.parametrize("num_outputs", [1, 2, 3])
 def test_pearson_update_shape(num_outputs: int):
     """Test that the shape of the update is correct."""
