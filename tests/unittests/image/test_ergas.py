@@ -27,6 +27,11 @@ from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
+_DEVICES = [
+    "cpu",
+    pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")),
+]
+
 
 class _Input(NamedTuple):
     preds: Tensor
@@ -142,13 +147,16 @@ def test_error_on_invalid_type(metric_class=ErrorRelativeGlobalDimensionlessSynt
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))
 
 
+@pytest.mark.parametrize("device", _DEVICES)
 @pytest.mark.parametrize("reduction", ["elementwise_mean", "sum", "none", None])
-def test_ergas_updates_with_different_image_sizes(reduction):
+def test_ergas_updates_with_different_image_sizes(reduction, device):
     """Accumulate per-image scores across differently sized batches."""
-    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction).to(device)
     scores = []
     for shape, scale in [((2, 3, 4, 5), 0.5), ((3, 3, 7, 2), 0.8)]:
-        preds = torch.arange(1, 1 + torch.tensor(shape).prod().item(), dtype=torch.float64).reshape(shape)
+        preds = torch.arange(1, 1 + torch.tensor(shape).prod().item(), dtype=torch.float64, device=device).reshape(
+            shape
+        )
         target = preds * scale
         scores.append(error_relative_global_dimensionless_synthesis(preds, target, reduction="none"))
         metric.update(preds, target)
@@ -174,12 +182,13 @@ def test_ergas_does_not_retain_input_images(reduction):
     assert target_ref() is None
 
 
+@pytest.mark.parametrize("device", _DEVICES)
 @pytest.mark.parametrize("reduction", ["elementwise_mean", "sum", "none"])
-def test_ergas_forward_keeps_gradients(reduction):
+def test_ergas_forward_keeps_gradients(reduction, device):
     """The streaming state must preserve gradients for a batch's forward pass."""
-    preds = torch.tensor([[[[1.0, 2.0], [3.0, 4.0]]], [[[2.0, 3.0], [4.0, 5.0]]]], requires_grad=True)
-    target = torch.tensor([[[[1.5, 2.5], [2.0, 3.0]]], [[[1.0, 2.0], [3.0, 4.0]]]])
-    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+    preds = torch.tensor([[[[1.0, 2.0], [3.0, 4.0]]], [[[2.0, 3.0], [4.0, 5.0]]]], requires_grad=True, device=device)
+    target = torch.tensor([[[[1.5, 2.5], [2.0, 3.0]]], [[[1.0, 2.0], [3.0, 4.0]]]], device=device)
+    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction).to(device)
 
     actual = metric(preds, target)
     expected = error_relative_global_dimensionless_synthesis(preds, target, reduction=reduction)
@@ -208,11 +217,15 @@ def test_ergas_merge_states(reduction):
     torch.testing.assert_close(actual, expected)
 
 
+@pytest.mark.parametrize("device", _DEVICES)
+@pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16])
 @pytest.mark.parametrize(("reduction", "expected"), [("elementwise_mean", 75.0), ("sum", 76800.0)])
-def test_ergas_half_precision_large_batch(reduction, expected):
+def test_ergas_half_precision_large_batch(reduction, expected, dtype, device):
     """Accumulating many half-precision scores should not overflow their sum."""
-    preds = torch.ones(1024, 1, 1, 1, dtype=torch.float16)
+    if device == "cuda" and dtype == torch.bfloat16 and not torch.cuda.is_bf16_supported():
+        pytest.skip("test requires bfloat16 support")
+    preds = torch.ones(1024, 1, 1, 1, dtype=dtype, device=device)
     target = preds * 0.25
-    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction)
+    metric = ErrorRelativeGlobalDimensionlessSynthesis(reduction=reduction).to(device)
     metric.update(preds, target)
-    torch.testing.assert_close(metric.compute(), torch.tensor(expected))
+    torch.testing.assert_close(metric.compute(), torch.tensor(expected, device=device))
