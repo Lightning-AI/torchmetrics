@@ -52,6 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
+- Fixed `KendallRankCorrCoef` and `kendall_rank_corrcoef` with `variant="a"` dividing by the number of untied pairs only, which gave Goodman-Kruskal's gamma instead of tau-a whenever ties were present ([#3619](https://github.com/Lightning-AI/torchmetrics/issues/3619))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05

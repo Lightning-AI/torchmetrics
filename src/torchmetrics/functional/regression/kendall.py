@@ -161,10 +161,11 @@ def _calculate_tau(
     variant: _MetricVariant,
 ) -> Tensor:
     """Calculate Kendall's tau from metric metadata."""
+    total_combinations: Tensor = n_total * (n_total - 1) // 2
     if variant == _MetricVariant.A:
-        return con_min_dis_pairs / (concordant_pairs + discordant_pairs)
+        # tau-a normalizes by the number of all pairs, so tied pairs count in the denominator.
+        return con_min_dis_pairs / total_combinations
     if variant == _MetricVariant.B:
-        total_combinations: Tensor = n_total * (n_total - 1) // 2
         if preds_ties is None:
             preds_ties = torch.tensor(0.0, dtype=total_combinations.dtype, device=total_combinations.device)
         if target_ties is None:
@@ -342,9 +343,10 @@ def kendall_rank_corrcoef(
     r"""Compute `Kendall Rank Correlation Coefficient`_.
 
     .. math::
-        tau_a = \frac{C - D}{C + D}
+        tau_a = \frac{C - D}{n (n - 1) / 2}
 
-    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs.
+    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs and :math:`n` is a total number
+    of observations, i.e. the denominator is the number of all pairs, including tied ones.
 
     .. math::
         tau_b = \frac{C - D}{\sqrt{(C + D + T_{preds}) * (C + D + T_{target})}}
