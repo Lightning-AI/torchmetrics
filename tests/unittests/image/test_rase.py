@@ -26,6 +26,11 @@ from torchmetrics.image import RelativeAverageSpectralError
 from unittests import BATCH_SIZE
 from unittests._helpers.testers import MetricTester
 
+_DEVICES = [
+    "cpu",
+    pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")),
+]
+
 
 class _InputWindowSized(NamedTuple):
     preds: Tensor
@@ -117,12 +122,13 @@ def test_rase_does_not_retain_inputs_and_state_is_bounded():
     assert sizes[0] == sizes[1] == sizes[2]
 
 
-def test_rase_uneven_updates_and_merge():
+@pytest.mark.parametrize("device", _DEVICES)
+def test_rase_uneven_updates_and_merge(device):
     """Accumulate map sums, rather than averaging the per-batch RASE values."""
-    preds = torch.rand(5, 2, 8, 8, dtype=torch.float64)
+    preds = torch.rand(5, 2, 8, 8, dtype=torch.float64, device=device)
     target = torch.rand_like(preds) + 0.1
-    metric = RelativeAverageSpectralError(window_size=3)
-    other = RelativeAverageSpectralError(window_size=3)
+    metric = RelativeAverageSpectralError(window_size=3).to(device)
+    other = RelativeAverageSpectralError(window_size=3).to(device)
     metric.update(preds[:1], target[:1])
     other.update(preds[1:3], target[1:3])
     other.update(preds[3:], target[3:])
@@ -154,12 +160,15 @@ def test_rase_synchronizes_and_restores_local_state():
         torch.testing.assert_close(value, saved[name])
 
 
+@pytest.mark.parametrize("device", _DEVICES)
 @pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16, torch.float64])
-def test_rase_forward_preserves_gradients(dtype):
+def test_rase_forward_preserves_gradients(dtype, device):
     """The batch value and gradient should match the functional API."""
-    preds = torch.rand(2, 2, 8, 8, dtype=dtype, requires_grad=True)
+    if device == "cuda" and dtype == torch.bfloat16 and not torch.cuda.is_bf16_supported():
+        pytest.skip("test requires bfloat16 support")
+    preds = torch.rand(2, 2, 8, 8, dtype=dtype, device=device, requires_grad=True)
     target = torch.rand_like(preds) + 0.1
-    actual = RelativeAverageSpectralError(window_size=3)(preds, target)
+    actual = RelativeAverageSpectralError(window_size=3).to(device)(preds, target)
     ref_preds = preds.float() if dtype in (torch.float16, torch.bfloat16) else preds
     ref_target = target.float() if dtype in (torch.float16, torch.bfloat16) else target
     expected = relative_average_spectral_error(ref_preds, ref_target, window_size=3)
@@ -212,23 +221,27 @@ def test_rase_rejects_different_input_dtypes():
         metric.update(torch.rand(1, 1, 8, 8, dtype=torch.float16), torch.rand(1, 1, 8, 8))
 
 
+@pytest.mark.parametrize("device", _DEVICES)
 @pytest.mark.parametrize("dtypes", [(torch.float32, torch.float64), (torch.float64, torch.float32)])
-def test_rase_promotes_dtype_across_updates(dtypes):
+def test_rase_promotes_dtype_across_updates(dtypes, device):
     """Accumulated results retain the promoted dtype when input precision changes."""
-    preds = [torch.rand(2, 2, 8, 8, dtype=dtype) for dtype in dtypes]
+    preds = [torch.rand(2, 2, 8, 8, dtype=dtype, device=device) for dtype in dtypes]
     target = [torch.rand_like(batch) + 0.1 for batch in preds]
-    metric = RelativeAverageSpectralError(window_size=3)
+    metric = RelativeAverageSpectralError(window_size=3).to(device)
     for pred, tgt in zip(preds, target):
         metric.update(pred, tgt)
     expected = relative_average_spectral_error(torch.cat(preds), torch.cat(target), window_size=3)
     torch.testing.assert_close(metric.compute(), expected, rtol=1e-5, atol=1e-6)
 
 
+@pytest.mark.parametrize("device", _DEVICES)
 @pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16])
-def test_rase_low_precision_accumulation(dtype):
+def test_rase_low_precision_accumulation(dtype, device):
     """Repeated updates should not lose small increments in reduced precision."""
-    metric = RelativeAverageSpectralError(window_size=3)
-    preds = torch.full((2048, 1, 8, 8), 0.5, dtype=dtype)
+    if device == "cuda" and dtype == torch.bfloat16 and not torch.cuda.is_bf16_supported():
+        pytest.skip("test requires bfloat16 support")
+    metric = RelativeAverageSpectralError(window_size=3).to(device)
+    preds = torch.full((2048, 1, 8, 8), 0.5, dtype=dtype, device=device)
     target = torch.ones_like(preds)
     metric.update(preds, target)
     for _ in range(8):
