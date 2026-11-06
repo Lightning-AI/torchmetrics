@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
+from copy import deepcopy
 from functools import lru_cache
 from typing import Any, Optional, Union
 
@@ -42,6 +43,26 @@ class NetworkCache(Module):
         """Call the network with the given arguments."""
         return self.network(*args, **kwargs)
 
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> "NetworkCache":
+        """Copy the cache around a copy of the network instead of rebinding it.
+
+        Deep-copying an ``lru_cache`` wrapper keeps the cached ``forward``
+        bound to the original bound method, so a copied cache would still
+        compute features with the original network and keep it alive.
+        Rebuild the cache here so the copy's ``forward`` is bound to the
+        copied network and updating its weights has an effect.
+        """
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        Module.__init__(result)
+        result.__dict__ = deepcopy(self.__dict__, memo)
+        bound_forward = type(result.network).forward.__get__(
+            result.network, type(result.network)
+        )
+        result.network.forward = lru_cache(maxsize=result.max_size)(bound_forward)
+        return result
 
 class FeatureShare(MetricCollection):
     """Specialized metric collection that facilitates sharing features between metrics.
