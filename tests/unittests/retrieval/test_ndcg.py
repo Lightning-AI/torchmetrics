@@ -212,3 +212,24 @@ def test_corner_case_with_tied_scores():
             retrieval_normalized_dcg(preds, target, top_k=k),
             torch.tensor([ndcg_score(target, preds, k=k)], dtype=torch.float32),
         )
+
+
+def test_negative_target_raises_error():
+    """Check that negative targets raise ValueError, consistent with scikit-learn.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/3621.
+    """
+    preds = torch.tensor([5.0, 4.0, 3.0, 2.0, 1.0])
+    target_int = torch.tensor([-3, 1, 0, 2, -1])
+
+    with pytest.raises(ValueError, match="`target` must contain non-negative values"):
+        retrieval_normalized_dcg(preds, target_int)
+
+    metric = RetrievalNormalizedDCG()
+    indexes = torch.zeros_like(target_int, dtype=torch.long)
+    with pytest.raises(ValueError, match="`target` must contain non-negative values"):
+        metric.update(preds, target_int, indexes)
+
+    target_float = torch.tensor([-0.5, 1.0, 0.0, 2.0, -1.0])
+    with pytest.raises(ValueError, match="`target` must contain non-negative values"):
+        retrieval_normalized_dcg(preds, target_float)
