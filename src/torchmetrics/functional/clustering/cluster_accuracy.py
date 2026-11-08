@@ -27,8 +27,10 @@ def _cluster_accuracy_compute(confmat: Tensor) -> Tensor:
     from torch_linear_assignment import batch_linear_assignment
 
     confmat = confmat[None]
-    # solve the linear sum assignment problem
-    assignment = batch_linear_assignment(confmat.max() - confmat)
+    cost = confmat.max() - confmat
+    # solve the linear sum assignment problem. The solver only handles CPU (through scipy) and CUDA tensors,
+    # so the cost matrix of any other device, such as MPS, is solved on CPU
+    assignment = batch_linear_assignment(cost if cost.is_cuda else cost.cpu()).to(confmat.device)
     confmat = confmat[0]
     # extract the true positives
     tps = confmat[torch.arange(confmat.shape[0]), assignment.flatten()]
