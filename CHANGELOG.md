@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `PESQ` metric aborting on a batch containing a sample the backend cannot score, which now returns `nan` for that sample instead of raising ([#3304](https://github.com/Lightning-AI/torchmetrics/issues/3304))
 
 
+- Fixed `ClusterAccuracy` and `cluster_accuracy` raising a `TypeError` on MPS, by solving the linear assignment problem on CPU for devices the solver does not support ([#3628](https://github.com/Lightning-AI/torchmetrics/issues/3628))
+
+
 - Fixed swapped hypothesis and reference arguments in `TER`, which made an empty hypothesis score a perfect 0.0 ([#3479](https://github.com/Lightning-AI/torchmetrics/pull/3479))
 
 
