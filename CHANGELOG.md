@@ -52,6 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
+- Fixed functional `demographic_parity`, `equal_opportunity` and `binary_fairness` reporting compacted instead of real group IDs when the IDs are non-contiguous, and `BinaryFairness` picking a group without samples as the lowest/highest rate
+
+
 ---
 
 ## [1.9.0] - 2026-03-05

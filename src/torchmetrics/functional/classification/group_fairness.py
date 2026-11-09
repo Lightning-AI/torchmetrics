@@ -165,13 +165,20 @@ def binary_groups_stat_rates(
     return _groups_reduce(group_stats)
 
 
+def _present_groups_min_max_ids(rates: torch.Tensor, group_sizes: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    """Return the ids of the groups with the lowest and highest rate, ignoring groups without any samples."""
+    present = group_sizes > 0
+    min_id = torch.argmin(torch.where(present, rates, torch.inf))
+    max_id = torch.argmax(torch.where(present, rates, -torch.inf))
+    return min_id, max_id
+
+
 def _compute_binary_demographic_parity(
     tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor
 ) -> dict[str, torch.Tensor]:
     """Compute demographic parity based on the binary stats."""
     pos_rates = _safe_divide(tp + fp, tp + fp + tn + fn)
-    min_pos_rate_id = torch.argmin(pos_rates)
-    max_pos_rate_id = torch.argmax(pos_rates)
+    min_pos_rate_id, max_pos_rate_id = _present_groups_min_max_ids(pos_rates, tp + fp + tn + fn)
 
     return {
         f"DP_{min_pos_rate_id}_{max_pos_rate_id}": _safe_divide(pos_rates[min_pos_rate_id], pos_rates[max_pos_rate_id])
@@ -234,7 +241,7 @@ def demographic_parity(
         {'DP_0_1': tensor(0.)}
 
     """
-    num_groups = torch.unique(groups).shape[0]
+    num_groups = int(groups.max()) + 1
     target = torch.zeros(preds.shape)
 
     group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
@@ -249,8 +256,7 @@ def _compute_binary_equal_opportunity(
 ) -> dict[str, torch.Tensor]:
     """Compute equal opportunity based on the binary stats."""
     true_pos_rates = _safe_divide(tp, tp + fn)
-    min_pos_rate_id = torch.argmin(true_pos_rates)
-    max_pos_rate_id = torch.argmax(true_pos_rates)
+    min_pos_rate_id, max_pos_rate_id = _present_groups_min_max_ids(true_pos_rates, tp + fp + tn + fn)
 
     return {
         f"EO_{min_pos_rate_id}_{max_pos_rate_id}": _safe_divide(
@@ -319,7 +325,7 @@ def equal_opportunity(
         {'EO_0_1': tensor(0.)}
 
     """
-    num_groups = torch.unique(groups).shape[0]
+    num_groups = int(groups.max()) + 1
     group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
 
     transformed_group_stats = _groups_stat_transform(group_stats)
@@ -367,7 +373,7 @@ def binary_fairness(
             rank_zero_warn("The task demographic_parity does not require a target.", UserWarning)
         target = torch.zeros(preds.shape)
 
-    num_groups = torch.unique(groups).shape[0]
+    num_groups = int(groups.max()) + 1
     group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
 
     transformed_group_stats = _groups_stat_transform(group_stats)
