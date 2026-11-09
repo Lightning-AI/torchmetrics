@@ -80,3 +80,21 @@ def test_cluster_accuracy_functional_raises_invalid_task():
     preds, target = _float_inputs_extrinsic
     with pytest.raises(ValueError, match=r"Expected *"):
         cluster_accuracy(preds, target, num_classes=NUM_CLASSES)
+
+
+@pytest.mark.skipif(not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE, reason="test requires torch linear assignment package")
+@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="test requires MPS")
+def test_cluster_accuracy_mps():
+    """Check that metric on MPS matches CPU, although the linear assignment solver cannot run on MPS."""
+    generator = torch.Generator().manual_seed(42)
+    preds = torch.randint(0, NUM_CLASSES, (100,), generator=generator)
+    target = torch.randint(0, NUM_CLASSES, (100,), generator=generator)
+    expected = cluster_accuracy(preds, target, num_classes=NUM_CLASSES)
+
+    res = cluster_accuracy(preds.to("mps"), target.to("mps"), num_classes=NUM_CLASSES)
+    assert res.device.type == "mps"
+    assert torch.allclose(res.cpu(), expected)
+
+    metric = ClusterAccuracy(num_classes=NUM_CLASSES).to("mps")
+    metric.update(preds.to("mps"), target.to("mps"))
+    assert torch.allclose(metric.compute().cpu(), expected)
