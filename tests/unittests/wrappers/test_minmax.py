@@ -20,6 +20,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, MulticlassAccuracy
+from torchmetrics.metric import Metric
 from torchmetrics.regression import MeanSquaredError
 from torchmetrics.wrappers import MinMaxMetric
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
@@ -194,3 +195,34 @@ def test_no_scalar_compute() -> None:
 
     with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a float.*"):
         min_max_nsm.compute()
+
+
+class _PythonScalarMetric(Metric):
+    """Metric whose ``compute`` returns a Python scalar instead of a tensor."""
+
+    def __init__(self, scalar_type: type) -> None:
+        super().__init__()
+        self.scalar_type = scalar_type
+        self.add_state("value", default=torch.tensor(0.0), dist_reduce_fx="sum")
+
+    def update(self, value: float) -> None:
+        """Store the latest value."""
+        self.value = torch.tensor(value, dtype=torch.float32)
+
+    def compute(self) -> float:
+        """Return the latest value as a Python scalar."""
+        return self.scalar_type(self.value)
+
+
+@pytest.mark.parametrize("scalar_type", [int, float])
+def test_python_scalar_compute(scalar_type: type) -> None:
+    """Tests that a base metric returning a Python scalar is tracked like a scalar tensor (issue #3626)."""
+    min_max = MinMaxMetric(_PythonScalarMetric(scalar_type))
+
+    for value, expected_min, expected_max in [(3, 3, 3), (1, 1, 3), (5, 1, 5)]:
+        min_max.update(value)
+        result = min_max.compute()
+        assert all(isinstance(v, Tensor) and v.dtype == torch.get_default_dtype() for v in result.values())
+        assert result["raw"] == value
+        assert result["min"] == expected_min
+        assert result["max"] == expected_max
