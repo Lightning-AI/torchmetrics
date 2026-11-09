@@ -52,6 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
+- Fixed `MinMaxMetric` raising `AttributeError` when the wrapped metric returns a Python `int` or `float` ([#3626](https://github.com/Lightning-AI/torchmetrics/issues/3626))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
