@@ -423,9 +423,11 @@ class MetricCollection(ModuleDict):
 
         """
         mc = deepcopy(self)
-        if prefix:
+        # `None` means "keep the current affix", an empty string means "clear it". Testing
+        # truthiness conflated the two, so `clone(prefix="")` silently kept the old prefix.
+        if prefix is not None:
             mc.prefix = self._check_arg(prefix, "prefix")
-        if postfix:
+        if postfix is not None:
             mc.postfix = self._check_arg(postfix, "postfix")
         return mc
 
