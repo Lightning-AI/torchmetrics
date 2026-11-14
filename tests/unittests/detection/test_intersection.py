@@ -459,3 +459,15 @@ def test_corner_case():
     iou = metric(preds, target)
     for key, val in expected_out.items():
         assert iou[key].item() == val
+
+    for metric_cls, metric_name, expected_val in [
+        (GeneralizedIntersectionOverUnion, "giou", 0.6895229816436768),
+        (DistanceIntersectionOverUnion, "diou", 0.688275933265686),
+        (CompleteIntersectionOverUnion, "ciou", 0.688275933265686),
+    ]:
+        metric = metric_cls(class_metrics=True)
+        out = metric(preds, target)
+        assert out[metric_name].item() == pytest.approx(expected_val, abs=1e-5)
+        assert out[f"{metric_name}/cl_4"].item() == pytest.approx(expected_val, abs=1e-5)
+        assert out[f"{metric_name}/cl_5"].item() == 0.0
+        assert out[f"{metric_name}/cl_6"].item() == 0.0
