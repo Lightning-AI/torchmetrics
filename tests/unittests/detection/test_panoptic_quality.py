@@ -156,11 +156,23 @@ def test_empty_metric():
 
 def test_error_on_wrong_input():
     """Test class input validation."""
-    with pytest.raises(TypeError, match="Expected argument `stuffs` to contain `int` categories.*"):
+    with pytest.raises(TypeError, match=r"Expected argument `things` to contain `int` categories.*"):
+        PanopticQuality(things={"car"}, stuffs={0})
+
+    with pytest.raises(TypeError, match=r"Expected argument `stuffs` to contain `int` categories.*"):
         PanopticQuality(things={0}, stuffs={"sky"})
 
-    with pytest.raises(ValueError, match="Expected arguments `things` and `stuffs` to have distinct keys.*"):
+    with pytest.raises(ValueError, match=r"Expected arguments `things` and `stuffs` to have distinct keys.*"):
         PanopticQuality(things={0}, stuffs={0})
+
+    with pytest.raises(ValueError, match=r"At least one of `things` and `stuffs` must be non-empty.*"):
+        PanopticQuality(things=set(), stuffs=set())
+
+    with pytest.warns(UserWarning, match=r"The provided `things` categories contained duplicates"):
+        PanopticQuality(things=[0, 0, 1], stuffs=[2])
+
+    with pytest.warns(UserWarning, match=r"The provided `stuffs` categories contained duplicates"):
+        PanopticQuality(things=[0], stuffs=[1, 1, 2])
 
     metric = PanopticQuality(things={0, 1, 3}, stuffs={2, 8}, allow_unknown_preds_category=True)
     valid_images = torch.randint(low=0, high=9, size=(8, 64, 64, 2))
