@@ -336,6 +336,17 @@ class TestIntersectionMetrics(MetricTester):
                 [{"boxes": Tensor(), "labels": []}],
             )
 
+    def test_error_on_wrong_init_arguments(self, class_metric, functional_metric, reference_metric):
+        """Test initialization argument validation."""
+        with pytest.raises(ValueError, match=r"Expected argument `box_format` to be one of"):
+            class_metric(box_format="invalid_format")
+
+        with pytest.raises(ValueError, match=r"Expected argument `class_metrics` to be a boolean"):
+            class_metric(class_metrics="invalid_type")
+
+        with pytest.raises(ValueError, match=r"Expected argument `respect_labels` to be a boolean"):
+            class_metric(respect_labels="invalid_type")
+
     def test_functional_error_on_wrong_input_shape(self, class_metric, functional_metric, reference_metric):
         """Test functional input validation."""
         with pytest.raises(ValueError, match="Expected preds to be of shape.*"):
