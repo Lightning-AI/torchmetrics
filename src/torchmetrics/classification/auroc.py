@@ -122,7 +122,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
-        return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
+        return _binary_auroc_compute(state, self.thresholds, self.max_fpr, prepend_binned_origin=True)
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
