@@ -133,7 +133,7 @@ def _ssim_update(
         pad_w = (kernel_size[1] - 1) // 2
 
     if is_3d:
-        pad_d = (kernel_size[2] - 1) // 2
+        pad_d = ((gauss_kernel_size if gaussian_kernel else kernel_size)[2] - 1) // 2
         preds = _reflection_pad_3d(preds, pad_d, pad_w, pad_h)
         target = _reflection_pad_3d(target, pad_d, pad_w, pad_h)
         if gaussian_kernel:
