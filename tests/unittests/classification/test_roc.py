@@ -133,6 +133,17 @@ class TestBinaryROC(MetricTester):
             assert torch.allclose(t1, t2)
 
 
+@pytest.mark.parametrize("thresholds", [2, [0.0, 1.0], torch.tensor([0.0, 1.0])])
+def test_binary_roc_binned_unit_score(thresholds):
+    """The ROC origin and the measured point at threshold 1 both contribute to the curve."""
+    preds = torch.tensor([1.0, 1.0, 1.0, 0.0])
+    target = torch.tensor([1, 1, 0, 0])
+    expected = (torch.tensor([0.0, 0.5, 1.0]), torch.tensor([0.0, 1.0, 1.0]), torch.tensor([1.0, 1.0, 0.0]))
+
+    for curve in (binary_roc(preds, target, thresholds=thresholds), BinaryROC(thresholds=thresholds)(preds, target)):
+        torch.testing.assert_close(curve, expected)
+
+
 def _reference_sklearn_roc_multiclass(preds, target, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()

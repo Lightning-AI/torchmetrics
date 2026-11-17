@@ -41,6 +41,7 @@ def _binary_roc_compute(
     state: Union[Tensor, tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
     pos_label: int = 1,
+    prepend_binned_origin: bool = False,
 ) -> tuple[Tensor, Tensor, Tensor]:
     if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, 1, 1]
@@ -50,6 +51,12 @@ def _binary_roc_compute(
         tpr = _safe_divide(tps, tps + fns).flip(0)
         fpr = _safe_divide(fps, fps + tns).flip(0)
         thres = thresholds.flip(0)
+        if prepend_binned_origin and thres.numel() and ((thres[0] == 1) & ((fpr[0] > 0) | (tpr[0] > 0))):
+            # Scores equal to 1 are positive at the top bin. Keep that point and
+            # add the no-positive-predictions endpoint, using the exact ROC convention.
+            fpr = torch.cat([torch.zeros_like(fpr[:1]), fpr])
+            tpr = torch.cat([torch.zeros_like(tpr[:1]), tpr])
+            thres = torch.cat([thres[:1], thres])
     else:
         fps, tps, thres = _binary_clf_curve(preds=state[0], target=state[1], pos_label=pos_label)
         # Add an extra threshold position to make sure that the curve starts at (0, 0)
@@ -108,8 +115,8 @@ def binary_roc(
     argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
-    Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr which
-    are sorted in reversed order during their calculation, such that they are monotome increasing.
+    The returned thresholds are ordered from highest to lowest. When the highest bin is 1 and contains positive
+    predictions, the binned curve prepends ``(0, 0)``. Its threshold is also 1, following the non-binned convention.
 
     Args:
         preds: Tensor with predictions
@@ -133,9 +140,9 @@ def binary_roc(
     Returns:
         (tuple): a tuple of 3 tensors containing:
 
-        - fpr: an 1d tensor of size (n_thresholds+1, ) with false positive rate values
-        - tpr: an 1d tensor of size (n_thresholds+1, ) with true positive rate values
-        - thresholds: an 1d tensor of size (n_thresholds, ) with decreasing threshold values
+        - fpr: a 1d tensor with false positive rate values
+        - tpr: a 1d tensor with true positive rate values
+        - thresholds: a 1d tensor with one threshold per point on the curve
 
     Example:
         >>> from torchmetrics.functional.classification import binary_roc
@@ -156,7 +163,7 @@ def binary_roc(
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
     preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
-    return _binary_roc_compute(state, thresholds)
+    return _binary_roc_compute(state, thresholds, prepend_binned_origin=True)
 
 
 def _multiclass_roc_compute(

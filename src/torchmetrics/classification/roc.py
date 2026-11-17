@@ -59,10 +59,9 @@ class BinaryROC(BinaryPrecisionRecallCurve):
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of 3 tensors containing:
 
-    - ``fpr`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds+1, )`` with false positive rate values
-    - ``tpr`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds+1, )`` with true positive rate values
-    - ``thresholds`` (:class:`~torch.Tensor`): A 1d tensor of size ``(n_thresholds, )`` with decreasing threshold
-      values
+    - ``fpr`` (:class:`~torch.Tensor`): A 1d tensor with false positive rate values
+    - ``tpr`` (:class:`~torch.Tensor`): A 1d tensor with true positive rate values
+    - ``thresholds`` (:class:`~torch.Tensor`): A 1d tensor with one threshold per point on the curve
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a
@@ -72,8 +71,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     .. attention::
-       The outputted thresholds will be in reversed order to ensure that they correspond to both fpr and
-       tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
+       The returned thresholds are ordered from highest to lowest. When the highest bin is 1 and contains positive
+       predictions, the binned curve prepends ``(0, 0)``. Its threshold is also 1, following the non-binned convention.
 
     Args:
         thresholds:
@@ -120,7 +119,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
     def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _binary_roc_compute(state, self.thresholds)  # type: ignore[arg-type]
+        return _binary_roc_compute(state, self.thresholds, prepend_binned_origin=True)  # type: ignore[arg-type]
 
     def plot(
         self,

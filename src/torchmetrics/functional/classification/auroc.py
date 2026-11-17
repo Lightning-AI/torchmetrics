@@ -86,7 +86,7 @@ def _binary_auroc_compute(
     max_fpr: Optional[float] = None,
     pos_label: int = 1,
 ) -> Tensor:
-    fpr, tpr, _ = _binary_roc_compute(state, thresholds, pos_label)
+    fpr, tpr, _ = _binary_roc_compute(state, thresholds, pos_label, prepend_binned_origin=True)
     if max_fpr is None or max_fpr == 1 or fpr.sum() == 0 or tpr.sum() == 0:
         return _auc_compute_without_check(fpr, tpr, 1.0)
 
