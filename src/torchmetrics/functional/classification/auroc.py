@@ -85,8 +85,9 @@ def _binary_auroc_compute(
     thresholds: Optional[Tensor],
     max_fpr: Optional[float] = None,
     pos_label: int = 1,
+    prepend_binned_origin: bool = False,
 ) -> Tensor:
-    fpr, tpr, _ = _binary_roc_compute(state, thresholds, pos_label, prepend_binned_origin=True)
+    fpr, tpr, _ = _binary_roc_compute(state, thresholds, pos_label, prepend_binned_origin=prepend_binned_origin)
     if max_fpr is None or max_fpr == 1 or fpr.sum() == 0 or tpr.sum() == 0:
         return _auc_compute_without_check(fpr, tpr, 1.0)
 
@@ -175,7 +176,7 @@ def binary_auroc(
         _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
     preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
-    return _binary_auroc_compute(state, thresholds, max_fpr)
+    return _binary_auroc_compute(state, thresholds, max_fpr, prepend_binned_origin=True)
 
 
 def _multiclass_auroc_arg_validation(

@@ -115,8 +115,8 @@ def binary_roc(
     argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
-    The returned thresholds are ordered from highest to lowest. When the highest bin is 1 and contains positive
-    predictions, the binned curve prepends ``(0, 0)``. Its threshold is also 1, following the non-binned convention.
+    The returned thresholds are ordered from highest to lowest. When the highest bin is 1 and a prediction has
+    probability 1, the binned curve prepends ``(0, 0)``. Its threshold is also 1, following the non-binned convention.
 
     Args:
         preds: Tensor with predictions

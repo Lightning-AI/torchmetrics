@@ -71,8 +71,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     .. attention::
-       The returned thresholds are ordered from highest to lowest. When the highest bin is 1 and contains positive
-       predictions, the binned curve prepends ``(0, 0)``. Its threshold is also 1, following the non-binned convention.
+       The returned thresholds are ordered from highest to lowest. When the highest bin is 1 and a prediction has
+       probability 1, the binned curve prepends ``(0, 0)``. Its threshold is also 1, as in the non-binned curve.
 
     Args:
         thresholds:
