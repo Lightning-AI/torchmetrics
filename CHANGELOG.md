@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `SortedAP` metric for instance segmentation ([#3586](https://github.com/Lightning-AI/torchmetrics/pull/3586))
 
 
 ### Changed
