@@ -54,6 +54,10 @@ def _reference_scipy_pearson(preds, target):
     return pearsonr(target.numpy(), preds.numpy())[0]
 
 
+def _reference_frequency_weighted_pearson(preds, target, weights):
+    return _reference_scipy_pearson(torch.repeat_interleave(preds, weights), torch.repeat_interleave(target, weights))
+
+
 @pytest.mark.parametrize(
     ("preds", "target"),
     [
@@ -108,6 +112,18 @@ class TestPearsonCorrCoef(MetricTester):
         """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
+
+
+def test_pearson_corrcoef_with_frequency_weights():
+    """Test Pearson correlation with 1D frequency weights against an expanded-sample reference."""
+    preds = torch.tensor([1.0, 2.0, 3.0, 4.0])
+    target = torch.tensor([1.0, 3.0, 2.0, 8.0])
+    weights = torch.tensor([1, 2, 3, 4])
+    expected = _reference_frequency_weighted_pearson(preds, target, weights)
+
+    assert torch.allclose(
+        pearson_corrcoef(preds, target, weights=weights), torch.tensor(expected, dtype=preds.dtype), atol=1e-6
+    )
 
 
 def test_error_on_different_shape():
