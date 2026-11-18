@@ -118,6 +118,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         if validate_args:
             _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
         self.max_fpr = max_fpr
+        self.validate_args = validate_args
 
     def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
