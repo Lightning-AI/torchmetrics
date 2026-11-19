@@ -273,6 +273,17 @@ class TestMultilabelExactMatch(MetricTester):
         )
 
 
+def test_multiclass_exact_match_raises_error_on_invalid_target():
+    """Test that a `target` with too many classes is rejected when `preds` hold probabilities."""
+    preds = torch.rand(2, NUM_CLASSES, NUM_CLASSES + 1)
+    target = torch.arange(NUM_CLASSES + 1).expand(2, -1)
+    match = f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES}.*"
+    with pytest.raises(RuntimeError, match=match):
+        multiclass_exact_match(preds, target, num_classes=NUM_CLASSES)
+    with pytest.raises(RuntimeError, match=match):
+        MulticlassExactMatch(num_classes=NUM_CLASSES).update(preds, target)
+
+
 @pytest.mark.parametrize(
     ("metric", "kwargs"),
     [
