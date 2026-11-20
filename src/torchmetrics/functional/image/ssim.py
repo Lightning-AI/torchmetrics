@@ -348,12 +348,6 @@ def _multiscale_ssim_update(
         gaussian_kernel: If true, a gaussian kernel is used, if false a uniform kernel is used
         sigma: Standard deviation of the gaussian kernel
         kernel_size: size of the gaussian kernel
-        reduction: a method to reduce metric score over labels.
-
-            - ``'elementwise_mean'``: takes the mean
-            - ``'sum'``: takes the sum
-            - ``'none'`` or ``None``: no reduction will be applied
-
         data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.

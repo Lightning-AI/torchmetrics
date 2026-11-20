@@ -381,8 +381,6 @@ def _get_batch_distribution(
             An input batch dictionary containing ``input_ids`` and ``attention_mask``.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
-        max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
         special_tokens_map:
@@ -440,8 +438,6 @@ def _get_data_distribution(
             An instance of `torch.utils.data.DataLoader` used for iterating over examples.
         temperature:
             A temperature for calibrating language modelling. For more information, please reference `InfoLM`_ paper.
-        max_length:
-            A maximum length of input sequences. Sequences longer than `max_length` are to be trimmed.
         idf:
             An indication of whether normalization using inverse document frequencies should be used.
         special_tokens_map:

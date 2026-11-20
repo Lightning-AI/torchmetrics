@@ -187,7 +187,6 @@ def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> tuple[Tens
     Args:
         preds: tensor with predictions
         target: tensor with ground truth labels
-        sample_weight: optional tensor with weight for each sample
 
     """
     num_preds, num_labels = preds.shape
