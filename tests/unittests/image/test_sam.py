@@ -106,6 +106,21 @@ def test_error_on_different_shape(metric_class=SpectralAngleMapper):
         metric(torch.randn([1, 3, 16, 16]), torch.randn([1, 1, 16, 16]))
 
 
+@pytest.mark.parametrize("use_class", [False, True])
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_sam_gradient_at_collinear_pixels(use_class, dtype):
+    """Collinear spectra keep exact scores and do not poison nearby gradients."""
+    preds = torch.tensor([[[[1.0, -1.0, 1.0]], [[0.0, 0.0, 1.0]]]], dtype=dtype, requires_grad=True)
+    target = torch.tensor([[[[1.0, 1.0, 1.0]], [[0.0, 0.0, 0.0]]]], dtype=dtype)
+    metric = SpectralAngleMapper().to(dtype=dtype) if use_class else spectral_angle_mapper
+
+    score = metric(preds, target)
+    torch.testing.assert_close(score, preds.new_tensor(5 * torch.pi / 12))
+    (gradient,) = torch.autograd.grad(score, preds)
+    expected_gradient = preds.new_tensor([[[[0.0, 0.0, -1 / 6]], [[0.0, 0.0, 1 / 6]]]])
+    torch.testing.assert_close(gradient, expected_gradient)
+
+
 def test_error_on_invalid_shape(metric_class=SpectralAngleMapper):
     """Test that error is raised if input is not 4D."""
     metric = metric_class()

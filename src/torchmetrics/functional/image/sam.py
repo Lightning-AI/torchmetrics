@@ -74,7 +74,13 @@ def _sam_compute(
     dot_product = (preds * target).sum(dim=1)
     preds_norm = preds.norm(dim=1)
     target_norm = target.norm(dim=1)
-    sam_score = torch.clamp(dot_product / (preds_norm * target_norm), -1, 1).acos()
+    cosine = dot_product / (preds_norm * target_norm)
+    parallel = cosine >= 1
+    antiparallel = cosine <= -1
+
+    # Mask the singular acos derivative at the endpoints and restore the exact angles.
+    sam_score = cosine.masked_fill(parallel | antiparallel, 0).acos()
+    sam_score = sam_score.masked_fill(parallel, 0).masked_fill(antiparallel, torch.pi)
     return reduce(sam_score, reduction)
 
 
@@ -84,6 +90,8 @@ def spectral_angle_mapper(
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Universal Spectral Angle Mapper.
+
+    The gradient is taken as zero at the endpoints of the cosine domain.
 
     Args:
         preds: estimated image
