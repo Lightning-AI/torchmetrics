@@ -82,18 +82,16 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
     """
     _check_shape_and_type_consistency(preds, target)
 
-    probs = torch.nn.functional.softmax(preds.reshape(-1, preds.shape[-1]), dim=1)
+    preds = preds.reshape(-1, preds.shape[-1])
     target = target.reshape(-1)
 
     if ignore_index is not None:
         mask = target.ne(ignore_index)
-        target = target.where(target != ignore_index, torch.tensor(0, device=target.device))
-    else:
-        mask = torch.ones_like(target, dtype=torch.bool)
+        preds, target = preds[mask], target[mask]
 
-    probs = probs[torch.arange(target.numel()), target][mask]
-    total_log_probs = -probs.log().sum()
-    count = mask.sum()
+    log_probs = torch.nn.functional.log_softmax(preds, dim=1)
+    total_log_probs = -log_probs.gather(1, target.unsqueeze(1)).sum()
+    count = target.new_tensor(target.numel())
 
     return total_log_probs, count
 
