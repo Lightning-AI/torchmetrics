@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `zero_division` argument to `MatthewsCorrCoef` metrics to set the score returned when it is undefined, `zero_division=0` matches scikit-learn ([#3371](https://github.com/Lightning-AI/torchmetrics/pull/3371))
 
 
 ### Changed

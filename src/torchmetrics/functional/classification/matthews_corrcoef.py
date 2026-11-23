@@ -34,14 +34,39 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.utilities.enums import ClassificationTask
 
 
-def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
+def _matthews_corrcoef_arg_validation(zero_division: Optional[float] = None) -> None:
+    """Validate non tensor input specific to the matthews corrcoef metric.
+
+    - ``zero_division`` has to be ``None`` or a float in the [-1, 1] range
+
+    """
+    if zero_division is None:
+        return
+    if isinstance(zero_division, bool) or not isinstance(zero_division, (int, float)) or not -1 <= zero_division <= 1:
+        raise ValueError(
+            f"Expected argument `zero_division` to be `None` or a float in the [-1, 1] range, but got {zero_division}."
+        )
+
+
+def _matthews_corrcoef_reduce(confmat: Tensor, zero_division: Optional[float] = None) -> Tensor:
     """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef score.
 
     See: https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-019-6413-7 for more info.
 
+    Args:
+        confmat: un-normalized confusion matrix
+        zero_division: value returned when the score is undefined, i.e. when all targets or all predictions belong to a
+            single class. If ``None``, the default convention is used, see the public functions for details.
+
     """
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
+
+    # The score is undefined when all targets (rows) or all predictions (columns) belong to a single class. This is
+    # checked on the counts rather than on the computed denominator, which can underflow to zero in low precision
+    # dtypes for confusion matrices that are not degenerate.
+    if zero_division is not None and ((confmat.sum(dim=-1) != 0).sum() <= 1 or (confmat.sum(dim=-2) != 0).sum() <= 1):
+        return torch.tensor(zero_division, dtype=torch.float32, device=confmat.device)
 
     if confmat.numel() == 4:  # binary case
         tn, fp, fn, tp = confmat.reshape(-1)
@@ -94,6 +119,7 @@ def binary_matthews_corrcoef(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: Optional[float] = None,
 ) -> Tensor:
     r"""Calculate `Matthews correlation coefficient`_ for binary tasks.
 
@@ -116,6 +142,13 @@ def binary_matthews_corrcoef(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value returned when the score is undefined, i.e. when all targets or all predictions belong to a single
+            class. Should be ``None`` or a float in the [-1, 1] range. If ``None`` (default), the existing behaviour
+            is kept: for binary and multilabel input the score is ``1`` when all samples are predicted correctly,
+            ``-1`` when all are predicted wrongly and the remaining undefined cases are approximated with a small
+            epsilon; for multiclass input undefined cases give ``0``. Set to ``0`` to match
+            ``sklearn.metrics.matthews_corrcoef``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -135,11 +168,12 @@ def binary_matthews_corrcoef(
 
     """
     if validate_args:
+        _matthews_corrcoef_arg_validation(zero_division)
         _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize=None)
         _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
     preds, target = _binary_confusion_matrix_format(preds, target, threshold, ignore_index)
     confmat = _binary_confusion_matrix_update(preds, target)
-    return _matthews_corrcoef_reduce(confmat)
+    return _matthews_corrcoef_reduce(confmat, zero_division)
 
 
 def multiclass_matthews_corrcoef(
@@ -148,6 +182,7 @@ def multiclass_matthews_corrcoef(
     num_classes: int,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: Optional[float] = None,
 ) -> Tensor:
     r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks.
 
@@ -170,6 +205,13 @@ def multiclass_matthews_corrcoef(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value returned when the score is undefined, i.e. when all targets or all predictions belong to a single
+            class. Should be ``None`` or a float in the [-1, 1] range. If ``None`` (default), the existing behaviour
+            is kept: for binary and multilabel input the score is ``1`` when all samples are predicted correctly,
+            ``-1`` when all are predicted wrongly and the remaining undefined cases are approximated with a small
+            epsilon; for multiclass input undefined cases give ``0``. Set to ``0`` to match
+            ``sklearn.metrics.matthews_corrcoef``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
@@ -192,11 +234,12 @@ def multiclass_matthews_corrcoef(
 
     """
     if validate_args:
+        _matthews_corrcoef_arg_validation(zero_division)
         _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize=None)
         _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index)
     confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
-    return _matthews_corrcoef_reduce(confmat)
+    return _matthews_corrcoef_reduce(confmat, zero_division)
 
 
 def multilabel_matthews_corrcoef(
@@ -206,6 +249,7 @@ def multilabel_matthews_corrcoef(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: Optional[float] = None,
 ) -> Tensor:
     r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks.
 
@@ -229,6 +273,13 @@ def multilabel_matthews_corrcoef(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value returned when the score is undefined, i.e. when all targets or all predictions belong to a single
+            class. Should be ``None`` or a float in the [-1, 1] range. If ``None`` (default), the existing behaviour
+            is kept: for binary and multilabel input the score is ``1`` when all samples are predicted correctly,
+            ``-1`` when all are predicted wrongly and the remaining undefined cases are approximated with a small
+            epsilon; for multiclass input undefined cases give ``0``. Set to ``0`` to match
+            ``sklearn.metrics.matthews_corrcoef``.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -247,11 +298,12 @@ def multilabel_matthews_corrcoef(
 
     """
     if validate_args:
+        _matthews_corrcoef_arg_validation(zero_division)
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize=None)
         _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target = _multilabel_confusion_matrix_format(preds, target, num_labels, threshold, ignore_index)
     confmat = _multilabel_confusion_matrix_update(preds, target, num_labels)
-    return _matthews_corrcoef_reduce(confmat)
+    return _matthews_corrcoef_reduce(confmat, zero_division)
 
 
 def matthews_corrcoef(
@@ -263,6 +315,7 @@ def matthews_corrcoef(
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: Optional[float] = None,
 ) -> Tensor:
     r"""Calculate `Matthews correlation coefficient`_ .
 
@@ -285,13 +338,15 @@ def matthews_corrcoef(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
+        return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args, zero_division)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
+        return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args, zero_division)
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
+        return multilabel_matthews_corrcoef(
+            preds, target, num_labels, threshold, ignore_index, validate_args, zero_division
+        )
     raise ValueError(f"Not handled value: {task}")

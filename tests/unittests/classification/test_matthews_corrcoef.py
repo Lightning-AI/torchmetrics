@@ -410,3 +410,116 @@ def test_matthews_corrcoef_reduce():
     out_fn_zero = _matthews_corrcoef_reduce(confmat_fn_zero)
     assert out_fn_zero != 0
     assert not torch.isnan(out_fn_zero)
+
+
+_degenerate_binary_cases = [
+    (torch.zeros(10), torch.zeros(10)),
+    (torch.ones(10), torch.ones(10)),
+    (torch.zeros(10), torch.ones(10)),
+    (torch.ones(10), torch.zeros(10)),
+    (torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), torch.tensor([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])),
+    (torch.tensor([1, 1, 1, 1, 1, 0, 0, 0, 0, 0]), torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])),
+    (torch.tensor([1, 0, 1, 0, 1, 0]), torch.tensor([1, 1, 1, 1, 1, 1])),
+    # undefined cases where the default convention gives a small non-zero value
+    (torch.zeros(10), torch.tensor([0, 0, 0, 0, 0, 0, 1, 1, 1, 1])),
+    (torch.tensor([1, 1, 1, 0, 0]), torch.ones(5)),
+    # not degenerate, `zero_division` must not change the score
+    (torch.tensor([0, 1, 0, 0]), torch.tensor([1, 1, 0, 0])),
+]
+
+
+@pytest.mark.parametrize(("preds", "target"), _degenerate_binary_cases)
+@pytest.mark.parametrize("zero_division", [0, 0.0])
+def test_binary_zero_division_matches_sklearn(preds, target, zero_division):
+    """Test that `zero_division=0` gives the same result as sklearn, including the undefined cases."""
+    expected = sk_matthews_corrcoef(target.numpy(), preds.numpy())
+    out = binary_matthews_corrcoef(preds, target, zero_division=zero_division)
+    assert torch.allclose(out, torch.tensor(expected, dtype=out.dtype))
+
+    metric = BinaryMatthewsCorrCoef(zero_division=zero_division)
+    metric.update(preds, target)
+    assert torch.allclose(metric.compute(), torch.tensor(expected, dtype=out.dtype))
+
+    out_wrapper = MatthewsCorrCoef(task="binary", zero_division=zero_division)(preds, target)
+    assert torch.allclose(out_wrapper, torch.tensor(expected, dtype=out.dtype))
+
+
+@pytest.mark.parametrize(
+    ("preds", "target"),
+    [
+        (torch.tensor([0, 1, 2]), torch.tensor([0, 0, 0])),
+        (torch.tensor([2, 2, 2, 2]), torch.tensor([0, 1, 2, 2])),
+        (torch.tensor([1, 1, 1]), torch.tensor([1, 1, 1])),
+        (torch.tensor([0, 0, 0]), torch.tensor([2, 2, 2])),
+        # not degenerate
+        (torch.tensor([2, 1, 0, 1]), torch.tensor([2, 1, 0, 0])),
+    ],
+)
+def test_multiclass_zero_division_matches_sklearn(preds, target):
+    """Test that `zero_division=0` gives the same result as sklearn for multiclass input."""
+    expected = torch.tensor(sk_matthews_corrcoef(target.numpy(), preds.numpy()), dtype=torch.float32)
+    assert torch.allclose(multiclass_matthews_corrcoef(preds, target, num_classes=3, zero_division=0.0), expected)
+    metric = MulticlassMatthewsCorrCoef(num_classes=3, zero_division=0.0)
+    assert torch.allclose(metric(preds, target), expected)
+
+
+@pytest.mark.parametrize(
+    ("preds", "target"),
+    [
+        (torch.zeros(10, NUM_CLASSES).long(), torch.zeros(10, NUM_CLASSES).long()),
+        (torch.ones(10, NUM_CLASSES).long(), torch.ones(10, NUM_CLASSES).long()),
+        (torch.zeros(10, NUM_CLASSES).long(), torch.ones(10, NUM_CLASSES).long()),
+        (torch.ones(10, NUM_CLASSES).long(), torch.zeros(10, NUM_CLASSES).long()),
+        # not degenerate
+        (torch.tensor([[0, 0, 1], [1, 0, 1]]), torch.tensor([[0, 1, 0], [1, 0, 1]])),
+    ],
+)
+def test_multilabel_zero_division_matches_sklearn(preds, target):
+    """Test that `zero_division=0` gives the same result as sklearn on the flattened multilabel input."""
+    num_labels = preds.shape[1]
+    expected = sk_matthews_corrcoef(target.flatten().numpy(), preds.flatten().numpy())
+    expected = torch.tensor(expected, dtype=torch.float32)
+    assert torch.allclose(
+        multilabel_matthews_corrcoef(preds, target, num_labels=num_labels, zero_division=0.0), expected
+    )
+    metric = MultilabelMatthewsCorrCoef(num_labels=num_labels, zero_division=0.0)
+    assert torch.allclose(metric(preds, target), expected)
+
+
+@pytest.mark.parametrize("zero_division", [-1.0, 0.5, 1])
+def test_zero_division_value_is_returned(zero_division):
+    """Test that the `zero_division` value is returned as is when the score is undefined."""
+    out = binary_matthews_corrcoef(torch.zeros(10), torch.zeros(10), zero_division=zero_division)
+    assert out == zero_division
+    assert out.dtype == torch.float32
+    out = multiclass_matthews_corrcoef(torch.tensor([0, 1, 2]), torch.tensor([0, 0, 0]), 3, zero_division=zero_division)
+    assert out == zero_division
+
+
+def test_zero_division_does_not_hide_low_precision_scores():
+    """Test that a denominator that underflows in low precision is not mistaken for an undefined score."""
+    confmat = torch.tensor([[19392673, 1], [76216, 0]]).to(torch.bfloat16)
+    out = _matthews_corrcoef_reduce(confmat, zero_division=0.0)
+    assert out == _matthews_corrcoef_reduce(confmat)
+    assert out != 0
+    assert not torch.isnan(out)
+
+
+@pytest.mark.parametrize("zero_division", [2, -1.5, float("nan"), "0", True, [0]])
+def test_zero_division_validation(zero_division):
+    """Test that invalid values for `zero_division` raise an error."""
+    preds, target = torch.tensor([0, 1, 1]), torch.tensor([0, 1, 0])
+    with pytest.raises(ValueError, match="Expected argument `zero_division`"):
+        binary_matthews_corrcoef(preds, target, zero_division=zero_division)
+    with pytest.raises(ValueError, match="Expected argument `zero_division`"):
+        multiclass_matthews_corrcoef(preds, target, num_classes=2, zero_division=zero_division)
+    with pytest.raises(ValueError, match="Expected argument `zero_division`"):
+        multilabel_matthews_corrcoef(preds[None], target[None], num_labels=3, zero_division=zero_division)
+    with pytest.raises(ValueError, match="Expected argument `zero_division`"):
+        BinaryMatthewsCorrCoef(zero_division=zero_division)
+    with pytest.raises(ValueError, match="Expected argument `zero_division`"):
+        MulticlassMatthewsCorrCoef(num_classes=2, zero_division=zero_division)
+    with pytest.raises(ValueError, match="Expected argument `zero_division`"):
+        MultilabelMatthewsCorrCoef(num_labels=3, zero_division=zero_division)
+    with pytest.raises(ValueError, match="Expected argument `zero_division`"):
+        MatthewsCorrCoef(task="binary", zero_division=zero_division)
