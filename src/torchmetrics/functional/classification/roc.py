@@ -37,6 +37,27 @@ from torchmetrics.utilities.compute import _safe_divide, interp
 from torchmetrics.utilities.enums import ClassificationTask
 
 
+def _add_roc_origin(fpr: Tensor, tpr: Tensor, thres: Tensor) -> tuple[Tensor, Tensor, Tensor]:
+    """Prepend the ``(0, 0)`` point to a ROC curve computed from binned thresholds.
+
+    The binned state only contains confusion matrices for the requested thresholds. Unlike the non-binned
+    computation, it therefore has no point corresponding to a threshold above the maximum possible score, which
+    would classify every sample as negative. Without this anchor, curves starting at a threshold of 1 omit the area
+    between the origin and their first operating point.
+
+    """
+    if fpr.ndim == 1:
+        origin_fpr = torch.zeros_like(fpr[:1])
+        origin_tpr = torch.zeros_like(tpr[:1])
+        dim = 0
+    else:
+        origin_fpr = torch.zeros_like(fpr[:, :1])
+        origin_tpr = torch.zeros_like(tpr[:, :1])
+        dim = 1
+    thres = torch.cat((torch.ones_like(thres[:1]), thres), dim=0)
+    return torch.cat((origin_fpr, fpr), dim=dim), torch.cat((origin_tpr, tpr), dim=dim), thres
+
+
 def _binary_roc_compute(
     state: Union[Tensor, tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
@@ -50,6 +71,7 @@ def _binary_roc_compute(
         tpr = _safe_divide(tps, tps + fns).flip(0)
         fpr = _safe_divide(fps, fps + tns).flip(0)
         thres = thresholds.flip(0)
+        fpr, tpr, thres = _add_roc_origin(fpr, tpr, thres)
     else:
         fps, tps, thres = _binary_clf_curve(preds=state[0], target=state[1], pos_label=pos_label)
         # Add an extra threshold position to make sure that the curve starts at (0, 0)
@@ -135,7 +157,7 @@ def binary_roc(
 
         - fpr: an 1d tensor of size (n_thresholds+1, ) with false positive rate values
         - tpr: an 1d tensor of size (n_thresholds+1, ) with true positive rate values
-        - thresholds: an 1d tensor of size (n_thresholds, ) with decreasing threshold values
+        - thresholds: an 1d tensor of size (n_thresholds+1, ) with decreasing threshold values
 
     Example:
         >>> from torchmetrics.functional.classification import binary_roc
@@ -146,9 +168,9 @@ def binary_roc(
          tensor([0.0000, 0.0000, 0.5000, 1.0000, 1.0000]),
          tensor([1.0000, 0.8000, 0.7000, 0.5000, 0.0000]))
         >>> binary_roc(preds, target, thresholds=5)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
-         tensor([0., 0., 1., 1., 1.]),
-         tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+        (tensor([0.0000, 0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
+         tensor([0., 0., 0., 1., 1., 1.]),
+         tensor([1.0000, 1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
     if validate_args:
@@ -176,6 +198,7 @@ def _multiclass_roc_compute(
         tpr = _safe_divide(tps, tps + fns).flip(0).T
         fpr = _safe_divide(fps, fps + tns).flip(0).T
         thres = thresholds.flip(0)
+        fpr, tpr, thres = _add_roc_origin(fpr, tpr, thres)
         tensor_state = True
     else:
         fpr_list, tpr_list, thres_list = [], [], []
@@ -273,9 +296,10 @@ def multiclass_roc(
         - tpr: if `thresholds=None` a list for each class is returned with an 1d tensor of size (n_thresholds+1, )
           with true positive rate values (length may differ between classes). If `thresholds` is set to something else,
           then a single 2d tensor of size (n_classes, n_thresholds+1) with true positive rate values is returned.
-        - thresholds: if `thresholds=None` a list for each class is returned with an 1d tensor of size (n_thresholds, )
-          with decreasing threshold values (length may differ between classes). If `threshold` is set to something else,
-          then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all classes.
+        - thresholds: if `thresholds=None` a list for each class is returned with an 1d tensor of size
+          (n_thresholds+1, ) with decreasing threshold values (length may differ between classes). If `threshold` is
+          set to something else, then a single 1d tensor of size (n_thresholds+1, ) is returned with shared threshold
+          values for all classes.
 
     Example:
         >>> from torchmetrics.functional.classification import multiclass_roc
@@ -298,17 +322,17 @@ def multiclass_roc(
         >>> multiclass_roc(
         ...     preds, target, num_classes=5, thresholds=5
         ... )  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([[0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
-                 [0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
-                 [0.0000, 0.3333, 0.3333, 0.3333, 1.0000],
-                 [0.0000, 0.3333, 0.3333, 0.3333, 1.0000],
-                 [0.0000, 0.0000, 0.0000, 0.0000, 1.0000]]),
-         tensor([[0., 1., 1., 1., 1.],
-                 [0., 1., 1., 1., 1.],
-                 [0., 0., 0., 0., 1.],
-                 [0., 0., 0., 0., 1.],
-                 [0., 0., 0., 0., 0.]]),
-         tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+        (tensor([[0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
+                 [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000],
+                 [0.0000, 0.0000, 0.3333, 0.3333, 0.3333, 1.0000],
+                 [0.0000, 0.0000, 0.3333, 0.3333, 0.3333, 1.0000],
+                 [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000]]),
+         tensor([[0., 0., 1., 1., 1., 1.],
+                 [0., 0., 1., 1., 1., 1.],
+                 [0., 0., 0., 0., 0., 1.],
+                 [0., 0., 0., 0., 0., 1.],
+                 [0., 0., 0., 0., 0., 0.]]),
+         tensor([1.0000, 1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
     if validate_args:
@@ -340,6 +364,7 @@ def _multilabel_roc_compute(
         tpr = _safe_divide(tps, tps + fns).flip(0).T
         fpr = _safe_divide(fps, fps + tns).flip(0).T
         thres = thresholds.flip(0)
+        fpr, tpr, thres = _add_roc_origin(fpr, tpr, thres)
     else:
         fpr, tpr, thres = [], [], []  # type: ignore[assignment]
         for i in range(num_labels):
@@ -417,9 +442,10 @@ def multilabel_roc(
         - tpr: if `thresholds=None` a list for each label is returned with an 1d tensor of size (n_thresholds+1, )
           with true positive rate values (length may differ between labels). If `thresholds` is set to something else,
           then a single 2d tensor of size (n_labels, n_thresholds+1) with true positive rate values is returned.
-        - thresholds: if `thresholds=None` a list for each label is returned with an 1d tensor of size (n_thresholds, )
-          with decreasing threshold values (length may differ between labels). If `threshold` is set to something else,
-          then a single 1d tensor of size (n_thresholds, ) is returned with shared threshold values for all labels.
+        - thresholds: if `thresholds=None` a list for each label is returned with an 1d tensor of size
+          (n_thresholds+1, ) with decreasing threshold values (length may differ between labels). If `threshold` is
+          set to something else, then a single 1d tensor of size (n_thresholds+1, ) is returned with shared threshold
+          values for all labels.
 
     Example:
         >>> from torchmetrics.functional.classification import multilabel_roc
@@ -449,13 +475,13 @@ def multilabel_roc(
         >>> multilabel_roc(
         ...     preds, target, num_labels=3, thresholds=5
         ... )  # doctest: +NORMALIZE_WHITESPACE
-        (tensor([[0.0000, 0.0000, 0.0000, 0.5000, 1.0000],
-                 [0.0000, 0.5000, 0.5000, 0.5000, 1.0000],
-                 [0.0000, 0.0000, 0.0000, 0.0000, 1.0000]]),
-         tensor([[0.0000, 0.5000, 0.5000, 0.5000, 1.0000],
-                 [0.0000, 0.0000, 1.0000, 1.0000, 1.0000],
-                 [0.0000, 0.3333, 0.3333, 0.6667, 1.0000]]),
-         tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+        (tensor([[0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 1.0000],
+                 [0.0000, 0.0000, 0.5000, 0.5000, 0.5000, 1.0000],
+                 [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 1.0000]]),
+         tensor([[0.0000, 0.0000, 0.5000, 0.5000, 0.5000, 1.0000],
+                 [0.0000, 0.0000, 0.0000, 1.0000, 1.0000, 1.0000],
+                 [0.0000, 0.0000, 0.3333, 0.3333, 0.6667, 1.0000]]),
+         tensor([1.0000, 1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
     if validate_args:
