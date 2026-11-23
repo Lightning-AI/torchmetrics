@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `MaskedBinaryAUROC` implementation to classification domain ([#3096](https://github.com/Lightning-AI/torchmetrics/issues/3096))
 
 
 ### Changed
