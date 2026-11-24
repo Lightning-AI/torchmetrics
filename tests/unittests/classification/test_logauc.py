@@ -392,6 +392,20 @@ def test_valid_input_thresholds(recwarn, metric, thresholds):
     assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
+def test_binary_logauc_validates_inputs_by_default():
+    """Check that `BinaryLogAUC` validates its arguments and inputs by default, like the other LogAUC classes."""
+    preds = torch.tensor([0.9, 0.2, 0.8, 0.1])
+    target = torch.tensor([0, 1, 2, 0])  # 2 is not a valid label in a binary task
+
+    with pytest.raises(RuntimeError, match="Detected the following values in `target`"):
+        BinaryLogAUC().update(preds, target)
+    with pytest.raises(ValueError, match="Expected argument `ignore_index` to either be `None` or an integer"):
+        BinaryLogAUC(ignore_index="a")
+
+    # validation can still be switched off explicitly
+    BinaryLogAUC(validate_args=False).update(preds, target)
+
+
 @pytest.mark.parametrize(
     ("metric", "kwargs"),
     [
