@@ -16,8 +16,8 @@ from functools import partial
 import pytest
 import torch
 
-from torchmetrics.aggregation import MeanMetric, SumMetric
-from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix
+from torchmetrics.aggregation import CatMetric, MeanMetric, SumMetric
+from torchmetrics.classification import BinaryAccuracy, BinaryAUROC, BinaryConfusionMatrix
 from torchmetrics.collections import MetricCollection
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, PearsonCorrCoef
 from torchmetrics.wrappers import Running
@@ -159,3 +159,49 @@ def test_no_warning_due_to_reset(recwarn):
     metric = Running(SumMetric(), window=3)
     metric.update(torch.tensor(2.0))
     assert len(recwarn) == 0, f"Warnings: {recwarn.list}"
+
+
+@pytest.mark.parametrize("thresholds", [None, 5])
+@pytest.mark.parametrize("window", [1, 3, 5])
+@pytest.mark.parametrize("method", ["update", "forward"])
+@pytest.mark.parametrize("compute_each_step", [False, True])
+def test_running_auroc_state(thresholds, window, method, compute_each_step):
+    """Preserve exact and binned AUROC state across reset, window rollover and repeated computation."""
+    preds = torch.tensor([[0.2, 0.8], [0.8, 0.2], [0.4, 0.6], [0.7, 0.3], [0.1, 0.9], [0.9, 0.1]])
+    target = torch.tensor([0, 1])
+    metric = Running(BinaryAUROC(thresholds=thresholds), window=window)
+
+    for _ in range(2):
+        for index, batch in enumerate(preds):
+            result = getattr(metric, method)(batch, target)
+            if method == "forward":
+                torch.testing.assert_close(result, BinaryAUROC(thresholds=thresholds)(batch, target))
+            if compute_each_step or index == len(preds) - 1:
+                window_preds = preds[max(0, index + 1 - window) : index + 1].flatten()
+                window_target = target.repeat(min(index + 1, window))
+                expected = BinaryAUROC(thresholds=thresholds)(window_preds, window_target)
+                torch.testing.assert_close(metric.compute(), expected)
+                torch.testing.assert_close(metric.compute(), expected)
+        metric.reset()
+
+
+@pytest.mark.parametrize("window", [1, 3, 5])
+@pytest.mark.parametrize("method", ["update", "forward"])
+@pytest.mark.parametrize("compute_each_step", [False, True])
+def test_running_cat_state(window, method, compute_each_step):
+    """Keep list-backed aggregation values in the running window after resetting the base metric."""
+    batches = torch.arange(12, dtype=torch.float).reshape(6, 2)
+    metric = Running(CatMetric(), window=window)
+
+    for _ in range(2):
+        for index, batch in enumerate(batches):
+            result = getattr(metric, method)(batch)
+            if method == "forward":
+                torch.testing.assert_close(result, batch)
+            if compute_each_step or index == len(batches) - 1:
+                expected = batches[max(0, index + 1 - window) : index + 1].flatten()
+                actual = metric.compute()
+                assert isinstance(actual, torch.Tensor)
+                torch.testing.assert_close(actual.sort().values, expected)
+                torch.testing.assert_close(metric.compute(), actual)
+        metric.reset()
