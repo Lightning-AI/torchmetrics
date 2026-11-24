@@ -171,3 +171,18 @@ def test_args_and_kwargs_works():
 
     assert (res1["mean"].shape == res2["mean"].shape) & (res2["mean"].shape == res3["mean"].shape)
     assert (res1["std"].shape == res2["std"].shape) & (res2["mean"].shape == res3["std"].shape)
+
+
+@pytest.mark.parametrize("quantile", [0.5, torch.tensor([0.05, 0.95])])
+def test_quantile_is_computed_per_output(quantile):
+    """Test that the quantile is computed per output for metrics that return non-scalar values."""
+    preds = torch.randint(3, (100,))
+    target = torch.randint(3, (100,))
+    bootstrapper = BootStrapper(
+        MulticlassF1Score(num_classes=3, average=None), num_bootstraps=20, quantile=quantile, raw=True
+    )
+    output = bootstrapper(preds, target)
+    expected = torch.quantile(output["raw"], quantile, dim=0)
+
+    assert output["quantile"].shape == expected.shape
+    assert torch.allclose(output["quantile"], expected)
