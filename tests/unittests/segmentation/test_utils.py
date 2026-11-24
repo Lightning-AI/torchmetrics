@@ -166,6 +166,20 @@ def test_distance_transform(case, metric, device):
     assert torch.allclose(distance.cpu(), torch.from_numpy(scidistance).to(distance.dtype))
 
 
+@pytest.mark.parametrize("metric", ["euclidean", "chessboard", "taxicab"])
+def test_distance_transform_non_square_input(metric):
+    """Check that non-square inputs with height > width are handled correctly."""
+    case = torch.randint(0, 2, (11, 10))
+
+    distance = distance_transform(case, metric=metric)
+    if metric == "euclidean":
+        scidistance = scidistance_transform_edt(case)
+    else:
+        scidistance = scidistance_transform_cdt(case, metric=metric)
+
+    assert torch.allclose(distance, torch.from_numpy(scidistance).to(distance.dtype))
+
+
 @pytest.mark.parametrize("dim", [2, 3])
 @pytest.mark.parametrize("spacing", [1, 2])
 def test_neighbour_table(dim, spacing):
@@ -233,7 +247,8 @@ def test_mask_edges(cases, spacing, crop, device):
     reference_res = monai_get_mask_edges(preds, target, spacing=spacing, crop=crop)
 
     for r1, r2 in zip(res, reference_res):
-        assert torch.allclose(r1.cpu().float(), torch.from_numpy(r2).float())
+        # monai>=1.5 returns tensors for tensor inputs, older versions return numpy arrays
+        assert torch.allclose(r1.cpu().float(), torch.as_tensor(r2).float())
 
 
 @pytest.mark.parametrize(

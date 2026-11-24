@@ -13,7 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `METEORScore` metric to the text package ([#3477](https://github.com/Lightning-AI/torchmetrics/pull/3477))
+
+
+- Added support for PyTorch 2.11-2.15 and Python 3.13 ([#3653](https://github.com/Lightning-AI/torchmetrics/pull/3653))
 
 
 ### Changed
@@ -53,6 +56,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
+
+- Fixed `BinaryAUROC` and `BinaryLogAUC` skipping the validation of `preds` and `target` in `update`, so invalid inputs were silently accepted ([#3646](https://github.com/Lightning-AI/torchmetrics/issues/3646))
+
+
+- Fixed `Perplexity` returning `inf` when a target token's softmax probability underflows to zero, by computing the log-probabilities with `log_softmax` ([#3539](https://github.com/Lightning-AI/torchmetrics/pull/3539))
+
+
+- Fixed `higher_is_better` direction for `WordInfoPreserved`, `DaviesBouldinScore`, `SpectralDistortionIndex` and `PerceptualPathLength`, which made `MetricTracker.best_metric` return the worst step ([#3644](https://github.com/Lightning-AI/torchmetrics/pull/3644))
+
+
+- Fixed `StructuralSimilarityIndexMeasure` padding the last dimension of 3D inputs with `kernel_size` instead of the gaussian kernel size ([#3642](https://github.com/Lightning-AI/torchmetrics/pull/3642))
+
+
+- Fixed aggregation metrics with a float `nan_strategy` overwriting the `value` and `weight` tensors passed to `update`, which also gave `MeanMetric` wrong weights for broadcast weight tensors ([#3527](https://github.com/Lightning-AI/torchmetrics/pull/3527))
 
 
 ---
