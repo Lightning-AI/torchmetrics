@@ -95,3 +95,21 @@ class TestPerplexity(MetricTester):
         self.run_precision_test_gpu(
             preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
         )
+
+
+@pytest.mark.parametrize(("dtype", "logit"), [(torch.float32, 120.0), (torch.float64, 800.0), (torch.half, 20.0)])
+def test_perplexity_no_underflow_for_unlikely_target(dtype, logit):
+    """Test that a target token with a tiny probability does not make the perplexity infinite."""
+    preds = torch.zeros(1, 20, 3, dtype=dtype)
+    preds[0, 0, 0] = logit
+    target = torch.zeros(1, 20, dtype=torch.long)
+    target[0, 0] = 1
+    expected = _reference_local_perplexity(preds.double(), target, ignore_index=None)
+
+    result = perplexity(preds, target)
+    assert torch.isfinite(result)
+    assert torch.allclose(result.double(), expected, rtol=1e-2)
+
+    metric = Perplexity()
+    metric.update(preds, target)
+    assert torch.allclose(metric.compute().double(), expected, rtol=1e-2)
