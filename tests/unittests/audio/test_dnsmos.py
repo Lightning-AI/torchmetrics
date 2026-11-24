@@ -34,6 +34,8 @@ from torchmetrics.utilities.imports import (
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
+pytestmark = pytest.mark.slow
+
 if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
     import librosa
     import onnxruntime as ort
