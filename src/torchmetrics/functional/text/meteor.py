@@ -31,15 +31,18 @@ def _ensure_nltk_wordnet_is_downloaded() -> None:
     import nltk
 
     try:
-        nltk.data.find("corpora/wordnet.zip")
+        nltk.data.find("corpora/wordnet")
     except LookupError:
         try:
-            nltk.download("wordnet", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
-        except ValueError as err:
-            raise OSError(
-                "`nltk` resource `wordnet` is not available on a disk and cannot be downloaded as a machine is not "
-                "connected to the internet."
-            ) from err
+            nltk.data.find("corpora/wordnet.zip")
+        except LookupError:
+            try:
+                nltk.download("wordnet", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
+            except ValueError as err:
+                raise OSError(
+                    "`nltk` resource `wordnet` is not available on a disk and cannot be downloaded as a machine is not "
+                    "connected to the internet."
+                ) from err
 
 
 def _match_enums(
@@ -216,6 +219,13 @@ def meteor_score(
         tensor(0.6250)
 
     """
+    if not 0.0 <= alpha <= 1.0:
+        raise ValueError(f"Expected argument `alpha` to be in the [0, 1] range but got {alpha}.")
+    if beta < 0.0:
+        raise ValueError(f"Expected argument `beta` to be non-negative but got {beta}.")
+    if gamma < 0.0:
+        raise ValueError(f"Expected argument `gamma` to be non-negative but got {gamma}.")
+
     if not _NLTK_AVAILABLE:
         raise ModuleNotFoundError("METEOR metric requires that `nltk` is installed. Use `pip install nltk`.")
     import nltk

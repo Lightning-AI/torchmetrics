@@ -125,7 +125,8 @@ class METEORScore(Metric):
         """Calculate the METEOR score."""
         meteor = self.score / self.total if self.total > 0 else tensor(0.0)
         if self.sentence_meteor is not None:
-            return meteor, torch.cat(self.sentence_meteor)
+            sentence_meteor = torch.cat(self.sentence_meteor) if self.sentence_meteor else self.score.new_empty((0,))
+            return meteor, sentence_meteor
         return meteor
 
     def plot(

@@ -36,8 +36,13 @@ def _reference_nltk_meteor(
     import nltk
     from nltk.translate.meteor_score import meteor_score as nltk_meteor
 
-    nltk.download("wordnet", quiet=True)
-
+    try:
+        nltk.data.find("corpora/wordnet")
+    except LookupError:
+        try:
+            nltk.data.find("corpora/wordnet.zip")
+        except LookupError:
+            pytest.skip("test requires the NLTK `wordnet` corpus to be available")
     scores = []
     for pred, references in zip(preds, targets):
         tokenized_references = [reference.lower().split() for reference in references]
