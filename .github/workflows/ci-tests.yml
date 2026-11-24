@@ -154,6 +154,9 @@ jobs:
           for fpath in `ls requirements/*.txt`; do
               python adjust-torch-versions.py $fpath
           done
+          # torchaudio stopped following torch's version numbers after 2.11, so undo the matching pin for newer torch
+          sed -i.bak -E 's/^torchaudio==2\.(1[2-9]|[2-9][0-9])\..*/torchaudio >=2.11.0, <2.12.0/' requirements/audio.txt
+          cat requirements/audio.txt
           uv pip install --requirement requirements/clustering.txt -U $PIP_EXTRA_URL
           uv pip install --requirement requirements/_devel.txt -U $PIP_EXTRA_URL
           uv pip list
