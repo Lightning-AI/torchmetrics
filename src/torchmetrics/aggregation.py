@@ -104,7 +104,7 @@ class BaseAggregator(Metric):
                     # out-of-place, so the tensors passed by the user (or a broadcast view of them) are not modified
                     x = x.masked_fill(nans | nans_weight, self.nan_strategy)
                     weight = weight.masked_fill(nans | nans_weight, 1)
-        else:
+        elif weight is None:
             weight = torch.ones_like(x)
         return x.to(self.dtype), weight.to(self.dtype)
 
