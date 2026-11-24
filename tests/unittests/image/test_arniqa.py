@@ -17,7 +17,6 @@ from functools import partial
 
 import pytest
 import torch
-import torchvision.transforms as transforms
 from torch import Tensor
 
 from torchmetrics.functional.image.arniqa import arniqa
@@ -51,6 +50,8 @@ def _arniqa_wrapped(preds, target, regressor_dataset="koniq10k", normalize=True)
 
 def _reference_arniqa(img: Tensor, target: Tensor, regressor_dataset: str, reduction: str = "mean") -> Tensor:
     """Comparison function (from ARNIQA official repo (https://github.com/miccunifi/ARNIQA)) for tm implementation."""
+    import torchvision.transforms as transforms
+
     model = torch.hub.load(
         repo_or_dir="miccunifi/ARNIQA", source="github", model="ARNIQA", regressor_dataset=regressor_dataset
     )
@@ -119,6 +120,8 @@ class TestARNIQA(MetricTester):
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_normalize_arg():
     """Test that normalize argument works as expected."""
+    import torchvision.transforms as transforms
+
     _input_img_norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(_input_img[0])
     metric_nonorm = ARNIQA(regressor_dataset="koniq10k", normalize=False)
     metric_norm = ARNIQA(regressor_dataset="koniq10k", normalize=True)
