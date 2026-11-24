@@ -247,7 +247,8 @@ def test_mask_edges(cases, spacing, crop, device):
     reference_res = monai_get_mask_edges(preds, target, spacing=spacing, crop=crop)
 
     for r1, r2 in zip(res, reference_res):
-        assert torch.allclose(r1.cpu().float(), torch.from_numpy(r2).float())
+        # monai>=1.5 returns tensors for tensor inputs, older versions return numpy arrays
+        assert torch.allclose(r1.cpu().float(), torch.as_tensor(r2).float())
 
 
 @pytest.mark.parametrize(
