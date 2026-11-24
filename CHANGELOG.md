@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
 
 
-- Fixed `higher_is_better` direction for `WordInfoPreserved`, `DaviesBouldinScore` and `SpectralDistortionIndex`, which made `MetricTracker.best_metric` return the worst step ([#3644](https://github.com/Lightning-AI/torchmetrics/pull/3644))
+- Fixed `higher_is_better` direction for `WordInfoPreserved`, `DaviesBouldinScore`, `SpectralDistortionIndex` and `PerceptualPathLength`, which made `MetricTracker.best_metric` return the worst step ([#3644](https://github.com/Lightning-AI/torchmetrics/pull/3644))
 
 
 ---
