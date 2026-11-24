@@ -66,6 +66,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `StructuralSimilarityIndexMeasure` padding the last dimension of 3D inputs with `kernel_size` instead of the gaussian kernel size ([#3642](https://github.com/Lightning-AI/torchmetrics/pull/3642))
 
 
+- Fixed aggregation metrics with a float `nan_strategy` overwriting the `value` and `weight` tensors passed to `update`, which also gave `MeanMetric` wrong weights for broadcast weight tensors ([#3527](https://github.com/Lightning-AI/torchmetrics/pull/3527))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
