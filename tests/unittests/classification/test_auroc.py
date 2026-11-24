@@ -454,3 +454,42 @@ def test_wrapper_class(metric, kwargs, base_metric=AUROC):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+def test_binary_auroc_exact_path_logits_dtype_and_batch_invariance():
+    """Check exact-path ranking of confident logits across dtypes and batch sizes.
+
+    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3638: the per-batch
+    sigmoid heuristic saturated confident low-precision logits and mixed raw and sigmoided
+    batches.
+
+    """
+    generator = torch.Generator().manual_seed(0)
+    n = 20_000
+    target = (torch.rand(n, generator=generator) < 0.3).long()
+    logits = torch.where(
+        target == 1,
+        torch.randn(n, generator=generator) * 4 + 10,
+        torch.randn(n, generator=generator) * 4 + 4,
+    )
+    expected = sk_roc_auc_score(target.numpy(), logits.double().numpy())
+
+    for dtype in (torch.float32, torch.bfloat16):
+        result = binary_auroc(logits.to(dtype), target, thresholds=None)
+        assert torch.allclose(result.double(), torch.tensor(expected, dtype=torch.float64), atol=1e-3)
+
+    # probabilities near the [0, 1] boundary expose the per-batch normalization heuristic
+    preds = torch.where(
+        target == 1,
+        torch.randn(n, generator=generator) * 0.25 + 0.65,
+        torch.randn(n, generator=generator) * 0.25 + 0.35,
+    )
+    expected = sk_roc_auc_score(target.numpy(), preds.numpy())
+    results = []
+    for batch_size in (8, 1024):
+        metric = BinaryAUROC(thresholds=None)
+        for i in range(0, n, batch_size):
+            metric.update(preds[i : i + batch_size], target[i : i + batch_size])
+        results.append(metric.compute())
+    assert torch.allclose(results[0], results[1])
+    assert torch.allclose(results[0].double(), torch.tensor(expected, dtype=torch.float64), atol=1e-3)
