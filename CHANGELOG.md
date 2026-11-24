@@ -63,6 +63,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `higher_is_better` direction for `WordInfoPreserved`, `DaviesBouldinScore`, `SpectralDistortionIndex` and `PerceptualPathLength`, which made `MetricTracker.best_metric` return the worst step ([#3644](https://github.com/Lightning-AI/torchmetrics/pull/3644))
 
 
+- Fixed `StructuralSimilarityIndexMeasure` padding the last dimension of 3D inputs with `kernel_size` instead of the gaussian kernel size ([#3642](https://github.com/Lightning-AI/torchmetrics/pull/3642))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
