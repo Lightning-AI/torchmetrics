@@ -156,7 +156,10 @@ jobs:
           done
           # torchaudio stopped following torch's version numbers after 2.11, so undo the matching pin for newer torch
           sed -i.bak -E 's/^torchaudio==2\.(1[2-9]|[2-9][0-9])\..*/torchaudio >=2.11.0, <2.12.0/' requirements/audio.txt
+          # the script pins torchvision 0.30 for torch 2.15, which does not exist; torchvision 0.29 supports torch 2.15
+          sed -i.bak -E 's/^torchvision==0\.30\..*/torchvision >=0.29.0, <0.30.0/' requirements/*.txt
           cat requirements/audio.txt
+          grep -h "^torchvision" requirements/*.txt
           uv pip install --requirement requirements/clustering.txt -U $PIP_EXTRA_URL
           uv pip install --requirement requirements/_devel.txt -U $PIP_EXTRA_URL
           uv pip list
