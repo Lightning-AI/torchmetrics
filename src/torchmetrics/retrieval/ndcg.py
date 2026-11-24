@@ -29,7 +29,7 @@ if not _MATPLOTLIB_AVAILABLE:
 class RetrievalNormalizedDCG(RetrievalMetric):
     """Compute `Normalized Discounted Cumulative Gain`_.
 
-    Works with binary or positive integer target data. Accepts float predictions from a model output.
+    Works with binary or non-negative integer or float target data. Accepts float predictions from a model output.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

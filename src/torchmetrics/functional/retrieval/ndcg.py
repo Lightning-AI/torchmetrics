@@ -72,7 +72,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
     """Compute `Normalized Discounted Cumulative Gain`_ (for information retrieval).
 
     ``preds`` and ``target`` should be of the same shape and live on the same device.
-    ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
+    ``target`` must be either `bool`, non-negative `integers` or non-negative `floats` and ``preds`` must be ``float``,
     otherwise an error is raised.
 
     Args:
@@ -85,7 +85,8 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
 
     Raises:
         ValueError:
-            If ``top_k`` parameter is not `None` or an integer larger than 0
+            If ``top_k`` parameter is not `None` or an integer larger than 0.
+            If ``target`` contains negative values.
 
     Example:
         >>> from torchmetrics.functional.retrieval import retrieval_normalized_dcg

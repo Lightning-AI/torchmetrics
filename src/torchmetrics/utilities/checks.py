@@ -147,6 +147,9 @@ def _check_retrieval_target_and_prediction_types(
     if not allow_non_binary_target and (target.max() > 1 or target.min() < 0):
         raise ValueError("`target` must contain `binary` values")
 
+    if (target < 0).any():
+        raise ValueError("`target` must contain non-negative values")
+
     target = target.float() if target.is_floating_point() else target.long()
     preds = preds.float()
 
