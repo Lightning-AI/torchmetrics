@@ -49,7 +49,7 @@ def _binary_logauc_compute(
     fpr = torch.cat([fpr, fpr_range]).sort().values
 
     log_fpr = torch.log10(fpr)
-    bounds = torch.log10(torch.tensor(fpr_range))
+    bounds = torch.log10(fpr_range.detach().clone())
 
     lower_bound_idx = torch.where(log_fpr == bounds[0])[0][-1]
     upper_bound_idx = torch.where(log_fpr == bounds[1])[0][-1]

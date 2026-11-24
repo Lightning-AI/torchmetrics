@@ -34,6 +34,8 @@ from torchmetrics.utilities.imports import (
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
+pytestmark = pytest.mark.slow
+
 if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
     import librosa
     import onnxruntime as ort
@@ -181,7 +183,9 @@ class _DNSMOSCheat(DeepNoiseSuppressionMeanOpinionScore):
         super().update(preds=preds)
 
 
-preds = torch.rand(2, 2, 8000)
+# DNSMOS repeats short clips until they fill its 9.01s window; 5500 samples gives 2 windows at 8 and 16 kHz
+# (8000 samples gave 7), which keeps the per-window averaging covered at a fraction of the cost
+preds = torch.rand(2, 2, 5500)
 
 
 @pytest.mark.parametrize(

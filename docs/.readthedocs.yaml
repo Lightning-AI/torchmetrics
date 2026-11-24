@@ -29,8 +29,11 @@ sphinx:
 build:
   os: "ubuntu-22.04"
   tools:
-    python: "3.9"
+    python: "3.10"
   commands:
+    # skip pull request builds, the docs are already built by the `docs-make` CI job; exit code 183 cancels the build
+    # see: https://docs.readthedocs.io/en/stable/build-customization.html#cancel-build-based-on-a-condition
+    - if [ "$READTHEDOCS_VERSION_TYPE" = "external" ]; then exit 183; fi
     - printenv
     - pwd ; ls -lh
     - pip install -U pip awscli --user

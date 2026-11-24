@@ -3,5 +3,6 @@
 
 pandas >1.4.0, <=2.3.2 # cannot pin version due to numpy version incompatibility
 dython ==0.7.9
+setuptools <82.0.0 # dython uses pkg_resources which was removed in setuptools 82.0.0
 scipy >1.0.0, <1.17.0 # cannot pin version due to some version conflicts with `oldest` CI configuration
 statsmodels >0.13.5, <0.15.0

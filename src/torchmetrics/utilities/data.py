@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 from collections.abc import Sequence
 from typing import Any, List, Optional, Union
 
@@ -19,9 +18,7 @@ import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor
 
-from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _TORCH_LESS_THAN_2_6, _XLA_AVAILABLE
-from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.utilities.imports import _XLA_AVAILABLE
 
 METRIC_EPS = 1e-6
 
@@ -206,20 +203,6 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     return torch.bincount(x, minlength=minlength)
 
 
-def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = None) -> Tensor:
-    """Implement custom cumulative summation for Torch versions which does not support it natively."""
-    is_cuda_fp_deterministic = torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point()
-    if _TORCH_LESS_THAN_2_6 and is_cuda_fp_deterministic and sys.platform != "win32":
-        rank_zero_warn(
-            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum`, which is currently"
-            " not supported. The tensor will be copied to the CPU memory to compute it and then copied back to GPU."
-            " Expect some slowdowns.",
-            TorchMetricsUserWarning,
-        )
-        return x.cpu().cumsum(dim=dim, dtype=dtype).to(x.device)
-    return torch.cumsum(x, dim=dim, dtype=dtype)
-
-
 def _flexible_bincount(x: Tensor) -> Tensor:
     """Similar to `_bincount`, but works also with tensor that do not contain continuous values.
 
@@ -230,13 +213,8 @@ def _flexible_bincount(x: Tensor) -> Tensor:
         Number of occurrences for each unique element in x
 
     """
-    # make sure elements in x start from 0
-    x = x - x.min()
-    unique_x = torch.unique(x)
-
-    output = _bincount(x, minlength=torch.max(unique_x) + 1)  # type: ignore[arg-type]
-    # remove zeros from output tensor
-    return output[unique_x]
+    unique_x, inverse_indices = torch.unique(x, return_inverse=True)
+    return _bincount(inverse_indices, minlength=len(unique_x))
 
 
 def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:

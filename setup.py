@@ -9,7 +9,7 @@ from itertools import chain
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from pkg_resources import Requirement, yield_lines
+from packaging.requirements import Requirement as _Requirement
 from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
@@ -18,8 +18,22 @@ _PATH_REQUIRE = os.path.join(_PATH_ROOT, "requirements")
 _FREEZE_REQUIREMENTS = os.environ.get("FREEZE_REQUIREMENTS", "0").lower() in ("1", "true")
 
 
-class _RequirementWithComment(Requirement):
+def _yield_lines(strs: Union[str, Iterable[str]]) -> Iterator[str]:
+    """Yield non-empty, non-comment lines from a string or iterable of strings."""
+    if isinstance(strs, str):
+        strs = strs.splitlines()
+    for line in strs:
+        line = line.strip()
+        if line and not line.startswith("#"):
+            yield line
+
+
+class _RequirementWithComment(_Requirement):
     strict_string = "# strict"
+
+    @property
+    def specs(self) -> list[tuple[str, str]]:
+        return [(s.operator, s.version) for s in self.specifier]
 
     def __init__(self, *args: Any, comment: str = "", pip_argument: Optional[str] = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -42,21 +56,27 @@ class _RequirementWithComment(Requirement):
         'arrow<=1.2.2,>=1.2.0  # strict'
         >>> _RequirementWithComment("arrow").adjust(True)
         'arrow'
+        >>> _RequirementWithComment("tqdm<=4.70.0").adjust(True)
+        'tqdm'
 
         """
         out = str(self)
         if self.strict:
             return f"{out}  {self.strict_string}"
         if unfreeze:
-            for operator, version in self.specs:
-                if operator in ("<", "<="):
-                    # drop upper bound
-                    return out.replace(f"{operator}{version},", "")
+            specs = ",".join(str(spec) for spec in self.specifier if spec.operator not in ("<", "<="))
+            if specs != str(self.specifier):
+                out = self.name
+                if self.extras:
+                    out += f"[{','.join(sorted(self.extras))}]"
+                out += specs
+                if self.marker:
+                    out += f"; {self.marker}"
         return out
 
 
 def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_RequirementWithComment]:
-    r"""Adapted from `pkg_resources.parse_requirements` to include comments.
+    r"""Parse requirements from a string or iterable, preserving inline comments.
 
     >>> txt = ['# ignored', '', 'this # is an', '--piparg', 'example', 'foo # strict', 'thing', '-r different/file.txt']
     >>> [r.adjust('none') for r in _parse_requirements(txt)]
@@ -66,7 +86,7 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
     ['this', 'example', 'foo  # strict', 'thing']
 
     """
-    lines = yield_lines(strs)
+    lines = _yield_lines(strs)
     pip_argument = None
     for line in lines:
         # Drop comments -- a hash without a space may be in a URL.
@@ -136,9 +156,6 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     text = text.replace("/branch/master/graph/badge.svg", f"/release/{version}/graph/badge.svg")
     # replace github badges for release ones
     text = text.replace("badge.svg?branch=master&event=push", f"badge.svg?tag={version}")
-    # Azure...
-    text = text.replace("?branchName=master", f"?branchName=refs%2Ftags%2F{version}")
-    text = re.sub(r"\?definitionId=\d+&branchName=master", f"?definitionId=2&branchName=refs%2Ftags%2F{version}", text)
 
     skip_begin = r"<!-- following section will be skipped from PyPI description -->"
     skip_end = r"<!-- end skipping PyPI description -->"
@@ -216,7 +233,7 @@ if __name__ == "__main__":
         include_package_data=True,
         zip_safe=False,
         keywords=["deep learning", "machine learning", "pytorch", "metrics", "AI"],
-        python_requires=">=3.9",
+        python_requires=">=3.10",
         setup_requires=[],
         install_requires=BASE_REQUIREMENTS,
         extras_require=_prepare_extras(),
@@ -242,9 +259,9 @@ if __name__ == "__main__":
             # Specify the Python versions you support here. In particular, ensure
             # that you indicate whether you support Python 2, Python 3 or both.
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: 3.12",
+            "Programming Language :: Python :: 3.13",
         ],
     )

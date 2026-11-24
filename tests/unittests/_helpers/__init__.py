@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import random
 import sys
 
@@ -38,3 +39,4 @@ _SKLEARN_GREATER_EQUAL_1_7 = RequirementCache("scikit-learn>=1.7.0")
 _TORCH_LESS_THAN_2_1 = RequirementCache("torch<2.1.0")
 _TRANSFORMERS_RANGE_GE_4_50_LT_4_54 = RequirementCache("transformers>=4.50.0,<4.54.0")
 _TRANSFORMERS_GREATER_EQUAL_4_54 = RequirementCache("transformers>=4.54.0")
+_IS_LIGHTNING_CI = os.environ.get("LIGHTNING_CI", "0") == "1"

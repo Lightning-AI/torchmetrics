@@ -27,6 +27,8 @@ from unittests._helpers.testers import MetricTester
 from unittests.image.test_d_lambda import _baseline_d_lambda
 from unittests.image.test_d_s import _reference_d_s
 
+pytestmark = pytest.mark.slow
+
 seed_all(42)
 
 

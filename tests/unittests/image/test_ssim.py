@@ -16,18 +16,16 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-import torch.multiprocessing as mp
 from pytorch_msssim import ssim
 from skimage.metrics import structural_similarity
 from torch import Tensor
 
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
-from unittests import NUM_BATCHES, _Input
+from unittests import NUM_BATCHES, NUM_PROCESSES, USE_PYTEST_POOL, _Input
 from unittests._helpers import _IS_WINDOWS, seed_all
 from unittests._helpers.testers import MetricTester
-from unittests.image import cleanup_ddp, setup_ddp
-from unittests.utilities.test_utilities import find_free_port
+from unittests.conftest import setup_ddp
 
 seed_all(42)
 
@@ -365,33 +363,56 @@ def test_ssim_for_correct_padding():
     assert structural_similarity_index_measure(preds, target) < 1.0
 
 
-def _run_ssim_ddp(rank: int, world_size: int, free_port: int):
+@pytest.mark.parametrize("sigma", [0.5, 1.0])
+@pytest.mark.parametrize("kernel_size", [5, 7, 9])
+def test_ssim_3d_gaussian_kernel_ignores_kernel_size(sigma, kernel_size):
+    """Check that ``kernel_size`` is ignored for 3D inputs when a gaussian kernel is used.
+
+    The padding of the last dimension has to follow the size of the gaussian kernel, like the other dimensions, so the
+    full SSIM image keeps the input shape and the score does not depend on ``kernel_size``.
+
+    """
+    preds = torch.rand(2, 1, 12, 14, 16)
+    target = (preds + 0.3 * torch.randn_like(preds)).clamp(0, 1)
+    expected = structural_similarity_index_measure(preds, target, sigma=sigma, data_range=1.0)
+
+    score, image = structural_similarity_index_measure(
+        preds, target, sigma=sigma, kernel_size=kernel_size, data_range=1.0, return_full_image=True
+    )
+    assert image.shape == preds.shape
+    assert torch.allclose(score, expected)
+
+    metric = StructuralSimilarityIndexMeasure(
+        sigma=sigma, kernel_size=kernel_size, data_range=1.0, return_full_image=True
+    )
+    metric.update(preds, target)
+    score, image = metric.compute()
+    assert image.shape == preds.shape
+    assert torch.allclose(score, expected)
+
+
+def _run_ssim_ddp(rank: int, world_size: int):
     """Run SSIM metric computation in a DDP setup."""
-    try:
-        setup_ddp(rank, world_size, free_port)
-        device = torch.device(f"cuda:{rank}")
-        metric = StructuralSimilarityIndexMeasure(reduction="none").to(device)
+    setup_ddp(rank, world_size)
+    device = torch.device(f"cuda:{rank}")
+    metric = StructuralSimilarityIndexMeasure(reduction="none").to(device)
 
-        for _ in range(3):
-            x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
-            metric.update(x, y)
+    for _ in range(3):
+        x, y = torch.rand(4, 3, 224, 224).to(device).chunk(2)
+        metric.update(x, y)
 
-        result = metric.compute()
-        assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
-    finally:
-        cleanup_ddp()
+    result = metric.compute()
+    assert isinstance(result, torch.Tensor), "Expected compute result to be a tensor"
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.skipif(_IS_WINDOWS, reason="DDP not supported on Windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available")
+@pytest.mark.DDP
 def test_ssim_reduction_none_ddp():
     """Fail when reduction='none' and dist_reduce_fx='cat' used with DDP.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/3159
 
     """
-    world_size = 2
-    free_port = find_free_port()
-    if free_port == -1:
-        pytest.skip("No free port available for DDP test.")
-    mp.spawn(_run_ssim_ddp, args=(world_size, free_port), nprocs=world_size, join=True)
+    pytest.pool.map(partial(_run_ssim_ddp, world_size=NUM_PROCESSES), range(NUM_PROCESSES))

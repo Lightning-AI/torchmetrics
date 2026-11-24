@@ -37,7 +37,7 @@ class DiceScore(Metric):
 
     The metric can be used to evaluate the performance of image segmentation models. The Dice Score is defined as:
 
-    ..math::
+    .. math::
         DS = \frac{2 \sum_{i=1}^{N} t_i p_i}{\sum_{i=1}^{N} t_i + \sum_{i=1}^{N} p_i}
 
     where :math:`N` is the number of classes, :math:`t_i` is the target tensor, and :math:`p_i` is the prediction
@@ -72,9 +72,7 @@ class DiceScore(Metric):
             score is computed globally over all samples.
         input_format: What kind of input the function receives.
             Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
-            or ``"mixed"`` for one one-hot encoded and one index tensor
-        zero_division: The value to return when there is a division by zero. Options are 1.0, 0.0, "warn" or "nan".
-            Setting it to "warn" behaves like 0.0 but will also create a warning.
+            or ``"mixed"`` for one one-hot encoded and one index tensor.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:

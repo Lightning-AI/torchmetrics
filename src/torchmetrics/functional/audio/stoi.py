@@ -40,7 +40,7 @@ def short_time_objective_intelligibility(
     moved back to the original device.
 
     .. hint::
-        Usingsing this metrics requires you to have ``pystoi`` install. Either install as ``pip install
+        Using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``
 
     Args:

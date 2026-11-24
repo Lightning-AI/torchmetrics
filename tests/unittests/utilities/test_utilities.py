@@ -11,23 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import socket
-import sys
-
 import numpy as np
 import pytest
 import torch
-from lightning_utilities.test.warning import no_warning_call
 from torch import tensor
-from unittests._helpers import _IS_WINDOWS
-from unittests.conftest import MAX_PORT, START_PORT
 
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.checks import _allclose_recursive
 from torchmetrics.utilities.data import (
     _bincount,
-    _cumsum,
     _flatten,
     _flatten_dict,
     select_topk,
@@ -35,8 +28,6 @@ from torchmetrics.utilities.data import (
     to_onehot,
 )
 from torchmetrics.utilities.distributed import class_reduce, reduce
-from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2, _TORCH_LESS_THAN_2_6
 
 
 def test_prints():
@@ -175,36 +166,6 @@ def test_recursive_allclose(inputs, expected):
     assert res == expected
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
-@pytest.mark.xfail(_IS_WINDOWS or not _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems")
-def test_cumsum_still_not_supported(use_deterministic_algorithms):
-    """Make sure that cumsum on GPU and deterministic mode still fails.
-
-    If this test begins to pass, it means newer Pytorch versions support this and we can drop internal support.
-
-    """
-    with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):
-        torch.arange(10).float().cuda().cumsum(0)
-
-
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
-def test_custom_cumsum(use_deterministic_algorithms):
-    """Test custom cumsum implementation."""
-    # check that cumsum works as expected on non-default cuda device
-    device = torch.device("cuda:1") if torch.cuda.device_count() > 1 else torch.device("cuda:0")
-    x = torch.arange(100).float().to(device)
-    with (
-        pytest.warns(
-            TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
-        )
-        if sys.platform != "win32" and _TORCH_LESS_THAN_2_6 and torch.are_deterministic_algorithms_enabled()
-        else no_warning_call()
-    ):
-        ours = _cumsum(x, dim=0)
-    ref_np = np.cumsum(x.cpu(), axis=0)
-    assert torch.allclose(ours.cpu(), ref_np)
-
-
 def _reference_topk(x, dim, k):
     x = x.cpu().numpy()
     one_hot = np.zeros((x.shape[0], x.shape[1]), dtype=int)
@@ -230,25 +191,27 @@ def test_custom_topk(dtype, k, dim):
     assert torch.allclose(top_k, torch.from_numpy(ref).to(torch.int))
 
 
-@pytest.mark.skipif(_TORCH_GREATER_EQUAL_2_2, reason="Top-k does not support cpu + half precision")
-def test_half_precision_top_k_cpu_raises_error():
-    """Test that half precision topk raises error on cpu.
+def test_safe_divide():
+    """Test that _safe_divide works correctly and doesn't have race conditions."""
+    from torchmetrics.utilities.compute import _safe_divide
 
-    If this begins to fail, it means newer Pytorch versions support this, and we can drop internal support.
+    # Test basic functionality
+    num = torch.tensor([1.0, 2.0, 3.0])
+    denom = torch.tensor([0.0, 1.0, 2.0])
+    result = _safe_divide(num, denom)
+    expected = torch.tensor([0.0, 2.0, 1.5])
+    assert torch.allclose(result, expected)
 
-    """
-    x = torch.randn(100, 10, dtype=torch.half)
-    with pytest.raises(RuntimeError, match="\"topk_cpu\" not implemented for 'Half'"):
-        torch.topk(x, k=3, dim=1)
+    # Test custom zero_division value
+    result = _safe_divide(num, denom, zero_division=99.0)
+    expected_custom = torch.tensor([99.0, 2.0, 1.5])
+    assert torch.allclose(result, expected_custom)
 
-
-def find_free_port(start=START_PORT, end=MAX_PORT):
-    """Returns an available localhost port in the given range or returns -1 if no port available."""
-    for port in range(start, end + 1):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(("localhost", port))
-                return port
-            except OSError:
-                continue
-    return -1
+    # Test that result is on the same device as input
+    for device in ["cpu"] + (["cuda"] if torch.cuda.is_available() else []):
+        num_dev = torch.tensor([1.0, 2.0, 3.0], device=device)
+        denom_dev = torch.tensor([0.0, 1.0, 2.0], device=device)
+        result = _safe_divide(num_dev, denom_dev)
+        assert result.device.type == device, f"Result not on correct device: {result.device}"
+        expected_dev = torch.tensor([0.0, 2.0, 1.5], device=device)
+        assert torch.allclose(result, expected_dev)

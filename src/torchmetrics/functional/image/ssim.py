@@ -111,14 +111,14 @@ def _ssim_update(
         raise ValueError(f"Expected `sigma` to have positive number. Got {sigma}.")
 
     if data_range is None:
-        data_range = max(preds.max() - preds.min(), target.max() - target.min())  # type: ignore[call-overload]
+        data_range = max(preds.max() - preds.min(), target.max() - target.min()).item()
     elif isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
         data_range = data_range[1] - data_range[0]
 
-    c1 = pow(k1 * data_range, 2)  # type: ignore[operator]
-    c2 = pow(k2 * data_range, 2)  # type: ignore[operator]
+    c1 = pow(k1 * data_range, 2)
+    c2 = pow(k2 * data_range, 2)
     device = preds.device
 
     channel = preds.size(1)
@@ -133,7 +133,7 @@ def _ssim_update(
         pad_w = (kernel_size[1] - 1) // 2
 
     if is_3d:
-        pad_d = (kernel_size[2] - 1) // 2
+        pad_d = ((gauss_kernel_size if gaussian_kernel else kernel_size)[2] - 1) // 2
         preds = _reflection_pad_3d(preds, pad_d, pad_w, pad_h)
         target = _reflection_pad_3d(target, pad_d, pad_w, pad_h)
         if gaussian_kernel:

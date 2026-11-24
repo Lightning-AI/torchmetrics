@@ -14,14 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added support for `dinov2` feature extractor in `FrechetInceptionDistance` ([#3186](https://github.com/Lightning-AI/torchmetrics/pull/3186))
+- Added `METEORScore` metric to the text package ([#3477](https://github.com/Lightning-AI/torchmetrics/pull/3477))
 
 
--
+- Added support for PyTorch 2.11-2.15 and Python 3.13 ([#3653](https://github.com/Lightning-AI/torchmetrics/pull/3653))
 
 
 ### Changed
 
-- Defaulting Dice score `average="macro"` ([#3042](https://github.com/Lightning-AI/torchmetrics/pull/3042))
+-
 
 
 ### Deprecated
@@ -31,15 +32,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
--
+- Removed support for PyTorch 2.0-2.5, the minimum required version is now 2.6 ([#3449](https://github.com/Lightning-AI/torchmetrics/pull/3449))
+
+
+- Removed the dead `torch<2.6` compatibility branches left behind by the 2.6 floor, including the internal `_cumsum` workaround ([#3483](https://github.com/Lightning-AI/torchmetrics/pull/3483))
 
 
 ### Fixed
 
--
+- Fixed `top_k` validation in multiclass classification metrics to reject negative integers and non-integer values ([#3406](https://github.com/Lightning-AI/torchmetrics/pull/3406))
+- Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
+
+
+- Fixed `Metric` ignoring an active `torch.device` context manager on torch 2.3-2.7 ([#3448](https://github.com/Lightning-AI/torchmetrics/pull/3448))
+
+
+- Fixed `PESQ` metric aborting on a batch containing a sample the backend cannot score, which now returns `nan` for that sample instead of raising ([#3304](https://github.com/Lightning-AI/torchmetrics/issues/3304))
+
+
+- Fixed swapped hypothesis and reference arguments in `TER`, which made an empty hypothesis score a perfect 0.0 ([#3479](https://github.com/Lightning-AI/torchmetrics/pull/3479))
+
+
+- Fixed `CHRFScore` dropping the reference n-grams of a sentence that matches no reference n-gram, which inflated the corpus-level score ([#3481](https://github.com/Lightning-AI/torchmetrics/pull/3481))
+
+- Fixed `BinaryAUROC` and `BinaryLogAUC` skipping the validation of `preds` and `target` in `update`, so invalid inputs were silently accepted ([#3646](https://github.com/Lightning-AI/torchmetrics/issues/3646))
+
+
+- Fixed `Perplexity` returning `inf` when a target token's softmax probability underflows to zero, by computing the log-probabilities with `log_softmax` ([#3539](https://github.com/Lightning-AI/torchmetrics/pull/3539))
+
+
+- Fixed `higher_is_better` direction for `WordInfoPreserved`, `DaviesBouldinScore`, `SpectralDistortionIndex` and `PerceptualPathLength`, which made `MetricTracker.best_metric` return the worst step ([#3644](https://github.com/Lightning-AI/torchmetrics/pull/3644))
+
+
+- Fixed `StructuralSimilarityIndexMeasure` padding the last dimension of 3D inputs with `kernel_size` instead of the gaussian kernel size ([#3642](https://github.com/Lightning-AI/torchmetrics/pull/3642))
+
+
+- Fixed aggregation metrics with a float `nan_strategy` overwriting the `value` and `weight` tensors passed to `update`, which also gave `MeanMetric` wrong weights for broadcast weight tensors ([#3527](https://github.com/Lightning-AI/torchmetrics/pull/3527))
 
 
 ---
+
+## [1.9.0] - 2026-03-05
+
+### Changed
+
+- Defaulting Dice score `average="macro"` ([#3042](https://github.com/Lightning-AI/torchmetrics/pull/3042))
+- Dropped Python 3.9 support, set 3.10 as minimum ([#3330](https://github.com/Lightning-AI/torchmetrics/pull/3330))
+- Replaced `pkg_resources` with `packaging` ([#3329](https://github.com/Lightning-AI/torchmetrics/pull/3329))
+
+### Fixed
+
+- Fixed device mismatch in `Metric` base class ([#3316](https://github.com/Lightning-AI/torchmetrics/pull/3316))
+- Fixed n-d slicing deprecation warning ([#3319](https://github.com/Lightning-AI/torchmetrics/pull/3319))
+- Fixed tensor copy warning in `logAUC` ([#3295](https://github.com/Lightning-AI/torchmetrics/pull/3295))
+- Fixed memory issues when computing retrieval metrics with high-valued indices ([#3291](https://github.com/Lightning-AI/torchmetrics/pull/3291))
+- Fixed race condition in `_safe_divide` by creating tensor directly on device ([#3284](https://github.com/Lightning-AI/torchmetrics/pull/3284))
+
 
 ## [1.8.2] - 2025-09-03
 
