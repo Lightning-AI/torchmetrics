@@ -421,6 +421,20 @@ def test_binary_auroc_mps_large_input():
     assert torch.allclose(result.cpu(), expected, atol=1e-6)
 
 
+def test_binary_auroc_validates_update_inputs():
+    """Check that `BinaryAUROC` validates the tensors given to `update`, like its functional counterpart."""
+    preds = torch.tensor([0.9, 0.2, 0.8, 0.1])
+    target = torch.tensor([0, 1, 2, 0])  # 2 is not a valid label in a binary task
+
+    with pytest.raises(RuntimeError, match="Detected the following values in `target`"):
+        binary_auroc(preds, target)
+    with pytest.raises(RuntimeError, match="Detected the following values in `target`"):
+        BinaryAUROC().update(preds, target)
+
+    # validation can still be switched off explicitly
+    BinaryAUROC(validate_args=False).update(preds, target)
+
+
 @pytest.mark.parametrize(
     ("metric", "kwargs"),
     [
