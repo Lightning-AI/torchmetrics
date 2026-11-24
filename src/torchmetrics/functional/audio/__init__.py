@@ -29,16 +29,8 @@ from torchmetrics.utilities.imports import (
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
     _REQUESTS_AVAILABLE,
-    _SCIPI_AVAILABLE,
     _TORCHAUDIO_AVAILABLE,
 )
-
-if _SCIPI_AVAILABLE:
-    import scipy.signal
-
-    # back compatibility patch due to SMRMpy using scipy.signal.hamming
-    if not hasattr(scipy.signal, "hamming"):
-        scipy.signal.hamming = scipy.signal.windows.hamming
 
 __all__ = [
     "complex_scale_invariant_signal_noise_ratio",
