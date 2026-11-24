@@ -229,7 +229,7 @@ def _find_shifted_pairs(pred_words: list[str], target_words: list[str]) -> Itera
             if abs(target_start - pred_start) > _MAX_SHIFT_DIST:
                 continue
 
-            for length in range(1, _MAX_SHIFT_SIZE):
+            for length in range(1, _MAX_SHIFT_SIZE + 1):
                 # Check if hypothesis and reference are equal so far
                 if pred_words[pred_start + length - 1] != target_words[target_start + length - 1]:
                     break

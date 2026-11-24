@@ -281,11 +281,10 @@ def _kendall_corrcoef_compute(
     """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test.
 
     Args:
-        Args:
         preds: Sequence of data
         target: Sequence of data
         variant: Indication of which variant of Kendall's tau to be used
-        alternative: Alternative hypothesis for for t-test. Possible values:
+        alternative: Alternative hypothesis for t-test. Possible values:
             - 'two-sided': the rank correlation is nonzero
             - 'less': the rank correlation is negative (less than zero)
             - 'greater':  the rank correlation is positive (greater than zero)
