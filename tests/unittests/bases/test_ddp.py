@@ -22,6 +22,7 @@ from torch import tensor
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL
 from unittests._helpers import _IS_WINDOWS, seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
@@ -339,3 +340,58 @@ def _test_sync_with_unequal_size_lists(rank):
 def test_sync_with_unequal_size_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_unequal_size_lists, range(NUM_PROCESSES))
+
+
+# Detection list states use dist_reduce_fx=None; uneven lengths hang in _sync_dist (#3336).
+_EMPTY_BOX = torch.zeros(0, 4)
+_EMPTY_LABEL = torch.zeros(0, dtype=torch.int64)
+_EMPTY_SCORE = torch.zeros(0)
+_BOX = torch.tensor([[10.0, 10.0, 50.0, 50.0]])
+_LABEL = torch.tensor([0])
+_SCORE = torch.tensor([0.9])
+
+
+def _det_sample(p_box, p_score, p_label, t_box, t_label):
+    return (
+        [{"boxes": p_box, "scores": p_score, "labels": p_label}],
+        [{"boxes": t_box, "labels": t_label}],
+    )
+
+
+_NONE_LIST_EMPTY_CASES = {
+    "never_updates": None,
+    "empty_predictions": _det_sample(_EMPTY_BOX, _EMPTY_SCORE, _EMPTY_LABEL, _BOX, _LABEL),
+    "empty_ground_truth": _det_sample(_BOX, _SCORE, _LABEL, _EMPTY_BOX, _EMPTY_LABEL),
+    "empty_both": _det_sample(_EMPTY_BOX, _EMPTY_SCORE, _EMPTY_LABEL, _EMPTY_BOX, _EMPTY_LABEL),
+}
+
+
+def _test_sync_none_list_empty_rank(rank, case: str) -> None:
+    from torchmetrics.detection import MeanAveragePrecision
+
+    metric = MeanAveragePrecision(sync_on_compute=True)
+    full = _det_sample(_BOX, _SCORE, _LABEL, _BOX, _LABEL)
+    payload = _NONE_LIST_EMPTY_CASES[case]
+
+    if rank == 0:
+        if payload is not None:
+            metric.update(*payload)
+    else:
+        metric.update(*full)
+        if payload is not None:
+            metric.update(*full)
+
+    assert "map" in metric.compute()
+
+
+@pytest.mark.DDP
+@pytest.mark.skipif(_IS_WINDOWS, reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
+@pytest.mark.skipif(
+    not (_TORCHVISION_AVAILABLE and _PYCOCOTOOLS_AVAILABLE),
+    reason="requires torchvision and pycocotools",
+)
+@pytest.mark.parametrize("case", list(_NONE_LIST_EMPTY_CASES))
+def test_sync_none_list_empty_rank(case):
+    """Uneven dist_reduce_fx=None list states must not hang on compute (#3336)."""
+    pytest.pool.map(partial(_test_sync_none_list_empty_rank, case=case), range(NUM_PROCESSES))
