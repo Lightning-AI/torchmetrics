@@ -114,7 +114,7 @@ class RetrievalAUROC(RetrievalMetric):
         if top_k is not None and not (isinstance(top_k, int) and top_k > 0):
             raise ValueError("`top_k` has to be a positive integer or None")
         self.top_k = top_k
-        if max_fpr is not None and not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
+        if max_fpr is not None and (not isinstance(max_fpr, float) or not (0 < max_fpr <= 1)):
             raise ValueError(f"Arguments `max_fpr` should be a float in range (0, 1], but got: {max_fpr}")
         self.max_fpr = max_fpr
 
