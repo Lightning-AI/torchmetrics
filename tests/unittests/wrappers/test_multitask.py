@@ -20,7 +20,7 @@ import torch
 from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryAccuracy, BinaryF1Score
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_GREATER_EQUAL_2_5
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.wrappers import MultitaskWrapper
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
@@ -91,15 +91,13 @@ def test_error_on_wrong_keys():
         "Classification": BinaryAccuracy(),
     })
 
-    order_dict = "" if _TORCH_GREATER_EQUAL_2_5 else "o"
-
     with pytest.raises(
         ValueError,
         match=re.escape(
             "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`."
             " Found task_preds.keys() = dict_keys(['Classification']),"
             " task_targets.keys() = dict_keys(['Classification', 'Regression'])"
-            f" and self.task_metrics.keys() = {order_dict}dict_keys(['Classification', 'Regression'])"
+            " and self.task_metrics.keys() = dict_keys(['Classification', 'Regression'])"
         ),
     ):
         multitask_metrics.update(wrong_key_preds, _multitask_targets)
@@ -110,7 +108,7 @@ def test_error_on_wrong_keys():
             "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`."
             " Found task_preds.keys() = dict_keys(['Classification', 'Regression']),"
             " task_targets.keys() = dict_keys(['Classification'])"
-            f" and self.task_metrics.keys() = {order_dict}dict_keys(['Classification', 'Regression'])"
+            " and self.task_metrics.keys() = dict_keys(['Classification', 'Regression'])"
         ),
     ):
         multitask_metrics.update(_multitask_preds, wrong_key_targets)
@@ -121,7 +119,7 @@ def test_error_on_wrong_keys():
             "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`."
             " Found task_preds.keys() = dict_keys(['Classification', 'Regression']),"
             " task_targets.keys() = dict_keys(['Classification', 'Regression'])"
-            f" and self.task_metrics.keys() = {order_dict}dict_keys(['Classification'])"
+            " and self.task_metrics.keys() = dict_keys(['Classification'])"
         ),
     ):
         wrong_key_multitask_metrics.update(_multitask_preds, _multitask_targets)

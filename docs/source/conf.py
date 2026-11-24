@@ -426,6 +426,9 @@ linkcheck_exclude_documents = [r"^(.*\/)*CHANGELOG.*$"]
 
 # jstor and sciencedirect cannot be accessed from python, but links work fine in a local doc
 linkcheck_ignore = [
+    # sites that refuse or drop automated requests from CI runners, links work fine in a browser
+    "https://aclanthology.org/.*",
+    "https://www.isca-speech.org/.*",
     # The Treatment of Ties in Ranking Problems
     "https://www.jstor.org/stable/2332303",
     # Quality Assessment of Deblocked Images
@@ -465,4 +468,6 @@ linkcheck_ignore = [
     "https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173",
     # Character Error Rate (site under maintenance see links.rst)
     "https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de",
+    # Pearson's Contingency Coefficient (NIST dataplot server intermittently returns 504)
+    "https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/pearcont.htm",
 ]
