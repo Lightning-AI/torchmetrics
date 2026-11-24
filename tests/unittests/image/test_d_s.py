@@ -29,6 +29,8 @@ from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
+pytestmark = pytest.mark.slow
+
 seed_all(42)
 
 
