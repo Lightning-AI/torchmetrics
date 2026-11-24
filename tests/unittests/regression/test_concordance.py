@@ -135,3 +135,24 @@ def test_error_on_different_shape():
     metric = ConcordanceCorrCoef(num_outputs=2)
     with pytest.raises(ValueError, match="Expected argument `num_outputs` to match the second dimension of input.*"):
         metric(torch.randn(100, 5), torch.randn(100, 5))
+
+
+@pytest.mark.parametrize("shift", [0.5, 1.0, 3.0])
+def test_concordance_corrcoef_location_shift(shift):
+    """Test that a pure location shift matches Lin's CCC, which uses 1/n moments throughout.
+
+    With few samples the mean-difference term dominates, so mixing (n-1) variances with it gives a wrong value.
+
+    """
+    target = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
+    preds = target + shift
+    # var(target) = var(preds) = cov = 2 (population moments), so CCC = 2 * 2 / (2 + 2 + shift**2)
+    expected = torch.tensor(4.0 / (4.0 + shift**2))
+
+    assert torch.allclose(concordance_corrcoef(preds, target), expected)
+    metric = ConcordanceCorrCoef()
+    metric.update(preds[:2], target[:2])
+    metric.update(preds[2:], target[2:])
+    assert torch.allclose(metric.compute(), expected)
+    reference = torch.tensor(_reference_scipy_concordance(preds, target), dtype=torch.float32)
+    assert torch.allclose(concordance_corrcoef(preds, target), reference)
