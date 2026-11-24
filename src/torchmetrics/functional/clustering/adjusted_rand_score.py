@@ -46,7 +46,10 @@ def _adjusted_rand_score_compute(contingency: Tensor) -> Tensor:
         rand_score: rand score
 
     """
-    (tn, fp), (fn, tp) = calculate_pair_cluster_confusion_matrix(contingency=contingency).double()
+    pair_counts = calculate_pair_cluster_confusion_matrix(contingency=contingency)
+    # MPS has no float64 support
+    pair_counts = pair_counts.to(torch.float32 if pair_counts.device.type == "mps" else torch.float64)
+    (tn, fp), (fn, tp) = pair_counts
     if fn == 0 and fp == 0:
         return torch.ones_like(tn, dtype=torch.float32)
     return (2.0 * (tp * tn - fn * fp) / ((tp + fn) * (fn + tn) + (tp + fp) * (fp + tn))).float()
