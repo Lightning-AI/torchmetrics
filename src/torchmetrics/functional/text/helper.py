@@ -327,28 +327,36 @@ def _validate_inputs(
     return ref_corpus, hypothesis_corpus
 
 
-def _edit_distance(prediction_tokens: list[str], reference_tokens: list[str]) -> int:
-    """Dynamic programming algorithm to compute the edit distance.
+def _edit_distance(
+    prediction_tokens: Sequence[str], reference_tokens: Sequence[str], substitution_cost: int = 1
+) -> int:
+    """Compute exact edit distance with two rolling rows and no alignment trace.
 
     Args:
         prediction_tokens: A tokenized predicted sentence
         reference_tokens: A tokenized reference sentence
+        substitution_cost: Cost of substituting one token for another. Defaults to 1.
+
     Returns:
         Edit distance between the predicted sentence and the reference sentence
 
     """
-    dp = [[0] * (len(reference_tokens) + 1) for _ in range(len(prediction_tokens) + 1)]
-    for i in range(len(prediction_tokens) + 1):
-        dp[i][0] = i
-    for j in range(len(reference_tokens) + 1):
-        dp[0][j] = j
-    for i in range(1, len(prediction_tokens) + 1):
-        for j in range(1, len(reference_tokens) + 1):
-            if prediction_tokens[i - 1] == reference_tokens[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1]
-            else:
-                dp[i][j] = min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1
-    return dp[-1][-1]
+    if len(prediction_tokens) < len(reference_tokens):
+        prediction_tokens, reference_tokens = reference_tokens, prediction_tokens
+
+    previous_row = list(range(len(reference_tokens) + 1))
+    for i, prediction_token in enumerate(prediction_tokens, start=1):
+        current_row = [i]
+        for j, reference_token in enumerate(reference_tokens, start=1):
+            current_row.append(
+                min(
+                    previous_row[j] + 1,
+                    current_row[j - 1] + 1,
+                    previous_row[j - 1] + (substitution_cost if prediction_token != reference_token else 0),
+                )
+            )
+        previous_row = current_row
+    return previous_row[-1]
 
 
 def _flip_trace(trace: tuple[_EditOperations, ...]) -> tuple[_EditOperations, ...]:

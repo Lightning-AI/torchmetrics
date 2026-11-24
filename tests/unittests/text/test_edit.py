@@ -14,6 +14,7 @@
 from functools import partial
 
 import pytest
+import torch
 from nltk.metrics.distance import edit_distance as nltk_edit_distance
 
 from torchmetrics.functional.text.edit import edit_distance
@@ -130,6 +131,43 @@ class TestEditDistance(TextTester):
 def test_edit_empty_functional():
     """Test functional implementation of metric with empty inputs."""
     assert edit_distance([], []) == 0
+
+
+@pytest.mark.parametrize("substitution_cost", [0, 1, 2, 5])
+@pytest.mark.parametrize(
+    ("pred", "target"),
+    [
+        (
+            "The opening remarks were omitted. The speaker presented the results and explained the next steps. ",
+            "The speaker presented the results and explained the next steps. The closing remarks were added.",
+        ),
+        ("a" * 40 + "b" * 80, "b" * 80 + "c" * 40),
+        ("a", "b" * 100),
+        ("", "longer text"),
+        ("", ""),
+    ],
+)
+def test_edit_exact_distance(pred, target, substitution_cost):
+    """Alignments outside the TER beam must still yield the exact distance."""
+    expected = nltk_edit_distance(pred, target, substitution_cost=substitution_cost)
+    for left, right in ((pred, target), (target, pred)):
+        assert edit_distance(left, right, substitution_cost=substitution_cost) == expected
+        assert EditDistance(substitution_cost=substitution_cost)(left, right) == expected
+
+
+@pytest.mark.parametrize("reduction", [None, "none", "mean", "sum"])
+def test_edit_exact_distance_reductions(reduction):
+    """Functional batches and incremental updates use the same exact distances."""
+    shared = "The speaker presented the results and explained the next steps. "
+    preds = ["The opening remarks were omitted. " + shared, "rain", ""]
+    target = [shared + "The closing remarks were added.", "shine", "text"]
+    expected = torch.tensor(_reference_nltk_edit_dist(preds, target, reduction=reduction))
+    torch.testing.assert_close(edit_distance(preds, target, reduction=reduction), expected, check_dtype=False)
+
+    metric = EditDistance(reduction=reduction)
+    metric.update(preds[:1], target[:1])
+    metric.update(preds[1:], target[1:])
+    torch.testing.assert_close(metric.compute(), expected, check_dtype=False)
 
 
 def test_edit_raise_errors():
