@@ -71,8 +71,8 @@ def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
 def word_information_preserved(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Word Information Preserved rate is a metric of the performance of an automatic speech recognition system.
 
-    This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the
-    better the performance of the ASR system with a Word Information preserved rate of 0 being a perfect score.
+    This value indicates the percentage of words that were correctly predicted. The higher the value, the better
+    the performance of the ASR system with a Word Information preserved rate of 1 being a perfect score.
 
     Args:
         preds: Transcription(s) to score as a string or list of strings
