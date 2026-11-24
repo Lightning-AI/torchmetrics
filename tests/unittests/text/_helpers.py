@@ -262,8 +262,8 @@ class TextTester(MetricTester):
     """Tester class for text.
 
     Class used for efficiently run a lot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
-    that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement
-    a new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
+    that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement a
+    new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
 
     """
 
@@ -278,19 +278,21 @@ class TextTester(MetricTester):
         key: Optional[str] = None,
         **kwargs_update: Any,
     ):
-        """Core method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions.
+
+        Call this inside testing method.
 
         Args:
-            preds: torch tensor with predictions
-            targets: torch tensor with targets
-            metric_functional: metric class that should be tested
-            reference_metric: callable function that is used for comparison
-            metric_args: dict with additional arguments used for class initialization
-            fragment_kwargs: whether tensors in kwargs should be divided as ``preds`` and ``targets`` among processes
-            key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output
-                against the ``reference_metric``.
-            kwargs_update: Additional keyword arguments that will be passed with preds and
-                targets when running update on the metric.
+                    preds: torch tensor with predictions
+                    targets: torch tensor with targets
+                    metric_functional: metric class that should be tested
+                    reference_metric: callable function that is used for comparison
+                    metric_args: dict with additional arguments used for class initialization
+                    fragment_kwargs: whether tensors in kwargs should be divided as ``preds`` and ``targets`` among processes
+                    key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output
+                        against the ``reference_metric``.
+                    kwargs_update: Additional keyword arguments that will be passed with preds and
+                        targets when running update on the metric.
 
         """
         seed_all(42)
@@ -325,28 +327,30 @@ class TextTester(MetricTester):
         ignore_order: Optional[bool] = None,
         **kwargs_update: Any,
     ):
-        """Core method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class.
+
+        Call this inside testing methods.
 
         Args:
-            ddp: bool, if running in ddp mode or not
-            preds: torch tensor with predictions
-            targets: torch tensor with targets
-            metric_class: metric class that should be tested
-            reference_metric: callable function that is used for comparison
-            dist_sync_on_step: bool, if true will synchronize metric state across
-                processes at each ``forward()``
-            metric_args: dict with additional arguments used for class initialization
-            check_dist_sync_on_step: bool, if true will check if the metric is also correctly
-                calculated per batch per device (and not just at the end)
-            check_batch: bool, if true will check if the metric is also correctly
-                calculated across devices for each batch (and not just at the end)
-            fragment_kwargs: whether tensors in kwargs should be divided as ``preds`` and ``targets`` among processes
-            check_scriptable: bool indicating if metric should also be tested if it can be scripted
-            key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output
-                against the ``reference_metric``.
-            ignore_order: Ignore order of prediction across processes when DDP is used.
-            kwargs_update: Additional keyword arguments that will be passed with preds and
-                targets when running update on the metric.
+                    ddp: bool, if running in ddp mode or not
+                    preds: torch tensor with predictions
+                    targets: torch tensor with targets
+                    metric_class: metric class that should be tested
+                    reference_metric: callable function that is used for comparison
+                    dist_sync_on_step: bool, if true will synchronize metric state across
+                        processes at each ``forward()``
+                    metric_args: dict with additional arguments used for class initialization
+                    check_dist_sync_on_step: bool, if true will check if the metric is also correctly
+                        calculated per batch per device (and not just at the end)
+                    check_batch: bool, if true will check if the metric is also correctly
+                        calculated across devices for each batch (and not just at the end)
+                    fragment_kwargs: whether tensors in kwargs should be divided as ``preds`` and ``targets`` among processes
+                    check_scriptable: bool indicating if metric should also be tested if it can be scripted
+                    key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output
+                        against the ``reference_metric``.
+                    ignore_order: Ignore order of prediction across processes when DDP is used.
+                    kwargs_update: Additional keyword arguments that will be passed with preds and
+                        targets when running update on the metric.
 
         """
         seed_all(42)

@@ -41,56 +41,57 @@ def _retrieval_aggregate(
 
 
 class RetrievalMetric(Metric, ABC):
-    """Works with binary target data. Accepts float predictions from a model output.
+    """Works with binary target data.
 
-    As input to ``forward`` and ``update`` the metric accepts the following input:
+    Accepts float predictions from a model output.
+        As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
-    - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
-    - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
-      prediction belongs
+        - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)``
+        - ``target`` (:class:`~torch.Tensor`): A long or bool tensor of shape ``(N, ...)``
+        - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
+          prediction belongs
 
-    .. hint::
-        The ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flattened
-        to single dimension once provided.
+        .. hint::
+            The ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flattened
+            to single dimension once provided.
 
-    .. attention::
-        Predictions will be first grouped by ``indexes`` and then the real metric, defined by overriding
-        the `_metric` method, will be computed as the mean of the scores over each query.
+        .. attention::
+            Predictions will be first grouped by ``indexes`` and then the real metric, defined by overriding
+            the `_metric` method, will be computed as the mean of the scores over each query.
 
-    As output to ``forward`` and ``compute`` the metric returns the following output:
+        As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``metric`` (:class:`~torch.Tensor`): A tensor as computed by ``_metric`` if the number of positive targets is
-      at least 1, otherwise behave as specified by ``self.empty_target_action``.
+        - ``metric`` (:class:`~torch.Tensor`): A tensor as computed by ``_metric`` if the number of positive targets is
+          at least 1, otherwise behave as specified by ``self.empty_target_action``.
 
     Args:
-        empty_target_action:
-            Specify what to do with queries that do not have at least a positive
-            or negative (depend on metric) target. Choose from:
+            empty_target_action:
+                Specify what to do with queries that do not have at least a positive
+                or negative (depend on metric) target. Choose from:
 
-            - ``'neg'``: those queries count as ``0.0`` (default)
-            - ``'pos'``: those queries count as ``1.0``
-            - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
-            - ``'error'``: raise a ``ValueError``
+                - ``'neg'``: those queries count as ``0.0`` (default)
+                - ``'pos'``: those queries count as ``1.0``
+                - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
+                - ``'error'``: raise a ``ValueError``
 
-        ignore_index:
-            Ignore predictions where the target is equal to this number.
-        aggregation:
-            Specify how to aggregate over indexes. Can either a custom callable function that takes in a single tensor
-            and returns a scalar value or one of the following strings:
+            ignore_index:
+                Ignore predictions where the target is equal to this number.
+            aggregation:
+                Specify how to aggregate over indexes. Can either a custom callable function that takes in a single tensor
+                and returns a scalar value or one of the following strings:
 
-            - ``'mean'``: average value is returned
-            - ``'median'``: median value is returned
-            - ``'max'``: max value is returned
-            - ``'min'``: min value is returned
+                - ``'mean'``: average value is returned
+                - ``'median'``: median value is returned
+                - ``'max'``: max value is returned
+                - ``'min'``: min value is returned
 
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+            kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
-        ValueError:
-            If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
-        ValueError:
-            If ``ignore_index`` is not `None` or an integer.
+            ValueError:
+                If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
+            ValueError:
+                If ``ignore_index`` is not `None` or an integer.
 
     """
 

@@ -136,6 +136,7 @@ def _eed_function(
 
     Return:
         Extended edit distance score as float
+
     """
     number_of_visits = [-1] * (len(hyp) + 1)
 

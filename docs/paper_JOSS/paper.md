@@ -69,8 +69,10 @@ TorchMetrics solves this problem by introducing stateful metrics that can calcul
 # Minimal example showcasing the TorchMetrics interface
 import torch
 from torch import tensor, Tensor
+
 # base class all modular metrics inherit from
 from torchmetrics import Metric
+
 
 class Accuracy(Metric):
     def __init__(self):

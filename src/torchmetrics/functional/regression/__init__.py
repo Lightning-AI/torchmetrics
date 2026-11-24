@@ -46,7 +46,6 @@ __all__ = [
     "log_cosh_error",
     "mean_absolute_error",
     "mean_absolute_percentage_error",
-    "mean_absolute_percentage_error",
     "mean_squared_error",
     "mean_squared_log_error",
     "minkowski_distance",

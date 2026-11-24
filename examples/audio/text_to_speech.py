@@ -1,10 +1,13 @@
-"""
-Perceptual Evaluation of Text-to-Speech with PESQ
-==================================================
+"""Perceptual Evaluation of Text-to-Speech with PESQ ==================================================
 
-Consider a use case where we want to find the highest-quality speaker signal based on an example target voice. Using a text-to-speech model, we generate speech for five different synthetic speakers, each with unique speaker embeddings. We then compare each generated voice to a reference speaker using Perceptual Evaluation of Speech Quality (PESQ), a metric that assesses how closely the generated audio matches the target.
+Consider a use case where we want to find the highest-quality speaker signal based on an example target voice. Using a
+text-to-speech model, we generate speech for five different synthetic speakers, each with unique speaker embeddings. We
+then compare each generated voice to a reference speaker using Perceptual Evaluation of Speech Quality (PESQ), a metric
+that assesses how closely the generated audio matches the target.
 
-By ranking the PESQ scores, we identify which synthetic speaker sounds most natural and which performs the worst, providing insights into improving speech synthesis quality.
+By ranking the PESQ scores, we identify which synthetic speaker sounds most natural and which performs the worst,
+providing insights into improving speech synthesis quality.
+
 """
 
 # %%

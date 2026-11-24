@@ -216,8 +216,8 @@ def _binary_precision_recall_curve_update_vectorized(
 ) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Return the multi-threshold confusion matrix to calculate the pr-curve with.
 
-    This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
-    numbers of samples (up to 50k) but less memory- and time-efficient for more samples.
+    This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small numbers of
+    samples (up to 50k) but less memory- and time-efficient for more samples.
 
     """
     len_t = len(thresholds)
@@ -494,8 +494,8 @@ def _multiclass_precision_recall_curve_update_vectorized(
 ) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Return the multi-threshold confusion matrix to calculate the pr-curve with.
 
-    This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
-    numbers of samples but less memory- and time-efficient for more samples.
+    This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small numbers of
+    samples but less memory- and time-efficient for more samples.
 
     """
     len_t = len(thresholds)

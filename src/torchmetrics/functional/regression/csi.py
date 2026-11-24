@@ -23,15 +23,17 @@ from torchmetrics.utilities.compute import _safe_divide
 def _critical_success_index_update(
     preds: Tensor, target: Tensor, threshold: float, keep_sequence_dim: Optional[int] = None
 ) -> tuple[Tensor, Tensor, Tensor]:
-    """Update and return variables required to compute Critical Success Index. Checks for same shape of tensors.
+    """Update and return variables required to compute Critical Success Index.
+
+    Checks for same shape of tensors.
 
     Args:
-        preds: Predicted tensor
-        target: Ground truth tensor
-        threshold: Values above or equal to threshold are replaced with 1, below by 0
-        keep_sequence_dim: Index of the sequence dimension if the inputs are sequences of images. If specified,
-            the score will be calculated separately for each image in the sequence. If ``None``, the score will be
-            calculated across all dimensions.
+            preds: Predicted tensor
+            target: Ground truth tensor
+            threshold: Values above or equal to threshold are replaced with 1, below by 0
+            keep_sequence_dim: Index of the sequence dimension if the inputs are sequences of images. If specified,
+                the score will be calculated separately for each image in the sequence. If ``None``, the score will be
+                calculated across all dimensions.
 
     """
     _check_same_shape(preds, target)

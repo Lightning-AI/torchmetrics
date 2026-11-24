@@ -649,8 +649,8 @@ class MeanAveragePrecision(Metric):
     def _apply(self, fn: Callable) -> torch.nn.Module:  # type: ignore[override]
         """Custom apply function.
 
-        Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
-        no longer a tensor but a tuple.
+        Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is no
+        longer a tensor but a tuple.
 
         """
         return super()._apply(fn, exclude_state=("detection_mask", "groundtruth_mask"))
@@ -658,8 +658,8 @@ class MeanAveragePrecision(Metric):
     def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
         """Custom sync function.
 
-        For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need
-        to gather the list of tuples and then convert it back to a list of tuples.
+        For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need to
+        gather the list of tuples and then convert it back to a list of tuples.
 
         """
         super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)  # type: ignore[arg-type]
