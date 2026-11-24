@@ -67,3 +67,20 @@ def test_rand_score_functional_is_symmetric(
     """Check that the metric functional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(adjusted_rand_score(p, t), adjusted_rand_score(t, p))
+
+
+@pytest.mark.parametrize("num_samples", [1000, 100000, 200000])
+@pytest.mark.parametrize("overlapping", [False, True])
+def test_adjusted_rand_large_sample_counts(num_samples, overlapping):
+    """Products of pair counts must not overflow integer arithmetic for large datasets."""
+    target = torch.arange(num_samples) % 3
+    preds = torch.arange(num_samples) % 5
+    if overlapping:
+        preds = target.clone()
+        preds[::7] = 4
+    expected = torch.tensor(sklearn_adjusted_rand_score(preds.numpy(), target.numpy()), dtype=torch.float32)
+    torch.testing.assert_close(adjusted_rand_score(preds, target), expected, atol=1e-7, rtol=1e-6)
+    metric = AdjustedRandScore()
+    for pred_batch, target_batch in zip(preds.split(50000), target.split(50000)):
+        metric.update(pred_batch, target_batch)
+    torch.testing.assert_close(metric.compute(), expected, atol=1e-7, rtol=1e-6)
