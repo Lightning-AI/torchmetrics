@@ -74,6 +74,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `Metric` raising `NameError` on Python 3.14 when constructing or unpickling a metric whose `update` annotations use names imported only under `TYPE_CHECKING` ([#3604](https://github.com/Lightning-AI/torchmetrics/pull/3604))
 
 
+- Fixed `TER` never shifting a block of 10 words in one step, which made it disagree with Tercom and sacrebleu ([#3594](https://github.com/Lightning-AI/torchmetrics/pull/3594))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
