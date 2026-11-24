@@ -21,7 +21,6 @@ from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise
 
 from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PeakSignalNoiseRatio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -122,11 +121,6 @@ class TestPSNR(MetricTester):
             metric_args=_args,
         )
 
-    # PSNR half + cpu does not work due to missing support in torch.log
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_2_1,
-        reason="Pytoch below 2.1 does not support cpu + half precision used in PSNR metric",
-    )
     def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
