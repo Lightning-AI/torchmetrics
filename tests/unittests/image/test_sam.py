@@ -20,7 +20,6 @@ from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -85,10 +84,6 @@ class TestSpectralAngleMapper(MetricTester):
             metric_args={"reduction": reduction},
         )
 
-    # SAM half + cpu does not work due to missing support in torch.log
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_2_1, reason="Pytoch below 2.1 does not support cpu + half precision used in SAM metric"
-    )
     def test_sam_half_cpu(self, reduction, preds, target):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
