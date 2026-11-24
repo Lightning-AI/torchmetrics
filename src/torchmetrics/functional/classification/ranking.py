@@ -47,7 +47,8 @@ def _multilabel_ranking_tensor_validation(
 def _multilabel_coverage_error_update(preds: Tensor, target: Tensor) -> tuple[Tensor, int]:
     """Accumulate state for coverage error."""
     offset = torch.zeros_like(preds)
-    offset[target == 0] = preds.min().abs() + 10  # Any number >1 works
+    # Shift all non-relevant labels, including ignored ones, so that only relevant labels set the lowest score
+    offset[target != 1] = preds.min().abs() + 10  # Any number >1 works
     preds_mod = preds + offset
     preds_min = preds_mod.min(dim=1)[0]
     coverage = (preds >= preds_min[:, None]).sum(dim=1).to(torch.float32)
