@@ -17,6 +17,7 @@
 import builtins
 import functools
 import inspect
+import sys
 from abc import ABC, abstractmethod
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
@@ -43,10 +44,24 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_8
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
 
+if sys.version_info >= (3, 14):
+    import annotationlib
+
 
 def jit_distributed_available() -> bool:
     """Determine if distributed mode is initialized."""
     return torch.distributed.is_available() and torch.distributed.is_initialized()
+
+
+def _get_update_signature(update: Callable) -> inspect.Signature:
+    """Inspect ``update`` while allowing unresolved annotation names on Python 3.14+.
+
+    ``Metric._filter_kwargs`` uses only the parameter names and kinds.
+
+    """
+    if sys.version_info >= (3, 14):
+        return inspect.signature(update, annotation_format=annotationlib.Format.FORWARDREF)
+    return inspect.signature(update)
 
 
 class Metric(Module, ABC):
@@ -153,7 +168,7 @@ class Metric(Module, ABC):
             raise ValueError(f"Unexpected keyword arguments: {', '.join(kwargs_)}")
 
         # initialize
-        self._update_signature = inspect.signature(self.update)
+        self._update_signature = _get_update_signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore[method-assign]
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[method-assign]
         self._computed = None
@@ -459,6 +474,8 @@ class Metric(Module, ABC):
                 )
             incoming_state = incoming_state.metric_state
 
+        # merging changes the state, so a value cached by a previous ``compute`` call is no longer valid
+        self._computed = None
         self._reduce_states(incoming_state)
 
     def _reduce_states(self, incoming_state: dict[str, Any]) -> None:
@@ -497,8 +514,47 @@ class Metric(Module, ABC):
                 raise TypeError(f"Unsupported reduce_fn: {reduce_fn}")
             setattr(self, attr, reduced)
 
+    def _check_none_reduction_list_lengths(
+        self, states: dict[str, list], dist_sync_fn: Callable, process_group: Optional[Any] = None
+    ) -> None:
+        """Check that every ``dist_reduce_fx=None`` list state holds the same number of entries on all ranks.
+
+        Unlike ``dim_zero_cat`` states, these cannot be pre-concatenated before syncing, since ``compute``
+        relies on the identity of each entry, e.g. one entry per image for detection metrics. Padding the
+        shorter lists is not safe either, as no placeholder is a no-op for every such state, so a mismatch
+        is reported instead of guessed away. All lengths travel in a single tensor, so the check costs one
+        collective no matter how many such states a metric declares.
+
+        Args:
+            states: Mapping from state name to the local list state, for every state reduced with `None`
+            dist_sync_fn: Function used to gather the lengths, the same one used to sync the states themselves
+            process_group: Specify the process group to check over. default: `None` (the metric's own)
+
+        Raises:
+            TorchMetricsUserError:
+                If any of the states holds a different number of entries across ranks.
+
+        """
+        # list states live on cpu whenever they are computed there, so probe from where they actually are
+        device = torch.device("cpu") if self.compute_on_cpu else self.device
+        local_lens = torch.tensor([len(state) for state in states.values()], device=device)
+        gathered = dist_sync_fn(local_lens, group=process_group or self.process_group)
+        all_lens = torch.stack([t.flatten() for t in gathered])
+
+        for idx, attr in enumerate(states):
+            lens = all_lens[:, idx].tolist()
+            if len(set(lens)) > 1:
+                raise TorchMetricsUserError(
+                    f"Metric state `{attr}` has `dist_reduce_fx=None` but a different number of entries across "
+                    f"ranks: {lens}. Syncing it would deadlock, as each rank would issue a different number of "
+                    "collective calls. Make sure all ranks call `update()` the same number of times, e.g. by "
+                    "passing zero-sized tensors instead of skipping `update()` on a rank without data, or set "
+                    "`sync_on_compute=False` and sync manually once the lengths are equalized."
+                )
+
     def _sync_dist(self, dist_sync_fn: Callable = gather_all_tensors, process_group: Optional[Any] = None) -> None:
         input_dict = {attr: getattr(self, attr) for attr in self._reductions}
+        none_reduction_lists: dict[str, list] = {}
 
         for attr, reduction_fn in self._reductions.items():
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
@@ -508,6 +564,14 @@ class Metric(Module, ABC):
             # corner case in distributed settings where a rank has not received any data, create empty to concatenate
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) == 0:
                 input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
+
+            # ranks holding differently sized lists cannot be gathered as-is, since the number of all_gather
+            # operations would differ per rank and deadlock
+            if reduction_fn is None and isinstance(input_dict[attr], list):
+                none_reduction_lists[attr] = input_dict[attr]
+
+        if none_reduction_lists:
+            self._check_none_reduction_list_lengths(none_reduction_lists, dist_sync_fn, process_group)
 
         output_dict = apply_to_collection(
             input_dict,
@@ -787,7 +851,7 @@ class Metric(Module, ABC):
         """
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
-        self._update_signature = inspect.signature(self.update)
+        self._update_signature = _get_update_signature(self.update)
         self.update: Callable = self._wrap_update(self.update)  # type: ignore[method-assign]
         self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[method-assign]
 

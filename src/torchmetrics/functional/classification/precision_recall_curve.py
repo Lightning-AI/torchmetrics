@@ -17,7 +17,6 @@ from typing import List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
-from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -68,7 +67,8 @@ def _binary_clf_curve(
         # the indices associated with the distinct values. We also
         # concatenate a value for the end of the curve.
         distinct_value_indices = torch.where(preds[1:] - preds[:-1])[0]
-        threshold_idxs = F.pad(distinct_value_indices, [0, 1], value=target.size(0) - 1)
+        # torch.cat instead of F.pad, which corrupts 1D tensors of 65535+ elements on MPS (see #1727)
+        threshold_idxs = torch.cat([distinct_value_indices, distinct_value_indices.new_tensor([target.size(0) - 1])])
         target = (target == pos_label).to(torch.long)
         tps = torch.cumsum(target * weight, dim=0)[threshold_idxs]
 
