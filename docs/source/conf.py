@@ -426,6 +426,9 @@ linkcheck_exclude_documents = [r"^(.*\/)*CHANGELOG.*$"]
 
 # jstor and sciencedirect cannot be accessed from python, but links work fine in a local doc
 linkcheck_ignore = [
+    # sites that refuse or drop automated requests from CI runners, links work fine in a browser
+    "https://aclanthology.org/.*",
+    "https://www.isca-speech.org/.*",
     # The Treatment of Ties in Ranking Problems
     "https://www.jstor.org/stable/2332303",
     # Quality Assessment of Deblocked Images

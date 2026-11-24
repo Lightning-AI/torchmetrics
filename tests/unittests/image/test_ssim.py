@@ -363,6 +363,34 @@ def test_ssim_for_correct_padding():
     assert structural_similarity_index_measure(preds, target) < 1.0
 
 
+@pytest.mark.parametrize("sigma", [0.5, 1.0])
+@pytest.mark.parametrize("kernel_size", [5, 7, 9])
+def test_ssim_3d_gaussian_kernel_ignores_kernel_size(sigma, kernel_size):
+    """Check that ``kernel_size`` is ignored for 3D inputs when a gaussian kernel is used.
+
+    The padding of the last dimension has to follow the size of the gaussian kernel, like the other dimensions, so the
+    full SSIM image keeps the input shape and the score does not depend on ``kernel_size``.
+
+    """
+    preds = torch.rand(2, 1, 12, 14, 16)
+    target = (preds + 0.3 * torch.randn_like(preds)).clamp(0, 1)
+    expected = structural_similarity_index_measure(preds, target, sigma=sigma, data_range=1.0)
+
+    score, image = structural_similarity_index_measure(
+        preds, target, sigma=sigma, kernel_size=kernel_size, data_range=1.0, return_full_image=True
+    )
+    assert image.shape == preds.shape
+    assert torch.allclose(score, expected)
+
+    metric = StructuralSimilarityIndexMeasure(
+        sigma=sigma, kernel_size=kernel_size, data_range=1.0, return_full_image=True
+    )
+    metric.update(preds, target)
+    score, image = metric.compute()
+    assert image.shape == preds.shape
+    assert torch.allclose(score, expected)
+
+
 def _run_ssim_ddp(rank: int, world_size: int):
     """Run SSIM metric computation in a DDP setup."""
     setup_ddp(rank, world_size)
