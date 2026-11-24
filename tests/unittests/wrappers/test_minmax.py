@@ -81,6 +81,7 @@ class TestMinMaxWrapper(MetricTester):
             metric_args={"base_metric": base_metric},
             check_batch=False,
             check_scriptable=False,
+            check_state_dict=False,
         )
 
 
@@ -117,8 +118,8 @@ def test_no_base_metric() -> None:
         MinMaxMetric([])
 
 
-def test_reset_clears_min_max() -> None:
-    """Tests that reset() properly resets min_val and max_val to initialization bounds (issue #3328)."""
+def test_reset_clears_base_metric_state() -> None:
+    """Tests that reset() properly resets the base metric while preserving min/max across epochs."""
     min_max_acc: MinMaxMetric = MinMaxMetric(BinaryAccuracy())
     preds = Tensor([[0.9, 0.1], [0.2, 0.8]])
     labels = Tensor([[0, 1], [0, 1]]).long()
@@ -128,29 +129,63 @@ def test_reset_clears_min_max() -> None:
     assert result["max"].item() != float("-inf")
 
     min_max_acc.reset()
-    assert min_max_acc.min_val.item() == float("inf"), "min_val should be reset to inf after reset()"
-    assert min_max_acc.max_val.item() == float("-inf"), "max_val should be reset to -inf after reset()"
+    # min/max are preserved across resets (experiment-level tracking)
+    assert min_max_acc.min_val.item() == result["min"].item()
+    assert min_max_acc.max_val.item() == result["max"].item()
 
 
 def test_reset_no_pollution_across_epochs() -> None:
-    """Make sure min/max values from a previous epoch do not leak into the next epoch after reset (issue #3328)."""
+    """Make sure min/max values accumulate correctly across epochs after reset (issue #3328)."""
     min_max_acc: MinMaxMetric = MinMaxMetric(BinaryAccuracy())
     labels = Tensor([[0, 1], [0, 1]]).long()
 
-    # Epoch 1 (e.g. Lightning sanity check): perfect predictions -> accuracy = 1.0
+    # Epoch 1: perfect predictions -> accuracy = 1.0
     min_max_acc(Tensor([[0.1, 0.9], [0.1, 0.9]]), labels)
-    epoch1 = min_max_acc.compute()  # type: ignore[call-arg]
+    epoch1 = min_max_acc.compute()
     assert epoch1["raw"].item() == 1.0
     assert epoch1["max"].item() == 1.0
 
     min_max_acc.reset()
 
-    # Epoch 2: worse predictions -> accuracy = 0.5; max must not be 1.0 leaked from epoch 1
+    # Epoch 2: worse predictions -> accuracy = 0.5; max must remain 1.0 from epoch 1
     min_max_acc(Tensor([[0.9, 0.1], [0.1, 0.9]]), labels)
-    epoch2 = min_max_acc.compute()  # type: ignore[call-arg]
+    epoch2 = min_max_acc.compute()
     assert epoch2["raw"].item() == 0.5
-    assert epoch2["max"].item() == 0.5, "max_val should not retain values from before reset()"
-    assert epoch2["min"].item() == 0.5, "min_val should not retain values from before reset()"
+    assert epoch2["max"].item() == 1.0, "max_val should be preserved from epoch 1"
+    assert epoch2["min"].item() == 0.5, "min_val should reflect new minimum"
+
+
+def test_state_dict_preserves_min_max() -> None:
+    """Tests that min_val and max_val are saved in state_dict and survive save/load (issue #3323)."""
+    min_max_acc: MinMaxMetric = MinMaxMetric(BinaryAccuracy())
+    labels = Tensor([[0, 1], [0, 1]]).long()
+
+    # Epoch 1: perfect predictions -> accuracy = 1.0
+    min_max_acc(Tensor([[0.1, 0.9], [0.1, 0.9]]), labels)
+    result1 = min_max_acc.compute()
+    assert result1["max"].item() == 1.0
+    assert result1["min"].item() == 1.0
+
+    # Verify state_dict contains min_val and max_val
+    state = min_max_acc.state_dict()
+    assert "min_val" in state, "min_val should be in state_dict"
+    assert "max_val" in state, "max_val should be in state_dict"
+
+    # Load into a fresh metric
+    min_max_acc2: MinMaxMetric = MinMaxMetric(BinaryAccuracy())
+    min_max_acc2.load_state_dict(state)
+
+    # After load, min/max values should be restored
+    assert min_max_acc2.min_val.item() == 1.0, "min_val should be restored from checkpoint"
+    assert min_max_acc2.max_val.item() == 1.0, "max_val should be restored from checkpoint"
+
+    # Epoch 2 after load: min/max from epoch 1 should persist across reset
+    min_max_acc2.reset()
+    min_max_acc2(Tensor([[0.9, 0.1], [0.1, 0.9]]), labels)
+    result2 = min_max_acc2.compute()
+    assert result2["raw"].item() == 0.5
+    assert result2["max"].item() == 1.0, "max_val should be preserved from checkpoint across resets"
+    assert result2["min"].item() == 0.5, "min_val should reflect new minimum across epochs"
 
 
 def test_no_scalar_compute() -> None:

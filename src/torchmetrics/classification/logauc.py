@@ -103,7 +103,7 @@ class BinaryLogAUC(BinaryROC):
         fpr_range: Tuple[float, float] = (0.001, 0.1),
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
-        validate_args: bool = False,
+        validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args, **kwargs)

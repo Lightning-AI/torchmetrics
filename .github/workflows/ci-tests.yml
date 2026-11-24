@@ -34,36 +34,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04"]
-        python-version: ["3.10"]
-        pytorch-version:
-          - "2.0.1"
-          - "2.1.2"
-          - "2.2.2"
-          - "2.3.1"
-          - "2.4.1"
-          - "2.5.1"
-          - "2.6.0"
-          - "2.7.1"
-          - "2.8.0"
-          - "2.9.1"
-          - "2.10.0"
         include:
-          # cover additional python and PT combinations
-          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.0.1", requires: "oldest" }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.7.1" }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.8.0" }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.9.1" }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.10.0" }
-          # using the ARM based M1 machine
-          - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.8.0" }
-          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.9.1" }
-          - { os: "macOS-14", python-version: "3.12", pytorch-version: "2.10.0" }
-          # some windows
-          - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.8.0" }
-          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.9.1" }
+          # Linux spans the supported Python and PyTorch range; DDP tests run only on the oldest and newest job,
+          #  and on pull requests the jobs in between run only one parametrization per test (`quick`)
+          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.6.0", requires: "oldest", ddp: true }
+          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.9.1", quick: true }
+          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.12.1", quick: true }
+          - { os: "ubuntu-22.04", python-version: "3.13", pytorch-version: "2.15.0", ddp: true }
+          # one recent configuration per other OS; macOS uses the ARM based M1 machine
+          - { os: "macOS-15", python-version: "3.12", pytorch-version: "2.15.0" }
+          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.15.0" }
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       TOKENIZERS_PARALLELISM: false
@@ -71,16 +51,20 @@ jobs:
       # PIP_EXTRA_URL: "--find-links=https://download.pytorch.org/whl/cpu/torch_stable.html"
       UV_TORCH_BACKEND: "cpu"
       UNITTEST_TIMEOUT: "" # by default, it is not set
+      # Supply-chain guard: refuse PyPI releases newer than 2 days. See https://docs.astral.sh/uv/reference/settings/#exclude-newer
+      UV_EXCLUDE_NEWER: "2 days"
+      # On pull requests run a reduced test suite, see `tests/unittests/conftest.py`; the full suite runs on master
+      TORCHMETRICS_TEST_REDUCE: ${{ github.event_name == 'pull_request' && (matrix.quick && 'quick' || 'pairwise') || '' }}
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that macOS jobs take much more than orger OS
     timeout-minutes: 120
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install uv and set Python version
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
           python-version: ${{ matrix.python-version }}
           # TODO: Avoid activating environment like this
@@ -150,6 +134,12 @@ jobs:
           for fpath in `ls requirements/*.txt`; do
               python adjust-torch-versions.py $fpath
           done
+          # torchaudio stopped following torch's version numbers after 2.11, so undo the matching pin for newer torch
+          sed -i.bak -E 's/^torchaudio==2\.(1[2-9]|[2-9][0-9])\..*/torchaudio >=2.11.0, <2.12.0/' requirements/audio.txt
+          # the script pins torchvision 0.30 for torch 2.15, which does not exist; torchvision 0.29 supports torch 2.15
+          sed -i.bak -E 's/^torchvision==0\.30\..*/torchvision >=0.29.0, <0.30.0/' requirements/*.txt
+          cat requirements/audio.txt
+          grep -h "^torchvision" requirements/*.txt
           uv pip install --requirement requirements/clustering.txt -U $PIP_EXTRA_URL
           uv pip install --requirement requirements/_devel.txt -U $PIP_EXTRA_URL
           uv pip list
@@ -157,9 +147,14 @@ jobs:
 
       - name: set special vars for PR
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo 'ALLOW_SKIP_IF_OUT_OF_MEMORY=1' >> $GITHUB_ENV
           echo 'ALLOW_SKIP_IF_BAD_CONNECTION=1' >> $GITHUB_ENV
+          # skip tests marked `slow` unless this PR changes them or the metric they test
+          echo 'TORCHMETRICS_SKIP_SLOW=1' >> $GITHUB_ENV
+          echo "TORCHMETRICS_CHANGED_FILES=$(gh pr diff ${{ github.event.pull_request.number }} --name-only -R ${{ github.repository }} | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: Sanity check
         id: info
@@ -199,7 +194,7 @@ jobs:
 
       - name: Unittests DDP
         # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
-        if: ${{ env.TEST_DIRS != '' }}
+        if: ${{ env.TEST_DIRS != '' && matrix.ddp }}
         working-directory: ./tests
         env:
           USE_PYTEST_POOL: "1"
@@ -224,7 +219,7 @@ jobs:
       - name: Upload coverage to Codecov
         # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
         if: ${{ env.TEST_DIRS != '' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: "tests/coverage.xml"
