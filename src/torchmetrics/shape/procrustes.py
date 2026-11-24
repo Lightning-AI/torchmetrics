@@ -37,6 +37,8 @@ class ProcrustesDisparity(Metric):
     The metric works similar to ``scipy.spatial.procrustes`` but for batches of data points. The disparity is
     aggregated over the batch, thus to get the individual disparities please use the functional version of this
     metric: ``torchmetrics.functional.shape.procrustes.procrustes_disparity``.
+    Each point cloud must have non-empty point and coordinate dimensions, finite values, and more than one unique point.
+    Invalid inputs raise ``ValueError`` instead of contributing a disparity value.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
