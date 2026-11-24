@@ -60,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `Perplexity` returning `inf` when a target token's softmax probability underflows to zero, by computing the log-probabilities with `log_softmax` ([#3539](https://github.com/Lightning-AI/torchmetrics/pull/3539))
 
 
+- Fixed `higher_is_better` direction for `WordInfoPreserved`, `DaviesBouldinScore`, `SpectralDistortionIndex` and `PerceptualPathLength`, which made `MetricTracker.best_metric` return the worst step ([#3644](https://github.com/Lightning-AI/torchmetrics/pull/3644))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
