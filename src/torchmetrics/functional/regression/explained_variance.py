@@ -65,7 +65,8 @@ def _explained_variance_compute(
 
             * ``'raw_values'`` returns full set of scores
             * ``'uniform_average'`` scores are uniformly averaged
-            * ``'variance_weighted'`` scores are weighted by their individual variances
+            * ``'variance_weighted'`` scores are weighted by their individual variances.
+              If all target variances are zero, scores are uniformly averaged.
 
     Example:
         >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
@@ -93,7 +94,7 @@ def _explained_variance_compute(
     # Todo: allow user to pass in tensor with weights
     if multioutput == "raw_values":
         return output_scores
-    if multioutput == "uniform_average":
+    if multioutput == "uniform_average" or not torch.any(nonzero_denominator):
         return torch.mean(output_scores)
     denom_sum = torch.sum(denominator)
     return torch.sum(denominator / denom_sum * output_scores)
@@ -114,7 +115,8 @@ def explained_variance(
 
             * ``'raw_values'`` returns full set of scores
             * ``'uniform_average'`` scores are uniformly averaged
-            * ``'variance_weighted'`` scores are weighted by their individual variances
+            * ``'variance_weighted'`` scores are weighted by their individual variances.
+              If all target variances are zero, scores are uniformly averaged.
 
     Example:
         >>> from torchmetrics.functional.regression import explained_variance

@@ -109,3 +109,35 @@ def test_error_on_different_shape(metric_class=ExplainedVariance):
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("class_impl", [False, True])
+@pytest.mark.parametrize(
+    ("preds", "target", "expected"),
+    [
+        ([1, 1, 1], [1, 1, 1], 1.0),
+        ([2, 2, 2], [1, 1, 1], 1.0),
+        ([0, 1, 2], [1, 1, 1], 0.0),
+        ([[2, 0], [2, 1], [2, 2]], [[1, 3], [1, 3], [1, 3]], 0.5),
+        ([[0, 0], [1, 2], [2, 4]], [[1, 3], [1, 3], [1, 3]], 0.0),
+        ([[0, 0], [1, 3], [2, 6]], [[1, 0], [1, 1], [1, 2]], -3.0),
+    ],
+)
+def test_explained_variance_weighted_constant_targets(preds, target, expected, class_impl, dtype):
+    """Use uniform scores only when every target output has zero variance."""
+    preds, target = torch.tensor(preds, dtype=dtype), torch.tensor(target, dtype=dtype)
+    reference = explained_variance_score(target.numpy(), preds.numpy(), multioutput="variance_weighted")
+    assert reference == pytest.approx(expected)
+
+    if class_impl:
+        metric = ExplainedVariance(multioutput="variance_weighted").set_dtype(dtype)
+        metric.update(preds[:1], target[:1])
+        metric.update(preds[1:], target[1:])
+        result = metric.compute()
+        metric.reset()
+        torch.testing.assert_close(metric(preds, target), torch.tensor(expected, dtype=dtype))
+    else:
+        result = explained_variance(preds, target, multioutput="variance_weighted")
+
+    torch.testing.assert_close(result, torch.tensor(expected, dtype=dtype))

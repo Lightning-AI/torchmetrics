@@ -58,7 +58,8 @@ class ExplainedVariance(Metric):
 
             * ``'raw_values'`` returns full set of scores
             * ``'uniform_average'`` scores are uniformly averaged
-            * ``'variance_weighted'`` scores are weighted by their individual variances
+            * ``'variance_weighted'`` scores are weighted by their individual variances.
+              If all target variances are zero, scores are uniformly averaged.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
