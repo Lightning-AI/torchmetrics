@@ -14,6 +14,7 @@
 from functools import partial
 
 import pytest
+import torch
 from sklearn.metrics import completeness_score as sklearn_completeness_score
 from sklearn.metrics import homogeneity_score as sklearn_homogeneity_score
 from sklearn.metrics import v_measure_score as sklearn_v_measure_score
@@ -96,3 +97,14 @@ def test_homogeneity_completeness_vmeasure_functional_raises_invalid_task(functi
     preds, target = _float_inputs_extrinsic
     with pytest.raises(ValueError, match=r"Expected *"):
         functional_metric(preds, target)
+
+
+@pytest.mark.parametrize("beta", [0.5, 1.0, 2.0])
+def test_v_measure_zero_mutual_information(beta):
+    """Check that independent nontrivial clusterings have zero V-measure."""
+    preds = torch.tensor([0, 1, 0, 1])
+    target = torch.tensor([0, 0, 1, 1])
+    expected = torch.tensor(sklearn_v_measure_score(target, preds, beta=beta), dtype=torch.float32)
+
+    assert torch.allclose(v_measure_score(preds, target, beta=beta), expected)
+    assert torch.allclose(VMeasureScore(beta=beta)(preds, target), expected)

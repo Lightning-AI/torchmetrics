@@ -56,16 +56,22 @@ class _RequirementWithComment(_Requirement):
         'arrow<=1.2.2,>=1.2.0  # strict'
         >>> _RequirementWithComment("arrow").adjust(True)
         'arrow'
+        >>> _RequirementWithComment("tqdm<=4.70.0").adjust(True)
+        'tqdm'
 
         """
         out = str(self)
         if self.strict:
             return f"{out}  {self.strict_string}"
         if unfreeze:
-            for operator, version in self.specs:
-                if operator in ("<", "<="):
-                    # drop upper bound
-                    return out.replace(f"{operator}{version},", "")
+            specs = ",".join(str(spec) for spec in self.specifier if spec.operator not in ("<", "<="))
+            if specs != str(self.specifier):
+                out = self.name
+                if self.extras:
+                    out += f"[{','.join(sorted(self.extras))}]"
+                out += specs
+                if self.marker:
+                    out += f"; {self.marker}"
         return out
 
 
@@ -150,9 +156,6 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     text = text.replace("/branch/master/graph/badge.svg", f"/release/{version}/graph/badge.svg")
     # replace github badges for release ones
     text = text.replace("badge.svg?branch=master&event=push", f"badge.svg?tag={version}")
-    # Azure...
-    text = text.replace("?branchName=master", f"?branchName=refs%2Ftags%2F{version}")
-    text = re.sub(r"\?definitionId=\d+&branchName=master", f"?definitionId=2&branchName=refs%2Ftags%2F{version}", text)
 
     skip_begin = r"<!-- following section will be skipped from PyPI description -->"
     skip_end = r"<!-- end skipping PyPI description -->"
