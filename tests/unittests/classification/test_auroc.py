@@ -410,6 +410,31 @@ def test_corner_case_max_fpr(max_fpr):
     assert metric(preds, target) == 0.0
 
 
+@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="test requires MPS")
+def test_binary_auroc_mps_large_input():
+    """Test that binary AUROC on MPS matches CPU for inputs above 65535 elements, see issue #1727."""
+    generator = torch.Generator().manual_seed(42)
+    preds = torch.rand(2**17, generator=generator)
+    target = torch.randint(0, 2, (2**17,), generator=generator)
+    expected = binary_auroc(preds, target)
+    result = binary_auroc(preds.to("mps"), target.to("mps"))
+    assert torch.allclose(result.cpu(), expected, atol=1e-6)
+
+
+def test_binary_auroc_validates_update_inputs():
+    """Check that `BinaryAUROC` validates the tensors given to `update`, like its functional counterpart."""
+    preds = torch.tensor([0.9, 0.2, 0.8, 0.1])
+    target = torch.tensor([0, 1, 2, 0])  # 2 is not a valid label in a binary task
+
+    with pytest.raises(RuntimeError, match="Detected the following values in `target`"):
+        binary_auroc(preds, target)
+    with pytest.raises(RuntimeError, match="Detected the following values in `target`"):
+        BinaryAUROC().update(preds, target)
+
+    # validation can still be switched off explicitly
+    BinaryAUROC(validate_args=False).update(preds, target)
+
+
 @pytest.mark.parametrize(
     ("metric", "kwargs"),
     [
