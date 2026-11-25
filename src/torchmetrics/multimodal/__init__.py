@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.multimodal.fdd import UpperFaceDynamicsDeviation
 from torchmetrics.multimodal.lve import LipVertexError
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
-__all__ = ["LipVertexError"]
+__all__ = ["LipVertexError", "UpperFaceDynamicsDeviation"]
 
 if _TRANSFORMERS_AVAILABLE:
     from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment

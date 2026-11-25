@@ -18,6 +18,7 @@ from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.functional.text.edit import edit_distance
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.functional.text.mer import match_error_rate
+from torchmetrics.functional.text.meteor import meteor_score
 from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
@@ -35,6 +36,7 @@ __all__ = [
     "edit_distance",
     "extended_edit_distance",
     "match_error_rate",
+    "meteor_score",
     "perplexity",
     "rouge_score",
     "sacre_bleu_score",

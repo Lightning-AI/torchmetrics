@@ -17,6 +17,7 @@ from torchmetrics.text.chrf import CHRFScore
 from torchmetrics.text.edit import EditDistance
 from torchmetrics.text.eed import ExtendedEditDistance
 from torchmetrics.text.mer import MatchErrorRate
+from torchmetrics.text.meteor import METEORScore
 from torchmetrics.text.perplexity import Perplexity
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
@@ -33,6 +34,7 @@ __all__ = [
     "CharErrorRate",
     "EditDistance",
     "ExtendedEditDistance",
+    "METEORScore",
     "MatchErrorRate",
     "Perplexity",
     "ROUGEScore",

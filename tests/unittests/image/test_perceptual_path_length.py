@@ -205,3 +205,8 @@ def test_compare():
 
     assert 0.94 * result.mean() <= compare.mean() <= 1.06 * result.mean()
     assert 0.94 * result.std() <= compare.std() <= 1.06 * result.std()
+
+
+def test_lower_is_better():
+    """Perceptual path length is a distance, so a lower value means a smoother latent space."""
+    assert PerceptualPathLength.higher_is_better is False
