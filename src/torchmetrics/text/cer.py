@@ -44,6 +44,9 @@ class CharErrorRate(Metric):
         - :math:`C` is the number of correct characters,
         - :math:`N` is the number of characters in the reference (N=S+D+C).
 
+    If the references contain no characters, the score is the number of inserted characters (or 0 if predictions are
+    empty).
+
     Compute CharErrorRate score of transcribed segments against references.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:

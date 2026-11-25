@@ -30,6 +30,8 @@ from unittests._helpers import skip_on_connection_issues
 from unittests._helpers.testers import MetricTester
 from unittests.image import _SAMPLE_IMAGE
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.mark.parametrize(
     ("prompts", "match"),

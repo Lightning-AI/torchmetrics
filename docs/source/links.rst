@@ -80,6 +80,7 @@
 .. _chrF score: https://aclanthology.org/W15-3049
 .. _chrF++ score: https://aclanthology.org/W17-4770
 .. _TER: https://aclanthology.org/2006.amta-papers.25
+.. _METEOR: https://aclanthology.org/W07-0734
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359
 .. _MultiScaleSSIM: https://ieeexplore.ieee.org/abstract/document/1292216
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/abstract/document/995823
@@ -150,6 +151,7 @@
 .. _CLIP-IQA: https://arxiv.org/abs/2207.12396
 .. _CLIP: https://arxiv.org/abs/2103.00020
 .. _LVE: https://openaccess.thecvf.com/content/ICCV2021/papers/Richard_MeshTalk_3D_Face_Animation_From_Speech_Using_Cross-Modality_Disentanglement_ICCV_2021_paper.pdf
+.. _FDD: https://openaccess.thecvf.com/content/CVPR2023/papers/Xing_CodeTalker_Speech-Driven_3D_Facial_Animation_With_Discrete_Motion_Prior_CVPR_2023_paper.pdf
 .. _PPL : https://arxiv.org/abs/1812.04948
 .. _CIOU: https://arxiv.org/abs/2005.03572
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
