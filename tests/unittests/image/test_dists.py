@@ -112,19 +112,27 @@ class TestDISTS(MetricTester):
 
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 def test_import_does_not_eagerly_load_torchvision():
-    """Importing the DISTS modules must not eagerly import ``torchvision`` (regression for #3314).
+    """Importing the DISTS modules must not import ``torchvision`` (regression for #3314).
 
     A module-level ``torchvision`` import triggers a ``partially initialized module 'torchvision'`` circular
-    import in some ``torchvision`` versions. ``torchvision`` must therefore be imported lazily, only when the
-    metric is actually instantiated. Run in a fresh interpreter so previously imported modules do not hide a
-    regression.
+    import in some ``torchvision`` versions, so ``torchvision`` must only be imported when the metric is
+    instantiated. Other optional dependencies such as ``torch-fidelity`` may still import ``torchvision`` together
+    with ``torchmetrics``, so the test records which modules import ``torchvision`` while the modules load.
+    Run in a fresh interpreter so previously imported modules do not hide a regression.
 
     """
     script = (
-        "import sys\n"
+        "import builtins\n"
+        "importers = set()\n"
+        "real_import = builtins.__import__\n"
+        "def recording_import(name, globals=None, locals=None, fromlist=(), level=0):\n"
+        "    if name.split('.')[0] == 'torchvision':\n"
+        "        importers.add((globals or {}).get('__name__'))\n"
+        "    return real_import(name, globals, locals, fromlist, level)\n"
+        "builtins.__import__ = recording_import\n"
         "import torchmetrics.functional.image.dists\n"
         "import torchmetrics.image.dists\n"
-        "assert 'torchvision' not in sys.modules, "
-        "'torchvision imported at module load: %s' % sorted(m for m in sys.modules if 'torchvision' in m)\n"
+        "offenders = sorted(m for m in importers if m and m.endswith('.dists'))\n"
+        "assert not offenders, 'torchvision imported at module load by %s' % offenders\n"
     )
     subprocess.run([sys.executable, "-c", script], check=True)  # noqa: S603
