@@ -19,7 +19,6 @@ from torch.nn import functional as F  # noqa: N812
 
 from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.text.perplexity import Perplexity
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2
 from unittests._helpers.testers import MetricTester
 from unittests.text._inputs import (
     MASK_INDEX,
@@ -85,15 +84,9 @@ class TestPerplexity(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_perplexity_dtypes_cpu(self, preds, target, ignore_index, dtype):
         """Test dtype support of the metric on CPU."""
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_2_2:
-            with pytest.raises(RuntimeError, match="\"softmax_lastdim_kernel_impl\" not implemented for 'Half'"):
-                self.run_precision_test_cpu(
-                    preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
-                )
-        else:
-            self.run_precision_test_cpu(
-                preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
-            )
+        self.run_precision_test_cpu(
+            preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
+        )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
@@ -102,3 +95,21 @@ class TestPerplexity(MetricTester):
         self.run_precision_test_gpu(
             preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
         )
+
+
+@pytest.mark.parametrize(("dtype", "logit"), [(torch.float32, 120.0), (torch.float64, 800.0), (torch.half, 20.0)])
+def test_perplexity_no_underflow_for_unlikely_target(dtype, logit):
+    """Test that a target token with a tiny probability does not make the perplexity infinite."""
+    preds = torch.zeros(1, 20, 3, dtype=dtype)
+    preds[0, 0, 0] = logit
+    target = torch.zeros(1, 20, dtype=torch.long)
+    target[0, 0] = 1
+    expected = _reference_local_perplexity(preds.double(), target, ignore_index=None)
+
+    result = perplexity(preds, target)
+    assert torch.isfinite(result)
+    assert torch.allclose(result.double(), expected, rtol=1e-2)
+
+    metric = Perplexity()
+    metric.update(preds, target)
+    assert torch.allclose(metric.compute().double(), expected, rtol=1e-2)

@@ -19,7 +19,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.data import _bincount, _cumsum, dim_zero_cat
+from torchmetrics.utilities.data import _bincount, dim_zero_cat
 from torchmetrics.utilities.enums import EnumStr
 
 
@@ -91,7 +91,7 @@ def _convert_sequence_to_dense_rank(x: Tensor, sort: bool = False) -> Tensor:
     if sort:
         x = x.sort(dim=0).values
     _ones = torch.zeros(1, x.shape[1], dtype=torch.int32, device=x.device)
-    return _cumsum(torch.cat([_ones, (x[1:] != x[:-1]).int()], dim=0), dim=0)
+    return torch.cumsum(torch.cat([_ones, (x[1:] != x[:-1]).int()], dim=0), dim=0)
 
 
 def _get_ties(x: Tensor) -> tuple[Tensor, Tensor, Tensor]:
@@ -281,11 +281,10 @@ def _kendall_corrcoef_compute(
     """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test.
 
     Args:
-        Args:
         preds: Sequence of data
         target: Sequence of data
         variant: Indication of which variant of Kendall's tau to be used
-        alternative: Alternative hypothesis for for t-test. Possible values:
+        alternative: Alternative hypothesis for t-test. Possible values:
             - 'two-sided': the rank correlation is nonzero
             - 'less': the rank correlation is negative (less than zero)
             - 'greater':  the rank correlation is positive (greater than zero)

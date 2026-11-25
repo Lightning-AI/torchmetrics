@@ -229,7 +229,7 @@ def _find_shifted_pairs(pred_words: list[str], target_words: list[str]) -> Itera
             if abs(target_start - pred_start) > _MAX_SHIFT_DIST:
                 continue
 
-            for length in range(1, _MAX_SHIFT_SIZE):
+            for length in range(1, _MAX_SHIFT_SIZE + 1):
                 # Check if hypothesis and reference are equal so far
                 if pred_words[pred_start + length - 1] != target_words[target_start + length - 1]:
                     break
@@ -444,7 +444,7 @@ def _compute_sentence_statistics(pred_words: list[str], target_words: list[list[
     best_num_edits = tensor(2e16)
 
     for tgt_words in target_words:
-        num_edits = _translation_edit_rate(tgt_words, pred_words)
+        num_edits = _translation_edit_rate(pred_words, tgt_words)
         tgt_lengths += len(tgt_words)
         if num_edits < best_num_edits:
             best_num_edits = num_edits

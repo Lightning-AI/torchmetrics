@@ -23,7 +23,10 @@ from torchmetrics.classification import (
     MulticlassPrecision,
     MulticlassRecall,
 )
+from torchmetrics.clustering import DaviesBouldinScore
+from torchmetrics.image import SpectralDistortionIndex
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
+from torchmetrics.text import WordInfoPreserved
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MultioutputWrapper
 from unittests._helpers import seed_all
@@ -249,6 +252,48 @@ def test_tracker_higher_is_better_integration(base_metric):
             else:
                 collection_higher_is_better.append(m.higher_is_better)
         assert tracker.maximize == collection_higher_is_better
+
+
+_TARGET_SENTENCES = ["this is the reference", "there is another one"]
+_CLUSTER_DATA = torch.cat([torch.randn(50, 2), torch.randn(50, 2) + 10])
+_IMAGE = torch.rand(4, 3, 32, 32)
+
+
+@pytest.mark.parametrize("better_first", [True, False])
+@pytest.mark.parametrize(
+    ("metric_class", "better_input", "worse_input"),
+    [
+        pytest.param(
+            WordInfoPreserved,
+            (_TARGET_SENTENCES, _TARGET_SENTENCES),
+            (["this is wrong", "nothing here"], _TARGET_SENTENCES),
+            id="WordInfoPreserved",
+        ),
+        pytest.param(
+            DaviesBouldinScore,
+            (_CLUSTER_DATA, torch.arange(100) // 50),
+            (_CLUSTER_DATA, torch.arange(100) % 2),
+            id="DaviesBouldinScore",
+        ),
+        pytest.param(
+            SpectralDistortionIndex,
+            (_IMAGE, _IMAGE),
+            (torch.rand(4, 3, 32, 32), _IMAGE),
+            id="SpectralDistortionIndex",
+        ),
+    ],
+)
+def test_tracker_best_metric_uses_metric_direction(metric_class, better_input, worse_input, better_first):
+    """Check that `best_metric` returns the better step when `maximize` is inferred from `higher_is_better`."""
+    tracker = MetricTracker(metric_class())
+    for metric_input in (better_input, worse_input) if better_first else (worse_input, better_input):
+        tracker.increment()
+        tracker.update(*metric_input)
+
+    better_step = 0 if better_first else 1
+    best_value, best_step = tracker.best_metric(return_step=True)
+    assert best_step == better_step
+    assert best_value == pytest.approx(tracker.compute_all()[better_step].item())
 
 
 @pytest.mark.skipif(not _MATPLOTLIB_AVAILABLE, reason="matplotlib not available")

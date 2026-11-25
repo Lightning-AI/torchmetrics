@@ -14,6 +14,7 @@
 from typing import Union
 
 import pytest
+import torch
 
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
@@ -68,3 +69,27 @@ class TestCharErrorRate(TextTester):
             metric_module=CharErrorRate,
             metric_functional=char_error_rate,
         )
+
+
+@pytest.mark.parametrize(
+    ("preds", "target", "expected"),
+    [
+        ("hello", "", 5.0),
+        ("", "", 0.0),
+    ],
+)
+def test_cer_empty_reference(preds, target, expected):
+    """Empty references count each predicted character as an insertion."""
+    assert char_error_rate(preds, target) == torch.tensor(expected)
+
+    metric = CharErrorRate()
+    assert metric(preds, target) == torch.tensor(expected)
+    assert metric.compute() == torch.tensor(expected)
+
+
+def test_cer_empty_then_nonempty_reference():
+    """Once references contain characters, use their total length as the denominator."""
+    metric = CharErrorRate()
+    metric.update("extra", "")
+    metric.update("ok", "ok")
+    assert metric.compute() == torch.tensor(2.5)

@@ -15,6 +15,7 @@ from collections.abc import Sequence
 from functools import partial
 
 import pytest
+import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.chrf import chrf_score
@@ -161,3 +162,23 @@ def test_chrf_return_sentence_level_class():
     targets = _inputs_single_sentence_multiple_references.target
     _, chrf_sentence_score = chrf(preds, targets)
     isinstance(chrf_sentence_score, Tensor)
+
+
+def test_chrf_keeps_reference_n_grams_of_a_zero_scoring_sentence():
+    """Test that a hypothesis sharing no n-gram with its reference still contributes the reference n-grams.
+
+    Dropping them shrinks the corpus-level recall denominator and inflates the score.
+
+    """
+    preds = ["the cat sat on the mat", "zzz"]
+    targets = [["the cat sat on a mat"], ["supercalifragilistic"]]
+    expected = _reference_sacrebleu_chrf(preds, targets, char_order=6, word_order=2, lowercase=False, whitespace=False)
+    assert torch.allclose(chrf_score(preds, targets), expected, atol=1e-6)
+
+
+def test_chrf_does_not_reward_a_degraded_hypothesis():
+    """Test that replacing one hypothesis with a worse one cannot raise the corpus-level score."""
+    targets = [["the cat sat on a mat"], ["hello there my friend"]]
+    preds = ["hello there my friend", "hello there", "hello", "zzzz"]
+    scores = torch.stack([chrf_score(["the cat sat on the mat", pred], targets) for pred in preds])
+    assert torch.all(scores[:-1] >= scores[1:]).item(), scores

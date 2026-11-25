@@ -13,8 +13,9 @@
 # limitations under the License.
 import os
 import pickle
+import sys
 from collections import OrderedDict
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock
 
 import cloudpickle
@@ -25,13 +26,18 @@ import torch
 from torch import Tensor, tensor
 from torch.nn import Module, Parameter
 
+from torchmetrics import Metric
 from torchmetrics.aggregation import MeanMetric, SumMetric
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.clustering import AdjustedRandScore
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 from torchmetrics.regression import PearsonCorrCoef, R2Score
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_8
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 seed_all(42)
 
@@ -249,6 +255,49 @@ def test_pickle(tmpdir):
     assert metric_loaded.compute() == 1
 
 
+if sys.version_info >= (3, 14):
+    # Python 3.14+ defers the evaluation of annotations (PEP 649/749), so the `update` annotation below is not evaluated
+    # when the class is defined. Older versions would raise `NameError` on importing this module, hence the guard.
+
+    class _TypeCheckingOnlyAnnotationMetric(Metric):
+        """Metric whose `update` annotation names a type that is only imported under `TYPE_CHECKING`."""
+
+        full_state_update = False
+
+        def __init__(self, **kwargs: Any) -> None:
+            super().__init__(**kwargs)
+            self.add_state("total", tensor(0.0), dist_reduce_fx="sum")
+
+        def update(self, values: Sequence[Tensor]) -> None:
+            """Update state."""
+            for value in values:
+                self.total += value
+
+        def compute(self) -> Tensor:
+            """Compute value."""
+            return self.total
+
+
+@pytest.mark.skipif(sys.version_info < (3, 14), reason="requires deferred evaluation of annotations (Python 3.14+)")
+def test_type_checking_only_update_annotation():
+    """Test construction, keyword filtering, and pickle restoration with an unresolved annotation."""
+    import annotationlib
+
+    # the annotation must really be unresolvable at runtime for this test to be meaningful
+    with pytest.raises(NameError, match="Sequence"):
+        annotationlib.get_annotations(_TypeCheckingOnlyAnnotationMetric.update, format=annotationlib.Format.VALUE)
+
+    metric = _TypeCheckingOnlyAnnotationMetric()
+    metric.update([tensor(1.0), tensor(2.0)])
+    assert metric.compute() == 3
+    assert metric._filter_kwargs(values=[tensor(1.0)], other=1).keys() == {"values"}
+
+    metric_loaded = pickle.loads(pickle.dumps(metric))
+    assert metric_loaded.compute() == 3
+    metric_loaded.update([tensor(4.0)])
+    assert metric_loaded.compute() == 7
+
+
 def test_state_dict(tmpdir):
     """Test that metric states can be removed and added to state dict."""
     metric = DummyMetric()
@@ -331,6 +380,22 @@ def test_device_and_dtype_transfer(tmpdir):
         assert metric.device == torch.device("cuda", index=0)
         assert metric.x.dtype == torch.float16
     torch.set_default_dtype(default_dtype)
+
+
+@pytest.mark.parametrize(
+    "use_get_default_device",
+    [
+        pytest.param(True, marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_8, reason="requires torch>=2.8")),
+        False,
+    ],
+)
+def test_device_from_device_context_manager(monkeypatch, use_get_default_device):
+    """Test that a metric picks up the device from an active `torch.device` context manager, on both version paths."""
+    monkeypatch.setattr("torchmetrics.metric._TORCH_GREATER_EQUAL_2_8", use_get_default_device)
+    with torch.device("meta"):
+        metric = DummyMetricSum()
+    assert metric.device == torch.device("meta")
+    assert metric.x.device == torch.device("meta")
 
 
 def test_disable_of_normal_dtype_methods():
@@ -635,6 +700,32 @@ def test_merge_state_feature_basic():
     metric.update(1)
     metric.merge_state({"sum_value": torch.tensor(2)})
     assert metric.compute() == 3
+
+
+@pytest.mark.parametrize("incoming_as_metric", [True, False])
+def test_merge_state_after_compute(incoming_as_metric):
+    """Check that ``compute`` reflects the merged state when it was already called before ``merge_state``."""
+    metric = SumMetric()
+    metric.update(1)
+    assert metric.compute() == 1
+
+    other = SumMetric()
+    other.update(2)
+    metric.merge_state(other if incoming_as_metric else {"sum_value": torch.tensor(2.0)})
+    assert metric.compute() == 3
+
+    # aggregating shards one at a time, reading the running value after each merge
+    shards = [
+        (torch.tensor([1, 1, 1, 1]), torch.tensor([1, 1, 1, 1])),
+        (torch.tensor([1, 1, 1, 1]), torch.tensor([0, 0, 0, 0])),
+        (torch.tensor([0, 1, 0, 1]), torch.tensor([0, 1, 1, 0])),
+    ]
+    aggregate = BinaryAccuracy()
+    for (preds, target), expected in zip(shards, [1.0, 0.5, 0.5]):
+        shard_metric = BinaryAccuracy()
+        shard_metric.update(preds, target)
+        aggregate.merge_state(shard_metric if incoming_as_metric else shard_metric.metric_state)
+        assert aggregate.compute() == expected
 
 
 def test_merge_state_feature_raises_errors():

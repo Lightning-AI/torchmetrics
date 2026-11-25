@@ -42,7 +42,7 @@ jobs:
 
       - name: Login to DockerHub
         if: env.PUSH_DOCKERHUB == 'true' && github.repository_owner == 'Lightning-AI'
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -67,12 +67,6 @@ jobs:
         include:
           # These are the base images for PL release docker images,
           #  so include at least all the combinations in release-dockers.yml.
-          - { python: "3.10", pytorch: "2.0.1", cuda: "12.1.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.1.2", cuda: "12.1.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.2.2", cuda: "12.1.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.3.1", cuda: "12.1.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.4.1", cuda: "12.1.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.5.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.6.0", cuda: "12.4.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "22.04" }
           - { python: "3.12", pytorch: "2.7.1", cuda: "12.6.3", ubuntu: "24.04" }
@@ -86,7 +80,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Login to DockerHub
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         if: env.PUSH_DOCKERHUB == 'true' && github.repository_owner == 'Lightning-AI'
         with:
           username: ${{ secrets.DOCKER_USERNAME }}

@@ -22,7 +22,6 @@ from torch import Tensor
 
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
 from torchmetrics.regression.kl_divergence import KLDivergence
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -100,11 +99,6 @@ class TestKLDivergence(MetricTester):
             metric_args={"log_prob": log_prob, "reduction": reduction},
         )
 
-    # KLDivergence half + cpu does not work due to missing support in torch.clamp
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_2_1,
-        reason="Pytoch below 2.1 does not support cpu + half precision used in KLDivergence metric",
-    )
     def test_kldivergence_half_cpu(self, reduction, p, q, log_prob):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(p, q, KLDivergence, kl_divergence, {"log_prob": log_prob, "reduction": reduction})

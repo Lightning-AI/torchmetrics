@@ -334,7 +334,7 @@ def _calculate_sentence_level_chrf_score(
     best_target_char_n_grams: dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     best_target_word_n_grams: dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
 
-    for target in targets:
+    for i, target in enumerate(targets):
         (
             target_char_n_grams_counts,
             target_word_n_grams_counts,
@@ -355,7 +355,9 @@ def _calculate_sentence_level_chrf_score(
             beta,
         )
 
-        if f_score > best_f_score:
+        # The first reference always wins the tie so that a hypothesis scoring exactly 0.0 still reports that
+        # reference's n-gram counts; otherwise the caller sums zeros into the corpus recall denominator.
+        if i == 0 or f_score > best_f_score:
             best_f_score = f_score
             best_matching_char_n_grams = matching_char_n_grams
             best_matching_word_n_grams = matching_word_n_grams

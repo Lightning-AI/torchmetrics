@@ -19,7 +19,6 @@ from scipy.stats import rankdata, spearmanr
 
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrCoef
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -70,6 +69,21 @@ def test_ranking(preds, target):
         assert (torch.tensor(scipy_ranking[1]) == tm_ranking[1]).all()
 
 
+def test_a_large_tie_keeps_a_positive_correlation() -> None:
+    """65536 tied values overflow an int32 sum of ranks, so the high group ranks below the low group."""
+    n_tie = 65536
+    preds = torch.cat([torch.arange(100, dtype=torch.float32), torch.full((n_tie,), 999.0)])
+    target = torch.arange(preds.numel(), dtype=torch.float32)
+
+    ranks = _rank_data(preds)
+    assert float(ranks[-1]) > float(ranks[0])
+
+    score = spearman_corrcoef(preds, target)
+    expected = float(spearmanr(preds.numpy(), target.numpy())[0])
+    assert float(score) > 0
+    assert abs(float(score) - expected) < 1e-5
+
+
 def _reference_scipy_spearman(preds, target):
     if preds.ndim == 2:
         return [spearmanr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
@@ -118,11 +132,6 @@ class TestSpearmanCorrCoef(MetricTester):
             metric_functional=spearman_corrcoef,
         )
 
-    # Spearman half + cpu does not work due to missing support in torch.arange
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_2_1,
-        reason="Pytoch below 2.1 does not support cpu + half precision used in Spearman metric",
-    )
     def test_spearman_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

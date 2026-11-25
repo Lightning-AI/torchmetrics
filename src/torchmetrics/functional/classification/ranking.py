@@ -21,7 +21,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_format,
     _multilabel_confusion_matrix_tensor_validation,
 )
-from torchmetrics.utilities.data import _cumsum
 
 
 def _rank_data(x: Tensor) -> Tensor:
@@ -29,7 +28,7 @@ def _rank_data(x: Tensor) -> Tensor:
     # torch.unique does not support input that requires grad
     with torch.no_grad():
         _, inverse, counts = torch.unique(x, sorted=True, return_inverse=True, return_counts=True)
-    ranks = _cumsum(counts, dim=0)
+    ranks = torch.cumsum(counts, dim=0)
     return ranks[inverse]
 
 
@@ -188,7 +187,6 @@ def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> tuple[Tens
     Args:
         preds: tensor with predictions
         target: tensor with ground truth labels
-        sample_weight: optional tensor with weight for each sample
 
     """
     num_preds, num_labels = preds.shape

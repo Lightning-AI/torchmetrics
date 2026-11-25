@@ -117,7 +117,7 @@ class PerceptualPathLength(Metric):
     """
 
     is_differentiable: bool = False
-    higher_is_better: Optional[bool] = True
+    higher_is_better: Optional[bool] = False
     full_state_update: bool = True
 
     net: nn.Module
