@@ -82,7 +82,7 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
     """
     _check_shape_and_type_consistency(preds, target)
 
-    probs = torch.nn.functional.softmax(preds.reshape(-1, preds.shape[-1]), dim=1)
+    log_probs = torch.nn.functional.log_softmax(preds.reshape(-1, preds.shape[-1]), dim=1)
     target = target.reshape(-1)
 
     if ignore_index is not None:
@@ -91,8 +91,7 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
     else:
         mask = torch.ones_like(target, dtype=torch.bool)
 
-    probs = probs[torch.arange(target.numel()), target][mask]
-    log_probs = probs.log()
+    log_probs = log_probs[torch.arange(target.numel()), target][mask]
     # A float16 sum overflows to inf once the total exceeds 65504, so accumulate in at least float32
     # (float64 inputs stay float64).
     sum_dtype = torch.promote_types(log_probs.dtype, torch.float32)
