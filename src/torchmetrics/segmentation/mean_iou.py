@@ -32,8 +32,17 @@ class MeanIoU(Metric):
 
     The metric is defined by the overlap between the predicted segmentation and the ground truth, divided by the
     total area covered by the union of the two. The metric can be computed for each class separately or for all
-    classes at once. The metric is optimal at a value of 1 and worst at a value of 0, -1 is returned if class
-    is completely absent both from prediction and the ground truth labels.
+    classes at once. The metric is optimal at a value of 1 and worst at a value of 0.
+
+    .. note::
+        With ``per_class=False``, each valid (sample, class) pair contributes equally to the scalar mean across
+        all updates. A pair is valid when that class appears in the prediction or target for the sample.
+        With ``per_class=True``, each class is averaged over its valid samples, and a class with no valid samples
+        is reported as -1.
+
+        :func:`~torchmetrics.functional.segmentation.mean_iou` averages classes within each sample when
+        ``per_class=False``. Taking the mean of its output weights every sample equally. The two scalar results can
+        differ when samples have different numbers of valid classes.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -93,6 +102,15 @@ class MeanIoU(Metric):
         >>> miou = MeanIoU(num_classes=3, per_class=True, include_background=True, input_format="index")
         >>> miou(preds, target)
         tensor([ 0.3334,  0.3336, -1.0000])
+        >>> from torchmetrics.functional.segmentation import mean_iou
+        >>> preds = torch.tensor([[[0, 0]], [[0, 0]]])
+        >>> target = torch.tensor([[[0, 0]], [[0, 1]]])
+        >>> miou = MeanIoU(num_classes=2, input_format="index")
+        >>> miou.update(preds, target)
+        >>> miou.compute()  # Mean of the three valid sample-class scores: 1.0, 0.5, and 0.0.
+        tensor(0.5000)
+        >>> mean_iou(preds, target, num_classes=2, input_format="index").mean()  # Mean of 1.0 and 0.25.
+        tensor(0.6250)
 
     """
 

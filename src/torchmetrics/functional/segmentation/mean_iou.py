@@ -105,7 +105,12 @@ def mean_iou(
 ) -> Tensor:
     """Calculates the mean Intersection over Union (mIoU) for semantic segmentation.
 
-    Returns -1 if class is completely absent both from predictions and ground truth labels.
+    With ``per_class=False``, returns one score per sample, averaged over the classes present in that sample's
+    prediction or target. With ``per_class=True``, each absent class is reported as -1.
+
+    Taking the mean of the per-sample scores weights samples equally.
+    :class:`~torchmetrics.segmentation.MeanIoU` weights each valid (sample, class) pair equally for its scalar score,
+    so the two averages can differ when the number of valid classes varies by sample.
 
     Args:
         preds: Predictions from model
@@ -119,7 +124,8 @@ def mean_iou(
             or ``"mixed"`` for one one-hot encoded and one index tensor
 
     Returns:
-        The mean IoU score
+        Tensor of shape ``(N,)`` when ``per_class=False``, or ``(N, C)`` when ``per_class=True``.
+        ``C`` counts the classes included in the result.
 
     Example:
         >>> import torch
