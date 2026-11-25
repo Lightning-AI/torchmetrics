@@ -78,7 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `TER` never shifting a block of 10 words in one step, which made it disagree with Tercom and sacrebleu ([#3594](https://github.com/Lightning-AI/torchmetrics/pull/3594))
 - Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
 
-- Fixed unreachable argument validation across ~20 metrics that used `and` instead of `or`, so invalid arguments were silently accepted ([#3471](https://github.com/Lightning-AI/torchmetrics/pull/3471))
+- Fixed unreachable argument validation that used `and` instead of `or`, so invalid `min_precision`, `min_sensitivity`, `min_specificity`, `num_outputs`, `num_groups`, retrieval `top_k` and segmentation `spacing` values were silently accepted ([#3471](https://github.com/Lightning-AI/torchmetrics/pull/3471))
 
 
 ---

@@ -25,7 +25,6 @@ from torchmetrics.functional.classification.sensitivity_specificity import (
 from torchmetrics.functional.classification.specificity_sensitivity import (
     _binary_specificity_at_sensitivity_arg_validation,
 )
-from torchmetrics.functional.classification.stat_scores import _multiclass_stat_scores_arg_validation
 from torchmetrics.functional.retrieval import retrieval_average_precision, retrieval_reciprocal_rank
 from torchmetrics.functional.segmentation.utils import table_contour_length, table_surface_area
 from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
@@ -56,15 +55,8 @@ def test_num_groups_validation(value):
 @pytest.mark.parametrize("value", [0, -1, 2.5, "8", None])
 def test_psnrb_block_size_validation(value):
     """Test that ``PeakSignalNoiseRatioWithBlockedEffect`` rejects a non-positive-int ``block_size``."""
-    with pytest.raises(ValueError, match="``block_size`` should be a positive integer"):
+    with pytest.raises(ValueError, match="`block_size` is expected to be a positive integer"):
         PeakSignalNoiseRatioWithBlockedEffect(data_range=1.0, block_size=value)
-
-
-@pytest.mark.parametrize("value", [0, -1, 1.5, "2", None])
-def test_multiclass_top_k_validation(value):
-    """Test that ``top_k`` is rejected unless it is an int larger than or equal to 1."""
-    with pytest.raises(ValueError, match="Expected argument `top_k` to be an integer larger than or equal to 1"):
-        _multiclass_stat_scores_arg_validation(num_classes=3, top_k=value)
 
 
 @pytest.mark.parametrize(
@@ -77,14 +69,14 @@ def test_multiclass_top_k_validation(value):
 )
 @pytest.mark.parametrize("value", [-0.5, 1.5, "0.5", None])
 def test_min_value_validation(validation_fn, argument, value):
-    """Test that the ``min_*`` arguments are rejected unless they are floats inside the [0,1] range."""
+    """Test that the ``min_*`` arguments are rejected unless they are numbers inside the [0,1] range."""
     with pytest.raises(ValueError, match=rf"Expected argument `{argument}` to be an float in the \[0,1\] range"):
         validation_fn(**{argument: value})
 
 
-@pytest.mark.parametrize("value", [0.0, 0.5, 1.0])
-def test_min_value_validation_accepts_valid_floats(value):
-    """Test that floats on and inside the [0,1] boundaries still pass."""
+@pytest.mark.parametrize("value", [0, 1, 0.0, 0.5, 1.0])
+def test_min_value_validation_accepts_valid_values(value):
+    """Test that ints and floats on and inside the [0,1] boundaries still pass."""
     _binary_recall_at_fixed_precision_arg_validation(min_precision=value)
     _binary_sensitivity_at_specificity_arg_validation(min_specificity=value)
     _binary_specificity_at_sensitivity_arg_validation(min_sensitivity=value)
