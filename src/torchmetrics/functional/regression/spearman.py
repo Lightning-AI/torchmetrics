@@ -33,8 +33,10 @@ def _rank_data(data: Tensor) -> Tensor:
     idx = data.argsort()
     rank[idx[:n]] = torch.arange(1, n + 1, dtype=torch.int32, device=data.device)
     uniq, inv, counts = torch.unique(data, sorted=True, return_inverse=True, return_counts=True)
-    sum_ranks = torch.zeros_like(uniq, dtype=torch.int32)
-    sum_ranks.scatter_add_(0, inv, rank.to(torch.int32))
+    # A tie sums its ranks. int32 wraps past 2**31, and 65536 tied values already do,
+    # so that group's average rank comes back negative.
+    sum_ranks = torch.zeros(uniq.shape, dtype=torch.int64, device=data.device)
+    sum_ranks.scatter_add_(0, inv, rank.to(torch.int64))
     mean_ranks = sum_ranks / counts
     return mean_ranks[inv]
 
