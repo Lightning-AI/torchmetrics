@@ -132,6 +132,7 @@ addopts = [
 ]
 markers = [
   "DDP: mark a test as Distributed Data Parallel",
+  "slow: mark a slow test (e.g. downloads a model), skipped on pull requests that do not touch it",
 ]
 filterwarnings = [
   "ignore::FutureWarning",
