@@ -407,6 +407,22 @@ def test_binary_logauc_validates_inputs_by_default():
 
 
 @pytest.mark.parametrize(
+    ("metric", "args"),
+    [
+        (binary_logauc, {}),
+        (multiclass_logauc, {"num_classes": 3}),
+        (multilabel_logauc, {"num_labels": 3}),
+    ],
+)
+def test_logauc_rejects_zero_fpr_lower_bound(metric, args):
+    """Check that a lower FPR bound of 0, where log10 is undefined and the score would be nan, is rejected."""
+    preds = torch.rand(10, 3) if args else torch.rand(10)
+    target = torch.randint(0, 3, (10,)) if "num_classes" in args else torch.randint(0, 2, preds.shape)
+    with pytest.raises(ValueError, match=r"should be a tuple of two floats in the range \(0, 1\]"):
+        metric(preds, target, fpr_range=(0.0, 0.1), **args)
+
+
+@pytest.mark.parametrize(
     ("metric", "kwargs"),
     [
         (BinaryLogAUC, {"task": "binary"}),
