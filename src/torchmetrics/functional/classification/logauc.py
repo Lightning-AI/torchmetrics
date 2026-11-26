@@ -26,7 +26,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 def _validate_fpr_range(fpr_range: Tuple[float, float]) -> None:
     """Validate the `fpr_range` argument for the logauc metric."""
-    if not isinstance(fpr_range, tuple) and not len(fpr_range) == 2:
+    if not isinstance(fpr_range, tuple) or len(fpr_range) != 2:
         raise ValueError(f"The `fpr_range` should be a tuple of two floats, but got {type(fpr_range)}.")
     if not (0 <= fpr_range[0] < fpr_range[1] <= 1):
         raise ValueError(f"The `fpr_range` should be a tuple of two floats in the range [0, 1], but got {fpr_range}.")

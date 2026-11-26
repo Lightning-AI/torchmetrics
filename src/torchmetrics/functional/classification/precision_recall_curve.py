@@ -13,11 +13,10 @@
 # limitations under the License.
 
 from collections.abc import Sequence
-from typing import List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
-from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -68,7 +67,8 @@ def _binary_clf_curve(
         # the indices associated with the distinct values. We also
         # concatenate a value for the end of the curve.
         distinct_value_indices = torch.where(preds[1:] - preds[:-1])[0]
-        threshold_idxs = F.pad(distinct_value_indices, [0, 1], value=target.size(0) - 1)
+        # torch.cat instead of F.pad, which corrupts 1D tensors of 65535+ elements on MPS (see #1727)
+        threshold_idxs = torch.cat([distinct_value_indices, distinct_value_indices.new_tensor([target.size(0) - 1])])
         target = (target == pos_label).to(torch.long)
         tps = torch.cumsum(target * weight, dim=0)[threshold_idxs]
 
@@ -189,6 +189,30 @@ def _binary_precision_recall_curve_format(
     return preds, target, thresholds
 
 
+# The vectorized update paths materialise an intermediate with one element per
+# (sample, threshold) pair, so a large ``thresholds`` would defeat the constant-memory
+# behaviour that argument is documented to provide. The multi-threshold confusion matrix
+# is a sum over samples, so the vectorized update runs over sample chunks sized to keep
+# that intermediate under this budget, and the chunk results are added up.
+_MAX_VECTORIZED_ELEMENTS = 1_000_000
+
+
+def _update_in_sample_chunks(
+    update_fn: Callable[..., Tensor],
+    preds: Tensor,
+    target: Tensor,
+    *args: Any,
+    elements_per_sample: int,
+) -> Tensor:
+    """Run ``update_fn`` over chunks of samples and add up the resulting confusion matrices."""
+    chunk_size = max(1, _MAX_VECTORIZED_ELEMENTS // elements_per_sample)
+    preds_chunks, target_chunks = preds.split(chunk_size), target.split(chunk_size)
+    state = update_fn(preds_chunks[0], target_chunks[0], *args)
+    for preds_chunk, target_chunk in zip(preds_chunks[1:], target_chunks[1:]):
+        state = state + update_fn(preds_chunk, target_chunk, *args)
+    return state
+
+
 def _binary_precision_recall_curve_update(
     preds: Tensor,
     target: Tensor,
@@ -202,18 +226,22 @@ def _binary_precision_recall_curve_update(
     """
     if thresholds is None:
         return preds, target
-    if preds.numel() <= 50_000:
-        update_fn = _binary_precision_recall_curve_update_vectorized
-    else:
-        update_fn = _binary_precision_recall_curve_update_loop
-    return update_fn(preds, target, thresholds)
+    if preds.numel() > 50_000:
+        return _binary_precision_recall_curve_update_loop(preds, target, thresholds)
+    return _update_in_sample_chunks(
+        _binary_precision_recall_curve_update_vectorized,
+        preds,
+        target,
+        thresholds,
+        elements_per_sample=len(thresholds),
+    )
 
 
 def _binary_precision_recall_curve_update_vectorized(
     preds: Tensor,
     target: Tensor,
     thresholds: Tensor,
-) -> Union[Tensor, tuple[Tensor, Tensor]]:
+) -> Tensor:
     """Return the multi-threshold confusion matrix to calculate the pr-curve with.
 
     This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
@@ -479,11 +507,16 @@ def _multiclass_precision_recall_curve_update(
         return preds, target
     if average == "micro":
         return _binary_precision_recall_curve_update(preds, target, thresholds)
-    if preds.numel() * num_classes <= 1_000_000:
-        update_fn = _multiclass_precision_recall_curve_update_vectorized
-    else:
-        update_fn = _multiclass_precision_recall_curve_update_loop
-    return update_fn(preds, target, num_classes, thresholds)
+    if preds.numel() * num_classes > 1_000_000:
+        return _multiclass_precision_recall_curve_update_loop(preds, target, num_classes, thresholds)
+    return _update_in_sample_chunks(
+        _multiclass_precision_recall_curve_update_vectorized,
+        preds,
+        target,
+        num_classes,
+        thresholds,
+        elements_per_sample=num_classes * len(thresholds),
+    )
 
 
 def _multiclass_precision_recall_curve_update_vectorized(
@@ -491,7 +524,7 @@ def _multiclass_precision_recall_curve_update_vectorized(
     target: Tensor,
     num_classes: int,
     thresholds: Tensor,
-) -> Union[Tensor, tuple[Tensor, Tensor]]:
+) -> Tensor:
     """Return the multi-threshold confusion matrix to calculate the pr-curve with.
 
     This implementation is vectorized and faster than `_binary_precision_recall_curve_update_loop` for small
