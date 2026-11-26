@@ -207,3 +207,25 @@ def test_ter_shifts_a_block_of_ten_words_at_once():
         preds, targets, normalized=False, no_punct=False, asian_support=False, case_sensitive=False
     )
     assert translation_edit_rate(preds, targets) == expected
+
+
+@pytest.mark.parametrize(
+    ("preds", "targets", "no_punctuation"),
+    [
+        (["hello world"], [[""]], False),
+        (["the cat sat on the mat"], [["the cat sat on the mat .", ""]], False),
+        (["a b c d", "the cat sat"], [["a b c d"], [""]], False),
+        (["a b c d", "the cat sat"], [["a b c x"], ["!"]], True),
+    ],
+)
+def test_ter_empty_reference_is_not_a_perfect_score(preds, targets, no_punctuation):
+    """Test that each hypothesis word is charged as an edit against an empty reference, as in sacrebleu."""
+    expected = _reference_sacrebleu_ter(
+        preds,
+        targets,
+        normalized=False,
+        no_punct=no_punctuation,
+        asian_support=False,
+        case_sensitive=False,
+    )
+    assert translation_edit_rate(preds, targets, no_punctuation=no_punctuation) == pytest.approx(expected.item())
