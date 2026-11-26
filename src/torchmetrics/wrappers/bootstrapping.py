@@ -160,7 +160,7 @@ class BootStrapper(WrapperMetric):
         if self.std:
             output_dict["std"] = computed_vals.std(dim=0)
         if self.quantile is not None:
-            output_dict["quantile"] = torch.quantile(computed_vals, self.quantile)
+            output_dict["quantile"] = torch.quantile(computed_vals, self.quantile, dim=0)
         if self.raw:
             output_dict["raw"] = computed_vals
         return output_dict
