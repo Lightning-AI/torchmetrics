@@ -337,7 +337,7 @@ def distance_transform(
         dis_col = (j1.view(-1, 1) - j0.view(1, -1)).abs()
 
         # # calculate distance
-        h, _ = x.shape
+        h, w = x.shape
         if metric == "euclidean":
             dis = ((sampling[0] * dis_row) ** 2 + (sampling[1] * dis_col) ** 2).sqrt()
         if metric == "chessboard":
@@ -348,7 +348,7 @@ def distance_transform(
         # select only the closest distance
         mindis, _ = torch.min(dis, dim=1)
         z = torch.zeros_like(x).view(-1)
-        z[i1 * h + j1] = mindis
+        z[i1 * w + j1] = mindis
         return z.view(x.shape)
 
     if not _SCIPY_AVAILABLE:

@@ -48,7 +48,7 @@ class DaviesBouldinScore(Metric):
         DB = \frac{1}{n_{clusters}} \sum_{i=1}^{n_{clusters}} \max_{j \neq i} \left( \frac{S_i + S_j}{M_{i,j}} \right)
 
     This clustering metric is an intrinsic measure, because it does not rely on ground truth labels for the evaluation.
-    Instead it examines how well the clusters are separated from each other. The score is higher when clusters are dense
+    Instead it examines how well the clusters are separated from each other. The score is lower when clusters are dense
     and well separated, which relates to a standard concept of a cluster.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -76,7 +76,7 @@ class DaviesBouldinScore(Metric):
     """
 
     is_differentiable: bool = True
-    higher_is_better: bool = True
+    higher_is_better: bool = False
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     data: List[Tensor]
