@@ -552,7 +552,7 @@ def _reference_sklearn_stat_scores_multilabel(preds, target, ignore_index, multi
         return res.mean(-1)
     if average == "weighted":
         w = res[:, 0, :] + res[:, 3, :]
-        return (res * (w / w.sum())[:, np.newaxis]).sum(-1)
+        return (res * (w / w.sum(axis=1, keepdims=True))[:, np.newaxis]).sum(-1)
     if average is None or average == "none":
         return np.moveaxis(res, 1, -1)
     return None
@@ -565,7 +565,7 @@ class TestMultilabelStatScores(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("average", ["micro", "macro", None])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_stat_scores(self, ddp, inputs, ignore_index, multidim_average, average):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -598,7 +598,7 @@ class TestMultilabelStatScores(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("average", ["micro", "macro", None])
+    @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_stat_scores_functional(self, inputs, ignore_index, multidim_average, average):
         """Test functional implementation of metric."""
         preds, target = inputs
