@@ -42,6 +42,17 @@ def _reference_sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=No
     return sk_roc_auc_score(target, preds, max_fpr=max_fpr)
 
 
+@pytest.mark.parametrize("max_fpr", [None, 0.25])
+def test_binary_auroc_binned_unit_score(max_fpr):
+    """Binning scores that lie on the threshold grid preserves the exact AUROC."""
+    preds = torch.tensor([1.0, 1.0, 1.0, 0.0])
+    target = torch.tensor([1, 1, 0, 0])
+    expected = binary_auroc(preds, target, max_fpr=max_fpr)
+
+    torch.testing.assert_close(binary_auroc(preds, target, max_fpr=max_fpr, thresholds=2), expected)
+    torch.testing.assert_close(BinaryAUROC(max_fpr=max_fpr, thresholds=2)(preds, target), expected)
+
+
 @pytest.mark.parametrize("inputs", [_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]])
 class TestBinaryAUROC(MetricTester):
     """Test class for `BinaryAUROC` metric."""
