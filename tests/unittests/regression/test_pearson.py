@@ -18,6 +18,7 @@ import torch
 from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
+from torchmetrics.regression.concordance import ConcordanceCorrCoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
@@ -222,6 +223,84 @@ def test_final_aggregation_with_empty_devices():
     assert torch.allclose(var_y_cur, var_y_exp), f"var_y: {var_y_cur} (expected: {var_y_exp})"
     assert torch.allclose(corr_xy_cur, corr_xy_exp), f"corr_xy: {corr_xy_cur} (expected: {corr_xy_exp})"
     assert torch.allclose(n_total_cur, n_total_exp), f"n_total: {n_total_cur} (expected: {n_total_exp})"
+
+
+@pytest.mark.parametrize("metric_class", [PearsonCorrCoef, ConcordanceCorrCoef])
+@pytest.mark.parametrize("num_outputs", [1, 2])
+@pytest.mark.parametrize("sizes", [(1, 1), (3, 5), (1, 2, 3), (0, 2, 3), (2, 0, 3), (2, 3, 0)])
+def test_correlation_aggregation_with_constant_shards(metric_class, num_outputs, sizes):
+    """Locally constant shards can have nonzero global variance and perfect correlation."""
+    metrics = []
+    for rank, size in enumerate(sizes):
+        metric = metric_class(num_outputs=num_outputs)
+        if size:
+            data = torch.full((size, num_outputs), float(rank + 1))
+            data = data * torch.arange(1, num_outputs + 1) + 10
+            metric.update(data, data)
+        metrics.append(metric)
+
+    # Stack states as the distributed synchronization does, without requiring a process group.
+    merged = metrics[next(i for i, size in enumerate(sizes) if size)].clone()
+    for name in merged.metric_state:
+        setattr(merged, name, torch.stack([getattr(metric, name) for metric in metrics]))
+
+    result = merged.compute()
+    torch.testing.assert_close(result, torch.ones(num_outputs).squeeze())
+
+
+@pytest.mark.parametrize("metric_class", [PearsonCorrCoef, ConcordanceCorrCoef])
+@pytest.mark.parametrize(("dtype", "scale"), [(torch.float32, 1.0), (torch.float32, 1e-18), (torch.float64, 1e-100)])
+def test_correlation_aggregation_with_single_sample_shards(metric_class, dtype, scale):
+    """Global correlation can be negative even though each shard has zero variance."""
+    preds = scale * torch.tensor([[-1.0, 0.0], [0.0, 1.0], [1.0, -1.0]], dtype=dtype)
+    target = preds.flip(0)
+    metrics = [metric_class(num_outputs=2).set_dtype(dtype) for _ in range(3)]
+    for metric, x, y in zip(metrics, preds, target):
+        metric.update(x.unsqueeze(0), y.unsqueeze(0))
+
+    merged = metrics[0].clone()
+    for name in merged.metric_state:
+        setattr(merged, name, torch.stack([getattr(metric, name) for metric in metrics]))
+
+    torch.testing.assert_close(merged.compute(), torch.tensor([-1.0, 0.5], dtype=dtype))
+
+
+@pytest.mark.parametrize("metric_class", [PearsonCorrCoef, ConcordanceCorrCoef])
+def test_correlation_aggregation_with_mixed_constant_outputs(metric_class):
+    """Each variable and output can independently need the between-device scale."""
+    preds = torch.tensor([[0.0, 0.0], [0.0, 1.0], [1.0, 2.0], [1.0, 3.0]])
+    target = preds.flip(1)
+    expected = metric_class(num_outputs=2)(preds, target)
+    metrics = [metric_class(num_outputs=2) for _ in range(2)]
+    for metric, x, y in zip(metrics, preds.chunk(2), target.chunk(2)):
+        metric.update(x, y)
+
+    merged = metrics[0].clone()
+    for name in merged.metric_state:
+        setattr(merged, name, torch.stack([getattr(metric, name) for metric in metrics]))
+
+    torch.testing.assert_close(merged.compute(), expected)
+
+
+@pytest.mark.parametrize("metric_class", [PearsonCorrCoef, ConcordanceCorrCoef])
+@pytest.mark.parametrize(
+    "shards",
+    [
+        (torch.tensor([1.0, 1.0, 1.0, -1.0]), torch.zeros(4996)),
+        (torch.cat([torch.ones(1), torch.zeros(1959)]), torch.full((1960,), 0.02)),
+    ],
+)
+def test_correlation_aggregation_preserves_nonzero_scale(metric_class, shards):
+    """Mean shifts must not inflate a nonzero scale and trigger the near-zero variance threshold."""
+    metrics = [metric_class() for _ in shards]
+    for metric, data in zip(metrics, shards):
+        metric.update(data, data)
+
+    merged = metrics[0].clone()
+    for name in merged.metric_state:
+        setattr(merged, name, torch.stack([getattr(metric, name) for metric in metrics]))
+
+    torch.testing.assert_close(merged.compute(), torch.tensor(1.0))
 
 
 @pytest.mark.parametrize(("dtype", "scale"), [(torch.float16, 1e-4), (torch.float32, 1e-32), (torch.float64, 1e-256)])

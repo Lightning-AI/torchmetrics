@@ -94,6 +94,14 @@ def _final_aggregation(
         vy1 = var_y
         cxy1 = corr_xy
         n1 = nb
+    # Locally constant inputs can still have nonzero global variance. In that case, use the
+    # nonempty devices' mean deviations as the scale, preserving existing nonzero scales.
+    max_abs_dev_x = torch.where(
+        max_abs_dev_x == 0, torch.where(nbs > 0, (means_x - mean_x).abs(), 0).amax(dim=0), max_abs_dev_x
+    )
+    max_abs_dev_y = torch.where(
+        max_abs_dev_y == 0, torch.where(nbs > 0, (means_y - mean_y).abs(), 0).amax(dim=0), max_abs_dev_y
+    )
     return mean_x, mean_y, max_abs_dev_x, max_abs_dev_y, var_x, var_y, corr_xy, nb
 
 
