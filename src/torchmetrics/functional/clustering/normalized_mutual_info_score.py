@@ -16,12 +16,11 @@ from typing import Literal
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
+from torchmetrics.functional.clustering.mutual_info_score import _mutual_info_score_compute, _mutual_info_score_update
 from torchmetrics.functional.clustering.utils import (
     _validate_average_method_arg,
     calculate_entropy,
     calculate_generalized_mean,
-    check_cluster_labels,
 )
 
 
@@ -46,10 +45,12 @@ def normalized_mutual_info_score(
         tensor(0.7919)
 
     """
-    check_cluster_labels(preds, target)
     _validate_average_method_arg(average_method)
-    mutual_info = mutual_info_score(preds, target)
-    if torch.allclose(mutual_info, torch.tensor(0.0), atol=torch.finfo().eps):
+    contingency = _mutual_info_score_update(preds, target)
+    if contingency.numel() == 0 or contingency.shape == (1, 1):
+        return torch.tensor(1.0, device=preds.device)
+    mutual_info = _mutual_info_score_compute(contingency)
+    if torch.allclose(mutual_info, torch.zeros_like(mutual_info), atol=torch.finfo(mutual_info.dtype).eps):
         return mutual_info
 
     normalizer = calculate_generalized_mean(

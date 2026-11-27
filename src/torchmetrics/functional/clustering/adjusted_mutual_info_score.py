@@ -47,16 +47,16 @@ def adjusted_mutual_info_score(
     """
     _validate_average_method_arg(average_method)
     contingency = _mutual_info_score_update(preds, target)
+    if contingency.numel() == 0 or contingency.shape == (1, 1):
+        return torch.tensor(1.0, device=preds.device)
     mutual_info = _mutual_info_score_compute(contingency)
     expected_mutual_info = expected_mutual_info_score(contingency, target.numel())
     normalizer = calculate_generalized_mean(
         torch.stack([calculate_entropy(preds), calculate_entropy(target)]), average_method
     )
     denominator = normalizer - expected_mutual_info
-    if denominator < 0:
-        denominator = torch.min(torch.tensor([denominator, -torch.finfo(denominator.dtype).eps]))
-    else:
-        denominator = torch.max(torch.tensor([denominator, torch.finfo(denominator.dtype).eps]))
+    eps = torch.finfo(denominator.dtype).eps
+    denominator = torch.where(denominator < 0, denominator.clamp(max=-eps), denominator.clamp(min=eps))
 
     return (mutual_info - expected_mutual_info) / denominator
 

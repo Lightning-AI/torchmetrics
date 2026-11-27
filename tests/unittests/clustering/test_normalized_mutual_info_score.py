@@ -27,6 +27,29 @@ from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target
 seed_all(42)
 
 
+@pytest.mark.parametrize("average_method", ["min", "geometric", "arithmetic", "max"])
+@pytest.mark.parametrize("num_samples", [0, 1, 5])
+@pytest.mark.parametrize(
+    "device",
+    [
+        "cpu",
+        pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is unavailable")),
+    ],
+)
+def test_equivalent_degenerate_clusterings(average_method, num_samples, device):
+    """Empty and single-cluster partitions agree perfectly even when their label IDs differ."""
+    preds = torch.zeros(num_samples, dtype=torch.long, device=device)
+    target = torch.full_like(preds, -7)
+    expected = torch.tensor(
+        sklearn_nmi(preds.cpu(), target.cpu(), average_method=average_method), device=device, dtype=torch.float32
+    )
+    torch.testing.assert_close(normalized_mutual_info_score(preds, target, average_method), expected)
+    metric = NormalizedMutualInfoScore(average_method=average_method).to(device)
+    for pred_batch, target_batch in zip(preds.split(2), target.split(2)):
+        metric.update(pred_batch, target_batch)
+    torch.testing.assert_close(metric.compute(), expected)
+
+
 @pytest.mark.parametrize(
     ("preds", "target"),
     [
