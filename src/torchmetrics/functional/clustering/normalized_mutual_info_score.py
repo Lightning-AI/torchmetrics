@@ -48,6 +48,13 @@ def normalized_mutual_info_score(
     """
     check_cluster_labels(preds, target)
     _validate_average_method_arg(average_method)
+
+    # Special limit case: both labelings have a single cluster (zero entropy). Since the two
+    # labelings then trivially agree, this is a perfect match and the score is 1.0. Matches the
+    # convention used by :func:`sklearn.metrics.normalized_mutual_info_score`.
+    if preds.unique().numel() == target.unique().numel() == 1:
+        return torch.tensor(1.0, dtype=torch.float32, device=preds.device)
+
     mutual_info = mutual_info_score(preds, target)
     if torch.allclose(mutual_info, torch.tensor(0.0), atol=torch.finfo().eps):
         return mutual_info
