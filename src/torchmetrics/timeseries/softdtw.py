@@ -20,6 +20,7 @@ from torch import Tensor
 
 from torchmetrics import Metric
 from torchmetrics.functional.timeseries.softdtw import soft_dtw
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -115,8 +116,8 @@ class SoftDTW(Metric):
     def compute(self) -> torch.Tensor:
         """Computes the Procrustes Disparity."""
         return soft_dtw(
-            torch.cat(self.pred_list, dim=0),
-            torch.cat(self.gt_list, dim=0),
+            dim_zero_cat(self.pred_list),
+            dim_zero_cat(self.gt_list),
             gamma=self.gamma,
             distance_fn=self.distance_fn,
             reduction=self.reduction,

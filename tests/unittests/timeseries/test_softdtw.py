@@ -16,12 +16,12 @@ from functools import partial
 import pysdtw
 import pytest
 import torch
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests._helpers import seed_all
-from unittests._helpers.testers import MetricTester
 
 from torchmetrics.functional.timeseries.softdtw import soft_dtw
 from torchmetrics.timeseries.softdtw import SoftDTW
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -79,6 +79,8 @@ class TestSoftDTW(MetricTester):
             SoftDTW,
             partial(_reference_softdtw, gamma=gamma, distance_fn=distance_fn, reduction=reduction),
             metric_args={"gamma": gamma, "distance_fn": distance_fn, "reduction": reduction},
+            # with reduction="none", gathering across ranks reorders the per-sample scores
+            check_ddp_sorting=reduction == "none",
         )
 
     @pytest.mark.parametrize("gamma", [0.1, 0.5, 1.0])

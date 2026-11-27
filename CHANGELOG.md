@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added support for PyTorch 2.11-2.15 and Python 3.13 ([#3653](https://github.com/Lightning-AI/torchmetrics/pull/3653))
+- Added `SoftDTW` metric to the new timeseries domain ([#3287](https://github.com/Lightning-AI/torchmetrics/pull/3287))
 
 
 ### Changed
