@@ -1,4 +1,4 @@
-.PHONY: clean test get-sphinx-template docs live-docs env data uv_env
+.PHONY: clean test env data uv_env
 
 export TOKENIZERS_PARALLELISM=false
 export FREEZE_REQUIREMENTS=1
@@ -49,20 +49,6 @@ test: clean env data uv_env
 	cd src && $(RUN_CMD) -m pytest torchmetrics
 	cd tests && $(RUN_CMD) -m pytest unittests -v --cov=torchmetrics
 	cd tests && $(RUN_CMD) -m coverage report
-
-get-sphinx-template:
-	$(PIP_CMD) -q awscli
-	$(RUN_CMD) -m awscli s3 sync --no-sign-request s3://sphinx-packages/ dist/
-	$(PIP_CMD) lai-sphinx-theme -q -U -f dist/
-
-docs: clean get-sphinx-template
-	$(PIP_CMD) -e . --quiet -r requirements/_docs.txt
-	# apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
-	cd docs && make USE_UV=$(USE_UV) html --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
-
-live-docs: get-sphinx-template
-	$(PIP_CMD) -e . --quiet -r requirements/_docs.txt
-	cd docs && make livehtml --jobs $(nproc)
 
 env:
 	$(PIP_CMD) -e . -U -r requirements/_devel.txt

@@ -35,20 +35,6 @@ def my_func(param_a: int, param_b: Optional[float] = None) -> str:
     return str(param_a + p)
 ```
 
-## Building Docs
+## Publishing
 
-When updating the docs, make sure to build them first locally and visually inspect the html files in your browser for
-formatting errors. In certain cases, a missing blank line or a wrong indent can lead to a broken layout.
-Run this command in the root folder:
-
-```bash
-make docs
-```
-
-and open `docs/build/html/index.html` in your browser.
-
-Notes:
-
-- You need to have LaTeX installed for rendering math equations. You can for example install TeXLive with the appropriate extras by doing one of the following:
-  - on Ubuntu (Linux) run `sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures`
-  - use the [RTD docker image](https://hub.docker.com/r/readthedocs/build)
+The RST pages and Python docstrings in this repository are the source for [grid's external docs sync](https://github.com/gridai/grid/blob/master/.github/workflows/external-docs-sync.yml). It builds the versioned [TorchMetrics documentation](https://lightning.ai/docs/torchmetrics/stable) after releases. Sphinx is still used for API reference extraction in that pipeline.
