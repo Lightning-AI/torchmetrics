@@ -403,7 +403,8 @@ def _translation_edit_rate(pred_words: list[str], target_words: list[str]) -> Te
 
     """
     if len(target_words) == 0:
-        return tensor(0.0)
+        # every hypothesis word has to be deleted to match an empty reference
+        return tensor(float(len(pred_words)))
 
     cached_edit_distance = _LevenshteinEditDistance(target_words)
     num_shifts = 0
