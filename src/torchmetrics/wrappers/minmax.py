@@ -93,6 +93,8 @@ class MinMaxMetric(WrapperMetric):
         val = self._base_metric.compute()
         if not self._is_suitable_val(val):
             raise RuntimeError(f"Returned value from base metric should be a float or scalar tensor, but got {val}.")
+        if not isinstance(val, Tensor):
+            val = torch.tensor(val, dtype=self.max_val.dtype, device=self.max_val.device)
         self.max_val = val if self.max_val.to(val.device) < val else self.max_val.to(val.device)
         self.min_val = val if self.min_val.to(val.device) > val else self.min_val.to(val.device)
         return {"raw": val, "max": self.max_val, "min": self.min_val}
