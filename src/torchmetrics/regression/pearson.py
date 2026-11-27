@@ -160,8 +160,8 @@ class PearsonCorrCoef(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not isinstance(num_outputs, int) and num_outputs < 1:
-            raise ValueError("Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
+        if not isinstance(num_outputs, int) or num_outputs < 1:
+            raise ValueError(f"Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
         self.num_outputs = num_outputs
 
         self.add_state("mean_x", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)

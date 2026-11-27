@@ -549,7 +549,7 @@ def table_contour_length(spacing: tuple[int, int], device: Optional[torch.device
                   [2, 1]]]])
 
     """
-    if not isinstance(spacing, tuple) and len(spacing) != 2:
+    if not isinstance(spacing, tuple) or len(spacing) != 2:
         raise ValueError("The spacing must be a tuple of length 2.")
 
     first, second = spacing  # spacing along the first and second spatial dimension respectively
@@ -622,7 +622,7 @@ def table_surface_area(spacing: tuple[int, int, int], device: Optional[torch.dev
                    [  2,   1]]]]])
 
     """
-    if not isinstance(spacing, tuple) and len(spacing) != 3:
+    if not isinstance(spacing, tuple) or len(spacing) != 3:
         raise ValueError("The spacing must be a tuple of length 3.")
 
     zeros = [0.0, 0.0, 0.0]

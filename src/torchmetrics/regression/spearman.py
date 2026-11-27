@@ -88,7 +88,7 @@ class SpearmanCorrCoef(Metric):
             "Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer."
             " For large datasets, this may lead to large memory footprint."
         )
-        if not isinstance(num_outputs, int) and num_outputs < 1:
+        if not isinstance(num_outputs, int) or num_outputs < 1:
             raise ValueError(f"Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
         self.num_outputs = num_outputs
 
