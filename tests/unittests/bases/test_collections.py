@@ -220,6 +220,39 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
         assert new_metric_collection[k]  # check that the keys are valid even with prefix and postfix
 
 
+@pytest.mark.parametrize(
+    ("clone_kwargs", "expected"),
+    [
+        ({}, "train_DummyMetricSum_epoch"),
+        ({"prefix": "val_"}, "val_DummyMetricSum_epoch"),
+        ({"prefix": ""}, "DummyMetricSum_epoch"),
+        ({"postfix": ""}, "train_DummyMetricSum"),
+        ({"prefix": "", "postfix": ""}, "DummyMetricSum"),
+    ],
+)
+def test_metric_collection_clone_empty_affix(clone_kwargs, expected):
+    """An empty string clears the affix, `None` (the default) keeps it.
+
+    `clone` tested the arguments for truthiness, so `clone(prefix="")` skipped the assignment
+    entirely and silently kept the old prefix instead of clearing it.
+    """
+    collection = MetricCollection([DummyMetricSum()], prefix="train_", postfix="_epoch")
+
+    cloned = collection.clone(**clone_kwargs)
+
+    assert list(cloned.keys()) == [expected]
+
+
+def test_metric_collection_clone_empty_affix_computes():
+    """The cleared name is what `compute` returns, not just what `keys` reports."""
+    collection = MetricCollection([DummyMetricDiff()], prefix="train_", postfix="_epoch")
+
+    cloned = collection.clone(prefix="", postfix="")
+    cloned.update(5)
+
+    assert list(cloned.compute()) == ["DummyMetricDiff"]
+
+
 def test_metric_collection_repr():
     """Test MetricCollection."""
 
