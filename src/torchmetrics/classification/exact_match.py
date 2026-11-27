@@ -98,7 +98,6 @@ class MulticlassExactMatch(Metric):
 
     """
 
-    total: Tensor
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -130,8 +129,8 @@ class MulticlassExactMatch(Metric):
         )
         self.add_state(
             "total",
-            torch.zeros(1, dtype=torch.long),
-            dist_reduce_fx="sum" if self.multidim_average == "global" else "mean",
+            torch.zeros(1, dtype=torch.long) if self.multidim_average == "global" else [],
+            dist_reduce_fx="sum" if self.multidim_average == "global" else "cat",
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:
@@ -148,9 +147,9 @@ class MulticlassExactMatch(Metric):
                 raise TypeError("Expected `self.correct` to be a list in samplewise mode.")
             self.correct.append(correct)
 
-            if not isinstance(self.total, Tensor):
-                raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
-            self.total = total
+            if not isinstance(self.total, list):
+                raise TypeError("Expected `self.total` to be a list in samplewise mode.")
+            self.total.append(total)
         else:
             if not isinstance(self.correct, Tensor):
                 raise TypeError("Expected `self.correct` to be a tensor in global mode.")
@@ -163,12 +162,13 @@ class MulticlassExactMatch(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
+        total = dim_zero_cat(self.total) if isinstance(self.total, list) else self.total
 
         # Validate that `correct` and `total` are tensors
-        if not isinstance(correct, Tensor) or not isinstance(self.total, Tensor):
+        if not isinstance(correct, Tensor) or not isinstance(total, Tensor):
             raise TypeError("Expected `correct` and `total` to be tensors after processing.")
 
-        return _exact_match_reduce(correct, self.total)
+        return _exact_match_reduce(correct, total)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -279,7 +279,6 @@ class MultilabelExactMatch(Metric):
 
     """
 
-    total: Tensor
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -314,8 +313,8 @@ class MultilabelExactMatch(Metric):
         )
         self.add_state(
             "total",
-            torch.zeros(1, dtype=torch.long),
-            dist_reduce_fx="sum" if self.multidim_average == "global" else "mean",
+            torch.zeros(1, dtype=torch.long) if self.multidim_average == "global" else [],
+            dist_reduce_fx="sum" if self.multidim_average == "global" else "cat",
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:
@@ -340,9 +339,9 @@ class MultilabelExactMatch(Metric):
                 raise TypeError("Expected `self.correct` to be a list in samplewise mode.")
             self.correct.append(correct)
 
-            if not isinstance(self.total, Tensor):
-                raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
-            self.total = total
+            if not isinstance(self.total, list):
+                raise TypeError("Expected `self.total` to be a list in samplewise mode.")
+            self.total.append(total)
         else:
             if not isinstance(self.correct, Tensor):
                 raise TypeError("Expected `self.correct` to be a tensor in global mode.")
@@ -355,12 +354,13 @@ class MultilabelExactMatch(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
+        total = dim_zero_cat(self.total) if isinstance(self.total, list) else self.total
 
         # Validate that `correct` and `total` are tensors
-        if not isinstance(correct, Tensor) or not isinstance(self.total, Tensor):
+        if not isinstance(correct, Tensor) or not isinstance(total, Tensor):
             raise TypeError("Expected `correct` and `total` to be tensors after processing.")
 
-        return _exact_match_reduce(correct, self.total)
+        return _exact_match_reduce(correct, total)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

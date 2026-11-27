@@ -43,14 +43,20 @@ def _multiclass_exact_match_update(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> tuple[Tensor, Tensor]:
-    """Compute the statistics."""
+    """Compute the statistics.
+
+    Samples whose targets are all ignored are excluded from both ``correct`` and ``total``.
+
+    """
+    valid = torch.ones(preds.shape[0], dtype=torch.bool, device=preds.device)
     if ignore_index is not None:
         preds = preds.clone()
         preds[target == ignore_index] = ignore_index
+        valid = (target != ignore_index).any(1)
 
-    correct = (preds == target).sum(1) == preds.shape[1]
+    correct = ((preds == target).sum(1) == preds.shape[1]) & valid
     correct = correct if multidim_average == "samplewise" else correct.sum()
-    total = torch.tensor(preds.shape[0] if multidim_average == "global" else 1, device=correct.device)
+    total = valid.long() if multidim_average == "samplewise" else valid.sum()
     return correct, total
 
 
@@ -128,17 +134,24 @@ def _multilabel_exact_match_update(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> tuple[Tensor, Tensor]:
-    """Compute the statistics."""
+    """Compute the statistics.
+
+    Label sets whose labels are all ignored are excluded from both ``correct`` and ``total``.
+
+    """
+    valid = torch.ones(target.shape[0], target.shape[2], dtype=torch.bool, device=target.device)
     if ignore_index is not None:
         mask = target == -1
         target = torch.where(mask, preds.long(), target)
+        valid = ~mask.all(1)
 
     if multidim_average == "global":
         preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
         target = torch.movedim(target, 1, -1).reshape(-1, num_labels)
+        valid = valid.reshape(-1)
 
-    correct = ((preds == target).sum(1) == num_labels).sum(dim=-1)
-    total = torch.tensor(preds.shape[0 if multidim_average == "global" else 2], device=correct.device)
+    correct = (((preds == target).sum(1) == num_labels) & valid).sum(dim=-1)
+    total = valid.sum(dim=-1)
     return correct, total
 
 
