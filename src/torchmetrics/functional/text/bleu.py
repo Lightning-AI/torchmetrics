@@ -89,7 +89,9 @@ def _bleu_score_update(
         preds_len += len(pred)
         target_len_list = [len(tgt) for tgt in targets]
         target_len_diff = [abs(len(pred) - x) for x in target_len_list]
-        target_len += target_len_list[target_len_diff.index(min(target_len_diff))]
+        # on a tie the shorter reference is used, as in NLTK and SacreBLEU
+        closest_len_diff = min(target_len_diff)
+        target_len += min(x for x, diff in zip(target_len_list, target_len_diff) if diff == closest_len_diff)
         preds_counter: Counter = _count_ngram(pred, n_gram)
         target_counter: Counter = Counter()
 
@@ -129,7 +131,8 @@ def _bleu_score_compute(
 
     """
     device = numerator.device
-    if min(numerator) == 0.0:
+    # a zero count for a higher n-gram order only zeroes the score when smoothing is off
+    if numerator[0] == 0.0 or (not smooth and min(numerator) == 0.0):
         return tensor(0.0, device=device)
 
     if smooth:
