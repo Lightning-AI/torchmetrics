@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed MSE/RMSE overflow for pairs of `uint8`, `int8`, and `int16` input tensors ([#3601](https://github.com/Lightning-AI/torchmetrics/issues/3601))
+
 - Fixed `BootStrapper` computing the `quantile` over all outputs at once instead of per output for metrics with non-scalar results ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
 
 - Fixed `Metric` syncing deadlocking for `dist_reduce_fx=None` list states when ranks hold a different number of entries, which now raises an error instead ([#3503](https://github.com/Lightning-AI/torchmetrics/pull/3503))

@@ -34,6 +34,11 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor, num_outputs: int) 
     if num_outputs == 1:
         preds = preds.view(-1)
         target = target.view(-1)
+    short_int_dtypes = (torch.uint8, torch.int8, torch.int16)
+    if preds.dtype in short_int_dtypes and target.dtype in short_int_dtypes:
+        # Squares of 8-/16-bit differences fit in int64.
+        preds = preds.to(torch.int64)
+        target = target.to(torch.int64)
     diff = preds - target
     sum_squared_error = torch.sum(diff * diff, dim=0)
     return sum_squared_error, target.shape[0]

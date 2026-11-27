@@ -390,3 +390,59 @@ def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
     """Test that error is raised on wrong extra arguments."""
     with pytest.raises(ValueError, match=error_msg):
         metric_class(**arguments)
+
+
+@pytest.mark.parametrize(
+    ("pred_dtype", "target_dtype"),
+    [
+        pytest.param(torch.uint8, torch.uint8, id="uint8"),
+        pytest.param(torch.int8, torch.int8, id="int8"),
+        pytest.param(torch.int16, torch.int16, id="int16"),
+        pytest.param(torch.uint8, torch.int8, id="uint8-int8"),
+        pytest.param(torch.int8, torch.int16, id="int8-int16"),
+        pytest.param(torch.int32, torch.int32, id="int32-control"),
+        pytest.param(torch.int64, torch.int64, id="int64-control"),
+    ],
+)
+@pytest.mark.parametrize("squared", [True, False])
+@pytest.mark.parametrize("num_outputs", [1, 2])
+@pytest.mark.parametrize("api", ["functional", "stateful", "stateful-double"])
+def test_mse_integer_precision(pred_dtype, target_dtype, squared, num_outputs, api):
+    """Check short-integer overflow and preserve previously valid wider-integer precision."""
+    if pred_dtype == torch.int64:
+        residuals = torch.tensor([[1, 3], [5, 7], [9, 11]], dtype=torch.int64)
+        target = torch.full((3, 2), 2**60, dtype=target_dtype)
+        preds = target + residuals
+        expected_error = residuals.double().square()
+    elif pred_dtype == torch.int32:
+        preds = torch.tensor([[46339, 46337], [46335, 46333], [46331, 46329]], dtype=pred_dtype)
+        target = torch.zeros_like(preds)
+        expected_error = preds.double().square()
+    else:
+        middle = 300 if pred_dtype == torch.int16 else 12
+        preds = torch.tensor(
+            [[torch.iinfo(pred_dtype).min, middle], [torch.iinfo(pred_dtype).max, 7], [3, 4]], dtype=pred_dtype
+        )
+        target = torch.tensor(
+            [[torch.iinfo(target_dtype).max, 0], [torch.iinfo(target_dtype).min, 0], [0, 0]], dtype=target_dtype
+        )
+        expected_error = (preds.double() - target.double()).square()
+    expected = expected_error.mean() if num_outputs == 1 else expected_error.mean(dim=0)
+    if not squared:
+        expected = expected.sqrt()
+
+    if api == "functional":
+        actual = mean_squared_error(preds, target, squared=squared, num_outputs=num_outputs)
+        expected_dtype = torch.get_default_dtype()
+    else:
+        metric = MeanSquaredError(squared=squared, num_outputs=num_outputs)
+        expected_dtype = torch.float64 if api == "stateful-double" else torch.float32
+        metric = metric.to(expected_dtype)
+        metric.update(preds[:1], target[:1])
+        metric.update(preds[1:], target[1:])
+        actual = metric.compute()
+    assert actual.dtype == expected_dtype
+    if api == "stateful-double":
+        torch.testing.assert_close(actual, expected, rtol=1e-12, atol=0)
+    else:
+        torch.testing.assert_close(actual, expected.to(expected_dtype))
