@@ -36,6 +36,11 @@ def _symmetric_mean_absolute_percentage_error_update(
     """
     _check_same_shape(preds, target)
 
+    if preds.dtype in (torch.float16, torch.bfloat16):
+        preds = preds.float()
+    if target.dtype in (torch.float16, torch.bfloat16):
+        target = target.float()
+
     abs_diff = torch.abs(preds - target)
     abs_per_error = abs_diff / torch.clamp(torch.abs(target) + torch.abs(preds), min=epsilon)
 
