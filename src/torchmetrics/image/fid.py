@@ -286,7 +286,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor) -> Te
 
 
 # Map feature strings to valid configurations
-FEATURE_MAP = {
+FEATURE_MAP: dict[str, tuple[type[Union[NoTrainInceptionV3, NoTrainDinoV2]], str, str, tuple[int, int, int]]] = {
     "inception-64": (NoTrainInceptionV3, "64", "64", (3, 299, 299)),
     "inception-192": (NoTrainInceptionV3, "192", "192", (3, 299, 299)),
     "inception-768": (NoTrainInceptionV3, "768", "768", (3, 299, 299)),
