@@ -14,6 +14,7 @@
 from typing import Union
 
 import pytest
+import torch
 
 from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.text.mer import MatchErrorRate
@@ -70,3 +71,11 @@ class TestMatchErrorRate(TextTester):
             metric_module=MatchErrorRate,
             metric_functional=match_error_rate,
         )
+
+
+def test_mer_insertion_and_deletion():
+    """Test a sentence with both a deletion and an insertion: two edits over four alignment slots."""
+    preds, target = "sat the cat", "the cat sat"
+    expected = torch.tensor(0.5)
+    assert torch.allclose(match_error_rate(preds, target), expected)
+    assert torch.allclose(match_error_rate(preds, target), torch.tensor(_reference_jiwer_mer(preds, target)).float())

@@ -15,7 +15,7 @@ from typing import Union
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.text.helper import _edit_distance
+from torchmetrics.functional.text.helper import _edit_distance_operations
 
 
 def _wip_update(
@@ -29,7 +29,7 @@ def _wip_update(
         target: Reference(s) for each speech input as a string or list of strings
 
     Returns:
-        Number of edit operations to get from the reference to the prediction, summed over all samples
+        Number of words of the references that are kept in the predictions, summed over all samples
         Number of words overall references
         Number of words overall prediction
 
@@ -38,26 +38,24 @@ def _wip_update(
         preds = [preds]
     if isinstance(target, str):
         target = [target]
-    total = tensor(0.0)
-    errors = tensor(0.0)
+    hits = tensor(0.0)
     target_total = tensor(0.0)
     preds_total = tensor(0.0)
     for pred, tgt in zip(preds, target):
         pred_tokens = pred.split()
         target_tokens = tgt.split()
-        errors += _edit_distance(pred_tokens, target_tokens)
+        hits += _edit_distance_operations(pred_tokens, target_tokens)[0]
         target_total += len(target_tokens)
         preds_total += len(pred_tokens)
-        total += max(len(target_tokens), len(pred_tokens))
 
-    return errors - total, target_total, preds_total
+    return hits, target_total, preds_total
 
 
-def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> Tensor:
+def _wip_compute(hits: Tensor, target_total: Tensor, preds_total: Tensor) -> Tensor:
     """Compute the Word Information Preserved.
 
     Args:
-        errors: Number of edit operations to get from the reference to the prediction, summed over all samples
+        hits: Number of words of the references that are kept in the predictions, summed over all samples
         target_total: Number of words overall references
         preds_total: Number of words overall prediction
 
@@ -65,7 +63,7 @@ def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
         Word Information Preserved score
 
     """
-    return (errors / target_total) * (errors / preds_total)
+    return (hits / target_total) * (hits / preds_total)
 
 
 def word_information_preserved(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
@@ -89,5 +87,5 @@ def word_information_preserved(preds: Union[str, list[str]], target: Union[str, 
         tensor(0.3472)
 
     """
-    errors, reference_total, prediction_total = _wip_update(preds, target)
-    return _wip_compute(errors, reference_total, prediction_total)
+    hits, reference_total, prediction_total = _wip_update(preds, target)
+    return _wip_compute(hits, reference_total, prediction_total)

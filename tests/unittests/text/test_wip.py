@@ -14,6 +14,7 @@
 from typing import Union
 
 import pytest
+import torch
 
 from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.text.wip import WordInfoPreserved
@@ -68,3 +69,13 @@ class TestWordInfoPreserved(TextTester):
             metric_module=WordInfoPreserved,
             metric_functional=word_information_preserved,
         )
+
+
+def test_wip_insertion_and_deletion():
+    """Test a sentence with both a deletion and an insertion: two of three words are hits on both sides."""
+    preds, target = "sat the cat", "the cat sat"
+    expected = torch.tensor((2 / 3) ** 2)
+    assert torch.allclose(word_information_preserved(preds, target), expected)
+    assert torch.allclose(
+        word_information_preserved(preds, target), torch.tensor(_reference_jiwer_wip(preds, target)).float()
+    )

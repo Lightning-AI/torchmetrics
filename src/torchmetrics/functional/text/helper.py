@@ -351,6 +351,41 @@ def _edit_distance(prediction_tokens: list[str], reference_tokens: list[str]) ->
     return dp[-1][-1]
 
 
+def _edit_distance_operations(prediction_tokens: list[str], reference_tokens: list[str]) -> tuple[int, int, int, int]:
+    """Count the hits, substitutions, deletions and insertions of a minimal edit-distance alignment.
+
+    Among the alignments with the minimal number of edits the one with the most hits is chosen.
+
+    Args:
+        prediction_tokens: A tokenized predicted sentence
+        reference_tokens: A tokenized reference sentence
+    Returns:
+        Number of hits, substitutions, deletions and insertions needed to turn the reference into the prediction
+
+    """
+    num_pred, num_ref = len(prediction_tokens), len(reference_tokens)
+    # dp[i][j] = (edits, -hits) for the first i prediction tokens and the first j reference tokens
+    dp = [[(0, 0)] * (num_ref + 1) for _ in range(num_pred + 1)]
+    for i in range(1, num_pred + 1):
+        dp[i][0] = (i, 0)
+    for j in range(1, num_ref + 1):
+        dp[0][j] = (j, 0)
+    for i in range(1, num_pred + 1):
+        for j in range(1, num_ref + 1):
+            if prediction_tokens[i - 1] == reference_tokens[j - 1]:
+                diagonal = (dp[i - 1][j - 1][0], dp[i - 1][j - 1][1] - 1)
+            else:
+                diagonal = (dp[i - 1][j - 1][0] + 1, dp[i - 1][j - 1][1])
+            dp[i][j] = min(diagonal, (dp[i - 1][j][0] + 1, dp[i - 1][j][1]), (dp[i][j - 1][0] + 1, dp[i][j - 1][1]))
+    edits, hits = dp[-1][-1][0], -dp[-1][-1][1]
+    # every reference token is a hit, a substitution or a deletion and every prediction token is a hit,
+    # a substitution or an insertion, so the counts follow from the totals
+    substitutions = num_ref + num_pred - 2 * hits - edits
+    deletions = num_ref - hits - substitutions
+    insertions = num_pred - hits - substitutions
+    return hits, substitutions, deletions, insertions
+
+
 def _flip_trace(trace: tuple[_EditOperations, ...]) -> tuple[_EditOperations, ...]:
     """Flip the trace of edit operations.
 

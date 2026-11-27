@@ -70,7 +70,7 @@ class WordInfoPreserved(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    errors: Tensor
+    hits: Tensor
     preds_total: Tensor
     target_total: Tensor
 
@@ -79,20 +79,20 @@ class WordInfoPreserved(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.add_state("errors", tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("hits", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Union[str, list[str]], target: Union[str, list[str]]) -> None:
         """Update state with predictions and targets."""
-        errors, target_total, preds_total = _wip_update(preds, target)
-        self.errors += errors
+        hits, target_total, preds_total = _wip_update(preds, target)
+        self.hits += hits
         self.target_total += target_total
         self.preds_total += preds_total
 
     def compute(self) -> Tensor:
         """Calculate the Word Information Preserved."""
-        return _wip_compute(self.errors, self.target_total, self.preds_total)
+        return _wip_compute(self.hits, self.target_total, self.preds_total)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
