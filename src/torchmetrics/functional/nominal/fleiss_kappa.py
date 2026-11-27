@@ -30,8 +30,9 @@ def _fleiss_kappa_update(ratings: Tensor, mode: Literal["counts", "probs"] = "co
                 "If argument ``mode`` is 'probs', ratings must have 3 dimensions with the format"
                 " [n_samples, n_categories, n_raters] and be floating point."
             )
+        num_categories = ratings.shape[1]
         ratings = ratings.argmax(dim=1)
-        one_hot = torch.nn.functional.one_hot(ratings, num_classes=ratings.shape[1]).permute(0, 2, 1)
+        one_hot = torch.nn.functional.one_hot(ratings, num_classes=num_categories).permute(0, 2, 1)
         ratings = one_hot.sum(dim=-1)
     elif mode == "counts" and (ratings.ndim != 2 or ratings.is_floating_point()):
         raise ValueError(
