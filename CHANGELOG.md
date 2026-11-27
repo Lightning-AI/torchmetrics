@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Preserved the sample dimension in samplewise multilabel stat scores for batches of size one
+- Preserved the sample dimension in samplewise multilabel stat scores for batches of size one ([#3671](https://github.com/Lightning-AI/torchmetrics/pull/3671))
 
 - Fixed `BootStrapper` computing the `quantile` over all outputs at once instead of per output for metrics with non-scalar results ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
 
