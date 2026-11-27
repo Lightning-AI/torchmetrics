@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `StructuralSimilarityIndexMeasure` padding the last dimension of 3D inputs with `kernel_size` instead of the gaussian kernel size ([#3642](https://github.com/Lightning-AI/torchmetrics/pull/3642))
 
-- Fixed `MultilabelRankingLoss` undercounting samples when a batch has no relevant/irrelevant label pairs
+- Fixed `MultilabelRankingLoss` undercounting samples when a batch has no relevant/irrelevant label pairs ([#3672](https://github.com/Lightning-AI/torchmetrics/pull/3672))
 
 - Fixed ROC, AUROC, precision-recall curve, average precision and the metrics built on them returning wrong values, or intermittently raising an index error, on MPS when `thresholds=None` and the predictions have 65536 or more distinct values ([#3625](https://github.com/Lightning-AI/torchmetrics/pull/3625))
 
