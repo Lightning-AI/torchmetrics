@@ -95,6 +95,10 @@ def _segmentation_inputs_format(
 
 def _format_logits(tensor: Tensor, num_classes: int) -> Tensor:
     """Transform logits or probabilities into integer one-hot encodings."""
+    if tensor.ndim >= 2 and tensor.shape[1] != num_classes:
+        raise ValueError(
+            f"Expected the class dimension to match num_classes={num_classes}, but got {tensor.shape[1]}."
+        )
     if torch.is_floating_point(tensor):
         tensor = tensor.argmax(dim=1)
         tensor = torch.nn.functional.one_hot(tensor, num_classes=num_classes).movedim(-1, 1)
