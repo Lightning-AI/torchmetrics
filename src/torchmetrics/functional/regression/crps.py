@@ -33,12 +33,17 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor]:
         ensemble_sum: Tensor (pairwise ensemble term)
 
     """
-    # Only second dimension should deviate in shape (the ensemble members)
-    _check_same_shape(preds[:, 0], target)
-
+    if preds.ndim != 2:
+        raise ValueError(f"Expected `preds` to be a 2D tensor, but got {preds.ndim} dimensions.")
     batch_size, n_ensemble_members = preds.shape
     if n_ensemble_members < 2:
         raise ValueError(f"CRPS requires at least 2 ensemble members, but you provided {preds.shape}.")
+    # Only second dimension should deviate in shape (the ensemble members).
+    _check_same_shape(preds[:, 0], target)
+    if preds.dtype in (torch.float16, torch.bfloat16) or not (preds.is_floating_point() or preds.is_complex()):
+        preds = preds.to(torch.float64 if target.dtype == torch.float64 else torch.float32)
+    if target.dtype in (torch.float16, torch.bfloat16) or not (target.is_floating_point() or target.is_complex()):
+        target = target.to(preds.dtype)
 
     # sort forecasts
     preds = torch.sort(preds, dim=1)[0]
@@ -47,11 +52,11 @@ def _crps_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor]:
     observation_inflated = target.unsqueeze(1).expand_as(preds)
 
     # Compute mean absolute difference between predictions and target
-    diff = torch.sum(torch.abs(preds - observation_inflated), dim=1) / n_ensemble_members
+    diff = torch.abs(preds - observation_inflated).mean(dim=1)
 
-    # Compute ensemble term using the reference implementation formula
-    ensemble_diffs = torch.abs(preds.unsqueeze(2) - preds.unsqueeze(1))
-    ensemble_sum = torch.sum(ensemble_diffs, dim=(1, 2)) / (2 * n_ensemble_members * n_ensemble_members)
+    # Each gap between sorted members occurs i * (M - i) times in the pairwise sum.
+    fractions = torch.arange(1, n_ensemble_members, device=preds.device, dtype=preds.dtype) / n_ensemble_members
+    ensemble_sum = (preds.diff(dim=1) * fractions * (1 - fractions)).sum(dim=1)
 
     return batch_size, diff, ensemble_sum
 
