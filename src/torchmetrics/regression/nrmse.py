@@ -194,7 +194,7 @@ class NormalizedRootMeanSquaredError(Metric):
         """
         sum_squared_error, num_obs = _mean_squared_error_update(preds, target, self.num_outputs)
         self.sum_squared_error += sum_squared_error
-        target = target.view(-1) if self.num_outputs == 1 else target
+        target = target.reshape(-1) if self.num_outputs == 1 else target
 
         # Update min and max and target squared
         self.min_val = torch.minimum(target.min(dim=0).values, self.min_val)

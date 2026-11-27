@@ -390,3 +390,42 @@ def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
     """Test that error is raised on wrong extra arguments."""
     with pytest.raises(ValueError, match=error_msg):
         metric_class(**arguments)
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "metric_functional", "kwargs"),
+    [
+        (MeanAbsoluteError, mean_absolute_error, {}),
+        (MeanSquaredError, mean_squared_error, {}),
+        (MeanSquaredError, mean_squared_error, {"squared": False}),
+        *[
+            (NormalizedRootMeanSquaredError, normalized_root_mean_squared_error, {"normalization": normalization})
+            for normalization in ("mean", "range", "std", "l2")
+        ],
+    ],
+)
+@pytest.mark.parametrize("layout", ["transpose", "permute", "strided", "expanded"])
+def test_mean_error_noncontiguous_inputs(metric_class, metric_functional, kwargs, layout):
+    """Noncontiguous inputs must match contiguous inputs, including gradients and streaming."""
+    values = torch.arange(1.0, 25.0).reshape(4, 6)
+    if layout == "transpose":
+        values = values.T
+    elif layout == "permute":
+        values = values.reshape(2, 3, 4).permute(0, 2, 1)
+    elif layout == "strided":
+        values = values[:, ::2]
+    else:
+        values = values[:1].expand(4, -1)
+    assert not values.is_contiguous()
+    preds = values.detach().requires_grad_()
+    target = values.flip(0) + 1
+    reference_preds = preds.detach().contiguous().requires_grad_()
+    expected = metric_functional(reference_preds, target.contiguous(), **kwargs)
+
+    result = metric_functional(preds, target, **kwargs)
+    torch.testing.assert_close(result, expected)
+    torch.testing.assert_close(torch.autograd.grad(result, preds)[0], torch.autograd.grad(expected, reference_preds)[0])
+    metric = metric_class(**kwargs)
+    for pred_batch, target_batch in zip(preds.split(2), target.split(2)):
+        metric.update(pred_batch, target_batch)
+    torch.testing.assert_close(metric.compute(), expected.detach())
