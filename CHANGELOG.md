@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
 - Fixed `Metric` ignoring an active `torch.device` context manager on torch 2.3-2.7 ([#3448](https://github.com/Lightning-AI/torchmetrics/pull/3448))
+- Fixed `Metric.sync_context` leaving the metric synchronized when the body (e.g. `compute`) raises ([#3496](https://github.com/Lightning-AI/torchmetrics/pull/3496))
 
 - Fixed `Metric.compute` returning a stale cached value after `merge_state` ([#3600](https://github.com/Lightning-AI/torchmetrics/pull/3600))
 
