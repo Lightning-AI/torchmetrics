@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -24,6 +24,7 @@ from torchmetrics.functional.segmentation.generalized_dice import (
     _generalized_dice_validate_args,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -100,15 +101,16 @@ class GeneralizedDiceScore(Metric):
         tensor(0.4992)
         >>> gds = GeneralizedDiceScore(num_classes=3, per_class=True)
         >>> gds(preds, target)
-        tensor([0.5001, 0.4993, 0.4982])
+        tensor([0.5000, 0.4993, 0.4983])
         >>> gds = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=False)
         >>> gds(preds, target)
-        tensor([0.4993, 0.4982])
+        tensor([0.4993, 0.4983])
 
     """
 
-    score: Tensor
-    samples: Tensor
+    class_present: Tensor
+    numerator: List[Tensor]
+    denominator: List[Tensor]
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -133,20 +135,26 @@ class GeneralizedDiceScore(Metric):
         self.input_format = input_format
 
         num_classes = num_classes - 1 if not include_background else num_classes
-        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
-        self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("numerator", default=[], dist_reduce_fx="cat")
+        self.add_state("denominator", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with new data."""
         numerator, denominator = _generalized_dice_update(
             preds, target, self.num_classes, self.include_background, self.weight_type, self.input_format
         )
-        self.score += _generalized_dice_compute(numerator, denominator, self.per_class).sum(dim=0)
-        self.samples += preds.shape[0]
+        self.numerator.append(numerator)
+        self.denominator.append(denominator)
 
     def compute(self) -> Tensor:
         """Compute the final generalized dice score."""
-        return self.score / self.samples
+        numerator = dim_zero_cat(self.numerator)
+        denominator = dim_zero_cat(self.denominator)
+        if self.per_class:
+            numerator = torch.sum(numerator, 0, keepdim=True)
+            denominator = torch.sum(denominator, 0, keepdim=True)
+        score = _generalized_dice_compute(dim_zero_cat(numerator), dim_zero_cat(denominator), self.per_class)
+        return score.mean(dim=0)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
