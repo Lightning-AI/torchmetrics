@@ -34,16 +34,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Runner images: https://github.com/actions/runner-images
         include:
           # Linux spans the supported Python and PyTorch range; DDP tests run only on the oldest and newest job,
           #  and on pull requests the jobs in between run only one parametrization per test (`quick`)
-          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.6.0", requires: "oldest", ddp: true }
-          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.9.1", quick: true }
-          - { os: "ubuntu-22.04", python-version: "3.12", pytorch-version: "2.12.1", quick: true }
-          - { os: "ubuntu-22.04", python-version: "3.13", pytorch-version: "2.15.0", ddp: true }
+          - { os: "ubuntu-24.04", python-version: "3.10", pytorch-version: "2.6.0", requires: "oldest", ddp: true }
+          - { os: "ubuntu-24.04", python-version: "3.11", pytorch-version: "2.9.1", quick: true }
+          - { os: "ubuntu-24.04", python-version: "3.12", pytorch-version: "2.12.1", quick: true }
+          - { os: "ubuntu-24.04", python-version: "3.13", pytorch-version: "2.15.0", ddp: true }
           # one recent configuration per other OS; macOS uses the ARM based M1 machine
-          - { os: "macOS-15", python-version: "3.12", pytorch-version: "2.15.0" }
-          - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.15.0" }
+          - { os: "macos-26", python-version: "3.12", pytorch-version: "2.15.0" }
+          - { os: "windows-2025", python-version: "3.12", pytorch-version: "2.15.0" }
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       TOKENIZERS_PARALLELISM: false

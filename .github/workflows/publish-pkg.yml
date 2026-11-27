@@ -14,7 +14,7 @@ on: # Trigger the workflow on push or pull request, but only for the master bran
 jobs:
   # based on https://github.com/pypa/gh-action-pypi-publish
   build-package:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
