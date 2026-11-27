@@ -172,7 +172,7 @@ def _binary_precision_recall_curve_format(
 
     - flattens additional dimensions
     - Remove all datapoints that should be ignored
-    - Applies sigmoid if pred tensor not in [0,1] range
+    - Applies sigmoid if pred tensor not in [0,1] range and ``thresholds`` is not ``None``
     - Format thresholds arg to be a tensor
 
     """
@@ -183,7 +183,14 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    preds = normalize_logits_if_needed(preds, normalization)
+    if thresholds is None:
+        # On the exact path only score order matters, which any strictly monotone transform
+        # preserves, so logits are stored untransformed. This keeps confident low-precision
+        # logits from saturating and makes the result independent of update batching.
+        if preds.dtype in (torch.float16, torch.bfloat16):
+            preds = preds.float()
+    else:
+        preds = normalize_logits_if_needed(preds, normalization)
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     return preds, target, thresholds
@@ -302,6 +309,10 @@ def _binary_precision_recall_curve_compute(
         return precision, recall, thresholds
 
     fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=pos_label)
+    if ((state[0] < 0) | (state[0] > 1)).any():
+        # Logits are stored untransformed on the exact path; report thresholds on the
+        # probability scale as before.
+        thresholds = thresholds.sigmoid()
     precision = tps / (tps + fps)
     recall = tps / tps[-1]
     if (state[1] == 0).all():  # all labels are negative, recall is undefined

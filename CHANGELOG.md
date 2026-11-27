@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed binary rank metrics (`binary_auroc`, `binary_average_precision`, `binary_roc`, `binary_precision_recall_curve` and the fixed-point binary metrics) misranking confident logits in half precision and depending on update batch size in their exact `thresholds=None` path ([#3638](https://github.com/Lightning-AI/torchmetrics/issues/3638))
+
 - Fixed `BootStrapper` computing the `quantile` over all outputs at once instead of per output for metrics with non-scalar results ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
 
 - Fixed `Metric` syncing deadlocking for `dist_reduce_fx=None` list states when ranks hold a different number of entries, which now raises an error instead ([#3503](https://github.com/Lightning-AI/torchmetrics/pull/3503))

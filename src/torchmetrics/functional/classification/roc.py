@@ -52,6 +52,10 @@ def _binary_roc_compute(
         thres = thresholds.flip(0)
     else:
         fps, tps, thres = _binary_clf_curve(preds=state[0], target=state[1], pos_label=pos_label)
+        if ((state[0] < 0) | (state[0] > 1)).any():
+            # Logits are stored untransformed on the exact path; report thresholds on the
+            # probability scale as before.
+            thres = thres.sigmoid()
         # Add an extra threshold position to make sure that the curve starts at (0, 0)
         tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
         fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])

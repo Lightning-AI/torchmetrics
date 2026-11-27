@@ -431,3 +431,27 @@ def test_wrapper_class(metric, kwargs, base_metric=AveragePrecision):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+def test_binary_average_precision_exact_path_logits_dtype_invariance():
+    """Check exact-path ranking of confident logits across dtypes.
+
+    Regression test for https://github.com/Lightning-AI/torchmetrics/issues/3638: the sigmoid
+    heuristic saturated confident low-precision logits so they tied at 1.0.
+
+    """
+    generator = torch.Generator().manual_seed(0)
+    n = 20_000
+    target = (torch.rand(n, generator=generator) < 0.3).long()
+    logits = torch.where(
+        target == 1,
+        torch.randn(n, generator=generator) * 4 + 10,
+        torch.randn(n, generator=generator) * 4 + 4,
+    )
+    for dtype in (torch.float32, torch.bfloat16):
+        scores = logits.to(dtype)
+        # sklearn on the same (dtype-quantized) scores; torchmetrics' trapezoid AP differs
+        # from sklearn's by about 1e-3, which is why the bound is looser than for AUROC.
+        expected = sk_average_precision_score(target.numpy(), scores.double().numpy())
+        result = binary_average_precision(scores, target, thresholds=None)
+        assert torch.allclose(result.double(), torch.tensor(expected, dtype=torch.float64), atol=5e-3)
