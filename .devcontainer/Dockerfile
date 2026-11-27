@@ -14,18 +14,14 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV UV_SYSTEM_PYTHON=1
 
 COPY requirements/ /tmp/pip-tmp/requirements/
-RUN \
-    uv pip install awscli && \
-    aws s3 sync --no-sign-request s3://sphinx-packages/ dist/  && \
-    # trying to resolve pesq installation issue (numpy<1.24 uses distutils, removed in Python 3.12)
-    if python3 -c "import sys; exit(0 if sys.version_info < (3, 12) else 1)"; then \
+# NumPy <1.24 uses distutils, which Python 3.12 removed.
+RUN if python3 -c "import sys; exit(0 if sys.version_info < (3, 12) else 1)"; then \
         uv pip install -q "numpy<1.24"; \
     fi && \
     uv pip install --no-cache --index-strategy unsafe-best-match \
       -r /tmp/pip-tmp/requirements/_devel.txt \
       -r /tmp/pip-tmp/requirements/_docs.txt \
-      --extra-index-url="https://download.pytorch.org/whl/cpu/" \
-      --find-links="dist/" && \
+      --extra-index-url="https://download.pytorch.org/whl/cpu/" && \
     rm -rf /tmp/pip-tmp
 
 # [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
