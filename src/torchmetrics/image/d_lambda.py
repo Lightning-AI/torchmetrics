@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.d_lambda import _spectral_distortion_index_compute, _spectral_distortion_index_update
+from torchmetrics.functional.image.d_lambda import (
+    _spectral_distortion_index_band_uqi,
+    _spectral_distortion_index_from_band_uqi,
+    _spectral_distortion_index_update,
+)
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -70,19 +73,14 @@ class SpectralDistortionIndex(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds: List[Tensor]
-    target: List[Tensor]
+    target_band_uqi: Tensor
+    preds_band_uqi: Tensor
+    total: Tensor
 
     def __init__(
         self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
-        rank_zero_warn(
-            "Metric `SpectralDistortionIndex` will save all targets and"
-            " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
-        )
-
         if not isinstance(p, int) or p <= 0:
             raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
         self.p = p
@@ -90,20 +88,29 @@ class SpectralDistortionIndex(Metric):
         if reduction not in allowed_reductions:
             raise ValueError(f"Expected argument `reduction` be one of {allowed_reductions} but got {reduction}")
         self.reduction = reduction
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        # Running sums over images of the per-image band-to-band UQI matrices. They start as scalars and take the
+        # ``(C, C)`` shape of the first batch through broadcasting, since the number of bands is not known up front.
+        self.add_state("target_band_uqi", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("preds_band_uqi", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with preds and target."""
         preds, target = _spectral_distortion_index_update(preds, target)
-        self.preds.append(preds)
-        self.target.append(target)
+        if self.target_band_uqi.ndim == 2 and self.target_band_uqi.shape[-1] != preds.shape[1]:
+            raise ValueError(
+                "Expected the number of channels to be the same across updates."
+                f" Got {preds.shape[1]} but previously {self.target_band_uqi.shape[-1]}."
+            )
+        self.target_band_uqi = self.target_band_uqi + _spectral_distortion_index_band_uqi(target).sum(dim=0)
+        self.preds_band_uqi = self.preds_band_uqi + _spectral_distortion_index_band_uqi(preds).sum(dim=0)
+        self.total = self.total + preds.shape[0]
 
     def compute(self) -> Tensor:
         """Compute and returns spectral distortion index."""
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return _spectral_distortion_index_compute(preds, target, self.p, self.reduction)
+        m1 = self.target_band_uqi / self.total
+        m2 = self.preds_band_uqi / self.total
+        return _spectral_distortion_index_from_band_uqi(m1, m2, self.p, self.reduction)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
