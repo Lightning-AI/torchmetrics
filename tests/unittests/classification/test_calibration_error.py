@@ -141,6 +141,16 @@ def test_binary_with_zero_pred():
     assert binary_calibration_error(preds, target, n_bins=2, norm="l1") == torch.tensor(0.6)
 
 
+@pytest.mark.parametrize("norm", ["l1", "l2", "max"])
+def test_binary_with_confidence_one(norm):
+    """Test that a confidence of exactly 1.0 is counted in the last bin together with the other confident preds."""
+    preds = torch.tensor([0.95, 1.0])
+    target = torch.tensor([1, 0])
+    # both predictions fall in the last of 15 bins: mean confidence 0.975, accuracy 0.5, so every norm gives 0.475
+    expected = torch.tensor(0.475)
+    assert torch.allclose(binary_calibration_error(preds, target, n_bins=15, norm=norm), expected)
+
+
 def _reference_netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
     preds = preds.numpy()
     target = target.numpy().flatten()

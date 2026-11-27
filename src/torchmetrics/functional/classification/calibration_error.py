@@ -42,11 +42,14 @@ def _binning_bucketize(
 
     """
     accuracies = accuracies.to(dtype=confidences.dtype)
-    acc_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
-    conf_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
-    count_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
+    num_bins = len(bin_boundaries) - 1
+    acc_bin = torch.zeros(num_bins, device=confidences.device, dtype=confidences.dtype)
+    conf_bin = torch.zeros(num_bins, device=confidences.device, dtype=confidences.dtype)
+    count_bin = torch.zeros(num_bins, device=confidences.device, dtype=confidences.dtype)
 
-    indices = torch.bucketize(confidences, bin_boundaries, right=True) - 1
+    # bucketize against the inner boundaries only so that a confidence of exactly 1.0 lands in the last bin
+    # instead of in an extra bin that does not exist
+    indices = torch.bucketize(confidences, bin_boundaries[1:-1], right=True)
 
     count_bin.scatter_add_(dim=0, index=indices, src=torch.ones_like(confidences))
 
