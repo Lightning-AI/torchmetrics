@@ -109,12 +109,12 @@ class SoftDTW(Metric):
         self.add_state("gt_list", default=[], dist_reduce_fx="cat")
 
     def update(self, x: torch.Tensor, y: torch.Tensor) -> None:
-        """Update the Procrustes Disparity with the given datasets."""
+        """Update the metric state with a batch of predicted and target sequences."""
         self.pred_list.append(x)
         self.gt_list.append(y)
 
     def compute(self) -> torch.Tensor:
-        """Computes the Procrustes Disparity."""
+        """Compute the Soft-DTW discrepancy over all seen sequences."""
         return soft_dtw(
             dim_zero_cat(self.pred_list),
             dim_zero_cat(self.gt_list),
