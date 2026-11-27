@@ -201,7 +201,7 @@ def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> tuple[Tens
 
     # Nothing is relevant
     if len(preds) == 0:
-        return torch.tensor(0.0, device=preds.device), 1
+        return torch.tensor(0.0, device=preds.device), max(num_preds, 1)
 
     inverse = preds.argsort(dim=1).argsort(dim=1)
     per_label_loss = ((num_labels - inverse) * relevant).to(torch.float32)
