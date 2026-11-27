@@ -125,3 +125,12 @@ def test_tschuprows_t_matrix(tschuprows_matrix_input):
     tm_score = tschuprows_t_matrix(tschuprows_matrix_input, bias_correction=False)
     reference_score = _reference_pd_tschuprows_t_matrix(tschuprows_matrix_input)
     assert torch.allclose(tm_score, reference_score)
+
+
+def test_tschuprows_t_nonzero_labels():
+    """Test that tschuprows_t works with non-zero-based category labels."""
+    preds = torch.tensor([5, 6, 5, 6, 5, 6, 5, 6])
+    target = torch.tensor([5, 6, 5, 5, 6, 6, 5, 6])
+    res = tschuprows_t(preds, target, bias_correction=False)
+    ref = _reference_pd_tschuprows_t(preds, target)
+    assert torch.allclose(res, ref)

@@ -32,6 +32,24 @@ def _nominal_input_validation(nan_strategy: str, nan_replace_value: Optional[flo
         )
 
 
+def _remap_categorical_inputs(
+    preds: Tensor,
+    target: Tensor,
+    nan_strategy: Literal["replace", "drop"] = "replace",
+    nan_replace_value: Optional[float] = 0.0,
+) -> tuple[Tensor, Tensor, int]:
+    """Remap categorical values to contiguous 0-based integers [0, num_classes - 1]."""
+    preds = preds.argmax(1) if preds.ndim == 2 else preds
+    target = target.argmax(1) if target.ndim == 2 else target
+    preds, target = _handle_nan_in_data(preds, target, nan_strategy, nan_replace_value)
+    combined = torch.cat([preds.reshape(-1), target.reshape(-1)])
+    unique_vals, inverse = combined.unique(return_inverse=True)
+    num_classes = len(unique_vals)
+    preds_remapped = inverse[: preds.numel()].reshape(preds.shape)
+    target_remapped = inverse[preds.numel() :].reshape(target.shape)
+    return preds_remapped, target_remapped, num_classes
+
+
 def _compute_expected_freqs(confmat: Tensor) -> Tensor:
     """Compute the expected frequenceis from the provided confusion matrix."""
     margin_sum_rows, margin_sum_cols = confmat.sum(1), confmat.sum(0)
@@ -44,6 +62,7 @@ def _compute_chi_squared(confmat: Tensor, bias_correction: bool) -> Tensor:
     Adapted from: https://github.com/scipy/scipy/blob/v1.9.2/scipy/stats/contingency.py.
 
     """
+    confmat = confmat.float()
     expected_freqs = _compute_expected_freqs(confmat)
     # Get degrees of freedom
     df = expected_freqs.numel() - sum(expected_freqs.shape) + expected_freqs.ndim - 1
@@ -53,7 +72,7 @@ def _compute_chi_squared(confmat: Tensor, bias_correction: bool) -> Tensor:
     if df == 1 and bias_correction:
         diff = expected_freqs - confmat
         direction = diff.sign()
-        confmat += direction * torch.minimum(0.5 * torch.ones_like(direction), direction.abs())
+        confmat = confmat + direction * torch.minimum(0.5 * torch.ones_like(direction), direction.abs())
 
     return torch.sum((confmat - expected_freqs) ** 2 / expected_freqs)
 
