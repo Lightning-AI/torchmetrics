@@ -38,7 +38,9 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> tuple[Tensor, int]:
 
     total = p.shape[0]
     if log_prob:
-        measures = torch.sum(p.exp() * (p - q), axis=-1)  # type: ignore[call-overload]
+        p_prob = p.exp()
+        zero = torch.zeros((), dtype=p_prob.dtype, device=p.device)
+        measures = torch.sum(p_prob * torch.where(p_prob == 0, zero, p - q), axis=-1)  # type: ignore[call-overload]
     else:
         p = p / p.sum(axis=-1, keepdim=True)  # type: ignore[call-overload]
         q = q / q.sum(axis=-1, keepdim=True)  # type: ignore[call-overload]
