@@ -74,8 +74,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `Metric` raising `NameError` on Python 3.14 when constructing or unpickling a metric whose `update` annotations use names imported only under `TYPE_CHECKING` ([#3604](https://github.com/Lightning-AI/torchmetrics/pull/3604))
 
 
-- Fixed stat-scores based classification metrics such as `Accuracy` raising on an empty batch, which is now a no-op update ([#3541](https://github.com/Lightning-AI/torchmetrics/pull/3541))
+- Fixed `LearnedPerceptualImagePatchSimilarity` slowing down with every `forward` call for `reduction="mean"` and `reduction="sum"` ([#3514](https://github.com/Lightning-AI/torchmetrics/pull/3514))
 - Fixed `TER` never shifting a block of 10 words in one step, which made it disagree with Tercom and sacrebleu ([#3594](https://github.com/Lightning-AI/torchmetrics/pull/3594))
+- Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
+- Fixed stat-scores based classification metrics such as `Accuracy` raising on an empty batch, which is now a no-op update ([#3541](https://github.com/Lightning-AI/torchmetrics/pull/3541))
 
 
 ---
