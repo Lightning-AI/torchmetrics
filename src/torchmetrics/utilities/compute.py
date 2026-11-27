@@ -115,6 +115,14 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
     Assumes increasing or decreasing order of `x`.
 
     """
+    if x.numel() < 2:
+        # A curve needs at least two points to have an area. Fewer means there were no samples to
+        # build it from, so the area is undefined rather than zero -- `torch.trapz` would return 0.0
+        # here, which is indistinguishable from a genuinely zero score. Reductions over several
+        # classes already drop `nan` entries and warn about them.
+        # `x` may be integer (see `auc`), where a nan is not representable, so fall back to float
+        dtype = x.dtype if x.is_floating_point() else torch.get_default_dtype()
+        return torch.tensor(float("nan"), device=x.device, dtype=dtype)
     with torch.no_grad():
         auc_score: Tensor = torch.trapz(y, x, dim=axis) * direction
     return auc_score

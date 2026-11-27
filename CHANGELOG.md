@@ -79,6 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
 
 
+- Fixed `IndexError` in curve-based classification metrics when `ignore_index` removed every sample of a class, which now score as `nan` ([#3464](https://github.com/Lightning-AI/torchmetrics/pull/3464))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05

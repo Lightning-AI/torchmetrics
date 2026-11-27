@@ -52,6 +52,12 @@ def _binary_roc_compute(
         thres = thresholds.flip(0)
     else:
         fps, tps, thres = _binary_clf_curve(preds=state[0], target=state[1], pos_label=pos_label)
+        if tps.numel() == 0:
+            # No samples left after filtering, so there is no curve. Returning `nan` keeps the score
+            # undefined instead of letting the zero point added below turn it into a score of 0.
+            nan = torch.full((1,), float("nan"), dtype=tps.dtype, device=tps.device)
+            return nan, nan.clone(), nan.clone()
+
         # Add an extra threshold position to make sure that the curve starts at (0, 0)
         tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
         fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])
