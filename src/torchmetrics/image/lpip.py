@@ -14,10 +14,11 @@
 from collections.abc import Sequence
 from typing import Any, ClassVar, Optional, Union
 
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.lpips import _LPIPS, _lpips_compute, _lpips_update, _NoTrainLpips
+from torchmetrics.functional.image.lpips import _LPIPS, _lpips_update, _NoTrainLpips
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import dim_zero_cat
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
@@ -105,6 +106,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
+    sum_scores: Tensor
+    total: Tensor
     all_scores: list[Tensor]
     feature_network: str = "net"
 
@@ -140,17 +143,28 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             raise ValueError(f"Argument `normalize` should be an bool but got {normalize}")
         self.normalize = normalize
 
-        self.add_state("all_scores", default=[], dist_reduce_fx=None)
+        if reduction in ("mean", "sum"):
+            self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
+            self.add_state("total", torch.tensor(0.0), dist_reduce_fx="sum")
+        else:
+            self.add_state("all_scores", default=[], dist_reduce_fx=None)
 
     def update(self, img1: Tensor, img2: Tensor) -> None:
         """Update internal states with lpips score."""
         loss = _lpips_update(img1, img2, net=self.net, normalize=self.normalize)
-        self.all_scores.append(loss)
+        if self.reduction in ("mean", "sum"):
+            self.sum_scores += loss.sum()
+            self.total += loss.numel()
+        else:
+            self.all_scores.append(loss)
 
     def compute(self) -> Tensor:
         """Compute final perceptual similarity metric."""
-        scores = dim_zero_cat(self.all_scores)
-        return _lpips_compute(scores, reduction=self.reduction)
+        if self.reduction == "mean":
+            return self.sum_scores / self.total
+        if self.reduction == "sum":
+            return self.sum_scores
+        return dim_zero_cat(self.all_scores)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
