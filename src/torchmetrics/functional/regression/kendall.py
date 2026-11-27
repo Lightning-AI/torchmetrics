@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import math
 from typing import List, Optional, Union
 
 import torch
@@ -184,13 +185,7 @@ def _get_p_value_for_t_value_from_dist(t_value: Tensor) -> Tensor:
     When t-value is ``nan``, a resulted p-value should be alson ``nan``.
 
     """
-    device = t_value
-    normal_dist = torch.distributions.normal.Normal(torch.tensor([0.0]).to(device), torch.tensor([1.0]).to(device))
-
-    is_nan = t_value.isnan()
-    t_value = t_value.nan_to_num()
-    p_value = normal_dist.cdf(t_value)
-    return p_value.where(~is_nan, torch.tensor(float("nan"), dtype=p_value.dtype, device=p_value.device))
+    return 0.5 * torch.erfc(-t_value / math.sqrt(2.0))
 
 
 def _calculate_p_value(

@@ -126,3 +126,15 @@ def _adjust_alternative_to_scipy(alternative):
     if alternative is not None and not compare_version("scipy", operator.ge, "1.8.0"):
         return "two-sided"
     return alternative
+
+
+@pytest.mark.parametrize("alternative", ["two-sided", "less", "greater"])
+def test_kendall_small_p_value(alternative):
+    """A representable tail probability should agree with the asymptotic reference."""
+    preds = torch.arange(30, dtype=torch.float32)
+    target = -preds if alternative == "less" else preds
+    _, actual = kendall_rank_corrcoef(preds, target, t_test=True, alternative=alternative)
+    _, expected = kendalltau(preds.numpy(), target.numpy(), method="asymptotic")
+    if alternative != "two-sided":
+        expected /= 2
+    assert actual.item() == pytest.approx(expected, rel=1e-5, abs=0)
