@@ -694,3 +694,17 @@ def test_wrapper_class(metric, kwargs, base_metric=StatScores):
         instance = base_metric(**kwargs)
         assert isinstance(instance, metric)
         assert isinstance(instance, Metric)
+
+
+def test_multilabel_stat_scores_samplewise_singleton_batch():
+    """A final batch of one keeps its sample axis during reduction and accumulation."""
+    preds = torch.tensor([[[1, 0], [0, 1]], [[0, 1], [0, 0]], [[0, 1], [1, 1]]])
+    target = torch.tensor([[[1, 1], [0, 1]], [[1, 0], [0, 0]], [[1, 0], [1, 0]]])
+    expected = _reference_sklearn_stat_scores_multilabel(preds, target, None, "samplewise", None)
+    kwargs = {"num_labels": 2, "average": None, "multidim_average": "samplewise"}
+
+    np.testing.assert_array_equal(multilabel_stat_scores(preds[2:], target[2:], **kwargs), expected[2:])
+    metric = MultilabelStatScores(**kwargs)
+    metric.update(preds[:2], target[:2])
+    metric.update(preds[2:], target[2:])
+    np.testing.assert_array_equal(metric.compute(), expected)

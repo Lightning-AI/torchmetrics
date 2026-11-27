@@ -708,10 +708,10 @@ def _multilabel_stat_scores_update(
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Compute the statistics."""
     sum_dim = [0, -1] if multidim_average == "global" else [-1]
-    tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
-    fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
-    fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
-    tn = ((target == preds) & (target == 0)).sum(sum_dim).squeeze()
+    tp = ((target == preds) & (target == 1)).sum(sum_dim)
+    fn = ((target != preds) & (target == 1)).sum(sum_dim)
+    fp = ((target != preds) & (target == 0)).sum(sum_dim)
+    tn = ((target == preds) & (target == 0)).sum(sum_dim)
     return tp, fp, tn, fn
 
 
