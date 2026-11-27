@@ -138,3 +138,22 @@ def test_inf_case():
     metric = KLDivergence()
     metric.update(torch.tensor([[0.3, 0.3, 0.4]]), torch.tensor([[0.5, 0.5, 0]]))
     assert not torch.isfinite(metric.compute())
+
+
+def test_zero_probability_log_prob():
+    """When p has log(0) = -inf in log_prob=True mode, the score should not output NaN."""
+    p = torch.tensor([[1.0, 0.0, 0.0], [0.0, 0.5, 0.5]])
+    q = torch.tensor([[0.5, 0.25, 0.25], [0.0, 0.5, 0.5]])
+    expected = kl_divergence(p, q, log_prob=False)
+
+    log_p = p.log().requires_grad_(True)
+    log_q = q.log()
+    res = kl_divergence(log_p, log_q, log_prob=True)
+    torch.testing.assert_close(res, expected)
+    res.backward()
+    assert log_p.grad is not None
+    assert not torch.isnan(log_p.grad).any()
+
+    metric = KLDivergence(log_prob=True)
+    metric.update(p.log(), q.log())
+    torch.testing.assert_close(metric.compute(), expected)

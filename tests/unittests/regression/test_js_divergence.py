@@ -136,3 +136,16 @@ def test_zero_probability():
         torch.tensor(torch.randn(3, 3).softmax(dim=-1)),
     )
     assert not torch.isnan(metric.compute())
+
+
+def test_zero_probability_log_prob():
+    """When p or q has log(0) = -inf in log_prob=True mode, the score should not output NaN."""
+    p = torch.tensor([[1.0, 0.0, 0.0], [0.0, 0.5, 0.5]])
+    q = torch.tensor([[0.2, 0.5, 0.3], [0.0, 0.5, 0.5]])
+    expected = jensen_shannon_divergence(p, q, log_prob=False)
+
+    torch.testing.assert_close(jensen_shannon_divergence(p.log(), q.log(), log_prob=True), expected)
+
+    metric = JensenShannonDivergence(log_prob=True)
+    metric.update(p.log(), q.log())
+    torch.testing.assert_close(metric.compute(), expected)
