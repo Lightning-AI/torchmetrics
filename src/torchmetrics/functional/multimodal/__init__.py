@@ -13,11 +13,11 @@
 # limitations under the License.
 from torchmetrics.functional.multimodal.fdd import upper_face_dynamics_deviation
 from torchmetrics.functional.multimodal.lve import lip_vertex_error
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 __all__ = ["lip_vertex_error", "upper_face_dynamics_deviation"]
 
-if _TRANSFORMERS_GREATER_EQUAL_4_10:
+if _TRANSFORMERS_AVAILABLE:
     from torchmetrics.functional.multimodal.clip_iqa import clip_image_quality_assessment
     from torchmetrics.functional.multimodal.clip_score import clip_score
 

@@ -29,12 +29,12 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _load_tokenizer_and_model,
 )
 from torchmetrics.utilities.enums import EnumStr
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
-if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_4:
+if TYPE_CHECKING and _TRANSFORMERS_AVAILABLE:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 
-if not _TRANSFORMERS_GREATER_EQUAL_4_4:
+if not _TRANSFORMERS_AVAILABLE:
     __doctest_skip__ = ["infolm"]
 
 

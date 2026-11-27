@@ -30,7 +30,7 @@ from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
     _PIQ_GREATER_EQUAL_0_8,
-    _TRANSFORMERS_GREATER_EQUAL_4_10,
+    _TRANSFORMERS_AVAILABLE,
 )
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -40,7 +40,7 @@ if not _PIQ_GREATER_EQUAL_0_8:
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPImageQualityAssessment.plot"]
 
-if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
+if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 

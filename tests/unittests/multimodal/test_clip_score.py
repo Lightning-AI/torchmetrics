@@ -29,7 +29,7 @@ from torchmetrics.functional.multimodal.clip_score import (
     clip_score,
 )
 from torchmetrics.multimodal.clip_score import CLIPScore
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 from unittests._helpers import (
     _TORCH_LESS_THAN_2_1,
     _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
@@ -92,7 +92,7 @@ def _custom_clip_processor_model():
     ],
 )
 @pytest.mark.parametrize("inputs", [_random_input])
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.skipif(
     _TORCH_LESS_THAN_2_1 and _TRANSFORMERS_RANGE_GE_4_50_LT_4_54,
@@ -310,7 +310,7 @@ def test_process_text_data(texts, expected_len):
     assert all(isinstance(text, str) for text in processed)
 
 
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 def test_clip_score_handles_dataclass_output():
     """Test that _get_features handles BaseModelOutputWithPooling from transformers >= 5.0."""
     from unittest.mock import MagicMock

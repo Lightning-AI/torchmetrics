@@ -22,7 +22,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.text.bert import BERTScore
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
+from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 from unittests._helpers import (
     _IS_WINDOWS,
     _TORCH_LESS_THAN_2_1,
@@ -50,7 +50,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 @skip_on_connection_issues()
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 def _reference_bert_score(
     preds: Sequence[str],
     target: Sequence[str],
@@ -97,7 +97,7 @@ def _reference_bert_score(
     ("preds", "targets"),
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.xfail(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
@@ -195,7 +195,7 @@ class TestBERTScore(TextTester):
 
 
 @skip_on_connection_issues()
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.xfail(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
@@ -225,7 +225,7 @@ def test_bertscore_sorting(idf: bool):
 
 
 @skip_on_connection_issues()
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.xfail(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
@@ -254,7 +254,7 @@ def test_bertscore_truncation(truncation: bool):
 
 
 @skip_on_connection_issues()
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.xfail(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
@@ -310,7 +310,7 @@ def test_bertscore_single_str_input():
     ],
 )
 @skip_on_connection_issues()
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.xfail(
     RuntimeError,
     # todo: if the transformers compatibility issue present in next feature release,
@@ -339,7 +339,7 @@ def test_bertscore_multiple_references(preds, target, expected):
         )
 
 
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 def test_bertscore_invalid_references():
     """Test both functional and class APIs with invalid references."""
     preds = _inputs_multiple_references.preds

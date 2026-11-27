@@ -18,7 +18,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.imports import _MULTIPROCESSING_AVAILABLE, _PESQ_AVAILABLE
+from torchmetrics.utilities.imports import _PESQ_AVAILABLE
 
 __doctest_requires__ = {("perceptual_evaluation_speech_quality",): ["pesq"]}
 
@@ -53,7 +53,7 @@ def perceptual_evaluation_speech_quality(
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
         n_processes: integer specifying the number of processes to run in parallel for the metric calculation.
-            Only applies to batches of data and if ``multiprocessing`` package is installed.
+            Only applies to batches of data.
 
     .. note::
         Samples that the ``pesq`` backend cannot score, e.g. a silent reference for which no utterance can be
@@ -138,7 +138,7 @@ def perceptual_evaluation_speech_quality(
         preds_np = preds.reshape(-1, preds.shape[-1]).detach().cpu().numpy()
         target_np = target.reshape(-1, preds.shape[-1]).detach().cpu().numpy()
 
-        if _MULTIPROCESSING_AVAILABLE and n_processes != 1:
+        if n_processes != 1:
             pesq_val_np = pesq_backend.pesq_batch(
                 fs=fs,
                 ref=target_np,
