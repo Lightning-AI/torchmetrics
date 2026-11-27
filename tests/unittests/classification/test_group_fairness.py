@@ -26,7 +26,12 @@ from torch import Tensor
 
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness, BinaryGroupStatRates
-from torchmetrics.functional.classification.group_fairness import binary_fairness, binary_groups_stat_rates
+from torchmetrics.functional.classification.group_fairness import (
+    binary_fairness,
+    binary_groups_stat_rates,
+    demographic_parity,
+    equal_opportunity,
+)
 from unittests import THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import (
@@ -94,6 +99,39 @@ def test_binary_group_stat_rates_rejects_invalid_group_ids(groups: Tensor) -> No
     metric = BinaryGroupStatRates(num_groups=2)
     with pytest.raises(ValueError, match="group identifiers"):
         metric.update(preds, target, groups)
+
+
+@pytest.mark.parametrize(
+    "groups",
+    [
+        torch.tensor([0, 0, 0, 0, 2, 2, 2, 2]),
+        torch.tensor([1, 1, 1, 1, 3, 3, 3, 3]),
+        torch.tensor([3, 3, 3, 3, 3, 3, 3, 3]),
+    ],
+)
+def test_binary_fairness_ignores_missing_group_ids(groups: Tensor) -> None:
+    """Test that group ids missing from the input are skipped and present ids are reported unchanged."""
+    preds = torch.tensor([1, 0, 0, 0, 1, 1, 1, 0])
+    target = torch.tensor([1, 1, 0, 0, 1, 1, 0, 1])
+    expected = _reference_fairlearn_binary(preds, target, groups, ignore_index=None)
+
+    functional_result = binary_fairness(preds, target, groups)
+    assert functional_result.keys() == expected.keys()
+    _assert_allclose(functional_result, expected)
+
+    dp_key, eo_key = expected
+    dp_result = demographic_parity(preds, groups)
+    assert dp_result.keys() == {dp_key}
+    _assert_allclose(dp_result, {dp_key: expected[dp_key]})
+    eo_result = equal_opportunity(preds, target, groups)
+    assert eo_result.keys() == {eo_key}
+    _assert_allclose(eo_result, {eo_key: expected[eo_key]})
+
+    metric = BinaryFairness(num_groups=4)
+    metric.update(preds, target, groups)
+    metric_result = metric.compute()
+    assert metric_result.keys() == expected.keys()
+    _assert_allclose(metric_result, expected)
 
 
 def _reference_fairlearn_binary(preds, target, groups, ignore_index):

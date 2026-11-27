@@ -79,6 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
 
 
+- Fixed functional `demographic_parity`, `equal_opportunity` and `binary_fairness` reporting compacted instead of real group IDs when the IDs are non-contiguous, and `BinaryFairness` picking a group without samples as the lowest/highest rate
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
