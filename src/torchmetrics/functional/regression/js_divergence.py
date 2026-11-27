@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 from typing import Union
 
 import torch
@@ -38,7 +39,11 @@ def _jsd_update(p: Tensor, q: Tensor, log_prob: bool) -> tuple[Tensor, int]:
 
     total = p.shape[0]
     if log_prob:
-        mean = torch.logsumexp(torch.stack([p, q]), dim=0) - torch.log(torch.tensor(2.0))
+        log_probs = torch.stack([p, q])
+        zero_mass = torch.isneginf(log_probs).all(dim=0)
+        # Avoid undefined gradients of logsumexp when both distributions have zero mass.
+        log_probs = log_probs.masked_fill(zero_mass.unsqueeze(0), 0.0)
+        mean = (torch.logsumexp(log_probs, dim=0) - math.log(2.0)).masked_fill(zero_mass, -float("inf"))
         measures = 0.5 * kl_divergence(p, mean, log_prob=log_prob, reduction=None) + 0.5 * kl_divergence(
             q, mean, log_prob=log_prob, reduction=None
         )
