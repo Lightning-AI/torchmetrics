@@ -50,7 +50,8 @@ class FeatureShare(MetricCollection):
     This wrapper allows to share the feature extraction between multiple metrics, which can save a lot of time and
     memory. This is achieved by making a shared instance of the network between the metrics and secondly by caching
     the input-output pairs of the network, such the subsequent calls to the network with the same input will be much
-    faster.
+    faster. Features are cached only within each call to :meth:`update` or :meth:`forward`, so reusing an input
+    tensor for a later batch does not reuse stale features.
 
     Args:
         metrics: One of the following:
@@ -133,3 +134,24 @@ class FeatureShare(MetricCollection):
                 )
 
             setattr(metric, metric.feature_network, cached_net)
+
+    def _clear_network_cache(self) -> None:
+        for metric in self.values(copy_state=False):
+            network = getattr(metric, metric.feature_network)
+            network.network.forward.cache_clear()
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update all metrics, sharing cached features only within this call."""
+        self._clear_network_cache()
+        try:
+            super().update(*args, **kwargs)
+        finally:
+            self._clear_network_cache()
+
+    def forward(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """Evaluate all metrics, sharing cached features only within this call."""
+        self._clear_network_cache()
+        try:
+            return super().forward(*args, **kwargs)
+        finally:
+            self._clear_network_cache()
