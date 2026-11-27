@@ -69,18 +69,28 @@ def test_rand_score_functional_is_symmetric(
         assert torch.allclose(adjusted_rand_score(p, t), adjusted_rand_score(t, p))
 
 
+@pytest.mark.parametrize(
+    "device",
+    [
+        "cpu",
+        pytest.param(
+            "mps", marks=pytest.mark.skipif(not torch.backends.mps.is_available(), reason="test requires MPS")
+        ),
+    ],
+)
 @pytest.mark.parametrize("num_samples", [1000, 100000, 200000])
 @pytest.mark.parametrize("overlapping", [False, True])
-def test_adjusted_rand_large_sample_counts(num_samples, overlapping):
-    """Products of pair counts must not overflow integer arithmetic for large datasets."""
+def test_adjusted_rand_large_sample_counts(num_samples, overlapping, device):
+    """Products of pair counts must not overflow integer arithmetic for large datasets, also on MPS."""
     target = torch.arange(num_samples) % 3
     preds = torch.arange(num_samples) % 5
     if overlapping:
         preds = target.clone()
         preds[::7] = 4
     expected = torch.tensor(sklearn_adjusted_rand_score(preds.numpy(), target.numpy()), dtype=torch.float32)
-    torch.testing.assert_close(adjusted_rand_score(preds, target), expected, atol=1e-7, rtol=1e-6)
-    metric = AdjustedRandScore()
+    preds, target = preds.to(device), target.to(device)
+    torch.testing.assert_close(adjusted_rand_score(preds, target).cpu(), expected, atol=1e-7, rtol=1e-6)
+    metric = AdjustedRandScore().to(device)
     for pred_batch, target_batch in zip(preds.split(50000), target.split(50000)):
         metric.update(pred_batch, target_batch)
-    torch.testing.assert_close(metric.compute(), expected, atol=1e-7, rtol=1e-6)
+    torch.testing.assert_close(metric.compute().cpu(), expected, atol=1e-7, rtol=1e-6)
