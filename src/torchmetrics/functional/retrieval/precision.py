@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
@@ -26,10 +25,11 @@ def retrieval_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = No
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     ``0`` is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
-    otherwise an error is raised. If you want to measure Precision@K, ``top_k`` must be a positive integer.
+    otherwise an error is raised. If all ``preds`` are zero, ``0`` is returned.
+    If you want to measure Precision@K, ``top_k`` must be a positive integer.
 
     Args:
-        preds: estimated probabilities of each document to be relevant.
+        preds: relevance scores for each document, which may be negative.
         target: ground truth about each document being relevant or not.
         top_k: consider only the top k elements (default: ``None``, which considers them all)
         adaptive_k: adjust `k` to `min(k, number of documents)` for each query
@@ -62,10 +62,9 @@ def retrieval_precision(preds: Tensor, target: Tensor, top_k: Optional[int] = No
     if not (isinstance(top_k, int) and top_k > 0):
         raise ValueError("`top_k` has to be a positive integer or None")
 
-    if not target.sum():
+    if not target.sum() or not preds.any():
         return tensor(0.0, device=preds.device)
 
-    target_filtered = torch.where(preds > 0, target, torch.zeros_like(target))
-    relevant = target_filtered[preds.topk(min(top_k, preds.shape[-1]), dim=-1)[1]].sum().float()
+    relevant = target[preds.topk(min(top_k, preds.shape[-1]), dim=-1)[1]].sum().float()
 
     return relevant / top_k

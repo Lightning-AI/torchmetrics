@@ -24,10 +24,10 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor, top_k: Optional[int
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     0 is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
-    otherwise an error is raised.
+    otherwise an error is raised. If all ``preds`` are zero, ``0`` is returned.
 
     Args:
-        preds: estimated probabilities of each document to be relevant.
+        preds: relevance scores for each document, which may be negative.
         target: ground truth about each document being relevant or not.
         top_k: consider only the top k elements (default: ``None``, which considers them all)
 
@@ -52,7 +52,9 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor, top_k: Optional[int
     if not isinstance(top_k, int) and top_k <= 0:
         raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}.")
 
-    target = torch.where(preds > 0, target, torch.zeros_like(target))
+    if not preds.any():
+        return tensor(0.0, device=preds.device)
+
     target = target[preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)[1]]
 
     if not target.sum():
