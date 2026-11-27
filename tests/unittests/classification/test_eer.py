@@ -22,7 +22,7 @@ from scipy.special import softmax
 from sklearn.metrics import roc_curve
 
 from torchmetrics.classification.eer import EER, BinaryEER, MulticlassEER, MultilabelEER
-from torchmetrics.functional.classification.eer import binary_eer, multiclass_eer, multilabel_eer
+from torchmetrics.functional.classification.eer import _binary_eer_compute, binary_eer, multiclass_eer, multilabel_eer
 from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.metric import Metric
 from unittests import NUM_CLASSES
@@ -33,6 +33,39 @@ from unittests.classification._inputs import _binary_cases, _multiclass_cases, _
 seed_all(42)
 
 
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_eer_threshold_ties_are_stable(dtype):
+    """Equally close ROC points must select the first threshold independently of rounding."""
+    fpr = torch.tensor([0.0, 1 / 3, 2 / 3, 1.0], dtype=dtype)
+    tpr = torch.tensor([0.0, 0.5, 0.5, 1.0], dtype=dtype)
+    torch.testing.assert_close(_binary_eer_compute(fpr, tpr), torch.tensor(5 / 12, dtype=dtype))
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_eer_selects_strictly_closer_threshold(dtype):
+    """Tie handling must retain the actual minimum when ROC differences are distinct."""
+    fpr = torch.tensor([0.0, 1 / 3, 2 / 3, 1.0], dtype=dtype)
+    tpr = torch.tensor([0.0, 0.49, 0.5, 1.0], dtype=dtype)
+    torch.testing.assert_close(_binary_eer_compute(fpr, tpr), torch.tensor(7 / 12, dtype=dtype))
+
+
+@pytest.mark.parametrize("default_dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("thresholds", [None, [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]])
+def test_binary_eer_ties_with_default_precision(default_dtype, thresholds):
+    """Functional and stateful scores must agree when the default floating precision changes."""
+    previous_dtype = torch.get_default_dtype()
+    try:
+        torch.set_default_dtype(default_dtype)
+        preds = torch.tensor([0.9, 0.8, 0.7, 0.6, 0.5], dtype=torch.float32)
+        target = torch.tensor([0, 1, 0, 0, 1])
+        result = binary_eer(preds, target, thresholds=thresholds)
+        expected = torch.tensor(5 / 12, dtype=result.dtype)
+        torch.testing.assert_close(result, expected)
+        torch.testing.assert_close(BinaryEER(thresholds=thresholds)(preds, target), expected)
+    finally:
+        torch.set_default_dtype(previous_dtype)
+
+
 def _reference_sklearn_eer_binary(preds, target, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
@@ -41,7 +74,15 @@ def _reference_sklearn_eer_binary(preds, target, ignore_index=None):
     target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     fpr, tpr, _ = roc_curve(target, preds, drop_intermediate=False)
 
-    diff = fpr - (1 - tpr)
+    # Compare exact count differences so mathematically equal thresholds are not ordered by float roundoff.
+    positives = (target == 1).sum()
+    negatives = (target == 0).sum()
+    if positives and negatives:
+        false_positives = np.rint(fpr * negatives).astype(np.int64)
+        false_negatives = np.rint((1 - tpr) * positives).astype(np.int64)
+        diff = false_positives * positives - false_negatives * negatives
+    else:
+        diff = fpr - (1 - tpr)
     idx = np.argmin(np.abs(diff))
     return (fpr[idx] + (1 - tpr[idx])) / 2
 
