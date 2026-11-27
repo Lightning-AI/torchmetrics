@@ -97,7 +97,7 @@ def binary_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -188,7 +188,7 @@ def multiclass_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -305,7 +305,7 @@ def multilabel_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -407,7 +407,7 @@ def binary_recall(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -498,7 +498,7 @@ def multiclass_recall(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -615,7 +615,7 @@ def multilabel_recall(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
+        zero_division: Must be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
