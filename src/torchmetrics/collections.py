@@ -312,6 +312,16 @@ class MetricCollection(ModuleDict):
         if metric1._defaults.keys() != metric2._defaults.keys():
             return False
 
+        # states that happen to coincide after the first batch do not mean that later updates will coincide: metrics
+        # whose update-relevant hyperparameters differ (e.g. ``threshold``, ``ignore_index``, ``top_k``) must not be
+        # grouped. Only hyperparameters that are purely used in ``compute`` may differ between group members.
+        compute_only = {"average", "zero_division", "training", "prefix", "postfix"}
+        hp_types = (int, float, str, bool, type(None), tuple)
+        hp1 = {k: v for k, v in vars(metric1).items() if not k.startswith("_") and isinstance(v, hp_types)}
+        hp2 = {k: v for k, v in vars(metric2).items() if not k.startswith("_") and isinstance(v, hp_types)}
+        if any(hp1[k] != hp2[k] for k in (hp1.keys() & hp2.keys()) - compute_only):
+            return False
+
         for key in metric1._defaults:
             state1 = getattr(metric1, key)
             state2 = getattr(metric2, key)
