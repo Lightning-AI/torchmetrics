@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed small asymptotic p-values rounding to zero in `KendallRankCorrCoef`
+- Fixed small asymptotic p-values rounding to zero in `KendallRankCorrCoef` ([#3675](https://github.com/Lightning-AI/torchmetrics/pull/3675))
 
 - Fixed `BootStrapper` computing the `quantile` over all outputs at once instead of per output for metrics with non-scalar results ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
 
