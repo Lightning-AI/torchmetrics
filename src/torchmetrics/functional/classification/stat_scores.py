@@ -736,7 +736,8 @@ def _multilabel_stat_scores_compute(
         return res.float().mean(sum_dim)
     if average == "weighted":
         w = tp + fn
-        return (res * (w / w.sum()).reshape(*w.shape, 1)).sum(sum_dim)
+        weights = w / w.sum(dim=-1, keepdim=True)
+        return (res * weights.unsqueeze(-1)).sum(sum_dim)
     if average is None or average == "none":
         return res
     return None
