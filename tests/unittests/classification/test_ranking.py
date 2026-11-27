@@ -143,3 +143,24 @@ class TestMultilabelRanking(MetricTester):
             metric_args={"num_labels": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+@pytest.mark.parametrize("ignore_index", [-1, 2])
+def test_multilabel_coverage_error_ignore_index(ignore_index):
+    """Check that labels set to ``ignore_index`` are left out of the coverage error of their sample."""
+    preds = torch.rand(20, NUM_CLASSES, generator=torch.Generator().manual_seed(42))
+    target = torch.randint(0, 2, (20, NUM_CLASSES), generator=torch.Generator().manual_seed(43))
+    target = inject_ignore_index(target, ignore_index)
+    assert (target == ignore_index).any()
+
+    expected = np.mean([
+        sk_coverage_error(t[t != ignore_index][None].numpy(), p[t != ignore_index][None].numpy())
+        for p, t in zip(preds, target)
+    ])
+    result = multilabel_coverage_error(preds, target, num_labels=NUM_CLASSES, ignore_index=ignore_index)
+    assert torch.allclose(result, torch.tensor(expected, dtype=result.dtype))
+
+    metric = MultilabelCoverageError(num_labels=NUM_CLASSES, ignore_index=ignore_index)
+    metric.update(preds[:10], target[:10])
+    metric.update(preds[10:], target[10:])
+    assert torch.allclose(metric.compute(), torch.tensor(expected, dtype=result.dtype))
