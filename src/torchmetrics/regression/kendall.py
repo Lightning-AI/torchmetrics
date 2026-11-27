@@ -37,9 +37,10 @@ class KendallRankCorrCoef(Metric):
     r"""Compute `Kendall Rank Correlation Coefficient`_.
 
     .. math::
-        tau_a = \frac{C - D}{C + D}
+        tau_a = \frac{C - D}{n (n - 1) / 2}
 
-    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs.
+    where :math:`C` represents concordant pairs, :math:`D` stands for discordant pairs and :math:`n` is a total number
+    of observations, i.e. the denominator is the number of all pairs, including tied ones.
 
     .. math::
         tau_b = \frac{C - D}{\sqrt{(C + D + T_{preds}) * (C + D + T_{target})}}
