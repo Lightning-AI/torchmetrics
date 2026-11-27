@@ -29,6 +29,7 @@ from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
     _PYCOCOTOOLS_GREATER_EQUAL_2_0_9,
+    _ULTRAFAST_COCO_AVAILABLE,
 )
 
 if not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE):
@@ -123,8 +124,22 @@ def _validate_iou_type_arg(
     return iou_type
 
 
-def _load_coco_backend_tools(backend: Literal["pycocotools", "faster_coco_eval"]) -> tuple[object, object, ModuleType]:
+def _load_coco_backend_tools(
+    backend: Literal["pycocotools", "faster_coco_eval", "ultrafast"],
+) -> tuple[object, object, ModuleType]:
     """Load the backend tools for the given backend."""
+    if backend == "ultrafast":
+        if not _ULTRAFAST_COCO_AVAILABLE:
+            raise ModuleNotFoundError(
+                "Backend `ultrafast` requires ultrafast-pycocotools>=0.1.11."
+                ' Please install with `pip install "ultrafast-pycocotools>=0.1.11"`'
+                " or `pip install torchmetrics[ultrafast]`."
+            )
+        import ultrafast_pycocotools.mask as mask_utils
+        from ultrafast_pycocotools import COCO, COCOeval
+
+        return COCO, COCOeval, mask_utils
+
     if backend == "pycocotools":
         if not _PYCOCOTOOLS_AVAILABLE:
             raise ModuleNotFoundError(
@@ -154,20 +169,21 @@ class CocoBackend:
 
     This class provides the core functionality for evaluating object detection and instance
     segmentation predictions using the Common Objects in Context (COCO) evaluation protocol.
-    It supports both the standard 'pycocotools' and optimized 'faster_coco_eval' backends.
+    It supports the 'pycocotools', 'faster_coco_eval' and 'ultrafast' backends.
 
     It's used for calculation of mAP in MeanAveragePrecision class. It's a backend that abstracts
     away the mAP calculation with coco package
 
     Args:
-        backend (str): Either 'pycocotools' or 'faster_coco_eval'
+        backend (str): One of 'pycocotools', 'faster_coco_eval' or 'ultrafast'
 
     """
 
-    def __init__(self, backend: Literal["pycocotools", "faster_coco_eval"]) -> None:
-        if backend not in ("pycocotools", "faster_coco_eval"):
+    def __init__(self, backend: Literal["pycocotools", "faster_coco_eval", "ultrafast"]) -> None:
+        if backend not in ("pycocotools", "faster_coco_eval", "ultrafast"):
             raise ValueError(
-                f"Expected argument `backend` to be one of ('pycocotools', 'faster_coco_eval') but got {backend}"
+                "Expected argument `backend` to be one of ('pycocotools', 'faster_coco_eval', 'ultrafast')"
+                f" but got {backend}"
             )
         self.backend = backend
 
@@ -268,7 +284,7 @@ class CocoBackend:
         coco_preds: str,
         coco_target: str,
         iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = ("bbox",),
-        backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
+        backend: Literal["pycocotools", "faster_coco_eval", "ultrafast"] = "pycocotools",
     ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of the mAP metric.
 
@@ -279,7 +295,7 @@ class CocoBackend:
             coco_preds: Path to the json file containing the predictions in coco format
             coco_target: Path to the json file containing the targets in coco format
             iou_type: Type of input, either `bbox` for bounding boxes or `segm` for segmentation masks
-            backend: Backend to use for the conversion. Either `pycocotools` or `faster_coco_eval`.
+            backend: Backend to use for the conversion. One of `pycocotools`, `faster_coco_eval` or `ultrafast`.
 
         Returns:
             A tuple containing the predictions and targets in the input format of mAP metric. Each element of the
@@ -642,7 +658,8 @@ def _get_safe_item_values(
     if "segm" in iou_type:
         masks = []
         for i in item["masks"].cpu().numpy():
-            rle = coco_backend.mask_utils.encode(np.asfortranarray(i))
+            # COCO RLE consumes bytes, including when the metric receives boolean masks.
+            rle = coco_backend.mask_utils.encode(np.asfortranarray(i, dtype=np.uint8))
             masks.append((tuple(rle["size"]), rle["counts"]))
         output[1] = tuple(masks)  # type: ignore[call-overload]
 
