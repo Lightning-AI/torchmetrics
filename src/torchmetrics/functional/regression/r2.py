@@ -94,8 +94,12 @@ def _r2_score_compute(
     elif multioutput == "uniform_average":
         r2 = torch.mean(raw_scores)
     elif multioutput == "variance_weighted":
+        all_zero_tss = torch.all(tss == 0)
         tss_sum = torch.sum(tss)
-        r2 = torch.sum(tss / tss_sum * raw_scores)
+        # Avoid 0/0 in the unselected branch when all variances are zero.
+        tss_sum = torch.where(all_zero_tss, torch.ones_like(tss_sum), tss_sum)
+        weighted_r2 = torch.sum(tss / tss_sum * raw_scores)
+        r2 = torch.where(all_zero_tss, torch.mean(raw_scores), weighted_r2)
     else:
         raise ValueError(
             "Argument `multioutput` must be either `raw_values`,"
@@ -145,7 +149,8 @@ def r2_score(
 
             * ``'raw_values'`` returns full set of scores
             * ``'uniform_average'`` scores are uniformly averaged
-            * ``'variance_weighted'`` scores are weighted by their individual variances
+            * ``'variance_weighted'`` scores are weighted by their individual variances. If all output variances are
+              zero, the scores are uniformly averaged.
 
     Raises:
         ValueError:
