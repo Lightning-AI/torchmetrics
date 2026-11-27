@@ -13,13 +13,6 @@ pip install -r requiremnets/_integrate.txt  # integration tests
 
 ```
 
-To install all extra requirements so that the documentation can be built, use the following command:
-
-```bash
-pip install -r requirements/_docs.txt
-# OR just run `make docs`
-```
-
 ## CI/CD upper bounds automation
 
 For CI stability, we have set for all package versions' upper bounds (the latest version), so with any sudden release,
