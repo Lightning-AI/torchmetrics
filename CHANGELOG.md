@@ -79,6 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
 
 
+- Fixed `MultilabelRankingLoss` depending on label order when a relevant and an irrelevant label have the same score ([#3520](https://github.com/Lightning-AI/torchmetrics/pull/3520))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05
