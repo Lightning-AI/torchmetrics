@@ -28,8 +28,8 @@ def _validate_fpr_range(fpr_range: Tuple[float, float]) -> None:
     """Validate the `fpr_range` argument for the logauc metric."""
     if not isinstance(fpr_range, tuple) or len(fpr_range) != 2:
         raise ValueError(f"The `fpr_range` should be a tuple of two floats, but got {type(fpr_range)}.")
-    if not (0 <= fpr_range[0] < fpr_range[1] <= 1):
-        raise ValueError(f"The `fpr_range` should be a tuple of two floats in the range [0, 1], but got {fpr_range}.")
+    if not (0 < fpr_range[0] < fpr_range[1] <= 1):
+        raise ValueError(f"The `fpr_range` should be a tuple of two floats in the range (0, 1], but got {fpr_range}.")
 
 
 def _binary_logauc_compute(
@@ -316,6 +316,8 @@ def multilabel_logauc(
         tensor([0.5000, 0.0000, 0.6835])
 
     """
+    if validate_args:
+        _validate_fpr_range(fpr_range)
     fpr, tpr, _ = multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
     return _reduce_logauc(fpr, tpr, fpr_range, average=average)
 
