@@ -358,6 +358,29 @@ def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_mes
         multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, ignore_index=ignore_index)
 
 
+@pytest.mark.parametrize(
+    ("num_samples", "ignore_index", "error_message"),
+    [
+        (
+            NUM_CLASSES + 1,
+            None,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES}.*",
+        ),
+        (
+            NUM_CLASSES + 2,
+            1,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES + 1}.*",
+        ),
+    ],
+)
+def test_raises_error_on_too_many_classes_with_float_preds(num_samples, ignore_index, error_message):
+    """Test that `target` is validated when `preds` is a float tensor of shape ``(N, C)``."""
+    preds = torch.rand(num_samples, NUM_CLASSES)
+    target = torch.arange(num_samples)
+    with pytest.raises(RuntimeError, match=error_message):
+        multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, ignore_index=ignore_index)
+
+
 @pytest.mark.parametrize("top_k", [-1, 0, 4.5])
 def test_raises_error_on_invalid_top_k(top_k):
     """Test that a ValueError is raised if `top_k` is not a positive integer."""
