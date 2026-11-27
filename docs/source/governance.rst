@@ -12,7 +12,7 @@ Leads
 -----
 - Nicki Skafte (`skaftenicki <https://github.com/SkafteNicki>`_)
 - Jirka Borovec (`Borda <https://github.com/Borda>`_)
-- Justus Schock (`justusschock <https://github.com/justusschock>`_)
+- Justus Schock (`justusperillieux <https://github.com/justusperillieux>`_)
 
 
 Core Maintainers
