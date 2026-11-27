@@ -59,7 +59,7 @@ Development commands from the project root (Unix only):
 - `make clean` cleans repo from temp/generated files
 - `make test` runs all project's tests with coverage
 
-The versioned library docs are built by grid's external docs sync.
+The versioned library docs are synced and published externally.
 
 By default all make commands will use `python`/`pip` but if you are using [uv](https://docs.astral.sh/uv/)
 as your dependency manager, you can instead run `make USE_UV=1 clean` etc. to use `uv` under the hood.
@@ -113,7 +113,7 @@ def my_func(param_a: int, param_b: Optional[float] = None) -> str:
     return str(param_a + p)
 ```
 
-The versioned docs are published by grid's external docs sync after a release tag is available.
+The versioned docs are synced and published externally after a release tag is available.
 
 ### Testing
 

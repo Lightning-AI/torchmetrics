@@ -37,4 +37,4 @@ def my_func(param_a: int, param_b: Optional[float] = None) -> str:
 
 ## Publishing
 
-The RST pages and Python docstrings in this repository are the source for grid's external docs sync. It builds the versioned [TorchMetrics documentation](https://lightning.ai/docs/torchmetrics/stable) after releases. Sphinx is still used for API reference extraction in that pipeline.
+The RST pages and Python docstrings in this repository remain the source for the versioned [TorchMetrics documentation](https://lightning.ai/docs/torchmetrics/stable). The docs are synced and published externally after releases.
