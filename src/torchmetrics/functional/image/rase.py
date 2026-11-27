@@ -63,8 +63,9 @@ def _rase_compute(rmse_map: Tensor, target_sum: Tensor, total_images: Tensor, wi
     target_mean = target_mean.mean(0)  # mean over image channels
     rase_map = 100 / target_mean * torch.sqrt(torch.mean(rmse_map**2, 0))
     crop_slide = round(window_size / 2)
+    crop_slice = slice(crop_slide, -crop_slide or None)
 
-    return torch.mean(rase_map[crop_slide:-crop_slide, crop_slide:-crop_slide])
+    return torch.mean(rase_map[crop_slice, crop_slice])
 
 
 def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: int = 8) -> Tensor:
