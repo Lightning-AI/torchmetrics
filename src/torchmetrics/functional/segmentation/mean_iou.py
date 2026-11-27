@@ -72,8 +72,13 @@ def _mean_iou_update(
     num_classes: Optional[int] = None,
     include_background: bool = False,
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
+    ignore_index: Optional[int] = None,
 ) -> tuple[Tensor, Tensor]:
     """Update the intersection and union counts for the mean IoU computation."""
+    if ignore_index is not None and input_format == "index":
+        idx = target != ignore_index
+        target, preds = target[idx], preds[idx]
+
     preds, target = _mean_iou_reshape_args(preds, target, input_format)
 
     preds, target = _segmentation_inputs_format(preds, target, include_background, num_classes, input_format)
@@ -102,6 +107,7 @@ def mean_iou(
     include_background: bool = True,
     per_class: bool = False,
     input_format: Literal["one-hot", "index", "mixed"] = "one-hot",
+    ignore_index: Optional[int] = None,
 ) -> Tensor:
     """Calculates the mean Intersection over Union (mIoU) for semantic segmentation.
 
@@ -117,6 +123,8 @@ def mean_iou(
         input_format: What kind of input the function receives.
             Choose between ``"one-hot"`` for one-hot encoded tensors, ``"index"`` for index tensors
             or ``"mixed"`` for one one-hot encoded and one index tensor
+        ignore_index: Class index to ignore in the target. This class will be ignored
+            in both the intersection and union computation. Only used when ``input_format="index"``.
 
     Returns:
         The mean IoU score
@@ -151,7 +159,7 @@ def mean_iou(
 
     """
     _mean_iou_validate_args(num_classes, include_background, per_class, input_format)
-    intersection, union = _mean_iou_update(preds, target, num_classes, include_background, input_format)
+    intersection, union = _mean_iou_update(preds, target, num_classes, include_background, input_format, ignore_index)
     scores = _mean_iou_compute(intersection, union, zero_division="nan")
     valid_classes = union > 0
     return scores.nan_to_num(-1.0) if per_class else scores.nansum(dim=-1) / valid_classes.sum(dim=-1)
