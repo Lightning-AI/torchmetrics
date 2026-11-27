@@ -127,10 +127,24 @@ class TestBinaryROC(MetricTester):
         preds, target = inputs
         for pred, true in zip(preds, target):
             p1, r1, t1 = binary_roc(pred, true, thresholds=None)
-            p2, r2, t2 = binary_roc(pred, true, thresholds=threshold_fn(t1.flip(0)))
+            # The last exact threshold is the artificial value used to anchor the curve at (0, 0). The binned path
+            # adds its own anchor, so it should only receive the thresholds derived from the predictions.
+            p2, r2, t2 = binary_roc(pred, true, thresholds=threshold_fn(t1.flip(0)[:-1]))
             assert torch.allclose(p1, p2)
             assert torch.allclose(r1, r2)
             assert torch.allclose(t1, t2)
+
+
+def test_binned_roc_starts_at_origin():
+    """Check that binned ROC curves include the operating point where every sample is classified as negative."""
+    preds = torch.tensor([1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0])
+    target = torch.tensor([0, 1, 0, 0, 0, 1, 1, 1, 1, 1])
+
+    fpr, tpr, thresholds = binary_roc(preds, target, thresholds=10)
+
+    assert torch.allclose(fpr[0], torch.zeros_like(fpr[0]))
+    assert torch.allclose(tpr[0], torch.zeros_like(tpr[0]))
+    assert torch.allclose(thresholds[0], torch.ones_like(thresholds[0]))
 
 
 def _reference_sklearn_roc_multiclass(preds, target, ignore_index=None):
@@ -244,7 +258,9 @@ class TestMulticlassROC(MetricTester):
         for pred, true in zip(preds, target):
             p1, r1, t1 = multiclass_roc(pred, true, num_classes=NUM_CLASSES, thresholds=None)
             for i, t in enumerate(t1):
-                p2, r2, t2 = multiclass_roc(pred, true, num_classes=NUM_CLASSES, thresholds=threshold_fn(t.flip(0)))
+                p2, r2, t2 = multiclass_roc(
+                    pred, true, num_classes=NUM_CLASSES, thresholds=threshold_fn(t.flip(0)[:-1])
+                )
 
                 assert torch.allclose(p1[i], p2[i])
                 assert torch.allclose(r1[i], r2[i])
@@ -367,11 +383,52 @@ class TestMultilabelROC(MetricTester):
         for pred, true in zip(preds, target):
             p1, r1, t1 = multilabel_roc(pred, true, num_labels=NUM_CLASSES, thresholds=None)
             for i, t in enumerate(t1):
-                p2, r2, t2 = multilabel_roc(pred, true, num_labels=NUM_CLASSES, thresholds=threshold_fn(t.flip(0)))
+                p2, r2, t2 = multilabel_roc(pred, true, num_labels=NUM_CLASSES, thresholds=threshold_fn(t.flip(0)[:-1]))
 
                 assert torch.allclose(p1[i], p2[i])
                 assert torch.allclose(r1[i], r2[i])
                 assert torch.allclose(t1[i], t2)
+
+
+@pytest.mark.parametrize(
+    ("metric_functional", "preds", "target", "kwargs"),
+    [
+        (
+            multiclass_roc,
+            torch.tensor([
+                [1.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+            ]),
+            torch.tensor([0, 1, 1, 2, 2, 0, 0]),
+            {"num_classes": 3},
+        ),
+        (
+            multilabel_roc,
+            torch.tensor([
+                [1.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [0.0, 1.0, 1.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [0.0, 1.0, 0.0],
+            ]),
+            torch.tensor([[0, 1, 0], [1, 1, 0], [0, 1, 1], [0, 0, 1], [1, 0, 1], [0, 1, 0]]),
+            {"num_labels": 3},
+        ),
+    ],
+)
+def test_binned_multiclass_multilabel_roc_starts_at_origin(metric_functional, preds, target, kwargs):
+    """Check that every binned per-class curve starts at the origin for multiclass and multilabel tasks."""
+    fpr, tpr, thresholds = metric_functional(preds, target, thresholds=10, **kwargs)
+
+    assert torch.all(fpr[:, 0] == 0)
+    assert torch.all(tpr[:, 0] == 0)
+    assert thresholds[0] == 1
 
 
 @pytest.mark.parametrize(

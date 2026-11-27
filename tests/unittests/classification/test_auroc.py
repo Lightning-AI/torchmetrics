@@ -137,6 +137,60 @@ class TestBinaryAUROC(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
+@pytest.mark.parametrize(
+    ("metric_functional", "preds", "target", "kwargs"),
+    [
+        (
+            binary_auroc,
+            torch.tensor([1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0]),
+            torch.tensor([0, 1, 0, 0, 0, 1, 1, 1, 1, 1]),
+            {},
+        ),
+        (
+            multiclass_auroc,
+            torch.tensor([
+                [1.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+            ]),
+            torch.tensor([0, 1, 1, 2, 2, 0, 0]),
+            {"num_classes": 3},
+        ),
+        (
+            multilabel_auroc,
+            torch.tensor([
+                [1.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [0.0, 1.0, 1.0],
+                [0.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0],
+                [0.0, 1.0, 0.0],
+            ]),
+            torch.tensor([[0, 1, 0], [1, 1, 0], [0, 1, 1], [0, 0, 1], [1, 0, 1], [0, 1, 0]]),
+            {"num_labels": 3},
+        ),
+    ],
+)
+def test_binned_auroc_with_hard_predictions(metric_functional, preds, target, kwargs):
+    """Check that binned AUROC matches the exact computation when scores are hard 0/1 predictions."""
+    exact = metric_functional(preds, target, thresholds=None, **kwargs)
+    binned = metric_functional(preds, target, thresholds=10, **kwargs)
+    assert torch.allclose(exact, binned, atol=1e-6)
+
+
+def test_binned_binary_auroc_with_hard_predictions_stateful():
+    """Check that the stateful binned AUROC metric uses the corrected curve as well."""
+    preds = torch.tensor([1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0])
+    target = torch.tensor([0, 1, 0, 0, 0, 1, 1, 1, 1, 1])
+    exact = BinaryAUROC()(preds, target)
+    binned = BinaryAUROC(thresholds=10)(preds, target)
+    assert torch.allclose(exact, binned, atol=1e-6)
+
+
 def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
