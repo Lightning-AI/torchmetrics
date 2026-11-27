@@ -441,13 +441,12 @@ def _multiclass_stat_scores_update(
             idx = target != ignore_index
             preds = preds[idx]
             target = target[idx]
-        unique_mapping = target.to(torch.long) * num_classes + preds.to(torch.long)
-        bins = _bincount(unique_mapping, minlength=num_classes**2)
-        confmat = bins.reshape(num_classes, num_classes)
-        tp = confmat.diag()
-        fp = confmat.sum(0) - tp
-        fn = confmat.sum(1) - tp
-        tn = confmat.sum() - (fp + fn + tp)
+        preds = preds.to(torch.long)
+        target = target.to(torch.long)
+        tp = _bincount(torch.where(preds == target, target, num_classes), minlength=num_classes + 1)[:num_classes]
+        fp = _bincount(preds, minlength=num_classes) - tp
+        fn = _bincount(target, minlength=num_classes) - tp
+        tn = target.numel() - (tp + fp + fn)
     return tp, fp, tn, fn
 
 
