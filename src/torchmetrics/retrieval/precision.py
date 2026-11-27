@@ -115,7 +115,7 @@ class RetrievalPrecision(RetrievalMetric):
         )
 
         if top_k is not None and not (isinstance(top_k, int) and top_k > 0):
-            raise ValueError("`top_k` has to be a positive integer or None")
+            raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}")
         if not isinstance(adaptive_k, bool):
             raise ValueError("`adaptive_k` has to be a boolean")
         self.top_k = top_k
