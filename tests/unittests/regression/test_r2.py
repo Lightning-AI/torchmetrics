@@ -70,12 +70,13 @@ class TestR2Score(MetricTester):
     """Test class for `R2Score` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, ddp):
+    @pytest.mark.parametrize("scale", [1.0, 1e-3])
+    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, ddp, scale):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
-            preds,
-            target,
+            preds * scale,
+            target * scale,
             R2Score,
             partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
             metric_args={"adjusted": adjusted, "multioutput": multioutput},
@@ -155,9 +156,101 @@ def test_warning_on_too_large_adjusted(metric_class=R2Score):
         metric(torch.randn(11), torch.randn(11))
 
 
-def test_constant_target():
+@pytest.mark.parametrize("scale", [1e-3, 1.0, 1e3])
+def test_constant_target(scale):
     """Check for a near constant target that a value of 0 is returned."""
-    y_true = torch.tensor([-5.1608, -5.1609, -5.1608, -5.1608, -5.1608, -5.1608])
-    y_pred = torch.tensor([-3.9865, -5.4648, -5.0238, -4.3899, -5.6672, -4.7336])
+    y_true = torch.tensor([-5.1608, -5.1609, -5.1608, -5.1608, -5.1608, -5.1608]) * scale
+    y_pred = torch.tensor([-3.9865, -5.4648, -5.0238, -4.3899, -5.6672, -4.7336]) * scale
     score = r2_score(preds=y_pred, target=y_true)
     assert score == 0
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("scale", [1.0, 1e-3, 1e-6])
+@pytest.mark.parametrize("repeats", [1, 100])
+@pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
+def test_r2_scale_and_sample_count(dtype, scale, repeats, multioutput):
+    """Rescaling or repeating samples must preserve mean, worse and perfect prediction scores."""
+    target = torch.arange(4, dtype=dtype).unsqueeze(1) * torch.tensor([1.0, 2.0, 3.0], dtype=dtype)
+    preds = torch.stack([target[:, 0].mean().expand(4), torch.zeros(4, dtype=dtype), target[:, 2]], dim=1)
+    expected = torch.as_tensor(sk_r2score(target.numpy(), preds.numpy(), multioutput=multioutput), dtype=dtype)
+    target = (target * scale).repeat(repeats, 1)
+    preds = (preds * scale).repeat(repeats, 1)
+
+    score = r2_score(preds, target, multioutput=multioutput)
+    torch.testing.assert_close(score, expected, atol=1e-4, rtol=1e-4)
+
+    metric = R2Score(multioutput=multioutput).set_dtype(dtype)
+    for pred_batch, target_batch in zip(preds.split(2), target.split(2)):
+        metric.update(pred_batch, target_batch)
+    torch.testing.assert_close(metric.compute(), expected, atol=1e-4, rtol=1e-4)
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("value", [0.0, 1e-3, 0.1, 1e3])
+@pytest.mark.parametrize("num_samples", [4, 1000])
+def test_r2_constant_target_small_error(dtype, value, num_samples):
+    """Only an exact prediction receives a perfect score when the target is constant."""
+    target = torch.full((num_samples,), value, dtype=dtype)
+    for error, expected in [(0.0, 1.0), (1e-4, 0.0)]:
+        preds = target + error
+        assert r2_score(preds, target) == expected
+        metric = R2Score().set_dtype(dtype)
+        for pred_batch, target_batch in zip(preds.split(10), target.split(10)):
+            metric.update(pred_batch, target_batch)
+        assert metric.compute() == expected
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
+def test_r2_centered_state_merging(dtype, multioutput):
+    """Forward accumulation and merging unequal batches preserve the full-data score."""
+    target = torch.tensor([100.0, 101.0, 103.0, 105.0, 108.0, 113.0], dtype=dtype)
+    target = target.unsqueeze(1) * torch.tensor([1e-3, 1.0], dtype=dtype)
+    preds = target + torch.tensor([0.002, 1.0], dtype=dtype)
+    expected = torch.as_tensor(sk_r2score(target.numpy(), preds.numpy(), multioutput=multioutput), dtype=dtype)
+    first = R2Score(multioutput=multioutput).set_dtype(dtype)
+    second = R2Score(multioutput=multioutput).set_dtype(dtype)
+    first.update(preds[:2], target[:2])
+    second.update(preds[2:], target[2:])
+    first.merge_state(second)
+    torch.testing.assert_close(first.compute(), expected, atol=1e-4, rtol=1e-4)
+
+    metric = R2Score(multioutput=multioutput).set_dtype(dtype)
+    metric(preds[:2], target[:2])
+    metric(preds[2:], target[2:])
+    torch.testing.assert_close(metric.compute(), expected, atol=1e-4, rtol=1e-4)
+
+    empty = R2Score(multioutput=multioutput).set_dtype(dtype)
+    empty.merge_state(metric)
+    empty.merge_state(R2Score(multioutput=multioutput).set_dtype(dtype))
+    torch.testing.assert_close(empty.compute(), expected, atol=1e-4, rtol=1e-4)
+
+
+@pytest.mark.parametrize("target", [torch.tensor([0.0, float("nan")]), torch.tensor([-1e20, 1e20])])
+def test_r2_nonfinite_statistics(target):
+    """Invalid or overflowing statistics must not become a finite score."""
+    preds = torch.zeros_like(target)
+    assert torch.isnan(r2_score(preds, target))
+    assert torch.isnan(R2Score()(preds, target))
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize("legacy", [False, True])
+@pytest.mark.parametrize("num_prior", [0, 3])
+def test_r2_load_state_and_continue(dtype, legacy, num_prior):
+    """Current and legacy persisted states can resume accumulation, including from an empty state."""
+    target = torch.arange(6, dtype=dtype) * 1e-3
+    preds = target + 5e-4
+    metric = R2Score().set_dtype(dtype)
+    metric.persistent(True)
+    metric.update(preds[:num_prior], target[:num_prior])
+    state = metric.state_dict()
+    if legacy:
+        state.pop("target_mean")
+        state.pop("target_sum_squared_deviation")
+    restored = R2Score().set_dtype(dtype)
+    restored.load_state_dict(state)
+    restored.update(preds[num_prior:], target[num_prior:])
+    expected = torch.as_tensor(sk_r2score(target.numpy(), preds.numpy()), dtype=dtype)
+    torch.testing.assert_close(restored.compute(), expected, atol=1e-4, rtol=1e-4)

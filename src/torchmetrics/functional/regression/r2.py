@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -51,6 +51,7 @@ def _r2_score_compute(
     num_obs: Union[int, Tensor],
     adjusted: int = 0,
     multioutput: str = "uniform_average",
+    tss: Optional[Tensor] = None,
 ) -> Tensor:
     """Compute R2 score.
 
@@ -65,6 +66,7 @@ def _r2_score_compute(
             * `'raw_values'` returns full set of scores
             * `'uniform_average'` scores are uniformly averaged
             * `'variance_weighted'` scores are weighted by their individual variances
+        tss: Total sum of squares computed from centered observations, if available.
 
     Example:
         >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
@@ -77,12 +79,15 @@ def _r2_score_compute(
     if num_obs < 2:
         raise ValueError("Needs at least two samples to calculate r2 score.")
 
-    mean_obs = sum_obs / num_obs
-    tss = sum_squared_obs - sum_obs * mean_obs
+    if tss is None:
+        mean_obs = sum_obs / num_obs
+        tss = sum_squared_obs - sum_obs * mean_obs
 
-    # Account for near constant targets
-    cond_rss = ~torch.isclose(rss, torch.zeros_like(rss), atol=1e-4)
-    cond_tss = ~torch.isclose(tss, torch.zeros_like(tss), atol=1e-4)
+    # Preserve the near-constant fallback without an absolute threshold on the input scale.
+    tss_tolerance = torch.finfo(tss.dtype).eps * sum_squared_obs
+    cond_rss = rss != 0
+    # Preserve non-finite results instead of reporting a finite score.
+    cond_tss = (tss > tss_tolerance) | ~torch.isfinite(tss)
     cond = cond_rss & cond_tss
 
     raw_scores = torch.ones_like(rss)
@@ -137,6 +142,9 @@ def r2_score(
     where the parameter :math:`k` (the number of independent regressors) should
     be provided as the ``adjusted`` argument.
 
+    For constant targets, the score is 1 for perfect predictions and 0 otherwise. Near-constant targets are detected
+    using a tolerance proportional to the target sum of squares and the computation dtype's machine epsilon.
+
     Args:
         preds: estimated labels
         target: ground truth labels
@@ -171,4 +179,5 @@ def r2_score(
 
     """
     sum_squared_obs, sum_obs, rss, num_obs = _r2_score_update(preds, target)
-    return _r2_score_compute(sum_squared_obs, sum_obs, rss, num_obs, adjusted, multioutput)
+    tss = ((target - sum_obs / num_obs) ** 2).sum(dim=0)
+    return _r2_score_compute(sum_squared_obs, sum_obs, rss, num_obs, adjusted, multioutput, tss=tss)

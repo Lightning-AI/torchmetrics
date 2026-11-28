@@ -37,8 +37,9 @@ class R2Score(Metric):
     .. math:: R^2_{adj} = 1 - \frac{(1-R^2)(n-1)}{n-k-1}
 
     where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
-    The score is only proper defined when :math:`SS_{tot}\neq 0`, which can happen for near constant targets. In this
-    case a score of 0 is returned. By definition the score is bounded between :math:`-inf` and 1.0, with 1.0 indicating
+    For constant targets, the score is 1 for perfect predictions and 0 otherwise. Near-constant targets are detected
+    using a tolerance proportional to the target sum of squares and the computation dtype's machine epsilon.
+    By definition the score is bounded between :math:`-inf` and 1.0, with 1.0 indicating
     perfect prediction, 0 indicating constant prediction and negative values indicating worse than constant prediction.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -105,6 +106,8 @@ class R2Score(Metric):
     sum_error: Tensor
     residual: Tensor
     total: Tensor
+    target_mean: Tensor
+    target_sum_squared_deviation: Tensor
 
     def __init__(
         self,
@@ -127,21 +130,85 @@ class R2Score(Metric):
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("residual", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx=None)
+        self.add_state("target_mean", default=tensor(0.0), dist_reduce_fx=None)
+        self.add_state("target_sum_squared_deviation", default=tensor(0.0), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
+        if total == 0:
+            return
+        mean = sum_error / total
+        self._reduce_states({
+            "sum_squared_error": sum_squared_error,
+            "sum_error": sum_error,
+            "residual": residual,
+            "total": self.total.new_tensor(total),
+            "target_mean": mean,
+            "target_sum_squared_deviation": ((target - mean) ** 2).sum(dim=0),
+        })
 
-        self.sum_squared_error = self.sum_squared_error + sum_squared_error
-        self.sum_error = self.sum_error + sum_error
-        self.residual = self.residual + residual
-        self.total = self.total + total
+    def _reduce_states(self, incoming_state: dict[str, Any]) -> None:
+        """Combine centered moments for updates, forward calls and explicit state merges."""
+        for name in self._defaults:
+            if name not in incoming_state:
+                raise ValueError(f"Expected state variable {name} to be present in incoming state {incoming_state}")
+        if incoming_state["total"] == 0:
+            return
+        if self.total == 0:
+            for name in self._defaults:
+                setattr(self, name, incoming_state[name].clone())
+            return
+        total = self.total + incoming_state["total"]
+        weight = incoming_state["total"].to(self.target_mean.dtype) / total
+        delta = incoming_state["target_mean"] - self.target_mean
+        self.target_sum_squared_deviation = (
+            self.target_sum_squared_deviation
+            + incoming_state["target_sum_squared_deviation"]
+            + delta.square() * (self.total * weight)
+        )
+        self.target_mean = self.target_mean + delta * weight
+        self.sum_squared_error = self.sum_squared_error + incoming_state["sum_squared_error"]
+        self.sum_error = self.sum_error + incoming_state["sum_error"]
+        self.residual = self.residual + incoming_state["residual"]
+        self.total = total
 
     def compute(self) -> Tensor:
         """Compute r2 score over the metric states."""
+        total = self.total
+        tss = self.target_sum_squared_deviation
+        if total.ndim > 0:
+            # Distributed synchronization gathers centered moments and their observation counts.
+            counts = total.reshape((-1,) + (1,) * (self.target_mean.ndim - 1))
+            total = total.sum()
+            mean = (self.target_mean * (counts.to(self.target_mean.dtype) / total)).sum(dim=0)
+            tss = (tss + counts * (self.target_mean - mean).square()).sum(dim=0)
         return _r2_score_compute(
-            self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput
+            self.sum_squared_error, self.sum_error, self.residual, total, self.adjusted, self.multioutput, tss=tss
+        )
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict[str, Any],
+        prefix: str,
+        local_metadata: dict[str, Any],
+        strict: bool,
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
+    ) -> None:
+        """Initialize centered moments when loading a state saved before they were added."""
+        if prefix + "target_mean" not in state_dict and prefix + "total" in state_dict:
+            total = state_dict[prefix + "total"]
+            sum_error = state_dict[prefix + "sum_error"]
+            mean = sum_error / total.clamp_min(1)
+            state_dict[prefix + "target_mean"] = mean
+            state_dict[prefix + "target_sum_squared_deviation"] = (
+                state_dict[prefix + "sum_squared_error"] - sum_error * mean
+            ).clamp_min(0)
+        super()._load_from_state_dict(
+            state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs
         )
 
     def plot(
