@@ -54,11 +54,12 @@ ______________________________________________________________________
 
 ### Developments scripts
 
-To build the documentation locally, simply execute the following commands from project root (only for Unix):
+Development commands from the project root (Unix only):
 
 - `make clean` cleans repo from temp/generated files
-- `make docs` builds documentation under _docs/build/html_
 - `make test` runs all project's tests with coverage
+
+The versioned library docs are synced and published externally.
 
 By default all make commands will use `python`/`pip` but if you are using [uv](https://docs.astral.sh/uv/)
 as your dependency manager, you can instead run `make USE_UV=1 clean` etc. to use `uv` under the hood.
@@ -112,24 +113,7 @@ def my_func(param_a: int, param_b: Optional[float] = None) -> str:
     return str(param_a + p)
 ```
 
-When updating the docs make sure to build them first locally and visually inspect the html files (in the browser) for
-formatting errors. In certain cases, a missing blank line or a wrong indent can lead to a broken layout.
-Run these commands
-
-```bash
-make docs
-```
-
-and open `docs/build/html/index.html` in your browser.
-
-Notes:
-
-- You need to have LaTeX installed for rendering math equations. You can for example install TeXLive by doing one of the following:
-  - on Ubuntu (Linux) run `apt-get install texlive` or otherwise follow the instructions on the TeXLive website
-  - use the [RTD docker image](https://hub.docker.com/r/readthedocs/build)
-- with PL used class meta you need to use python 3.7 or higher
-
-When you send a PR the continuous integration will run tests and build the docs.
+The versioned docs are synced and published externally after a release tag is available.
 
 ### Testing
 

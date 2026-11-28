@@ -149,9 +149,6 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     #  do not replace all "docs" as in the readme we replace some other sources with particular path to docs
     text = text.replace("docs/source/_static/", f"{os.path.join(github_source_url, 'docs/source/_static/')}")
 
-    # readthedocs badge
-    text = text.replace("badge/?version=stable", f"badge/?version={version}")
-    text = text.replace("torchmetrics.readthedocs.io/en/stable/", f"torchmetrics.readthedocs.io/en/{version}")
     # codecov badge
     text = text.replace("/branch/master/graph/badge.svg", f"/release/{version}/graph/badge.svg")
     # replace github badges for release ones

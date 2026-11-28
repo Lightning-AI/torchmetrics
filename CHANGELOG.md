@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added support for PyTorch 2.11-2.15 and Python 3.13 ([#3653](https://github.com/Lightning-AI/torchmetrics/pull/3653))
+- Added `SoftDTW` metric to the new timeseries domain ([#3287](https://github.com/Lightning-AI/torchmetrics/pull/3287))
 
 
 ### Changed
@@ -48,6 +49,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed malformed LaTeX in `CLIPScore` and `HausdorffDistance` docstring math so it renders correctly ([#3427](https://github.com/Lightning-AI/torchmetrics/pull/3427))
 
+- Fixed `PerceptualPathLength` ignoring the `batch_size` argument, which left it running at the functional default of 64 ([#3482](https://github.com/Lightning-AI/torchmetrics/pull/3482))
+
+
 - Fixed `Metric` ignoring an active `torch.device` context manager on torch 2.3-2.7 ([#3448](https://github.com/Lightning-AI/torchmetrics/pull/3448))
 
 - Fixed `Metric.compute` returning a stale cached value after `merge_state` ([#3600](https://github.com/Lightning-AI/torchmetrics/pull/3600))
@@ -66,6 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `StructuralSimilarityIndexMeasure` padding the last dimension of 3D inputs with `kernel_size` instead of the gaussian kernel size ([#3642](https://github.com/Lightning-AI/torchmetrics/pull/3642))
 
+- Fixed `MultilabelRankingLoss` undercounting samples when a batch has no relevant/irrelevant label pairs ([#3672](https://github.com/Lightning-AI/torchmetrics/pull/3672))
+
 - Fixed ROC, AUROC, precision-recall curve, average precision and the metrics built on them returning wrong values, or intermittently raising an index error, on MPS when `thresholds=None` and the predictions have 65536 or more distinct values ([#3625](https://github.com/Lightning-AI/torchmetrics/pull/3625))
 
 - Fixed aggregation metrics with a float `nan_strategy` overwriting the `value` and `weight` tensors passed to `update`, which also gave `MeanMetric` wrong weights for broadcast weight tensors ([#3527](https://github.com/Lightning-AI/torchmetrics/pull/3527))
@@ -78,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `TER` never shifting a block of 10 words in one step, which made it disagree with Tercom and sacrebleu ([#3594](https://github.com/Lightning-AI/torchmetrics/pull/3594))
 - Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
 - Fixed stat-scores based classification metrics such as `Accuracy` raising on an empty batch, which is now a no-op update ([#3541](https://github.com/Lightning-AI/torchmetrics/pull/3541))
+- Fixed multiclass stat scores, and the metrics built on them such as `MulticlassAccuracy`, allocating `num_classes**2` memory for non-micro averages, which ran out of memory for large `num_classes` ([#3343](https://github.com/Lightning-AI/torchmetrics/issues/3343))
 
 
 ---

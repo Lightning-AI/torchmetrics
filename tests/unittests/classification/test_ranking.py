@@ -143,3 +143,14 @@ class TestMultilabelRanking(MetricTester):
             metric_args={"num_labels": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+def test_multilabel_ranking_loss_counts_samples_without_label_pairs():
+    """Rows with no relevant/irrelevant label pair still count towards the mean."""
+    preds = torch.tensor([[0.8, 0.2], [0.7, 0.1], [0.2, 0.9]])
+    target = torch.tensor([[0, 0], [1, 1], [1, 0]])
+    expected = sk_label_ranking_loss(target.numpy(), preds.numpy())
+    metric = MultilabelRankingLoss(num_labels=2)
+    metric.update(preds[:2], target[:2])
+    metric.update(preds[2:], target[2:])
+    assert metric.compute().item() == pytest.approx(expected)
