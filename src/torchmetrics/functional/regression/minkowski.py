@@ -35,6 +35,8 @@ def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tens
         raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
 
     difference = torch.abs(preds - targets)
+    if p == float("inf"):
+        return difference.max()
     return torch.sum(torch.pow(difference, p))
 
 
@@ -42,7 +44,7 @@ def _minkowski_distance_compute(distance: Tensor, p: float) -> Tensor:
     """Compute Minkowski Distance.
 
     Args:
-        distance: Sum of the p-th powers of errors over all observations
+        distance: Sum of the p-th powers of absolute errors, or the maximum absolute error for infinite p
         p: The non-negative numeric power the errors are to be raised to
 
     Example:
@@ -53,13 +55,15 @@ def _minkowski_distance_compute(distance: Tensor, p: float) -> Tensor:
         tensor(2.0244)
 
     """
+    if p == float("inf"):
+        return distance
     return torch.pow(distance, 1.0 / p)
 
 
 def minkowski_distance(preds: Tensor, targets: Tensor, p: float) -> Tensor:
     r"""Compute the `Minkowski distance`_.
 
-    .. math:: d_{\text{Minkowski}} = \\sum_{i}^N (| y_i - \\hat{y_i} |^p)^\frac{1}{p}
+    .. math:: d_{\text{Minkowski}} = \left(\sum_{i=1}^N |y_i - \hat{y}_i|^p\right)^{1/p}
 
     This metric can be seen as generalized version of the standard euclidean distance which corresponds to minkowski
     distance with p=2.
@@ -67,7 +71,7 @@ def minkowski_distance(preds: Tensor, targets: Tensor, p: float) -> Tensor:
     Args:
         preds: estimated labels of type Tensor
         targets: ground truth labels of type Tensor
-        p: int or float larger than 1, exponent to which the difference between preds and target is to be raised
+        p: Order of the distance, at least 1. Use ``float("inf")`` for the maximum absolute difference.
 
     Return:
         Tensor with the Minkowski distance
@@ -80,5 +84,5 @@ def minkowski_distance(preds: Tensor, targets: Tensor, p: float) -> Tensor:
         tensor(5.1220)
 
     """
-    minkowski_dist_sum = _minkowski_distance_update(preds, targets, p)
-    return _minkowski_distance_compute(minkowski_dist_sum, p)
+    distance = _minkowski_distance_update(preds, targets, p)
+    return _minkowski_distance_compute(distance, p)

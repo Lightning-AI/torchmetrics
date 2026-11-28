@@ -46,7 +46,7 @@ def _reference_scipy_metric_multi_target(preds, target, p):
         (_multi_target_inputs.preds, _multi_target_inputs.target, _reference_scipy_metric_multi_target),
     ],
 )
-@pytest.mark.parametrize("p", [1, 2, 4, 1.5])
+@pytest.mark.parametrize("p", [1, 2, 4, 1.5, float("inf")])
 class TestMinkowskiDistance(MetricTester):
     """Test class for `MinkowskiDistance` metric."""
 
@@ -82,6 +82,21 @@ class TestMinkowskiDistance(MetricTester):
     def test_minkowski_distance_half_gpu(self, preds, target, ref_metric, p):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, MinkowskiDistance, minkowski_distance, metric_args={"p": p})
+
+
+@pytest.mark.parametrize("preds", [torch.tensor([1.0, -3.0, 4.0]), torch.tensor([2.0, 1.0, 5.0])])
+@pytest.mark.parametrize("batch_size", [2, 3])
+def test_infinite_order(preds, batch_size):
+    """Compare the maximum absolute error to SciPy for one batch and an uneven split."""
+    target = torch.tensor([2.0, 1.0, 5.0])
+    p = float("inf")
+    expected = preds.new_tensor(scipy_minkowski(preds.numpy(), target.numpy(), p=p))
+    metric = MinkowskiDistance(p)
+    for pred_batch, target_batch in zip(preds.split(batch_size), target.split(batch_size)):
+        metric.update(pred_batch, target_batch)
+
+    torch.testing.assert_close(metric.compute(), expected)
+    torch.testing.assert_close(minkowski_distance(preds, target, p), expected)
 
 
 def test_error_on_different_shape():
