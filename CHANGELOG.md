@@ -86,6 +86,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed multiclass stat scores, and the metrics built on them such as `MulticlassAccuracy`, allocating `num_classes**2` memory for non-micro averages, which ran out of memory for large `num_classes` ([#3343](https://github.com/Lightning-AI/torchmetrics/issues/3343))
 
 
+- Fixed `spearman_corrcoef` and `kendall_rank_corrcoef` silently returning `float32` for `float64` inputs ([#3466](https://github.com/Lightning-AI/torchmetrics/pull/3466))
+
+
 ---
 
 ## [1.9.0] - 2026-03-05

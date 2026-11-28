@@ -37,7 +37,11 @@ def _rank_data(data: Tensor) -> Tensor:
     # so that group's average rank comes back negative.
     sum_ranks = torch.zeros(uniq.shape, dtype=torch.int64, device=data.device)
     sum_ranks.scatter_add_(0, inv, rank.to(torch.int64))
-    mean_ranks = sum_ranks / counts
+    # both operands are integers, so the division would otherwise fall back to the global default dtype and
+    # silently downcast a float64 input; float16/bfloat16 are promoted since ranks need more mantissa than
+    # they can hold
+    dtype = torch.promote_types(data.dtype, torch.float32)
+    mean_ranks = sum_ranks.to(dtype) / counts.to(dtype)
     return mean_ranks[inv]
 
 
