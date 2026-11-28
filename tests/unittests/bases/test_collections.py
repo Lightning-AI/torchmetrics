@@ -577,6 +577,42 @@ class TestComputeGroups:
 #     assert time_cg < time_no_cg, "using compute groups were not faster"
 
 
+@pytest.mark.parametrize(
+    ("metrics", "batches"),
+    [
+        (
+            {"t05": BinaryAccuracy(threshold=0.5), "t08": BinaryAccuracy(threshold=0.8)},
+            [
+                (torch.tensor([0.1, 0.9, 0.95, 0.05]), torch.tensor([0, 1, 1, 0])),
+                (torch.tensor([0.6, 0.7, 0.65, 0.2]), torch.tensor([1, 1, 1, 0])),
+            ],
+        ),
+        (
+            {
+                "acc": MulticlassAccuracy(3, average="micro"),
+                "acc_ign0": MulticlassAccuracy(3, average="micro", ignore_index=0),
+            },
+            [
+                (torch.tensor([1, 2, 2, 1]), torch.tensor([1, 2, 1, 1])),
+                (torch.tensor([1, 1, 1, 1]), torch.tensor([0, 0, 0, 1])),
+            ],
+        ),
+    ],
+)
+def test_compute_groups_respect_update_hyperparameters(metrics, batches):
+    """Metrics whose states coincide after the first batch but whose update arguments differ must not be grouped."""
+    collection = MetricCollection(deepcopy(metrics))
+    for preds, target in batches:
+        collection.update(preds, target)
+    result = collection.compute()
+
+    assert len(collection.compute_groups) == len(metrics)
+    for name, metric in metrics.items():
+        for preds, target in batches:
+            metric.update(preds, target)
+        torch.testing.assert_close(result[name], metric.compute())
+
+
 def test_compute_group_define_by_user():
     """Check that user can provide compute groups."""
     m = MetricCollection(

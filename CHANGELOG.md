@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed `MetricCollection` compute groups merging metrics whose update arguments differ (e.g. `threshold`, `ignore_index`), which made them silently report the same value ([#3668](https://github.com/Lightning-AI/torchmetrics/issues/3668))
+
 - Fixed `BootStrapper` computing the `quantile` over all outputs at once instead of per output for metrics with non-scalar results ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
 
 - Fixed `Metric` syncing deadlocking for `dist_reduce_fx=None` list states when ranks hold a different number of entries, which now raises an error instead ([#3503](https://github.com/Lightning-AI/torchmetrics/pull/3503))
