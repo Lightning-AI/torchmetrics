@@ -51,7 +51,7 @@ def _reference_sewar_rase(preds, target, window_size):
     adjustments.
 
     """
-    target_sum = torch.sum(_uniform_filter(target, window_size) / (window_size**2), dim=0)
+    target_sum = torch.sum(_uniform_filter(target, window_size), dim=0)
     target_mean = target_sum / target.shape[0]
     target_mean = target_mean.mean(0)  # mean over image channels
 
@@ -98,3 +98,26 @@ class TestRelativeAverageSpectralError(MetricTester):
             reference_metric=partial(_reference_sewar_rase, window_size=window_size),
             metric_args={"window_size": window_size},
         )
+
+
+@pytest.mark.parametrize("window_size", [3, 4, 8])
+def test_rase_single_image_matches_sewar(window_size):
+    """For a single image the result should match ``sewar.rase`` directly."""
+    preds = torch.rand(1, 3, 16, 16, dtype=torch.float64)
+    target = torch.rand(1, 3, 16, 16, dtype=torch.float64)
+    expected = sewar.rase(target[0].permute(1, 2, 0).numpy(), preds[0].permute(1, 2, 0).numpy(), window_size)
+
+    result = relative_average_spectral_error(preds, target, window_size=window_size)
+    assert torch.allclose(result, torch.tensor(expected, dtype=result.dtype))
+
+    metric = RelativeAverageSpectralError(window_size=window_size)
+    metric.update(preds, target)
+    assert torch.allclose(metric.compute(), torch.tensor(expected, dtype=result.dtype))
+
+
+def test_rase_constant_offset():
+    """A constant error of 0.01 on an image of constant value 0.5 is a relative error of 2%."""
+    target = torch.full((2, 3, 16, 16), 0.5, dtype=torch.float64)
+    preds = target + 0.01
+    result = relative_average_spectral_error(preds, target, window_size=8)
+    assert torch.allclose(result, torch.tensor(2.0, dtype=torch.float64))
