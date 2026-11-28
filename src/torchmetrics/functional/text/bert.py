@@ -560,11 +560,14 @@ def bert_score(
         preds_loader, preds_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn
     )
 
-    preds_embeddings = preds_embeddings[preds_loader.dataset.sorting_indices]
-    target_embeddings = target_embeddings[target_loader.dataset.sorting_indices]
+    # Invert the length sort to restore the original prediction/reference pairs.
+    preds_indices = preds_loader.dataset.sorting_indices.argsort()
+    target_indices = target_loader.dataset.sorting_indices.argsort()
+    preds_embeddings = preds_embeddings[preds_indices]
+    target_embeddings = target_embeddings[target_indices]
 
-    preds_idf_scale = preds_idf_scale[preds_loader.dataset.sorting_indices]
-    target_idf_scale = target_idf_scale[target_loader.dataset.sorting_indices]
+    preds_idf_scale = preds_idf_scale[preds_indices]
+    target_idf_scale = target_idf_scale[target_indices]
 
     precision, recall, f1_score = _get_precision_recall_f1(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
