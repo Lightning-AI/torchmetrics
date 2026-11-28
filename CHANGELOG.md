@@ -84,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `TER` never shifting a block of 10 words in one step, which made it disagree with Tercom and sacrebleu ([#3594](https://github.com/Lightning-AI/torchmetrics/pull/3594))
 - Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
 - Fixed multiclass stat scores, and the metrics built on them such as `MulticlassAccuracy`, allocating `num_classes**2` memory for non-micro averages, which ran out of memory for large `num_classes` ([#3343](https://github.com/Lightning-AI/torchmetrics/issues/3343))
+- Fixed `RelativeAverageSpectralError` returning values `window_size**2` times too large by dividing the local mean of the target by `window_size**2` a second time ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
 
 
 ---
