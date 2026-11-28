@@ -31,18 +31,18 @@ class MinkowskiDistance(Metric):
     r"""Compute `Minkowski Distance`_.
 
     .. math::
-        d_{\text{Minkowski}} = \sum_{i}^N (| y_i - \hat{y_i} |^p)^\frac{1}{p}
+        d_{\text{Minkowski}} = \left(\sum_{i=1}^N |y_i - \hat{y}_i|^p\right)^{1/p}
 
     where
         :math: `y` is a tensor of target values,
         :math: `\hat{y}` is a tensor of predictions,
-        :math: `\p` is a non-negative integer or floating-point number
+        :math:`p` is the order of the distance
 
     This metric can be seen as generalized version of the standard euclidean distance which corresponds to minkowski
     distance with p=2.
 
     Args:
-        p: int or float larger than 1, exponent to which the difference between preds and target is to be raised
+        p: Order of the distance, at least 1. Use ``float("inf")`` for the maximum absolute difference.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -68,12 +68,16 @@ class MinkowskiDistance(Metric):
             raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
 
         self.p = p
-        self.add_state("minkowski_dist_sum", default=tensor(0.0), dist_reduce_fx="sum")
+        reduction = "max" if p == float("inf") else "sum"
+        self.add_state("minkowski_dist_sum", default=tensor(0.0), dist_reduce_fx=reduction)
 
     def update(self, preds: Tensor, targets: Tensor) -> None:
         """Update state with predictions and targets."""
-        minkowski_dist_sum = _minkowski_distance_update(preds, targets, self.p)
-        self.minkowski_dist_sum += minkowski_dist_sum
+        distance = _minkowski_distance_update(preds, targets, self.p)
+        if self.p == float("inf"):
+            self.minkowski_dist_sum = self.minkowski_dist_sum.maximum(distance)
+        else:
+            self.minkowski_dist_sum += distance
 
     def compute(self) -> Tensor:
         """Compute metric."""
