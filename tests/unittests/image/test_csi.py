@@ -86,6 +86,34 @@ class TestCriticalSuccessIndex(MetricTester):
         )
 
 
+@pytest.mark.parametrize("keep_sequence_dim", [0, 1, 2])
+def test_sequence_scores_across_batches(keep_sequence_dim):
+    """Each position on the retained axis has the same score for any split along the batch axis."""
+    preds = torch.tensor([[[1, 0], [1, 0]], [[1, 1], [0, 0]], [[0, 1], [1, 1]]])
+    target = torch.tensor([[[1, 0], [0, 1]], [[1, 0], [1, 0]], [[1, 0], [1, 1]]])
+    expected = torch.tensor([
+        jaccard_score(t.flatten(), p.flatten())
+        for p, t in zip(preds.unbind(keep_sequence_dim), target.unbind(keep_sequence_dim))
+    ]).float()
+
+    metric = CriticalSuccessIndex(threshold=0.5, keep_sequence_dim=keep_sequence_dim)
+    metric.update(preds[:2], target[:2])
+    metric.update(preds[2:], target[2:])
+    torch.testing.assert_close(metric.compute(), expected)
+
+
+def test_resume_sequence_counts():
+    """Resume a metric whose saved counts have one flat vector per batch."""
+    metric = CriticalSuccessIndex(threshold=0.5, keep_sequence_dim=1)
+    metric.load_state_dict({
+        "hits_list": [torch.tensor([2, 0])],
+        "misses_list": [torch.tensor([0, 2])],
+        "false_alarms_list": [torch.tensor([1, 1])],
+    })
+    metric.update(torch.tensor([[[0, 1], [1, 1]]]), torch.tensor([[[1, 0], [1, 1]]]))
+    torch.testing.assert_close(metric.compute(), torch.tensor([2 / 5, 2 / 5]))
+
+
 def test_error_on_different_shape():
     """Test that error is raised on different shapes of input."""
     metric = CriticalSuccessIndex(0.5)

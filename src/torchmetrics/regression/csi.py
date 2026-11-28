@@ -85,6 +85,15 @@ class CriticalSuccessIndex(Metric):
             self.add_state("misses_list", default=[], dist_reduce_fx="cat")
             self.add_state("false_alarms_list", default=[], dist_reduce_fx="cat")
 
+    def _load_from_state_dict(self, state_dict: dict, prefix: str, *args: Any, **kwargs: Any) -> None:
+        if self.keep_sequence_dim:
+            # Older checkpoints stored one flat count vector per batch.
+            for name in ("hits_list", "misses_list", "false_alarms_list"):
+                key = prefix + name
+                if key in state_dict:
+                    state_dict[key] = [counts.reshape(1, -1) for counts in state_dict[key]]
+        super()._load_from_state_dict(state_dict, prefix, *args, **kwargs)
+
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         hits, misses, false_alarms = _critical_success_index_update(
@@ -95,6 +104,9 @@ class CriticalSuccessIndex(Metric):
             self.misses += misses
             self.false_alarms += false_alarms
         else:
+            if self.keep_sequence_dim != 0:
+                # These counts describe the same sequence positions in every batch.
+                hits, misses, false_alarms = hits.unsqueeze(0), misses.unsqueeze(0), false_alarms.unsqueeze(0)
             self.hits_list.append(hits)
             self.misses_list.append(misses)
             self.false_alarms_list.append(false_alarms)
@@ -109,4 +121,6 @@ class CriticalSuccessIndex(Metric):
             hits = dim_zero_cat(self.hits_list)
             misses = dim_zero_cat(self.misses_list)
             false_alarms = dim_zero_cat(self.false_alarms_list)
+            if self.keep_sequence_dim != 0:
+                hits, misses, false_alarms = hits.sum(0), misses.sum(0), false_alarms.sum(0)
         return _critical_success_index_compute(hits, misses, false_alarms)
