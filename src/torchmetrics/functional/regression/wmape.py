@@ -33,8 +33,10 @@ def _weighted_mean_absolute_percentage_error_update(
     """
     _check_same_shape(preds, target)
 
-    sum_abs_error = (preds - target).abs().sum()
-    sum_scale = target.abs().sum()
+    abs_error = (preds - target).abs()
+    abs_target = target.abs()
+    sum_abs_error = abs_error.sum(dtype=torch.float32 if abs_error.dtype in (torch.float16, torch.bfloat16) else None)
+    sum_scale = abs_target.sum(dtype=torch.float32 if abs_target.dtype in (torch.float16, torch.bfloat16) else None)
 
     return sum_abs_error, sum_scale
 
@@ -64,6 +66,8 @@ def weighted_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Te
         \text{WMAPE} = \frac{\sum_{t=1}^n | y_t - \hat{y}_t | }{\sum_{t=1}^n |y_t| }
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
+
+    Half-precision reductions accumulate in float32 to avoid overflow before computing the ratio.
 
     Args:
         preds: estimated labels

@@ -41,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed float16 accumulation overflow in `WeightedMeanAbsolutePercentageError` and its functional API
+  ([#3605](https://github.com/Lightning-AI/torchmetrics/issues/3605))
+
 - Fixed `BootStrapper` computing the `quantile` over all outputs at once instead of per output for metrics with non-scalar results ([#XXXX](https://github.com/Lightning-AI/torchmetrics/pull/XXXX))
 
 - Fixed `Metric` syncing deadlocking for `dist_reduce_fx=None` list states when ranks hold a different number of entries, which now raises an error instead ([#3503](https://github.com/Lightning-AI/torchmetrics/pull/3503))
