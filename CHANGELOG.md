@@ -85,6 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `GeneralizedDiceScore` using a misaligned per-class weight when a class is absent from a sample's target but present in its prediction (`weight_type="square"`/`"simple"`), returning incorrect scores whenever the batch size differed from the number of classes ([#3564](https://github.com/Lightning-AI/torchmetrics/pull/3564))
 - Fixed multiclass stat scores, and the metrics built on them such as `MulticlassAccuracy`, allocating `num_classes**2` memory for non-micro averages, which ran out of memory for large `num_classes` ([#3343](https://github.com/Lightning-AI/torchmetrics/issues/3343))
 
+- Fixed `davies_bouldin_score` returning an incorrect value for `float64` data far from the origin, and `calinski_harabasz_score` accumulating at `float32`, by allocating their buffers in the input dtype ([#3468](https://github.com/Lightning-AI/torchmetrics/pull/3468))
+
 
 ---
 
