@@ -34,8 +34,10 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor, num_outputs: int)
     if num_outputs == 1:
         preds = preds.view(-1)
         target = target.view(-1)
-    preds = preds if preds.is_floating_point else preds.float()  # type: ignore[truthy-function] # todo
-    target = target if target.is_floating_point else target.float()  # type: ignore[truthy-function] # todo
+    if preds.dtype in (torch.uint8, torch.int8, torch.int16, torch.int32):
+        preds = preds.long()
+    if target.dtype in (torch.uint8, torch.int8, torch.int16, torch.int32):
+        target = target.long()
     sum_abs_error = torch.sum(torch.abs(preds - target), dim=0)
     return sum_abs_error, target.shape[0]
 
