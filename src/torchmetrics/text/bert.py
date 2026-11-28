@@ -310,7 +310,11 @@ class BERTScore(Metric):
             and isinstance(output_dict["f1"], Tensor)
         ):
             output_dict["precision"], output_dict["recall"], output_dict["f1"] = _postprocess_multiple_references(
-                output_dict["precision"], output_dict["recall"], output_dict["f1"], self.ref_group_boundaries
+                output_dict["precision"],
+                output_dict["recall"],
+                output_dict["f1"],
+                self.ref_group_boundaries,
+                self.all_layers,
             )
 
         return output_dict
